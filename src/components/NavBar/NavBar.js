@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./NavBar.module.css";
-import BorrowButton from "./BorrowButton/BorrowButton";
+import BorrowButton from "./BorrowButton";
 
 export default function NavBar(){
     const [query,setQuery] = useState("");
@@ -11,7 +11,7 @@ export default function NavBar(){
     return(
         <div className = {styles.NavBar}>
             <input 
-            className={styles.input}
+            className={styles.button}
             type="text" 
             placeholder="Search..." 
             value={query} 
