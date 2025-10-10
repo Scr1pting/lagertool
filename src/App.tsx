@@ -1,13 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
 
-import ShelfBuilder from './pages/ShelfBuilder'
+import ShelfBuilder from './pages/ShelfBuilder';
+import Search from './pages/Search';
 
 
 function App() {
   return (
     <NavBar/>
     <Routes>
-      <Route path="/" element={<ShelfBuilder />} />
+      <Route path="/" element={<Search />} />
+      <Route path="/shelf-builder" element={<ShelfBuilder />} />
     </Routes>
   )
 }
