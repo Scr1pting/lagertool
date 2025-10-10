@@ -1,0 +1,47 @@
+name: Deploy via Docker Compose
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            # Navigate to app directory
+            cd /home/viscon/deployment/backend
+            
+            # Pull latest code from main branch
+            if [ -d .git ]; then
+              echo "Pulling latest changes..."
+              git fetch origin
+              git reset --hard origin/main
+            else
+              echo "Cloning repository..."
+              git clone https://github.com/${{ github.repository }} .
+            fi
+
+            cd /home/viscon/deployment
+            
+            # Stop existing containers
+            docker compose down
+            
+            # Build and start containers
+            docker compose up -d --build backend
+            
+            # Clean up old images
+            docker image prune -af
+            
+            echo "Deployment completed successfully!"
+            docker compose ps
