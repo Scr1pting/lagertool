@@ -327,17 +327,40 @@ func (h *Handler) DeleteItem(c *gin.Context) {
 // @Description Retrieve all item-location inventory records from the database
 // @Tags inventory
 // @Produce json
-// @Success 200 {array} db.IsIn
+// @Success 200 {array} InventoryResponse
 // @Failure 500 {object} map[string]string
 // @Router /inventory [get]
 func (h *Handler) GetAllInventory(c *gin.Context) {
-	var inventory []db.IsIn
-	err := h.DB.Model(&inventory).Select()
+	type InventoryResponse struct {
+		ID           int    `json:"id"`
+		Name         string `json:"name"`
+		ShelfName    string `json:"shelf_name"`
+		RoomName     string `json:"room_name"`
+		BuildingName string `json:"building_name"`
+		Amount       int    `json:"amount"`
+	}
+
+	var result []InventoryResponse
+
+	// Perform a JOIN across is_in, item, and location tables
+	err := h.DB.Model((*db.IsIn)(nil)).
+		ColumnExpr("is_in.id AS id").
+		ColumnExpr("item.name AS name").
+		ColumnExpr("location.shelf AS shelf_name").
+		ColumnExpr("location.room AS room_name").
+		ColumnExpr("location.building AS building_name").
+		ColumnExpr("is_in.amount AS amount").
+		Join("JOIN item ON item.id = is_in.item_id").
+		Join("JOIN location ON location.id = is_in.location_id").
+		Order("is_in.id ASC").
+		Select(&result)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, inventory)
+
+	c.JSON(http.StatusOK, result)
 }
 
 // GetInventoryByID godoc
