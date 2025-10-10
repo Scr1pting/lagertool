@@ -4,9 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"lagertool.com/main/db"
 )
 
 func main() {
+	db.NewDBConn()
 	// Create a new Gin router
 	router := gin.Default()
 
@@ -34,7 +36,7 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "healthy",
-			"service": "dummy-server-test",
+			"service": "dummy-server-test2",
 		})
 	})
 

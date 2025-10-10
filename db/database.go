@@ -4,27 +4,29 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/go-pg/pg/v10"
-)
-
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "your-password"
-	dbname   = "calhounio_demo"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 func NewDBConn() (con *pg.DB, err error) {
-	address := fmt.Sprintf("%s:%s", "localhost", "5432")
+	fmt.Println("Initialising DB")
+	host := getEnv("DB_HOST", "localhost")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "postgres")
+	password := getEnv("DB_PASSWORD", "example")
+	database := getEnv("DB_NAME", "appdb")
+
+	address := fmt.Sprintf("%s:%s", host, port)
 	options := &pg.Options{
-		User:     "postgres",
-		Password: "12345678",
+		User:     user,
+		Password: password,
 		Addr:     address,
-		Database: "postgres",
+		Database: database,
 		PoolSize: 50,
 	}
+	fmt.Println("Connecting to database...")
 	con = pg.Connect(options)
 
 	// Test connection to Postgres
@@ -38,10 +40,52 @@ func NewDBConn() (con *pg.DB, err error) {
 }
 
 func InitDB(con *pg.DB) {
+	dbConn, err := NewDBConn()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func(dbConn *pg.DB) {
+		err := dbConn.Close()
+		if err != nil {
+
+		}
+	}(dbConn)
+
+	// Create tables
+	models := []interface{}{
+		(*Location)(nil),
+		(*Item)(nil),
+		(*Consumable)(nil),
+		(*Permanent)(nil),
+		(*IsIn)(nil),
+		(*Person)(nil),
+		(*Loans)(nil),
+	}
+
+	for _, model := range models {
+		err := dbConn.Model(model).CreateTable(&orm.CreateTableOptions{
+			IfNotExists: true,
+		})
+		if err != nil {
+			log.Fatalf("Error creating table for %T: %v", model, err)
+		}
+	}
+
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
 
 func Close(con *pg.DB) {
 	if con != nil {
-		con.Close()
+		err := con.Close()
+		if err != nil {
+			return
+		}
 	}
 }
