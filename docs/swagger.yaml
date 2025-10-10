@@ -104,14 +104,25 @@ paths:
       consumes:
       - application/json
       description: Create a new inventory record (link an item to a location with
-        an amount)
+        an amount). The ID is auto-generated and should not be included in the request
+        body.
       parameters:
-      - description: Inventory record object
+      - description: 'Inventory record object (all fields are required: location_id,
+          item_id, amount as integers, note as string)'
         in: body
         name: inventory
         required: true
         schema:
-          $ref: '#/definitions/db.IsIn'
+          properties:
+            amount:
+              type: integer
+            item_id:
+              type: integer
+            location_id:
+              type: integer
+            note:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -200,19 +211,30 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing inventory record by ID
+      description: Update an existing inventory record by ID. The ID in the request
+        body is ignored; use the path parameter.
       parameters:
       - description: Inventory Record ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Inventory record object
+      - description: 'Inventory record object (all fields are required: location_id,
+          item_id, amount as integers, note as string)'
         in: body
         name: inventory
         required: true
         schema:
-          $ref: '#/definitions/db.IsIn'
+          properties:
+            amount:
+              type: integer
+            item_id:
+              type: integer
+            location_id:
+              type: integer
+            note:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -367,14 +389,20 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new item with the provided details
+      description: Create a new item with the provided details. The ID is auto-generated
+        and should not be included in the request body.
       parameters:
-      - description: Item object
+      - description: Item object (name and category are required strings)
         in: body
         name: item
         required: true
         schema:
-          $ref: '#/definitions/db.Item'
+          properties:
+            category:
+              type: string
+            name:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -463,19 +491,25 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing item by ID
+      description: Update an existing item by ID. The ID in the request body is ignored;
+        use the path parameter.
       parameters:
       - description: Item ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Item object
+      - description: Item object (name and category are required strings)
         in: body
         name: item
         required: true
         schema:
-          $ref: '#/definitions/db.Item'
+          properties:
+            category:
+              type: string
+            name:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -549,14 +583,28 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new loan record
+      description: Create a new loan record. The ID is auto-generated and should not
+        be included in the request body. Date fields must be in RFC3339 format (e.g.,
+        "2025-10-10T14:30:00Z").
       parameters:
-      - description: Loan record object
+      - description: Loan record object (person_id, perm_id, amount are required integers;
+          begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)
         in: body
         name: loan
         required: true
         schema:
-          $ref: '#/definitions/db.Loans'
+          properties:
+            amount:
+              type: integer
+            begin:
+              type: string
+            perm_id:
+              type: integer
+            person_id:
+              type: integer
+            until:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -645,19 +693,33 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing loan record by ID
+      description: Update an existing loan record by ID. The ID in the request body
+        is ignored; use the path parameter. Date fields must be in RFC3339 format
+        (e.g., "2025-10-10T14:30:00Z").
       parameters:
       - description: Loan ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Loan object
+      - description: Loan record object (person_id, perm_id, amount are required integers;
+          begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)
         in: body
         name: loan
         required: true
         schema:
-          $ref: '#/definitions/db.Loans'
+          properties:
+            amount:
+              type: integer
+            begin:
+              type: string
+            perm_id:
+              type: integer
+            person_id:
+              type: integer
+            until:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -793,14 +855,26 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new location with the provided details
+      description: Create a new location with the provided details. The ID is auto-generated
+        and should not be included in the request body.
       parameters:
-      - description: Location object
+      - description: Location object (all fields are optional strings)
         in: body
         name: location
         required: true
         schema:
-          $ref: '#/definitions/db.Location'
+          properties:
+            building:
+              type: string
+            campus:
+              type: string
+            room:
+              type: string
+            shelf:
+              type: string
+            shelfunit:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -889,19 +963,31 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing location by ID
+      description: Update an existing location by ID. The ID in the request body is
+        ignored; use the path parameter.
       parameters:
       - description: Location ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Location object
+      - description: Location object (all fields are optional strings)
         in: body
         name: location
         required: true
         schema:
-          $ref: '#/definitions/db.Location'
+          properties:
+            building:
+              type: string
+            campus:
+              type: string
+            room:
+              type: string
+            shelf:
+              type: string
+            shelfunit:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -948,14 +1034,25 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new person with the provided details
+      description: Create a new person with the provided details. The ID is auto-generated
+        and should not be included in the request body.
       parameters:
-      - description: Person object
+      - description: 'Person object (all fields are required strings: firstname, lastname,
+          email, telephone)'
         in: body
         name: person
         required: true
         schema:
-          $ref: '#/definitions/db.Person'
+          properties:
+            email:
+              type: string
+            firstname:
+              type: string
+            lastname:
+              type: string
+            telephone:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -1044,19 +1141,30 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing person by ID
+      description: Update an existing person by ID. The ID in the request body is
+        ignored; use the path parameter.
       parameters:
       - description: Person ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Person object
+      - description: 'Person object (all fields are required strings: firstname, lastname,
+          email, telephone)'
         in: body
         name: person
         required: true
         schema:
-          $ref: '#/definitions/db.Person'
+          properties:
+            email:
+              type: string
+            firstname:
+              type: string
+            lastname:
+              type: string
+            telephone:
+              type: string
+          type: object
       produces:
       - application/json
       responses:

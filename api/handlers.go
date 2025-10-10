@@ -69,11 +69,11 @@ func (h *Handler) GetLocationByID(c *gin.Context) {
 
 // CreateLocation godoc
 // @Summary Create a new location
-// @Description Create a new location with the provided details
+// @Description Create a new location with the provided details. The ID is auto-generated and should not be included in the request body.
 // @Tags locations
 // @Accept json
 // @Produce json
-// @Param location body db.Location true "Location object"
+// @Param location body object{campus=string,building=string,room=string,shelf=string,shelfunit=string} true "Location object (all fields are optional strings)"
 // @Success 201 {object} db.Location
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -96,12 +96,12 @@ func (h *Handler) CreateLocation(c *gin.Context) {
 
 // UpdateLocation godoc
 // @Summary Update a location
-// @Description Update an existing location by ID
+// @Description Update an existing location by ID. The ID in the request body is ignored; use the path parameter.
 // @Tags locations
 // @Accept json
 // @Produce json
 // @Param id path int true "Location ID"
-// @Param location body db.Location true "Location object"
+// @Param location body object{campus=string,building=string,room=string,shelf=string,shelfunit=string} true "Location object (all fields are optional strings)"
 // @Success 200 {object} db.Location
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -231,11 +231,11 @@ func (h *Handler) SearchItems(c *gin.Context) {
 
 // CreateItem godoc
 // @Summary Create a new item
-// @Description Create a new item with the provided details
+// @Description Create a new item with the provided details. The ID is auto-generated and should not be included in the request body.
 // @Tags items
 // @Accept json
 // @Produce json
-// @Param item body db.Item true "Item object"
+// @Param item body object{name=string,category=string} true "Item object (name and category are required strings)"
 // @Success 201 {object} db.Item
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -258,12 +258,12 @@ func (h *Handler) CreateItem(c *gin.Context) {
 
 // UpdateItem godoc
 // @Summary Update an item
-// @Description Update an existing item by ID
+// @Description Update an existing item by ID. The ID in the request body is ignored; use the path parameter.
 // @Tags items
 // @Accept json
 // @Produce json
 // @Param id path int true "Item ID"
-// @Param item body db.Item true "Item object"
+// @Param item body object{name=string,category=string} true "Item object (name and category are required strings)"
 // @Success 200 {object} db.Item
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -427,11 +427,11 @@ func (h *Handler) GetInventoryByItem(c *gin.Context) {
 
 // CreateInventory godoc
 // @Summary Create a new inventory record
-// @Description Create a new inventory record (link an item to a location with an amount)
+// @Description Create a new inventory record (link an item to a location with an amount). The ID is auto-generated and should not be included in the request body.
 // @Tags inventory
 // @Accept json
 // @Produce json
-// @Param inventory body db.IsIn true "Inventory record object"
+// @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
 // @Success 201 {object} db.IsIn
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -454,12 +454,12 @@ func (h *Handler) CreateInventory(c *gin.Context) {
 
 // UpdateInventory godoc
 // @Summary Update an inventory record
-// @Description Update an existing inventory record by ID
+// @Description Update an existing inventory record by ID. The ID in the request body is ignored; use the path parameter.
 // @Tags inventory
 // @Accept json
 // @Produce json
 // @Param id path int true "Inventory Record ID"
-// @Param inventory body db.IsIn true "Inventory record object"
+// @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
 // @Success 200 {object} db.IsIn
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -649,11 +649,11 @@ func (h *Handler) SearchPersons(c *gin.Context) {
 
 // CreatePerson godoc
 // @Summary Create a new person
-// @Description Create a new person with the provided details
+// @Description Create a new person with the provided details. The ID is auto-generated and should not be included in the request body.
 // @Tags persons
 // @Accept json
 // @Produce json
-// @Param person body db.Person true "Person object"
+// @Param person body object{firstname=string,lastname=string,email=string,telephone=string} true "Person object (all fields are required strings: firstname, lastname, email, telephone)"
 // @Success 201 {object} db.Person
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -676,12 +676,12 @@ func (h *Handler) CreatePerson(c *gin.Context) {
 
 // UpdatePerson godoc
 // @Summary Update a person
-// @Description Update an existing person by ID
+// @Description Update an existing person by ID. The ID in the request body is ignored; use the path parameter.
 // @Tags persons
 // @Accept json
 // @Produce json
 // @Param id path int true "Person ID"
-// @Param person body db.Person true "Person object"
+// @Param person body object{firstname=string,lastname=string,email=string,telephone=string} true "Person object (all fields are required strings: firstname, lastname, email, telephone)"
 // @Success 200 {object} db.Person
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -867,11 +867,11 @@ func (h *Handler) GetOverdueLoans(c *gin.Context) {
 
 // CreateLoan godoc
 // @Summary Create a new loan record
-// @Description Create a new loan record
+// @Description Create a new loan record. The ID is auto-generated and should not be included in the request body. Date fields must be in RFC3339 format (e.g., "2025-10-10T14:30:00Z").
 // @Tags loans
 // @Accept json
 // @Produce json
-// @Param loan body db.Loans true "Loan record object"
+// @Param loan body object{person_id=int,perm_id=int,amount=int,begin=string,until=string} true "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)"
 // @Success 201 {object} db.Loans
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -894,12 +894,12 @@ func (h *Handler) CreateLoan(c *gin.Context) {
 
 // UpdateLoan godoc
 // @Summary Update a loan record
-// @Description Update an existing loan record by ID
+// @Description Update an existing loan record by ID. The ID in the request body is ignored; use the path parameter. Date fields must be in RFC3339 format (e.g., "2025-10-10T14:30:00Z").
 // @Tags loans
 // @Accept json
 // @Produce json
 // @Param id path int true "Loan ID"
-// @Param loan body db.Loans true "Loan object"
+// @Param loan body object{person_id=int,perm_id=int,amount=int,begin=string,until=string} true "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)"
 // @Success 200 {object} db.Loans
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string

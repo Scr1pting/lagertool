@@ -55,7 +55,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new inventory record (link an item to a location with an amount)",
+                "description": "Create a new inventory record (link an item to a location with an amount). The ID is auto-generated and should not be included in the request body.",
                 "consumes": [
                     "application/json"
                 ],
@@ -68,12 +68,26 @@ const docTemplate = `{
                 "summary": "Create a new inventory record",
                 "parameters": [
                     {
-                        "description": "Inventory record object",
+                        "description": "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)",
                         "name": "inventory",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.IsIn"
+                            "type": "object",
+                            "properties": {
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "item_id": {
+                                    "type": "integer"
+                                },
+                                "location_id": {
+                                    "type": "integer"
+                                },
+                                "note": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -252,7 +266,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update an existing inventory record by ID",
+                "description": "Update an existing inventory record by ID. The ID in the request body is ignored; use the path parameter.",
                 "consumes": [
                     "application/json"
                 ],
@@ -272,12 +286,26 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Inventory record object",
+                        "description": "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)",
                         "name": "inventory",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.IsIn"
+                            "type": "object",
+                            "properties": {
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "item_id": {
+                                    "type": "integer"
+                                },
+                                "location_id": {
+                                    "type": "integer"
+                                },
+                                "note": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -453,7 +481,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new item with the provided details",
+                "description": "Create a new item with the provided details. The ID is auto-generated and should not be included in the request body.",
                 "consumes": [
                     "application/json"
                 ],
@@ -466,12 +494,20 @@ const docTemplate = `{
                 "summary": "Create a new item",
                 "parameters": [
                     {
-                        "description": "Item object",
+                        "description": "Item object (name and category are required strings)",
                         "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Item"
+                            "type": "object",
+                            "properties": {
+                                "category": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -591,7 +627,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update an existing item by ID",
+                "description": "Update an existing item by ID. The ID in the request body is ignored; use the path parameter.",
                 "consumes": [
                     "application/json"
                 ],
@@ -611,12 +647,20 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Item object",
+                        "description": "Item object (name and category are required strings)",
                         "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Item"
+                            "type": "object",
+                            "properties": {
+                                "category": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -728,7 +772,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new loan record",
+                "description": "Create a new loan record. The ID is auto-generated and should not be included in the request body. Date fields must be in RFC3339 format (e.g., \"2025-10-10T14:30:00Z\").",
                 "consumes": [
                     "application/json"
                 ],
@@ -741,12 +785,29 @@ const docTemplate = `{
                 "summary": "Create a new loan record",
                 "parameters": [
                     {
-                        "description": "Loan record object",
+                        "description": "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)",
                         "name": "loan",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Loans"
+                            "type": "object",
+                            "properties": {
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "begin": {
+                                    "type": "string"
+                                },
+                                "perm_id": {
+                                    "type": "integer"
+                                },
+                                "person_id": {
+                                    "type": "integer"
+                                },
+                                "until": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -957,7 +1018,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update an existing loan record by ID",
+                "description": "Update an existing loan record by ID. The ID in the request body is ignored; use the path parameter. Date fields must be in RFC3339 format (e.g., \"2025-10-10T14:30:00Z\").",
                 "consumes": [
                     "application/json"
                 ],
@@ -977,12 +1038,29 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Loan object",
+                        "description": "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)",
                         "name": "loan",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Loans"
+                            "type": "object",
+                            "properties": {
+                                "amount": {
+                                    "type": "integer"
+                                },
+                                "begin": {
+                                    "type": "string"
+                                },
+                                "perm_id": {
+                                    "type": "integer"
+                                },
+                                "person_id": {
+                                    "type": "integer"
+                                },
+                                "until": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -1094,7 +1172,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new location with the provided details",
+                "description": "Create a new location with the provided details. The ID is auto-generated and should not be included in the request body.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1107,12 +1185,29 @@ const docTemplate = `{
                 "summary": "Create a new location",
                 "parameters": [
                     {
-                        "description": "Location object",
+                        "description": "Location object (all fields are optional strings)",
                         "name": "location",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Location"
+                            "type": "object",
+                            "properties": {
+                                "building": {
+                                    "type": "string"
+                                },
+                                "campus": {
+                                    "type": "string"
+                                },
+                                "room": {
+                                    "type": "string"
+                                },
+                                "shelf": {
+                                    "type": "string"
+                                },
+                                "shelfunit": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -1191,7 +1286,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update an existing location by ID",
+                "description": "Update an existing location by ID. The ID in the request body is ignored; use the path parameter.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1211,12 +1306,29 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Location object",
+                        "description": "Location object (all fields are optional strings)",
                         "name": "location",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Location"
+                            "type": "object",
+                            "properties": {
+                                "building": {
+                                    "type": "string"
+                                },
+                                "campus": {
+                                    "type": "string"
+                                },
+                                "room": {
+                                    "type": "string"
+                                },
+                                "shelf": {
+                                    "type": "string"
+                                },
+                                "shelfunit": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -1328,7 +1440,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new person with the provided details",
+                "description": "Create a new person with the provided details. The ID is auto-generated and should not be included in the request body.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1341,12 +1453,26 @@ const docTemplate = `{
                 "summary": "Create a new person",
                 "parameters": [
                     {
-                        "description": "Person object",
+                        "description": "Person object (all fields are required strings: firstname, lastname, email, telephone)",
                         "name": "person",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Person"
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "type": "string"
+                                },
+                                "firstname": {
+                                    "type": "string"
+                                },
+                                "lastname": {
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -1477,7 +1603,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update an existing person by ID",
+                "description": "Update an existing person by ID. The ID in the request body is ignored; use the path parameter.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1497,12 +1623,26 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Person object",
+                        "description": "Person object (all fields are required strings: firstname, lastname, email, telephone)",
                         "name": "person",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Person"
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "type": "string"
+                                },
+                                "firstname": {
+                                    "type": "string"
+                                },
+                                "lastname": {
+                                    "type": "string"
+                                },
+                                "telephone": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
