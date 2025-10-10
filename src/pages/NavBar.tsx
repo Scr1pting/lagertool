@@ -1,23 +1,23 @@
-import React, { useState } from "react";
-import styles from "./NavBar.module.css";
-import BorrowButton from "./BorrowButton";
+import { useState } from 'react';
+import styles from './NavBar.module.css';
+import BorrowButton from './BorrowButton';
 
 export default function NavBar(){
-    const [query,setQuery] = useState("");
+    const [query,setQuery] = useState('');
 
     const handleSearch = () =>{
-        console.log("User searched for: ", query);
+        console.log('User searched for: ', query);
     }
     return(
         <div className = {styles.NavBar}>
             <input 
             className={styles.button}
             type="text" 
-            placeholder="Search..." 
+            placeholder="Search..."
             value={query} 
             onChange={(e) => setQuery(e.target.value)} 
             onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                 handleSearch();
                 }
             }

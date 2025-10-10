@@ -95,7 +95,7 @@ const Palette = ({ onDragStart }: PaletteProps) => (
               style={{ width: SHELF_WIDTH, height: definition.pixelHeight }}
               draggable
               onDragStart={onDragStart(itemType)}
-              role="button"
+              role='button'
               aria-label={definition.label}
               data-type={itemType}
             />
@@ -143,8 +143,8 @@ const Canvas = ({
         ref={dropZoneRef}
         onDragOver={onDragOver}
         onDrop={onDrop}
-        role="grid"
-        aria-label="Shelf builder workspace"
+        role='grid'
+        aria-label='Shelf builder workspace'
         style={dropZoneStyle}
       >
         <div className={styles.canvasViewport}>
@@ -204,7 +204,7 @@ const Canvas = ({
                       borderStyle: 'solid',
                       borderColor: '#cccccc',
                     }}
-                    role="button"
+                    role='button'
                     aria-grabbed={isDragging}
                     aria-label={`${definition.label} – height ratio ${piece.type === 'high' ? '0.8' : '0.4'}:1`}
                     data-type={piece.type}
