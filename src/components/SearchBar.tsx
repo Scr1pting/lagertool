@@ -1,26 +1,30 @@
 import { useState } from "react";
-import styles from "./NavBar.module.css";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
+import styles from "./NavBar.module.css";
 
+export default function SearchBar() {
+  const [query, setQuery] = useState("");
 
-export default function NavBar(){
-    const [query,setQuery] = useState("");
+  const handleSearch = () => {
+    console.log("User searched for: ", query);
+  };
 
-    const handleSearch = () =>{
-        console.log("User searched for: ", query);
-    }
-    return(
-        <input 
-        className={styles.button}
-        type="text" 
-        placeholder="Search..." 
-        value={query} 
-        onChange={(e) => setQuery(e.target.value)} 
+  return (
+    <div className={styles.searchWrapper}>
+      <HiOutlineMagnifyingGlass className={styles.searchIcon} aria-hidden="true" />
+      <input
+        className={styles.searchInput}
+        type="text"
+        placeholder="Search..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
-            if (e.key === "Enter") {
+          if (e.key === "Enter") {
             handleSearch();
-            }
-        }
-        }/>
-    )
+          }
+        }}
+        aria-label="Search inventory"
+      />
+    </div>
+  );
 }

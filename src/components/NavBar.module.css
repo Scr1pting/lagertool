@@ -33,6 +33,11 @@
   transform: translateY(0);
 }
 
+.borrowLabel {
+  line-height: 1;
+  font-weight: 600;
+}
+
 .placeholder {
   display: inline-flex;
   align-items: center;
@@ -44,4 +49,35 @@
   background-color: rgba(255, 255, 255, 0.12);
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+.searchWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  color: #6b7280;
+  pointer-events: none;
+  font-size: 1.1rem;
+}
+
+.searchInput {
+  min-width: 14rem;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+}
+
+.searchInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
