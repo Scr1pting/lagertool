@@ -94,3 +94,27 @@ func (h *Handler) GetExpiredConsumables(c *gin.Context) {
 
 	c.JSON(http.StatusOK, expired)
 }
+
+func (h *Handler) CreateItem(c *gin.Context) {
+	var item db.Item
+	if err := c.ShouldBindJSON(&item); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := h.DB.Model(&item).Insert()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, item)
+}
+
+func (h *Handler) UpdateItemAmount(c *gin.Context) {
+
+}
+
+func (h *Handler) MoveItem(c *gin.Context) {
+
+}
