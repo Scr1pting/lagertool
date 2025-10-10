@@ -1,15 +1,9 @@
 # --- Base image ---
-FROM node:18 AS base
+FROM node:20 AS base
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-
-# --- Development stage ---
-FROM base AS development
-ENV NODE_ENV=development
-EXPOSE 3000
-CMD ["npm", "start"]
 
 # --- Production build stage ---
 FROM base AS build
