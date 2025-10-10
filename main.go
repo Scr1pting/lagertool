@@ -28,9 +28,10 @@ import (
 // @schemes http
 
 func main() {
+	router := gin.Default()
 	dbConnection, err := db.NewDBConn()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("DBConnection failed: ", err)
 	}
 	defer func(db *pg.DB) {
 		err := db.Close()
