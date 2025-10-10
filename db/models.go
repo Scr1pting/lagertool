@@ -18,19 +18,7 @@ type Item struct {
 	tableName struct{} `pg:"item"`
 	ID        int      `json:"id" pg:"id,pk"`
 	Name      string   `json:"name" pg:"name"`
-}
-
-type Consumable struct {
-	tableName  struct{}  `pg:"consumable"`
-	ID         int       `json:"id" pg:"id,pk"`
-	Category   string    `json:"category,omitempty" pg:"category"`
-	ExpiryDate time.Time `json:"expiryDate,omitempty" pg:"expiryDate"`
-}
-
-type Permanent struct {
-	tableName struct{} `pg:"permanent"`
-	ID        int      `json:"id" pg:"id,pk"`
-	Category  string   `json:"category,omitempty" pg:"category"`
+	Category  string   `json:"category" pg:"category"`
 }
 
 type IsIn struct {
@@ -49,7 +37,7 @@ type Person struct {
 	Lastname  string   `json:"lastname" pg:"lastname"`
 	EMail     string   `json:"email" pg:"email"`
 	Telephone string   `json:"telephone" pg:"telephone"`
-	//Slack Information missing
+	// Slack Information missing
 }
 
 type Loans struct {
@@ -58,5 +46,8 @@ type Loans struct {
 	PersonId  int       `json:"person_id" pg:"person_id,fk"`
 	PermID    int       `json:"perm_id" pg:"perm_id,fk"`
 	Amount    int       `json:"amount" pg:"amount"`
-	Until     time.Time `json:"until" pg:"until"`
+	Begin     time.Time `json:"begin" pg:"begin"`
+	Until     time.Time `json:"until,omitempty" pg:"until"`
+	// Permanent items should never have an undefined due date.
+	// Consumables without a due date should periodically be subject to deletion.
 }
