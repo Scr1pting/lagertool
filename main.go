@@ -25,10 +25,26 @@ import (
 // @schemes http
 
 func main() {
-	db, _ := db.NewDBConn()
-	handler := api.NewHandler(db)
+	con, err := db.NewDBConn()
+	if err != nil {
+		log.Println("Fuck")
+	}
+	handler := api.NewHandler(con)
+	log.Println("Creating objects.")
+	strawberry := db.Item{Name: "Strawberry"}
+	pear := db.Item{Name: "Pear"}
+	bear := db.Item{Name: "Bear"}
+	err1 := handler.LocalCreateItem(&strawberry)
+	err2 := handler.LocalCreateItem(&bear)
+	err3 := handler.LocalCreateItem(&pear)
+	if err1 != nil && err2 != nil && err3 != nil {
+		log.Println("ERROR when creating Item")
+	}
 	ti, _ := handler.LocalGetAllItems()
-	sa := util.FindItemSearchTermsInDB(ti, "Beer")
+	for _, n := range ti {
+		log.Println(n.Name)
+	}
+	sa := util.FindItemSearchTermsInDB(ti, "Strawberry")
 	for _, s := range sa {
 		i, _ := handler.LocalSearchItems(s)
 		for _, v := range i {
