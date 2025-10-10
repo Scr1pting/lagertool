@@ -4,28 +4,29 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "your-password"
-	dbname   = "calhounio_demo"
-)
-
 func NewDBConn() (con *pg.DB, err error) {
-	address := fmt.Sprintf("%s:%s", "localhost", "5432")
+	fmt.Println("Initialising DB")
+	host := getEnv("DB_HOST", "localhost")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "postgres")
+	password := getEnv("DB_PASSWORD", "example")
+	database := getEnv("DB_NAME", "appdb")
+
+	address := fmt.Sprintf("%s:%s", host, port)
 	options := &pg.Options{
-		User:     "postgres",
-		Password: "12345678",
+		User:     user,
+		Password: password,
 		Addr:     address,
-		Database: "postgres",
+		Database: database,
 		PoolSize: 50,
 	}
+	fmt.Println("Connecting to database...")
 	con = pg.Connect(options)
 
 	// Test connection to Postgres
@@ -71,6 +72,13 @@ func InitDB(con *pg.DB) {
 		}
 	}
 
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
 
 func Close(con *pg.DB) {

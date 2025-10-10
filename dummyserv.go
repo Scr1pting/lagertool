@@ -4,9 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"lagertool.com/main/db"
 )
 
 func main() {
+	db.NewDBConn()
 	// Create a new Gin router
 	router := gin.Default()
 
