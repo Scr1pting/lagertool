@@ -27,6 +27,7 @@ func NewDBConn() (con *pg.DB, err error) {
 		PoolSize: 50,
 	}
 	fmt.Println("Connecting to database...")
+	fmt.Printf("%s:%s\n", host, port)
 	con = pg.Connect(options)
 
 	// Test connection to Postgres
