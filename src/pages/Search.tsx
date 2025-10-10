@@ -5,7 +5,15 @@ import DataTable from '@/components/DataTable';
 import type { ColumnDef } from '@tanstack/react-table';
 
 
-export const columns: ColumnDef<Payment>[] = [
+type InventoryItem = {
+  name: string;
+  shelf_name: string;
+  room_name: string;
+  building_name: string;
+  amount: number;
+};
+
+export const columns: ColumnDef<InventoryItem>[] = [
   {
     accessorKey: "name",
     header: "Name",
