@@ -30,6 +30,7 @@ import (
 func main() {
 	router := gin.Default()
 	dbConnection, err := db.NewDBConn()
+
 	if err != nil {
 		log.Fatal("DBConnection failed: ", err)
 	}
@@ -41,8 +42,6 @@ func main() {
 	}(dbConnection)
 
 	db.InitDB(dbConnection)
-
-	router := gin.Default()
 	api.SetupRoutes(router, dbConnection)
 
 	// Swagger endpoint
