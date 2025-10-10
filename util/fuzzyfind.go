@@ -27,10 +27,14 @@ func FindItemSearchTermsInDB(db []db.Item, s string) []string {
 			continue
 		}
 		if SufficientlySimilar(s, name, 2) {
-			result_sec = append(result_sec, name)
+			result_prim = append(result_prim, name)
 			continue
 		}
 		if SufficientlySimilar(s, name, 3) {
+			result_sec = append(result_sec, name)
+			continue
+		}
+		if SufficientlySimilar(s, name, 4) {
 			result_tert = append(result_tert, name)
 			continue
 		}
