@@ -1,0 +1,230 @@
+
+.wrapper {
+  --unit-width: 160px;
+  --unit-base-height: 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top right, #141414 0%, #060606 55%, #030303 100%);
+  color: #f5f5f5;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.palette {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  background: #0f0f0f;
+  border: none;
+  border-right: 1px solid #2a2a2a;
+  box-shadow: none;
+  position: relative;
+  height: 100%;
+  flex-shrink: 0;
+  align-self: stretch;
+  overflow-y: auto;
+}
+
+.paletteTitle {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fafafa;
+  letter-spacing: 0.02em;
+}
+
+.paletteHint {
+  margin: 0;
+  color: #a3a3a3;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.paletteList {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.paletteItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.paletteCaption {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #d4d4d4;
+}
+
+.board {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 32px 0 0;
+  min-height: calc(var(--unit-base-height) * 6 + 64px);
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.dropZone {
+  --floor-offset: 28px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: calc(var(--unit-base-height) * 6 + var(--floor-offset));
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.dropZone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0) 18%),
+    linear-gradient(270deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0) 18%);
+  background-repeat: no-repeat;
+  background-size: 18% 100%, 18% 100%;
+  background-position: left top, right top;
+  z-index: 0;
+}
+
+.dropZone::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--floor-offset);
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #d1d5db 15%, #d1d5db 85%, transparent 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.dropZone::-webkit-scrollbar {
+  height: 10px;
+}
+
+.dropZone::-webkit-scrollbar-thumb {
+  background: #2f2f2f;
+  border-radius: 0;
+}
+
+.piece {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0;
+  background: #1f1f1f;
+  border: 1px solid #cccccc;
+  cursor: grab;
+  user-select: none;
+  transition: opacity 0.16s ease, bottom 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.paletteShape {
+  position: relative;
+  background: #1f1f1f;
+  border: 1px solid #cccccc;
+}
+
+.canvasPiece {
+  position: absolute;
+}
+
+.piece:active {
+  cursor: grabbing;
+}
+
+.pieceDragging {
+  opacity: 0.35;
+  box-shadow: none;
+}
+
+.piecePoof {
+  animation: piece-poof 0.2s ease-out forwards;
+}
+
+@keyframes piece-poof {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+.boardEmpty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: #a3a3a3;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.boardEmptyText {
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.canvasViewport {
+  position: relative;
+  min-height: calc(var(--unit-base-height) * 6);
+  height: calc(100% - var(--floor-offset));
+  min-width: max(100%, var(--content-width));
+  overflow-y: auto;
+  overflow-x: visible;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin-bottom: var(--floor-offset);
+  scrollbar-width: thin;
+}
+
+.canvas {
+  position: relative;
+  min-height: calc(var(--unit-base-height) * 6);
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.canvas::after {
+  content: '';
+  position: absolute;
+  left: -64px;
+  right: -64px;
+  bottom: 0;
+  height: 1px;
+  background: transparent;
+}
+
