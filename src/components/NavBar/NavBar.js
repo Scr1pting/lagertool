@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./NavBar.module.css";
+import BorrowButton from "./BorrowButton/BorrowButton";
 
 export default function NavBar(){
     const [query,setQuery] = useState("");
@@ -20,7 +21,8 @@ export default function NavBar(){
                 handleSearch();
                 }
             }
-        }/>
+            }/>
+            <BorrowButton placeholderText="0"/>
         </div>
     )
 }
