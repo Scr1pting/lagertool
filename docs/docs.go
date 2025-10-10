@@ -1653,12 +1653,6 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
-                },
                 "room": {
                     "type": "string"
                 },
