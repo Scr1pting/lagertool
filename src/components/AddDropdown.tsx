@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./NavBar.module.css";
 import { Button } from "@/components/ui/button"
 import { GrAdd } from "react-icons/gr";

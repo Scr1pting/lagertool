@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styles from "./NavBar.module.css";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
 

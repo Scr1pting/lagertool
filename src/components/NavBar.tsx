@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styles from "./NavBar.module.css";
 import BorrowButton from "./BorrowButton";
 import AddDropdown from "./AddDropdown";
