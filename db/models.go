@@ -10,6 +10,8 @@ type Location struct {
 	Campus    string   `json:"campus,omitempty" pg:"campus"`
 	Building  string   `json:"building,omitempty" pg:"building"`
 	Room      string   `json:"room,omitempty" pg:"room"`
+	Shelf     string   `json:"shelf,omitempty" pg:"shelf"`
+	ShelfUnit string   `json:"shelfunit,omitempty pg"shelfunit"`
 	Lon       float64  `json:"latitude,omitempty" pg:"latitude"`
 	Lat       float64  `json:"longitude,omitempty" pg:"longitude"`
 }
@@ -49,7 +51,7 @@ type Person struct {
 	Lastname  string   `json:"lastname" pg:"lastname"`
 	EMail     string   `json:"email" pg:"email"`
 	Telephone string   `json:"telephone" pg:"telephone"`
-	//Slack Information missing
+	// Slack Information missing
 }
 
 type Loans struct {
