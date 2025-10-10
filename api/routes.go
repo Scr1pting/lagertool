@@ -23,21 +23,6 @@ func SetupRoutes(r *gin.Engine, db *pg.DB) {
 	r.PUT("/items/:id", h.UpdateItem)
 	r.DELETE("/items/:id", h.DeleteItem)
 
-	// Consumable endpoints
-	r.GET("/consumables", h.GetAllConsumables)
-	r.GET("/consumables/expired", h.GetExpiredConsumables)
-	r.GET("/consumables/:id", h.GetConsumableByID)
-	r.POST("/consumables", h.CreateConsumable)
-	r.PUT("/consumables/:id", h.UpdateConsumable)
-	r.DELETE("/consumables/:id", h.DeleteConsumable)
-
-	// Permanent endpoints
-	r.GET("/permanents", h.GetAllPermanents)
-	r.GET("/permanents/:id", h.GetPermanentByID)
-	r.POST("/permanents", h.CreatePermanent)
-	r.PUT("/permanents/:id", h.UpdatePermanent)
-	r.DELETE("/permanents/:id", h.DeletePermanent)
-
 	// Inventory (IsIn) endpoints
 	r.GET("/inventory", h.GetAllInventory)
 	r.GET("/inventory/location/:location_id", h.GetInventoryByLocation)
