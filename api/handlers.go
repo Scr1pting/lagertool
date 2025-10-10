@@ -22,7 +22,14 @@ func NewHandler(db *pg.DB) *Handler {
 // LOCATION HANDLERS
 // ============================================================================
 
-// GET /locations
+// GetAllLocations godoc
+// @Summary Get all locations
+// @Description Retrieve all locations from the database
+// @Tags locations
+// @Produce json
+// @Success 200 {array} db.Location
+// @Failure 500 {object} map[string]string
+// @Router /locations [get]
 func (h *Handler) GetAllLocations(c *gin.Context) {
 	var locations []db.Location
 	err := h.DB.Model(&locations).Select()
@@ -33,7 +40,16 @@ func (h *Handler) GetAllLocations(c *gin.Context) {
 	c.JSON(http.StatusOK, locations)
 }
 
-// GET /locations/:id
+// GetLocationByID godoc
+// @Summary Get location by ID
+// @Description Retrieve a specific location by its ID
+// @Tags locations
+// @Produce json
+// @Param id path int true "Location ID"
+// @Success 200 {object} db.Location
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /locations/{id} [get]
 func (h *Handler) GetLocationByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -51,7 +67,17 @@ func (h *Handler) GetLocationByID(c *gin.Context) {
 	c.JSON(http.StatusOK, loc)
 }
 
-// POST /locations
+// CreateLocation godoc
+// @Summary Create a new location
+// @Description Create a new location with the provided details
+// @Tags locations
+// @Accept json
+// @Produce json
+// @Param location body db.Location true "Location object"
+// @Success 201 {object} db.Location
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /locations [post]
 func (h *Handler) CreateLocation(c *gin.Context) {
 	var loc db.Location
 	if err := c.ShouldBindJSON(&loc); err != nil {
@@ -68,7 +94,18 @@ func (h *Handler) CreateLocation(c *gin.Context) {
 	c.JSON(http.StatusCreated, loc)
 }
 
-// PUT /locations/:id
+// UpdateLocation godoc
+// @Summary Update a location
+// @Description Update an existing location by ID
+// @Tags locations
+// @Accept json
+// @Produce json
+// @Param id path int true "Location ID"
+// @Param location body db.Location true "Location object"
+// @Success 200 {object} db.Location
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /locations/{id} [put]
 func (h *Handler) UpdateLocation(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -92,7 +129,16 @@ func (h *Handler) UpdateLocation(c *gin.Context) {
 	c.JSON(http.StatusOK, loc)
 }
 
-// DELETE /locations/:id
+// DeleteLocation godoc
+// @Summary Delete a location
+// @Description Delete a location by ID
+// @Tags locations
+// @Produce json
+// @Param id path int true "Location ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /locations/{id} [delete]
 func (h *Handler) DeleteLocation(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -114,7 +160,14 @@ func (h *Handler) DeleteLocation(c *gin.Context) {
 // ITEM HANDLERS
 // ============================================================================
 
-// GET /items
+// GetAllItems godoc
+// @Summary Get all items
+// @Description Retrieve all items from the database
+// @Tags items
+// @Produce json
+// @Success 200 {array} db.Item
+// @Failure 500 {object} map[string]string
+// @Router /items [get]
 func (h *Handler) GetAllItems(c *gin.Context) {
 	var items []db.Item
 	err := h.DB.Model(&items).Select()
@@ -125,7 +178,16 @@ func (h *Handler) GetAllItems(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
-// GET /items/:id
+// GetItemByID godoc
+// @Summary Get item by ID
+// @Description Retrieve a specific item by its ID
+// @Tags items
+// @Produce json
+// @Param id path int true "Item ID"
+// @Success 200 {object} db.Item
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /items/{id} [get]
 func (h *Handler) GetItemByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -143,7 +205,15 @@ func (h *Handler) GetItemByID(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
-// GET /items/search?name=<query>
+// SearchItems godoc
+// @Summary Search items by name
+// @Description Search for items with a case-insensitive name query
+// @Tags items
+// @Produce json
+// @Param name query string true "Item name to search for"
+// @Success 200 {array} db.Item
+// @Failure 500 {object} map[string]string
+// @Router /items/search [get]
 func (h *Handler) SearchItems(c *gin.Context) {
 	name := c.Query("name")
 
@@ -159,7 +229,17 @@ func (h *Handler) SearchItems(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
-// POST /items
+// CreateItem godoc
+// @Summary Create a new item
+// @Description Create a new item with the provided details
+// @Tags items
+// @Accept json
+// @Produce json
+// @Param item body db.Item true "Item object"
+// @Success 201 {object} db.Item
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /items [post]
 func (h *Handler) CreateItem(c *gin.Context) {
 	var item db.Item
 	if err := c.ShouldBindJSON(&item); err != nil {
