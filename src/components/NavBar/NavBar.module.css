@@ -1,0 +1,17 @@
+.NavBar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
+    justify-content: center;
+    height: 100vh;
+    gap: 20px;
+}
+
+.input {
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    outline: none;
+    width: 40%;            
+    padding: 10px 15px;  
+    font-size: 16px;
+}

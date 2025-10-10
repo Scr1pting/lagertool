@@ -8,9 +8,9 @@ export default function NavBar(){
         console.log("User searched for: ", query);
     }
     return(
-        <div className={styles.NavBar}>
-            <h1>React Search </h1>
+        <div className = {styles.NavBar}>
             <input 
+            className={styles.input}
             type="text" 
             placeholder="Search..." 
             value={query} 
