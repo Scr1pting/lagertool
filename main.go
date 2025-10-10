@@ -5,9 +5,27 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"lagertool.com/main/api"
 	"lagertool.com/main/db"
+	_ "lagertool.com/main/docs"
 )
+
+// @title Lagertool Inventory API
+// @version 1.0
+// @description Backend API for inventory management system tracking items, locations, and loans
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@lagertool.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8000
+// @BasePath /
+// @schemes http
 
 func main() {
 	dbConnection, err := db.NewDBConn()
@@ -21,10 +39,16 @@ func main() {
 		}
 	}(dbConnection)
 
+	db.InitDB(dbConnection)
+
 	router := gin.Default()
 	api.SetupRoutes(router, dbConnection)
 
+	// Swagger endpoint
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	log.Println("🚀 Server running on http://localhost:8000")
+	log.Println("📚 Swagger UI available at http://localhost:8000/swagger/index.html")
 	err = router.Run(":8000")
 	if err != nil {
 		return
