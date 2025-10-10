@@ -42,6 +42,7 @@ func main() {
 	}(dbConnection)
 
 	db.InitDB(dbConnection)
+	db.InsertBasicData(dbConnection)
 	api.SetupRoutes(router, dbConnection)
 
 	// Swagger endpoint
