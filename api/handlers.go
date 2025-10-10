@@ -494,7 +494,7 @@ func (h *Handler) UpdateInventory(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Inventory Record ID"
-// @Param amount body object-of-int true "New amount value"
+// @Param request body object{amount=int} true "New amount value"
 // @Success 200 {object} db.IsIn
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string

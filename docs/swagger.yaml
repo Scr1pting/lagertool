@@ -1,5 +1,18 @@
 basePath: /
 definitions:
+  db.IsIn:
+    properties:
+      amount:
+        type: integer
+      id:
+        type: integer
+      item_id:
+        type: integer
+      location_id:
+        type: integer
+      note:
+        type: string
+    type: object
   db.Item:
     properties:
       category:
@@ -7,6 +20,21 @@ definitions:
       id:
         type: integer
       name:
+        type: string
+    type: object
+  db.Loans:
+    properties:
+      amount:
+        type: integer
+      begin:
+        type: string
+      id:
+        type: integer
+      perm_id:
+        type: integer
+      person_id:
+        type: integer
+      until:
         type: string
     type: object
   db.Location:
@@ -28,6 +56,19 @@ definitions:
       shelfunit:
         type: string
     type: object
+  db.Person:
+    properties:
+      email:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      telephone:
+        type: string
+    type: object
 host: localhost:8000
 info:
   contact:
@@ -42,6 +83,270 @@ info:
   title: Lagertool Inventory API
   version: "1.0"
 paths:
+  /inventory:
+    get:
+      description: Retrieve all item-location inventory records from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.IsIn'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all inventory records
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      description: Create a new inventory record (link an item to a location with
+        an amount)
+      parameters:
+      - description: Inventory record object
+        in: body
+        name: inventory
+        required: true
+        schema:
+          $ref: '#/definitions/db.IsIn'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.IsIn'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new inventory record
+      tags:
+      - inventory
+  /inventory/{id}:
+    delete:
+      description: Delete an inventory record by ID
+      parameters:
+      - description: Inventory Record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete an inventory record
+      tags:
+      - inventory
+    get:
+      description: Retrieve a specific inventory record by its ID
+      parameters:
+      - description: Inventory Record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.IsIn'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get inventory record by ID
+      tags:
+      - inventory
+    put:
+      consumes:
+      - application/json
+      description: Update an existing inventory record by ID
+      parameters:
+      - description: Inventory Record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Inventory record object
+        in: body
+        name: inventory
+        required: true
+        schema:
+          $ref: '#/definitions/db.IsIn'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.IsIn'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an inventory record
+      tags:
+      - inventory
+  /inventory/{id}/amount:
+    patch:
+      consumes:
+      - application/json
+      description: Partially update the amount of an inventory record by ID
+      parameters:
+      - description: Inventory Record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New amount value
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            amount:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.IsIn'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update inventory amount
+      tags:
+      - inventory
+  /inventory/item/{item_id}:
+    get:
+      description: Retrieve all inventory records for a specific item
+      parameters:
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.IsIn'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get inventory records by item ID
+      tags:
+      - inventory
+  /inventory/location/{location_id}:
+    get:
+      description: Retrieve all inventory records for a specific location
+      parameters:
+      - description: Location ID
+        in: path
+        name: location_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.IsIn'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get inventory records by location ID
+      tags:
+      - inventory
   /items:
     get:
       description: Retrieve all items from the database
@@ -97,6 +402,38 @@ paths:
       tags:
       - items
   /items/{id}:
+    delete:
+      description: Delete an item by ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete an item
+      tags:
+      - items
     get:
       description: Retrieve a specific item by its ID
       parameters:
@@ -127,6 +464,44 @@ paths:
       summary: Get item by ID
       tags:
       - items
+    put:
+      consumes:
+      - application/json
+      description: Update an existing item by ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Item object
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/db.Item'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Item'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an item
+      tags:
+      - items
   /items/search:
     get:
       description: Search for items with a case-insensitive name query
@@ -154,6 +529,250 @@ paths:
       summary: Search items by name
       tags:
       - items
+  /loans:
+    get:
+      description: Retrieve all loan records from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Loans'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all loans
+      tags:
+      - loans
+    post:
+      consumes:
+      - application/json
+      description: Create a new loan record
+      parameters:
+      - description: Loan record object
+        in: body
+        name: loan
+        required: true
+        schema:
+          $ref: '#/definitions/db.Loans'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.Loans'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new loan record
+      tags:
+      - loans
+  /loans/{id}:
+    delete:
+      description: Delete a loan record by ID
+      parameters:
+      - description: Loan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a loan record
+      tags:
+      - loans
+    get:
+      description: Retrieve a specific loan record by its ID
+      parameters:
+      - description: Loan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Loans'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get loan by ID
+      tags:
+      - loans
+    put:
+      consumes:
+      - application/json
+      description: Update an existing loan record by ID
+      parameters:
+      - description: Loan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Loan object
+        in: body
+        name: loan
+        required: true
+        schema:
+          $ref: '#/definitions/db.Loans'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Loans'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a loan record
+      tags:
+      - loans
+  /loans/overdue:
+    get:
+      description: Retrieve all loan records where the return date (`until`) is in
+        the past
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Loans'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all overdue loans
+      tags:
+      - loans
+  /loans/permanent/{perm_id}:
+    get:
+      description: Retrieve all loan records associated with a specific permanent
+        item
+      parameters:
+      - description: Permanent Item ID
+        in: path
+        name: perm_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Loans'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get loans by permanent item ID
+      tags:
+      - loans
+  /loans/person/{person_id}:
+    get:
+      description: Retrieve all loan records associated with a specific person
+      parameters:
+      - description: Person ID
+        in: path
+        name: person_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Loans'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get loans by person ID
+      tags:
+      - loans
   /locations:
     get:
       description: Retrieve all locations from the database
@@ -309,6 +928,196 @@ paths:
       summary: Update a location
       tags:
       - locations
+  /persons:
+    get:
+      description: Retrieve all persons from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Person'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all persons
+      tags:
+      - persons
+    post:
+      consumes:
+      - application/json
+      description: Create a new person with the provided details
+      parameters:
+      - description: Person object
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/db.Person'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.Person'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new person
+      tags:
+      - persons
+  /persons/{id}:
+    delete:
+      description: Delete a person by ID
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a person
+      tags:
+      - persons
+    get:
+      description: Retrieve a specific person by their ID
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Person'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get person by ID
+      tags:
+      - persons
+    put:
+      consumes:
+      - application/json
+      description: Update an existing person by ID
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Person object
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/db.Person'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Person'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a person
+      tags:
+      - persons
+  /persons/search:
+    get:
+      description: Search for persons by email, firstname, or lastname (case-insensitive
+        partial match)
+      parameters:
+      - description: Email query for search
+        in: query
+        name: email
+        type: string
+      - description: First name query for search
+        in: query
+        name: firstname
+        type: string
+      - description: Last name query for search
+        in: query
+        name: lastname
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Person'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search persons
+      tags:
+      - persons
 schemes:
 - http
 swagger: "2.0"
