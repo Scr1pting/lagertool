@@ -20,7 +20,7 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             # Navigate to app directory
-            cd /home/viscon/deployment/frontend
+            cd /home/viscon/frontend || mkdir -p /home/viscon/frontend && cd /home/viscon/frontend
             
             # Pull latest code from main branch
             if [ -d .git ]; then
@@ -31,14 +31,12 @@ jobs:
               echo "Cloning repository..."
               git clone https://github.com/${{ github.repository }} .
             fi
-
-            cd /home/viscon/deployment
             
             # Stop existing containers
             docker compose down
             
             # Build and start containers
-            docker compose up -d --build frontend
+            docker compose up -d --build
             
             # Clean up old images
             docker image prune -af
