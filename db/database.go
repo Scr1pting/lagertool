@@ -77,13 +77,6 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-}
-
 func Close(con *pg.DB) {
 	if con != nil {
 		err := con.Close()
