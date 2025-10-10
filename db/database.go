@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 const (
@@ -38,10 +39,45 @@ func NewDBConn() (con *pg.DB, err error) {
 }
 
 func InitDB(con *pg.DB) {
+	dbConn, err := NewDBConn()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func(dbConn *pg.DB) {
+		err := dbConn.Close()
+		if err != nil {
+
+		}
+	}(dbConn)
+
+	// Create tables
+	models := []interface{}{
+		(*Location)(nil),
+		(*Item)(nil),
+		(*Consumable)(nil),
+		(*Permanent)(nil),
+		(*IsIn)(nil),
+		(*Person)(nil),
+		(*Loans)(nil),
+	}
+
+	for _, model := range models {
+		err := dbConn.Model(model).CreateTable(&orm.CreateTableOptions{
+			IfNotExists: true,
+		})
+		if err != nil {
+			log.Fatalf("Error creating table for %T: %v", model, err)
+		}
+	}
+
 }
 
 func Close(con *pg.DB) {
 	if con != nil {
-		con.Close()
+		err := con.Close()
+		if err != nil {
+			return
+		}
 	}
 }
