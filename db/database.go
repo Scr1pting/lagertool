@@ -48,7 +48,6 @@ func InitDB(con *pg.DB) {
 	defer func(dbConn *pg.DB) {
 		err := dbConn.Close()
 		if err != nil {
-
 		}
 	}(dbConn)
 
@@ -56,8 +55,6 @@ func InitDB(con *pg.DB) {
 	models := []interface{}{
 		(*Location)(nil),
 		(*Item)(nil),
-		(*Consumable)(nil),
-		(*Permanent)(nil),
 		(*IsIn)(nil),
 		(*Person)(nil),
 		(*Loans)(nil),
@@ -71,7 +68,6 @@ func InitDB(con *pg.DB) {
 			log.Fatalf("Error creating table for %T: %v", model, err)
 		}
 	}
-
 }
 
 func getEnv(key, defaultValue string) string {
