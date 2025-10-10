@@ -1,6 +1,6 @@
-import React from "react";
-import styles from "./NavBar.module.css";
-export default function BorrowButton({ placeholderText = "--" }) {
+import styles from './NavBar.module.css';
+
+export default function BorrowButton({ placeholderText = '--' }) {
   return (
     <button type="button" className={styles.button}>
       <span className={styles.borrowLabel}>Borrow</span>
