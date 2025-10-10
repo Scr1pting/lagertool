@@ -3,13 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/gin-gonic/gin"
-	"github.com/go-pg/pg/v10"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"lagertool.com/main/api"
 	"lagertool.com/main/db"
 	_ "lagertool.com/main/docs"
+	"lagertool.com/main/util"
 )
 
 // @title Lagertool Inventory API
@@ -28,29 +25,15 @@ import (
 // @schemes http
 
 func main() {
-	router := gin.Default()
-	dbConnection, err := db.NewDBConn()
-
-	if err != nil {
-		log.Fatal("DBConnection failed: ", err)
-	}
-	defer func(db *pg.DB) {
-		err := db.Close()
-		if err != nil {
-			log.Fatal(err)
+	db, _ := db.NewDBConn()
+	handler := api.NewHandler(db)
+	ti, _ := handler.LocalGetAllItems()
+	sa := util.FindItemSearchTermsInDB(ti, "Beer")
+	for _, s := range sa {
+		i, _ := handler.LocalSearchItems(s)
+		for _, v := range i {
+			log.Println("%d : %s", v.ID, v.Name)
 		}
-	}(dbConnection)
 
-	db.InitDB(dbConnection)
-	api.SetupRoutes(router, dbConnection)
-
-	// Swagger endpoint
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	log.Println("🚀 Server running on http://localhost:8000")
-	log.Println("📚 Swagger UI available at http://localhost:8000/swagger/index.html")
-	err = router.Run(":8000")
-	if err != nil {
-		return
 	}
 }
