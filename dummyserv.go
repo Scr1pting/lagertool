@@ -20,26 +20,6 @@ func main() {
 		})
 	})
 
-	// Define another route for a different endpoint
-	router.GET("/api/message", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "This is an API endpoint with a dummy message!",
-			"data": gin.H{
-				"id":      1,
-				"content": "Dummy content for demonstration",
-				"author":  "Gin Server",
-			},
-		})
-	})
-
-	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "healthy",
-			"service": "dummy-server-test2",
-		})
-	})
-
 	// Start the server on port 8000
 	router.Run(":8000")
 }
