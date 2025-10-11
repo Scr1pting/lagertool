@@ -164,7 +164,7 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 	channelID := s.ChannelID
 
 	session := &slack1.BorrowSession{
-		Stage:        "start",
+		Stage:        "awaiting_item",
 		GroupChannel: channelID, // e.g., from SlashCommand or event.Channel
 	}
 	slack1.Sessions[userID] = session
