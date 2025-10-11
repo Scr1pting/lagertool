@@ -157,6 +157,7 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 
 	s, err := slack.SlashCommandParse(c.Request)
 	if err != nil {
+		log.Println("Error parsing request:", err)
 		c.String(http.StatusInternalServerError, "parse error")
 		return
 	}
