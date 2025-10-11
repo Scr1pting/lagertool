@@ -326,7 +326,7 @@ export default function PersonHistoryPage() {
                 activeLoans.map((entry) => {
                   const item = itemsById[entry.item_id]
                   return (
-                    <tr key={`active-${entry.id}`} className="bg-amber-50/70">
+                    <tr key={`active-${entry.id}`} className="">
                       <td className="px-6 py-4 text-sm">
                         <div className="font-medium">
                           <Link
@@ -414,7 +414,7 @@ export default function PersonHistoryPage() {
                   return (
                     <tr
                       key={entry.id}
-                      className={!entry.returned ? "bg-amber-50/70" : undefined}
+                      className={!entry.returned ? "" : undefined}
                     >
                       <td className="px-6 py-4 text-sm">
                         <div className="font-medium">

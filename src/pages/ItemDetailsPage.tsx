@@ -918,7 +918,7 @@ export default function ItemDetailsPage() {
                   return (
                     <tr
                       key={entry.id}
-                      className={!entry.returned ? "bg-amber-50/70" : undefined}
+                      className={!entry.returned ? "" : undefined}
                     >
                       <td className="px-6 py-4 text-sm">
                         <div className="font-medium">
