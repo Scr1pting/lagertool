@@ -100,6 +100,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173")
+	log.Println("⚠️ Remember to change StatusTemporaryRedirect to domain URI when deploying on VM.")
 	// uncomment for deployment
 	// c.Redirect(http.StatusTemporaryRedirect, "http://05.hackathon.ethz.ch")
 }
