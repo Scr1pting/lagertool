@@ -87,3 +87,4 @@ const Canvas = ({ columns }: { columns : ShelfColumn[] }) => {
 };
 
 export default Canvas;
+

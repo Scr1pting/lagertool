@@ -3,8 +3,8 @@
   display: flex;
   align-items: stretch;
   justify-content: center;
-  padding: 32px;
   box-sizing: border-box;
+  overflow-x: scroll;
 }
 
 .workspace {
@@ -13,10 +13,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 24px;
+  gap: 0;
   min-height: 420px;
-  padding: 32px;
-  border-radius: 16px;
 }
 
 .columnsArea {
@@ -26,14 +24,14 @@
   justify-content: center;
   align-items: flex-end;
   gap: 0;
-  min-height: 360px;
+  min-height: 100%;
 }
 
 .edgeDropZone {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 96px;
+  width: max(100%, 180px);
   pointer-events: none;
 }
 
@@ -78,7 +76,6 @@
   align-items: stretch;
   gap: 0;
   padding: 0;
-  border-radius: 12px;
   box-sizing: border-box;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   min-height: 360px;

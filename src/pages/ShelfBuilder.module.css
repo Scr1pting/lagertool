@@ -8,5 +8,5 @@
   background: radial-gradient(circle at top right, #141414 0%, #060606 55%, #030303 100%);
   color: #f5f5f5;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-x: hidden;
 }

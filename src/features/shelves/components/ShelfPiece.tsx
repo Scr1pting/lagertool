@@ -1,5 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
+import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes } from 'react';
 
 import { type ShelfItemDefinition } from '../types/shelf';
@@ -28,7 +28,6 @@ interface ShelfPieceProps extends HTMLAttributes<HTMLDivElement> {
   itemDef: ShelfItemDefinition,
   draggableId: string;
   dragData: DragItemData;
-  applyTransform?: boolean;
 }
 
 
@@ -36,10 +35,9 @@ function ShelfPiece({
   itemDef,
   draggableId,
   dragData,
-  applyTransform = true,
   ...divProps
 }: ShelfPieceProps) {
-  const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: draggableId,
     data: dragData,
   });
@@ -47,25 +45,27 @@ function ShelfPiece({
   const { style, className: incomingClassName, ...restDivProps } = divProps;
   const combinedStyle: CSSProperties = { ...(style ?? {}) };
 
-  if (applyTransform && transform) {
-    combinedStyle.transform = CSS.Transform.toString(transform);
-  }
-
   const combinedClassName = [incomingClassName, styles.pieceWrapper, isDragging ? styles.pieceDragging : ""]
     .filter(Boolean)
     .join(' ');
 
   return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
+    <motion.div
+      layout
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       style={combinedStyle}
       className={combinedClassName}
-      {...restDivProps}
     >
-      <ShelfPieceInner itemDef={itemDef} />
-    </div>
+      <div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        {...restDivProps}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <ShelfPieceInner itemDef={itemDef} />
+      </div>
+    </motion.div>
   );
 };
 

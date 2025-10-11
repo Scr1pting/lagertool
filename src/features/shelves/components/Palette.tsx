@@ -19,13 +19,13 @@ function Palette() {
 
       <div className={styles.paletteList}>
         {catalogEntries.map(([itemType, itemDef]) => (
-          <div className={styles.paletteItem}>
+          <div key={itemType} className={styles.paletteItem}>
             <ShelfPiece
               itemDef={itemDef}
               draggableId={`palette-${itemType}`}
               dragData={{ source: 'palette', itemType }}
-              applyTransform={false}
-              data-type={itemType} />
+              data-type={itemType}
+            />
             <span className={styles.paletteCaption}>{ITEM_CATALOG[itemType].label}</span>
           </div>
         ))}

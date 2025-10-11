@@ -12,7 +12,7 @@
   height: 100%;
   flex-shrink: 0;
   align-self: stretch;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .paletteTitle {
