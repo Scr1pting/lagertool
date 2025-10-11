@@ -958,6 +958,8 @@ func (h *Handler) DeleteLoan(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "loan deleted successfully"})
 }
 
+// ============================== Scripts
+// searches for similar strings in DB.Model([]db.Item)
 func (h *Handler) Search(c *gin.Context) {
 	search_term := c.Query("search_term")
 	if search_term == "" {
