@@ -10,12 +10,12 @@ import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT } from '../util/shelfUnits';
 
 
 export function ShelfElementViewInner(
-  { itemDef, children }:
-  { itemDef: ShelfElementDefinition, children?: ReactNode }
+  { itemDef, classes, children }:
+  { itemDef: ShelfElementDefinition, classes?: string; children?: ReactNode }
 ) {
   return (
     <div
-      className={styles.piece}
+      className={[styles.element, classes].filter(Boolean).join(" ")}
       aria-label={itemDef.label}
       style={{
           width: ELEMENT_WIDTH,
@@ -49,7 +49,7 @@ function ShelfElementView({
   const { style, className: incomingClassName, ...restDivProps } = divProps;
   const combinedStyle: CSSProperties = { ...(style ?? {}) };
 
-  const combinedClassName = [incomingClassName, styles.pieceWrapper, isDragging ? styles.pieceDragging : ""]
+  const combinedClassName = [incomingClassName, styles.pieceWrapper, isDragging ? styles.elementDragging : ""]
     .filter(Boolean)
     .join(' ');
 

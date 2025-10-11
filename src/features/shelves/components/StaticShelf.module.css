@@ -1,9 +1,4 @@
-.elementWrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.numItem {
+.numElements {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -20,10 +15,10 @@
 
 .idElement {
   position: absolute;
-  bottom: 3px;
-  right: 3px;
+  bottom: 5px;
+  right: 5px;
   color: #ccc;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
-  font-size: 0.65rem;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
