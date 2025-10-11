@@ -1079,3 +1079,11 @@ func (h *Handler) GetLoansWithPerson(c *gin.Context) {
 
 	c.JSON(200, results)
 }
+
+func (h *Handler) BorrowCounter(c *gin.Context) {
+	result, err := h.DB.Model(&db.Loans{}).Count()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count loans: " + err.Error()})
+	}
+	c.JSON(http.StatusOK, result)
+}

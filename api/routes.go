@@ -54,4 +54,5 @@ func SetupRoutes(r *gin.Engine, db *pg.DB) {
 	// Searches
 	r.GET("/search", h.Search)
 	r.GET("/borrows", h.GetLoansWithPerson)
+	r.GET("/borrows_count", h.BorrowCounter)
 }
