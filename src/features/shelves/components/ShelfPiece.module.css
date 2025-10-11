@@ -1,0 +1,23 @@
+.pieceWrapper {
+  cursor: grab;
+}
+
+.pieceWrapper:active {
+  cursor: grabbing;
+}
+
+.piece {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0;
+  background: #1f1f1f;
+  border: 1px solid #cccccc;
+  user-select: none;
+  transition: opacity 0.16s ease;
+  box-sizing: border-box;
+}
+
+.pieceDragging {
+  opacity: 0.45;
+}

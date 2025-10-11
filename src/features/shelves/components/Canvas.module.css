@@ -1,0 +1,89 @@
+.board {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.workspace {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 24px;
+  min-height: 420px;
+  padding: 32px;
+  border-radius: 16px;
+}
+
+.columnsArea {
+  position: relative;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+  min-height: 360px;
+}
+
+.edgeDropZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 96px;
+  pointer-events: none;
+}
+
+.edgeDropZoneLeft {
+  left: 0;
+  transform: translateX(-50%);
+}
+
+.edgeDropZoneRight {
+  right: 0;
+  transform: translateX(50%);
+}
+
+.emptyDropZone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.boardEmpty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #a3a3a3;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.boardEmptyText {
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-height: 360px;
+}
+
+.columnActive {
+  background-color: linear-gradient(to bottom, white, transparent);
+}
