@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Link } from "react-router-dom";
 
 export default function AddDropdown() {
   return (
@@ -20,9 +21,11 @@ export default function AddDropdown() {
           <DropdownMenuItem>
             Shelf Builder
           </DropdownMenuItem>
+          <Link to="/borrow">
           <DropdownMenuItem>
             Borrow
           </DropdownMenuItem>
+          </Link>
           <DropdownMenuItem>
             Add
           </DropdownMenuItem>
