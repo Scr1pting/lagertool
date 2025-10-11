@@ -8,9 +8,9 @@ import styles from './Home.module.css';
 function Home() {
   const { status, data: shelves, error } = useShelves();
 
-  if (status === "loading") return <p>Loading shelves…</p>;
   if (status === "error") return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
-  if (!shelves || shelves.length === 0) return <p>No shelves yet.</p>;
+  if (status === "success" && (!shelves || shelves.length === 0)) return <p>No shelves yet.</p>;
+  else if (!shelves || shelves.length === 0) return <></>;
 
   const firstShelf: Shelf = shelves[2];
 
