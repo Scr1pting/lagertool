@@ -13,25 +13,29 @@ func SufficientlySimilar(s1 string, s2 string, degree int) bool {
 	return false
 }
 
-func FindItemSearchTermsInDB(db []db.Item, s string) []string {
-	result_prim := []string{}
-	result_sec := []string{}
-	result_tert := []string{}
-	for _, v := range db {
+func FindItemSearchTermsInDB(table []db.Item, s string) []db.Item {
+	result_prim := []db.Item{}
+	result_sec := []db.Item{}
+	result_tert := []db.Item{}
+	for _, v := range table {
 		name := v.Name
 		if name == s {
-			return []string{name}
+			return []db.Item{v}
 		}
 		if SufficientlySimilar(s, name, 1) {
-			result_prim = append(result_prim, name)
+			result_prim = append(result_prim, v)
 			continue
 		}
 		if SufficientlySimilar(s, name, 2) {
-			result_sec = append(result_sec, name)
+			result_prim = append(result_prim, v)
 			continue
 		}
 		if SufficientlySimilar(s, name, 3) {
-			result_tert = append(result_tert, name)
+			result_sec = append(result_sec, v)
+			continue
+		}
+		if SufficientlySimilar(s, name, 4) {
+			result_tert = append(result_tert, v)
 			continue
 		}
 
