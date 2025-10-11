@@ -5,6 +5,7 @@ import RestrictedSearch, {
   type RestrictedSearchItem,
 } from "@/components/RestrictedSearch"
 import { Button } from "@/components/ui/button"
+import PersonLink from "@/components/PersonLink"
 import {
   normalizePerson,
   personDisplayName,
@@ -346,7 +347,7 @@ export default function BorrowPage() {
 
             rawResults.map(normalizePerson).forEach(upsertPerson)
           } catch (error) {
-            if (process.env.NODE_ENV !== "production") {
+            if (import.meta.env.DEV) {
               console.error("Person search failed:", error)
             }
           }
@@ -788,9 +789,11 @@ export default function BorrowPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <div className="font-medium">
-                          {personDisplayName(borrower)}
-                        </div>
+                        <PersonLink
+                          personId={loan.person_id}
+                          person={borrower}
+                          className="font-medium"
+                        />
                         <div className="text-xs text-muted-foreground">
                           ID: {loan.person_id}
                         </div>

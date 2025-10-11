@@ -1,12 +1,10 @@
 "use client"
 
 import * as React from "react"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import {
-  normalizePerson,
-  personDisplayName,
-  type NormalizedPerson,
-} from "@/lib/person"
+import PersonLink from "@/components/PersonLink"
+import { normalizePerson, type NormalizedPerson } from "@/lib/person"
 
 type LoanRecord = {
   id: number
@@ -290,17 +288,22 @@ export default function BorrowedPage() {
                       }
                     >
                       <td className="px-6 py-4 text-sm">
-                        <div className="font-medium leading-tight">
+                        <Link
+                          to={`/items/${loan.item_id}`}
+                          className="block font-medium leading-tight text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
                           {loan.item?.name ?? `Item #${loan.item_id}`}
-                        </div>
+                        </Link>
                         <div className="text-xs text-muted-foreground">
                           Category: {loan.item?.category ?? "—"}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <div className="font-medium leading-tight">
-                          {personDisplayName(loan.person)}
-                        </div>
+                        <PersonLink
+                          personId={loan.person_id}
+                          person={loan.person}
+                          className="font-medium leading-tight"
+                        />
                         <div className="text-xs text-muted-foreground">
                           Person ID: {loan.person_id}
                         </div>

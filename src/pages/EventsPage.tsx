@@ -3,6 +3,7 @@
 import * as React from "react"
 import { type ColumnDef } from "@tanstack/react-table"
 import DataTable from "@/components/DataTable"
+import PersonLink from "@/components/PersonLink"
 import RestrictedSearch, {
   type RestrictedSearchItem,
 } from "@/components/RestrictedSearch"
@@ -1016,10 +1017,20 @@ export default function EventsPage() {
       {
         header: "Borrower",
         accessorKey: "person",
-        cell: ({ row }) =>
-          row.original.person
+        cell: ({ row }) => {
+          const label = row.original.person
             ? personDisplayName(row.original.person)
-            : `Person #${row.original.person_id}`,
+            : `Person #${row.original.person_id}`
+          return (
+            <PersonLink
+              personId={row.original.person_id}
+              person={row.original.person}
+              className="text-sm font-medium"
+            >
+              {label}
+            </PersonLink>
+          )
+        },
       },
       {
         header: "Amount",
@@ -1373,11 +1384,15 @@ export default function EventsPage() {
                         className="flex items-center justify-between rounded-md border px-3 py-2 text-sm shadow-sm"
                       >
                         <div className="flex flex-col">
-                          <span className="font-medium">
+                          <PersonLink
+                            personId={helper.person_id}
+                            person={helper.person}
+                            className="font-medium"
+                          >
                             {helper.person
                               ? personDisplayName(helper.person)
                               : `Person #${helper.person_id}`}
-                          </span>
+                          </PersonLink>
                           {helper.person?.slackId ? (
                             <span className="text-xs text-muted-foreground">
                               Slack: {helper.person.slackId}

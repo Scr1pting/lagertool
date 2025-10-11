@@ -34,6 +34,7 @@ type SearchResult =
       id: string
       label: string
       meta?: string
+      personId?: number
     }
 
 interface SearchBarProps {
@@ -135,11 +136,16 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
             const label = [firstname, lastname].filter(Boolean).join(" ")
             if (!label) return
             const meta = person.slack_id ? `Slack: ${person.slack_id}` : undefined
+            const numericId =
+              typeof person.id === "number" && Number.isFinite(person.id)
+                ? person.id
+                : undefined
             nextResults.push({
               kind: "person",
-              id: `person-${person.id ?? label}`,
+              id: `person-${numericId ?? label}`,
               label,
               meta,
+              personId: numericId,
             })
           })
 
@@ -194,7 +200,12 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
       if (activeIndex >= 0 && results[activeIndex]) {
         const selected = results[activeIndex]
         setQuery(selected.label)
-        navigateToSearch(selected.label)
+        if (selected.kind === "person" && typeof selected.personId === "number") {
+          navigate(`/persons/${selected.personId}`)
+          closeDropdown()
+        } else {
+          navigateToSearch(selected.label)
+        }
       } else {
         navigateToSearch(trimmedQuery)
       }
@@ -212,7 +223,7 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
   const shouldRenderPanel =
     isOpen &&
     trimmedQuery.length >= MIN_QUERY_LENGTH &&
-    (loading || error || results.length > 0)
+    (loading || Boolean(error) || results.length > 0)
 
   return (
     <div className={styles.searchWrapper} ref={containerRef}>
@@ -269,7 +280,12 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
                 onMouseDown={(event) => {
                   event.preventDefault()
                   setQuery(result.label)
-                  navigateToSearch(result.label)
+                  if (result.kind === "person" && typeof result.personId === "number") {
+                    navigate(`/persons/${result.personId}`)
+                    closeDropdown()
+                  } else {
+                    navigateToSearch(result.label)
+                  }
                 }}
               >
                 <span className={styles.searchResultLabel}>{result.label}</span>

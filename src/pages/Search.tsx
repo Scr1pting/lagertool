@@ -56,7 +56,7 @@ function Search() {
 
 export default Search */
 
-import React, { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
 import DataTable from "../components/DataTable"

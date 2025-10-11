@@ -66,6 +66,7 @@ export default function PersonHistoryPage() {
   }, [params.personId])
 
   const [person, setPerson] = React.useState<NormalizedPerson | null>(null)
+  const [activeLoans, setActiveLoans] = React.useState<LoanHistoryEntry[]>([])
   const [history, setHistory] = React.useState<LoanHistoryEntry[]>([])
   const [itemsById, setItemsById] = React.useState<Record<number, ItemRecord>>({})
 
@@ -78,14 +79,20 @@ export default function PersonHistoryPage() {
     setError(null)
 
     try {
-      const [personRes, historyRes, itemsRes] = await Promise.all([
+      const [personRes, activeRes, historyRes, itemsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/persons/${personId}`),
+        fetch(`${API_BASE_URL}/loans/person/${personId}`),
         fetch(`${API_BASE_URL}/loans/person/${personId}/history`),
         fetch(`${API_BASE_URL}/items`),
       ])
 
       if (!personRes.ok) {
         throw new Error(`Failed to load person (HTTP ${personRes.status})`)
+      }
+      if (!activeRes.ok) {
+        throw new Error(
+          `Failed to load borrowed items (HTTP ${activeRes.status})`
+        )
       }
       if (!historyRes.ok) {
         throw new Error(
@@ -97,6 +104,7 @@ export default function PersonHistoryPage() {
       }
 
       const personJson = await personRes.json()
+      const activeJson: unknown = await activeRes.json()
       const historyJson: unknown = await historyRes.json()
       const itemsJson: unknown = await itemsRes.json()
 
@@ -105,6 +113,9 @@ export default function PersonHistoryPage() {
         throw new Error("Person payload was malformed.")
       }
 
+      const parsedActive: LoanHistoryEntry[] = Array.isArray(activeJson)
+        ? (activeJson as LoanHistoryEntry[])
+        : []
       const parsedHistory: LoanHistoryEntry[] = Array.isArray(historyJson)
         ? (historyJson as LoanHistoryEntry[])
         : []
@@ -120,6 +131,22 @@ export default function PersonHistoryPage() {
         },
         {}
       )
+
+      const currentLoans = parsedActive
+        .map((entry) => ({
+          ...entry,
+          returned: Boolean(entry.returned),
+          returned_at: entry.returned_at ?? null,
+        }))
+        .filter((entry) => !entry.returned)
+        .sort((a, b) => {
+          const aTime = new Date(a.until).getTime()
+          const bTime = new Date(b.until).getTime()
+          if (Number.isNaN(aTime) && Number.isNaN(bTime)) return 0
+          if (Number.isNaN(aTime)) return 1
+          if (Number.isNaN(bTime)) return -1
+          return aTime - bTime
+        })
 
       const sortedHistory = parsedHistory
         .map((entry) => ({
@@ -137,6 +164,7 @@ export default function PersonHistoryPage() {
         })
 
       setPerson(normalizedPerson)
+      setActiveLoans(currentLoans)
       setHistory(sortedHistory)
       setItemsById(itemsMap)
     } catch (caught) {
@@ -154,11 +182,6 @@ export default function PersonHistoryPage() {
     if (personId === null) return
     void fetchDetails()
   }, [fetchDetails, personId])
-
-  const activeLoans = React.useMemo(
-    () => history.filter((entry) => !entry.returned),
-    [history]
-  )
 
   const totalBorrowed = React.useMemo(
     () =>
@@ -259,6 +282,87 @@ export default function PersonHistoryPage() {
           {error}
         </div>
       ) : null}
+
+      <section className="rounded-lg border bg-card shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4">
+          <div>
+            <h2 className="text-lg font-medium">Currently borrowed</h2>
+            <p className="text-xs text-muted-foreground">
+              Active loans for this person fetched from the Lagertool API.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {loading ? <span>Refreshing…</span> : null}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void fetchDetails()}
+            >
+              Refresh
+            </Button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y">
+            <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-6 py-3 font-medium">Item</th>
+                <th className="px-6 py-3 font-medium">Amount</th>
+                <th className="px-6 py-3 font-medium">Borrowed</th>
+                <th className="px-6 py-3 font-medium">Due</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {activeLoans.length === 0 ? (
+                <tr>
+                  <td
+                    className="px-6 py-8 text-center text-sm text-muted-foreground"
+                    colSpan={4}
+                  >
+                    No active loans right now.
+                  </td>
+                </tr>
+              ) : (
+                activeLoans.map((entry) => {
+                  const item = itemsById[entry.item_id]
+                  return (
+                    <tr key={`active-${entry.id}`} className="bg-amber-50/70">
+                      <td className="px-6 py-4 text-sm">
+                        <div className="font-medium">
+                          <Link
+                            to={`/items/${entry.item_id}`}
+                            className="text-primary underline-offset-2 hover:underline"
+                          >
+                            {item?.name ?? `Item #${entry.item_id}`}
+                          </Link>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Category: {item?.category ?? "—"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium">
+                        {entry.amount}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        <div>{formatDate(entry.begin)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDateTime(entry.begin)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        <div>{formatDate(entry.until)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDateTime(entry.until)}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="rounded-lg border bg-card shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4">

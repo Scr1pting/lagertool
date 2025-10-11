@@ -3,7 +3,10 @@
 import * as React from "react"
 import { type ColumnDef, type Row } from "@tanstack/react-table"
 
+import { Link } from "react-router-dom"
+
 import DataTable from "@/components/DataTable"
+import PersonLink from "@/components/PersonLink"
 import { Button } from "@/components/ui/button"
 
 type PersonFormState = {
@@ -312,11 +315,23 @@ export default function AddPersonPage() {
       {
         accessorKey: "id",
         header: "ID",
-        cell: ({ row }) => (
-          <span className="font-mono text-xs text-muted-foreground">
-            {row.original.id}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const person = {
+            id: row.original.id,
+            firstName: row.original.firstName,
+            lastName: row.original.lastName,
+            slackId: row.original.slackId,
+          }
+          return (
+            <PersonLink
+              personId={row.original.id}
+              person={person}
+              className="font-mono text-xs"
+            >
+              {row.original.id}
+            </PersonLink>
+          )
+        },
       },
       {
         accessorKey: "firstName",
@@ -339,7 +354,15 @@ export default function AddPersonPage() {
         enableSorting: false,
         enableHiding: false,
         cell: ({ row }) => (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              asChild
+            >
+              <Link to={`/persons/${row.original.id}`}>View history</Link>
+            </Button>
             <Button
               type="button"
               variant="ghost"
