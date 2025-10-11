@@ -21,15 +21,15 @@ const CanvasColumn = ({ column }: { column: ShelfColumn }) => {
       className={`${styles.column} ${isOver ? styles.columnActive : ''}`}
       style={{ width: ELEMENT_WIDTH }}
     >
-      {column.pieces.map((piece) => {
-        const definition = ITEM_CATALOG[piece.type];
+      {column.elements.map((element) => {
+        const definition = ITEM_CATALOG[element.type];
         return (
           <ShelfPiece
-            key={piece.id}
+            key={element.id}
             itemDef={definition}
-            draggableId={piece.id}
-            dragData={{ source: 'board', columnId: column.id, pieceId: piece.id }}
-            data-type={piece.type}
+            draggableId={element.id}
+            dragData={{ source: 'board', columnId: column.id, pieceId: element.id }}
+            data-type={element.type}
           />
         );
       })}

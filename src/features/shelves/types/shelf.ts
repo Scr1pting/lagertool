@@ -17,7 +17,7 @@ export interface ShelfItem {
 
 export interface ShelfColumn {
   id: string;
-  pieces: ShelfItem[];
+  elements: ShelfItem[];
 }
 
 export const ITEM_CATALOG: Record<ShelfItemType, ShelfItemDefinition> = {

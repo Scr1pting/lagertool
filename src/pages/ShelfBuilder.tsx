@@ -23,14 +23,14 @@ import { makeId } from '../features/shelves/util/ids';
 import { ShelfPieceInner } from '../features/shelves/components/ShelfPiece';
 
 import styles from './ShelfBuilder.module.css';
-import ActionButtons from '@/features/shelves/components/ActionButtons';
+import ActionBar from '@/features/shelves/components/ActionBar';
 
 
 const totalUnits = (pieces: ShelfItem[]) => pieces.reduce((sum, piece) => sum + piece.heightUnits, 0);
 
-const createColumn = (pieces: ShelfItem[] = []): ShelfColumn => ({
+const createColumn = (elements: ShelfItem[] = []): ShelfColumn => ({
   id: `column-${makeId()}`,
-  pieces,
+  elements,
 });
 
 
@@ -52,13 +52,13 @@ const placePiece = (
         continue;
       }
 
-      if (MAX_STACK_UNITS - totalUnits(column.pieces) < piece.heightUnits) {
+      if (MAX_STACK_UNITS - totalUnits(column.elements) < piece.heightUnits) {
         return null;
       }
 
       nextColumns.push({
         ...column,
-        pieces: [piece, ...column.pieces],
+        elements: [piece, ...column.elements],
       });
       placed = true;
     }
@@ -66,7 +66,6 @@ const placePiece = (
     return placed ? nextColumns : null;
   }
 };
-
 
 const ShelfBuilder = () => {
   const sensors = useSensors(
@@ -105,9 +104,9 @@ const ShelfBuilder = () => {
             return previousColumns
               .map((column) => ({
                 ...column,
-                pieces: column.pieces.filter((piece) => piece.id !== activeData.pieceId),
+                pieces: column.elements.filter((element) => element.id !== activeData.pieceId),
               }))
-              .filter((column) => column.pieces.length > 0); // Also remove empty columns
+              .filter((column) => column.elements.length > 0); // Also remove empty columns
           });
         }
         return;
@@ -142,22 +141,22 @@ const ShelfBuilder = () => {
           }
 
           const originColumn = previousColumns[originColumnIndex];
-          const pieceIndex = originColumn.pieces.findIndex(
-            (piece) => piece.id === activeData.pieceId
+          const elementIndex = originColumn.elements.findIndex(
+            (element) => element.id === activeData.pieceId
           );
-          if (pieceIndex === -1) {
+          if (elementIndex === -1) {
             return previousColumns;
           }
 
-          const movingPiece = originColumn.pieces[pieceIndex];
+          const movingPiece = originColumn.elements[elementIndex];
           const columnsWithoutPiece = previousColumns.map((column, index) =>
             index === originColumnIndex
-              ? { ...column, pieces: column.pieces.filter((piece) => piece.id !== movingPiece.id) }
+              ? { ...column, pieces: column.elements.filter((element) => element.id !== movingPiece.id) }
               : column
           );
 
           const nextColumns = placePiece(columnsWithoutPiece, movingPiece, overData);
-          return nextColumns?.filter((column) => column.pieces.length > 0) ?? previousColumns;
+          return nextColumns?.filter((column) => column.elements.length > 0) ?? previousColumns;
         });
       }
     },
@@ -179,7 +178,7 @@ const ShelfBuilder = () => {
       }
 
       const column = columns.find((candidate) => candidate.id === activeDrag.columnId);
-      const piece = column?.pieces.find((candidate) => candidate.id === activeDrag.pieceId);
+      const piece = column?.elements.find((candidate) => candidate.id === activeDrag.pieceId);
       return piece?.type ?? null;
     };
 
@@ -200,7 +199,7 @@ const ShelfBuilder = () => {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <ActionButtons />
+  <ActionBar columns={columns} />
 
       <div className={styles.wrapper}>
         <Palette />
