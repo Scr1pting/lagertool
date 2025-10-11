@@ -22,7 +22,7 @@ var (
 	frontend_domain   string
 )
 
-func init() {
+func Init() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, relying on system environment variables")
@@ -43,11 +43,11 @@ func init() {
 	}
 	production := os.Getenv("PRODUCTION")
 	if production == "1" {
-		backend_domain = "05.hackathon.ethz.ch/"
-		frontend_domain = "05.hackathon.ethz.ch/"
+		backend_domain = "05.hackathon.ethz.ch"
+		frontend_domain = "05.hackathon.ethz.ch"
 	} else if production == "0" {
-		backend_domain = "localhost:8000/"
-		frontend_domain = "localhost:5173/"
+		backend_domain = "localhost:8000"
+		frontend_domain = "localhost:5173"
 	} else {
 		log.Fatal("PRODUCTION envrionment variable not set")
 		return
