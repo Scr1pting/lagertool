@@ -1916,6 +1916,15 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 	}
 }
 
+// GetDownloadICS godoc
+// @Summary Download calendar file for a specific loan
+// @Description Downloads an iCalendar (.ics) file for a specific loan containing a reminder to return the item
+// @Tags calendar
+// @Produce text/calendar
+// @Param id path int true "Loan ID"
+// @Success 200 {string} string "ICS file content"
+// @Failure 400 {string} string "Invalid loan ID"
+// @Router /calendar/{id} [get]
 func (h *Handler) GetDownloadICS(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -1943,6 +1952,13 @@ func (h *Handler) GetDownloadICS(c *gin.Context) {
 	c.String(http.StatusOK, icsContent)
 }
 
+// GetDownloadICSALL godoc
+// @Summary Download calendar file for all loans
+// @Description Downloads an iCalendar (.ics) file containing all loan records with reminders to return items
+// @Tags calendar
+// @Produce text/calendar
+// @Success 200 {string} string "ICS file content with all loan events"
+// @Router /calendar/all [get]
 func (h *Handler) GetDownloadICSALL(c *gin.Context) {
 
 	loans, err := h.LocalGetAllLoans()
