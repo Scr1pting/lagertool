@@ -1286,7 +1286,7 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			return
 		}
 		session.Quantity = qty
-		api.PostMessage(channel, slack.MsgOptionText("From where do you want to borrow it? (Campus Building Room)", false))
+		api.PostMessage(channel, slack.MsgOptionText("From where do you want to borrow it? (Campus;Building;Room)", false))
 		session.Stage = "awaiting_source"
 
 	case "awaiting_source":

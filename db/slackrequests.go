@@ -36,7 +36,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 		log.Println(err)
 	}
 
-	campus, building, room := strings.Split(borrow.Location, " ")[0], strings.Split(borrow.Location, " ")[1], strings.Split(borrow.Location, " ")[2]
+	campus, building, room := strings.Split(borrow.Location, ";")[0], strings.Split(borrow.Location, ";")[1], strings.Split(borrow.Location, ";")[2]
 
 	location := new(Location)
 	err = db.Model(location).Where("campus = ?", campus).Where("building = ?", building).Where("room = ?", room).Select()
