@@ -4,6 +4,21 @@ import * as React from "react"
 import { Link } from "react-router-dom"
 import { CalendarDays, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import PersonLink from "@/components/PersonLink"
 import { normalizePerson, type NormalizedPerson } from "@/lib/person"
 import { downloadFile } from "@/lib/download"
@@ -32,17 +47,6 @@ type CombinedLoan = LoanRecord & {
 
 const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
-
-const formatDate = (iso?: string) => {
-  if (!iso) return "—"
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return "—"
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-  }).format(date)
-}
 
 const formatDateTime = (iso?: string) => {
   if (!iso) return "—"
@@ -185,16 +189,18 @@ export default function BorrowedPage() {
   }, [loans])
 
   return (
-    <div className="container mx-auto max-w-6xl space-y-8 py-10">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Active Borrowed Items
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Monitor every active loan, track due dates, and review borrower details
-          such as Slack handles at a glance. Data is refreshed from the Lagertool API.
-        </p>
-        <div className="flex flex-wrap gap-2 pt-2">
+    <div className="container mx-auto max-w-6xl space-y-10 py-10">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Active Borrowed Items
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Monitor every active loan, track due dates, and review borrower details
+            such as Slack handles at a glance. Data is refreshed from the Lagertool API.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
@@ -204,194 +210,210 @@ export default function BorrowedPage() {
             {downloadingCalendar ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                Preparing download…
+                Preparing export…
               </>
             ) : (
               <>
                 <CalendarDays className="size-4" aria-hidden="true" />
-                .ics
+                Export .ics
               </>
             )}
           </Button>
+          <Button asChild variant="secondary">
+            <Link to="/borrow">Create loan</Link>
+          </Button>
         </div>
-      </header>
-
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border bg-card p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Active loans
-          </p>
-          <p className="mt-2 text-3xl font-semibold">{summary.totalLoans}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Total number of outstanding loan records.
-          </p>
-        </article>
-        <article className="rounded-xl border bg-card p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Items out
-          </p>
-          <p className="mt-2 text-3xl font-semibold">{summary.totalItems}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Sum of all items currently checked out.
-          </p>
-        </article>
-        <article className="rounded-xl border bg-card p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Overdue loans
-          </p>
-          <p className="mt-2 text-3xl font-semibold text-red-600">
-            {summary.overdueCount}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Items that should already be returned.
-          </p>
-        </article>
-        <article className="rounded-xl border bg-card p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Borrowers
-          </p>
-          <p className="mt-2 text-3xl font-semibold">
-            {summary.uniqueBorrowers}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Unique people who currently have items on loan.
-          </p>
-        </article>
-      </section>
+      </div>
 
       {error ? (
-        <p className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
-          {error}
-        </p>
+        <div className="border-destructive/50 text-destructive flex flex-col gap-1 rounded-lg border bg-destructive/10 px-4 py-3 text-sm sm:flex-row sm:items-center sm:gap-3">
+          <span className="font-medium">Unable to load loan data.</span>
+          <span className="text-destructive/80 sm:flex-1">{error}</span>
+        </div>
       ) : null}
 
-      <section className="rounded-lg border bg-card shadow-sm">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <div>
-            <h2 className="text-lg font-medium">Loan overview</h2>
-            <p className="text-xs text-muted-foreground">
-              Sorted by the soonest due date. Overdue rows are highlighted in
-              red.
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Active loans
             </p>
+            <p className="mt-3 text-3xl font-semibold">{summary.totalLoans}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {summary.overdueCount} overdue right now.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Items out
+            </p>
+            <p className="mt-3 text-3xl font-semibold">{summary.totalItems}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Sum of all items currently checked out.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Due soon
+            </p>
+            <p className="mt-3 text-3xl font-semibold">{summary.dueSoonCount}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Due within the next 3 days.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Borrowers
+            </p>
+            <p className="mt-3 text-3xl font-semibold">
+              {summary.uniqueBorrowers}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Unique people who currently have items on loan.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Card>
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle>Loan overview</CardTitle>
+            <CardDescription>
+              Sorted by the soonest due date. Overdue rows are highlighted automatically.
+            </CardDescription>
           </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            {loading ? <span>Refreshing…</span> : null}
-            <Button variant="secondary" size="sm" onClick={fetchData}>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            {loading ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Refreshing…
+              </span>
+            ) : null}
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={fetchData}
+              disabled={loading}
+            >
               Refresh
             </Button>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y">
-            <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-6 py-3 font-medium">Item</th>
-                <th className="px-6 py-3 font-medium">Borrower</th>
-                <th className="px-6 py-3 font-medium">Slack handle</th>
-                <th className="px-6 py-3 font-medium">Borrowed</th>
-                <th className="px-6 py-3 font-medium">Due</th>
-                <th className="px-6 py-3 font-medium text-right">Qty</th>
-                <th className="px-6 py-3 font-medium text-right">Status</th>
-                <th className="px-6 py-3 font-medium text-right">Calendar</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        </CardHeader>
+        <CardContent className="px-0">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead className="px-6 py-3">Item</TableHead>
+                <TableHead className="px-6 py-3">Borrower</TableHead>
+                <TableHead className="px-6 py-3">Period</TableHead>
+                <TableHead className="px-6 py-3 text-right">Qty</TableHead>
+                <TableHead className="px-6 py-3 text-right">Status</TableHead>
+                <TableHead className="px-6 py-3 text-right">Calendar</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {loans.length === 0 ? (
-                <tr>
-                  <td
-                    className="px-6 py-8 text-center text-sm text-muted-foreground"
-                    colSpan={8}
+                <TableRow>
+                  <TableCell
+                    className="px-6 py-10 text-center text-sm text-muted-foreground"
+                    colSpan={6}
                   >
                     No active loans at the moment.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 loans.map((loan) => {
-                  const overdue =
-                    loan.until && new Date(loan.until).getTime() < Date.now()
+                  const dueTime = loan.until
+                    ? new Date(loan.until).getTime()
+                    : Number.NaN
+                  const overdue = Number.isFinite(dueTime) && dueTime < Date.now()
                   const dueSoon =
-                    loan.until &&
+                    Number.isFinite(dueTime) &&
                     !overdue &&
-                    new Date(loan.until).getTime() <
-                      Date.now() + 2 * 24 * 60 * 60 * 1000
+                    dueTime - Date.now() <= 3 * 24 * 60 * 60 * 1000
                   const statusLabel = overdue
                     ? "Overdue"
                     : dueSoon
                     ? "Due soon"
                     : "On schedule"
-                  const statusClasses = overdue
+                  const statusClass = overdue
                     ? "bg-red-100 text-red-700"
                     : dueSoon
-                    ? "bg-amber-100 text-amber-700"
+                    ? "bg-amber-100 text-amber-800"
                     : "bg-emerald-100 text-emerald-700"
 
                   return (
-                    <tr
+                    <TableRow
                       key={loan.id}
                       className={
                         overdue
                           ? "bg-red-50/70 text-red-900"
                           : dueSoon
                           ? "bg-amber-50/70 text-amber-900"
-                          : ""
+                          : undefined
                       }
                     >
-                      <td className="px-6 py-4 text-sm">
-                        <Link
-                          to={`/items/${loan.item_id}`}
-                          className="block font-medium leading-tight text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        >
-                          {loan.item?.name ?? `Item #${loan.item_id}`}
-                        </Link>
-                        <div className="text-xs text-muted-foreground">
-                          Category: {loan.item?.category ?? "—"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        <PersonLink
-                          personId={loan.person_id}
-                          person={loan.person}
-                          className="font-medium leading-tight"
-                        />
-                        <div className="text-xs text-muted-foreground">
-                          Person ID: {loan.person_id}
-                        </div>
-                        {loan.person?.slackId ? (
+                      <TableCell className="px-6 py-4 align-top text-sm">
+                        <div className="space-y-1">
+                          <Link
+                            to={`/items/${loan.item_id}`}
+                            className="font-medium leading-tight text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          >
+                            {loan.item?.name ?? `Item #${loan.item_id}`}
+                          </Link>
                           <div className="text-xs text-muted-foreground">
-                            Slack: {loan.person.slackId}
+                            {loan.item?.category
+                              ? `Category: ${loan.item.category}`
+                              : `Item ID: ${loan.item_id}`}
                           </div>
-                        ) : null}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        {loan.person?.slackId ? (
-                          <span>Slack: {loan.person.slackId}</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        <div>{formatDate(loan.begin)}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDateTime(loan.begin)}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        <div>{formatDate(loan.until)}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDateTime(loan.until)}
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-sm">
+                        <div className="space-y-1">
+                          <PersonLink
+                            personId={loan.person_id}
+                            person={loan.person}
+                            className="font-medium leading-tight"
+                          />
+                          <div className="text-xs text-muted-foreground">
+                            Person ID: {loan.person_id}
+                          </div>
+                          {loan.person?.slackId ? (
+                            <div className="text-xs text-muted-foreground">
+                              Slack: {loan.person.slackId}
+                            </div>
+                          ) : null}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-right text-sm font-medium">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-sm">
+                        <div className="space-y-1">
+                          <div className="font-medium">
+                            {formatDateTime(loan.begin)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Due {formatDateTime(loan.until)}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-right text-sm font-semibold">
                         {loan.amount}
-                      </td>
-                      <td className="px-6 py-4 text-right">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-right text-sm">
                         <span
-                          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusClasses}`}
+                          className={`inline-flex items-center justify-end rounded-full px-3 py-1 text-xs font-medium ${statusClass}`}
                         >
                           {statusLabel}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-right">
                         <Button
                           type="button"
                           variant="ghost"
@@ -411,15 +433,15 @@ export default function BorrowedPage() {
                             </>
                           )}
                         </Button>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )
                 })
               )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
