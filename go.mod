@@ -62,6 +62,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.55.0 // indirect
+	github.com/sashabaranov/go-openai v1.41.2 // indirect
 	github.com/slack-go/slack v0.17.3 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
