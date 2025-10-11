@@ -75,7 +75,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 		Begin:    time.Now(),
 		Until:    borrow.DueDate,
 	}
-	_, err = db.Model(l).Insert()
+	_, err = db.Model(&l).Insert()
 	if err != nil {
 		log.Printf("Insert Error %e", err)
 	}
