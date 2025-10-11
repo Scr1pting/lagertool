@@ -1233,6 +1233,45 @@ func (h *Handler) Interactivity(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func (h *Handler) BorrowHandler(c *gin.Context) {
+	// Parse the slash command payload
+	slackClient, _ := slack1.SetupSlack(h.Cfg)
+
+	s, err := slack.SlashCommandParse(c.Request)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "parse error")
+		return
+	}
+
+	userID := s.UserID
+	//channelID := s.ChannelID
+
+	// 1️⃣ Respond ephemerally in the group
+	response := slack.Msg{
+		ResponseType: "ephemeral",
+		Text:         "Got it! I’ll DM you to finish your borrow request.",
+	}
+	c.JSON(http.StatusOK, response)
+
+	// 2️⃣ Open DM channel
+	im, _, _, err := slackClient.OpenConversation(&slack.OpenConversationParameters{
+		Users: []string{userID},
+	})
+	if err != nil {
+		log.Println("open DM error:", err)
+		return
+	}
+
+	dmID := im.ID
+
+	// 3️⃣ Send DM to user
+	_, _, err = slackClient.PostMessage(dmID, slack.MsgOptionText(
+		fmt.Sprintf("Hey <@%s>! Let’s set up your borrow. What item do you need?", userID), false))
+	if err != nil {
+		log.Println("DM send error:", err)
+	}
+}
+
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
 	switch session.Stage {
 	case "start":

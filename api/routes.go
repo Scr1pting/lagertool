@@ -61,4 +61,5 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	// Slack Events endpoint
 	r.POST("/slack/events", h.Events)
 	r.POST("/slack/interactivity", h.Interactivity)
+	r.POST("/slack/borrow", h.BorrowHandler)
 }
