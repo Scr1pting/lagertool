@@ -1261,7 +1261,6 @@ func (h *Handler) Interactivity(c *gin.Context) {
 }
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
-	log.Println(session.Stage)
 	switch session.Stage {
 	case "start":
 		api.PostMessage(channel, slack.MsgOptionText("Hi! What would you like to borrow? (just the item name)", false))
@@ -1269,7 +1268,17 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 
 	case "awaiting_item":
 		session.Item = text
-		//TODO: Check if item exists | maybe list similar items
+		res, err := h.LocalSearchInventory(text)
+		if err != nil {
+			api.PostMessage(channel, slack.MsgOptionText("Internal Error", false))
+			return
+		} else if len(res) == 0 {
+			api.PostMessage(channel, slack.MsgOptionText("No item with this name found", false))
+			return
+		} else if res[0].ItemName != text {
+			api.PostMessage(channel, slack.MsgOptionText(fmt.Sprintf("Did you meant %s? Then please correct it", res[0].ItemName), false))
+			return
+		}
 		api.PostMessage(channel, slack.MsgOptionText("How many do you need?", false))
 		session.Stage = "awaiting_quantity"
 
@@ -1279,7 +1288,25 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			api.PostMessage(channel, slack.MsgOptionText("Please enter a valid number.", false))
 			return
 		}
-		//TODO: Check if there is enough of the item
+		res, err := h.LocalSearchItems(session.Item)
+		if err != nil {
+			api.PostMessage(channel, slack.MsgOptionText("Internal Error", false))
+			return
+		}
+		id := res[0].ID
+		res2, err := h.LocalGetInventoryByItem(id)
+		if err != nil {
+			api.PostMessage(channel, slack.MsgOptionText("Internal Error", false))
+			return
+		}
+		count := 0
+		for _, inv := range res2 {
+			count += inv.Amount
+		}
+		if count < qty {
+			api.PostMessage(channel, slack.MsgOptionText("Not enough of that items in storage. Please enter a smaller amount", false))
+			return
+		}
 		session.Quantity = qty
 		api.PostMessage(channel, slack.MsgOptionText("From where do you want to borrow it? (Campus Building Room)", false))
 		session.Stage = "awaiting_source"
@@ -1316,6 +1343,10 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 		dueDate, err := time.Parse(layout, text)
 		if err != nil {
 			api.PostMessage(channel, slack.MsgOptionText("Please enter the date in YYYY-MM-DD format.", false))
+			return
+		}
+		if dueDate.Before(time.Now()) {
+			api.PostMessage(channel, slack.MsgOptionText("Please enter a date later than today", false))
 			return
 		}
 		session.DueDate = dueDate
