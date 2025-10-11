@@ -1190,7 +1190,6 @@ func (h *Handler) Events(c *gin.Context) {
 
 func (h *Handler) Interactivity(c *gin.Context) {
 	// Slack sends the interaction payload as form data under the key "payload"
-	log.Println("TEST INTERACTIVE")
 	api, _ := slack1.SetupSlack(h.Cfg)
 	payload := c.PostForm("payload")
 	if payload == "" {
