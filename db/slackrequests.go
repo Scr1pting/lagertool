@@ -67,7 +67,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 		}
 	}
 
-	l := &Loans{
+	l := Loans{
 		PersonID: person.ID,
 		ItemID:   item.ID,
 		Amount:   borrow.Amount,
@@ -75,7 +75,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 		Until:    borrow.DueDate,
 	}
 	log.Println(l)
-	_, err = db.Model(*l).Insert()
+	_, err = db.Model(l).Insert()
 	if err != nil {
 		log.Println(err)
 	}
