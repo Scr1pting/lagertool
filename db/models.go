@@ -26,7 +26,9 @@ type Person struct {
 	ID        int      `json:"id" pg:"id,pk"`
 	Firstname string   `json:"firstname" pg:"firstname"`
 	Lastname  string   `json:"lastname" pg:"lastname"`
-	SlackID   string   `json:"slack_id" pg:"slack_id"`
+	Email     string   `json:"email" pg:"email"`
+	Telephone string   `json:"telephone" pg:"telephone"`
+	SlackID   string   `json:"slack_id,omitempty" pg:"slack_id"`
 }
 type Inventory struct {
 	tableName  struct{} `pg:"inventory"`
@@ -40,7 +42,7 @@ type Inventory struct {
 type Loans struct {
 	tableName struct{}  `pg:"loans"`
 	ID        int       `json:"id" pg:"id,pk"`
-	PersonId  int       `json:"person_id" pg:"person_id"`
+	PersonID  int       `json:"person_id" pg:"person_id"`
 	ItemID    int       `json:"item_id" pg:"item_id"`
 	Amount    int       `json:"amount" pg:"amount"`
 	Begin     time.Time `json:"begin" pg:"begin"`

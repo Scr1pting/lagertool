@@ -69,7 +69,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 	}
 
 	l := Loans{
-		PersonId: person.ID,
+		PersonID: person.ID,
 		ItemID:   item.ID,
 		Amount:   borrow.Amount,
 		Begin:    time.Now(),

@@ -82,7 +82,7 @@ func (h *Handler) GetLocationByID(c *gin.Context) {
 // @Tags locations
 // @Accept json
 // @Produce json
-// @Param location body object{campus=string,building=string,room=string,shelf=string,shelfunit=string} true "Location object (all fields are optional strings)"
+// @Param location body db.Location true "Location object"
 // @Success 201 {object} db.Location
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -110,7 +110,7 @@ func (h *Handler) CreateLocation(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Location ID"
-// @Param location body object{campus=string,building=string,room=string,shelf=string,shelfunit=string} true "Location object (all fields are optional strings)"
+// @Param location body db.Location true "Location object"
 // @Success 200 {object} db.Location
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -244,7 +244,7 @@ func (h *Handler) SearchItems(c *gin.Context) {
 // @Tags items
 // @Accept json
 // @Produce json
-// @Param item body object{name=string,category=string} true "Item object (name and category are required strings)"
+// @Param item body db.Item true "Item object"
 // @Success 201 {object} db.Item
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -272,7 +272,7 @@ func (h *Handler) CreateItem(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Item ID"
-// @Param item body object{name=string,category=string} true "Item object (name and category are required strings)"
+// @Param item body db.Item true "Item object"
 // @Success 200 {object} db.Item
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -336,39 +336,17 @@ func (h *Handler) DeleteItem(c *gin.Context) {
 // @Description Retrieve all item-location inventory records from the database
 // @Tags inventory
 // @Produce json
-// @Success 200 {array} InventoryResponse
+// @Success 200 {array} db.Inventory
 // @Failure 500 {object} map[string]string
 // @Router /inventory [get]
 func (h *Handler) GetAllInventory(c *gin.Context) {
-	type InventoryResponse struct {
-		ID           int    `json:"id"`
-		Name         string `json:"name"`
-		ShelfName    string `json:"shelf_name"`
-		RoomName     string `json:"room_name"`
-		BuildingName string `json:"building_name"`
-		Amount       int    `json:"amount"`
-	}
-
-	var result []InventoryResponse
-
-	// Perform a JOIN across inventory, item, and location tables
-	err := h.DB.Model((*db.Inventory)(nil)).
-		ColumnExpr("inventory.id AS id").
-		ColumnExpr("item.name AS name").
-		ColumnExpr("location.shelf AS shelf_name").
-		ColumnExpr("location.room AS room_name").
-		ColumnExpr("location.building AS building_name").
-		ColumnExpr("inventory.amount AS amount").
-		Join("JOIN item ON item.id = inventory.item_id").
-		Join("JOIN location ON location.id = inventory.location_id").
-		Order("inventory.id ASC").
-		Select(&result)
+	var inventory []db.Inventory
+	err := h.DB.Model(&inventory).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, inventory)
 }
 
 // GetInventoryByID godoc
@@ -462,7 +440,7 @@ func (h *Handler) GetInventoryByItem(c *gin.Context) {
 // @Tags inventory
 // @Accept json
 // @Produce json
-// @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
+// @Param inventory body db.Inventory true "Inventory record object"
 // @Success 201 {object} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -490,7 +468,7 @@ func (h *Handler) CreateInventory(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Inventory Record ID"
-// @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
+// @Param inventory body db.Inventory true "Inventory record object"
 // @Success 200 {object} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -684,7 +662,7 @@ func (h *Handler) SearchPersons(c *gin.Context) {
 // @Tags persons
 // @Accept json
 // @Produce json
-// @Param person body object{firstname=string,lastname=string,email=string,telephone=string} true "Person object (all fields are required strings: firstname, lastname, email, telephone)"
+// @Param person body db.Person true "Person object"
 // @Success 201 {object} db.Person
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -712,7 +690,7 @@ func (h *Handler) CreatePerson(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Person ID"
-// @Param person body object{firstname=string,lastname=string,email=string,telephone=string} true "Person object (all fields are required strings: firstname, lastname, email, telephone)"
+// @Param person body db.Person true "Person object"
 // @Success 200 {object} db.Person
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -902,7 +880,7 @@ func (h *Handler) GetOverdueLoans(c *gin.Context) {
 // @Tags loans
 // @Accept json
 // @Produce json
-// @Param loan body object{person_id=int,perm_id=int,amount=int,begin=string,until=string} true "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)"
+// @Param loan body db.Loans true "Loan record object"
 // @Success 201 {object} db.Loans
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -930,7 +908,7 @@ func (h *Handler) CreateLoan(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Loan ID"
-// @Param loan body object{person_id=int,perm_id=int,amount=int,begin=string,until=string} true "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)"
+// @Param loan body db.Loans true "Loan record object"
 // @Success 200 {object} db.Loans
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -1051,7 +1029,7 @@ func (h *Handler) Search(c *gin.Context) {
 func (h *Handler) GetLoansWithPerson(c *gin.Context) {
 	type LoanResult struct {
 		LoanID    int       `json:"loan_id"`
-		PersonId  int       `json:"person_id"`
+		PersonID  int       `json:"person_id"`
 		ItemID    int       `json:"item_id"`
 		Amount    int       `json:"amount"`
 		Begin     time.Time `json:"begin"`

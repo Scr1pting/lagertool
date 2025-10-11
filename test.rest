@@ -1,0 +1,11 @@
+GET http://05.hackathon.ethz.ch/api/inventory
+
+###
+
+PUT http://05.hackathon.ethz.ch/api/inventory
+content-type: application/json
+
+{
+    "name": "sample",
+    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+}
