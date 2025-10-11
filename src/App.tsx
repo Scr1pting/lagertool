@@ -9,6 +9,8 @@ import AddPage from './pages/AddPage';
 import LocationPage from './pages/LocationPage';
 import AddPersonPage from './pages/AddPersonPage';
 import EventsPage from './pages/EventsPage';
+import ItemDetailsPage from './pages/ItemDetailsPage';
+import PersonHistoryPage from './pages/PersonHistoryPage';
 
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
           <Route path="/locations" element={<LocationPage />} />
           <Route path="/add" element={<AddPage />} />
           <Route path="/persons" element={<AddPersonPage />} />
+          <Route path="/persons/:personId" element={<PersonHistoryPage />} />
+          <Route path="/items/:itemId" element={<ItemDetailsPage />} />
           <Route path="/events" element={<EventsPage />} />
         </Routes>
 

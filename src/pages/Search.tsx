@@ -57,7 +57,7 @@ function Search() {
 export default Search */
 
 import React, { useEffect, useMemo, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
 import DataTable from "../components/DataTable"
 
@@ -87,6 +87,17 @@ const itemColumns: ColumnDef<ItemResult>[] = [
   {
     accessorKey: "name",
     header: "Item",
+    cell: ({ row, getValue }) => {
+      const label = getValue<string>() ?? `Item #${row.original.id}`
+      return (
+        <Link
+          to={`/items/${row.original.id}`}
+          className="text-primary underline-offset-2 hover:underline"
+        >
+          {label}
+        </Link>
+      )
+    },
   },
   {
     accessorKey: "category",
@@ -99,6 +110,17 @@ const personColumns: ColumnDef<PersonRow>[] = [
   {
     accessorKey: "name",
     header: "Person",
+    cell: ({ row, getValue }) => {
+      const label = getValue<string>() ?? `Person #${row.original.id}`
+      return (
+        <Link
+          to={`/persons/${row.original.id}`}
+          className="text-primary underline-offset-2 hover:underline"
+        >
+          {label}
+        </Link>
+      )
+    },
   },
   {
     accessorKey: "slack",

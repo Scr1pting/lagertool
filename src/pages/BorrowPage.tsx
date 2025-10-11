@@ -18,6 +18,8 @@ type LoanRecord = {
   amount: number
   begin: string
   until: string
+  returned?: boolean | null
+  returned_at?: string | null
 }
 
 type ItemRecord = {
@@ -111,11 +113,11 @@ export default function BorrowPage() {
     null
   )
   const [rowStates, setRowStates] = React.useState<
-    Record<number, "updating" | "deleting">
+    Record<number, "updating" | "returning">
   >({})
 
   const setRowState = React.useCallback(
-    (id: number, state: "updating" | "deleting") => {
+    (id: number, state: "updating" | "returning") => {
       setRowStates((prev) => ({ ...prev, [id]: state }))
     },
     []
@@ -195,7 +197,9 @@ export default function BorrowPage() {
           return aTime - bTime
         })
 
-      setLoans(merged)
+      const activeLoans = merged.filter((loan) => !loan.returned)
+
+      setLoans(activeLoans)
       setItemsById(itemsMap)
       setPersonsById(personsMap)
     } catch (error) {
@@ -523,28 +527,28 @@ export default function BorrowPage() {
     }
   }
 
-  const handleDeleteLoan = async (loanId: number) => {
-    if (!window.confirm("Delete this loan? This cannot be undone.")) {
+  const handleReturnLoan = async (loanId: number) => {
+    if (!window.confirm("Mark this loan as returned?")) {
       return
     }
-    setRowState(loanId, "deleting")
+    setRowState(loanId, "returning")
     setSubmitError(null)
     setSubmitSuccess(null)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/loans/${loanId}`, {
-        method: "DELETE",
+      const response = await fetch(`${API_BASE_URL}/loans/${loanId}/return`, {
+        method: "PATCH",
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to delete loan (HTTP ${response.status})`)
+        throw new Error(`Failed to mark loan as returned (HTTP ${response.status})`)
       }
 
       setLoans((prev) => prev.filter((loan) => loan.id !== loanId))
-      setSubmitSuccess("Loan deleted.")
+      setSubmitSuccess("Loan marked as returned.")
     } catch (error) {
       setSubmitError(
-        error instanceof Error ? error.message : "Failed to delete loan."
+        error instanceof Error ? error.message : "Failed to mark loan as returned."
       )
     } finally {
       clearRowState(loanId)
@@ -869,18 +873,18 @@ export default function BorrowPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => startEditingLoan(loan)}
-                                disabled={rowState === "deleting"}
+                                disabled={rowState === "returning"}
                               >
                                 Edit
                               </Button>
                               <Button
                                 type="button"
                                 size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteLoan(loan.id)}
-                                disabled={rowState === "deleting"}
+                                variant="secondary"
+                                onClick={() => handleReturnLoan(loan.id)}
+                                disabled={rowState === "returning"}
                               >
-                                {rowState === "deleting" ? "Removing…" : "Delete"}
+                                {rowState === "returning" ? "Marking…" : "Mark returned"}
                               </Button>
                             </>
                           )}

@@ -381,6 +381,9 @@ export default function AddPersonPage() {
 
   const personCount = persons.length
   const filteredCount = filteredPersons.length
+  const editingPersonName = editingPerson
+    ? formatPersonName(editingPerson)
+    : "selected person"
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
@@ -405,7 +408,7 @@ export default function AddPersonPage() {
       {isEditing ? (
         <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
           <span className="font-medium">
-            Editing {formatPersonName(editingPerson)}
+            Editing {editingPersonName}
           </span>
           <span className="text-muted-foreground">
             Make changes in the form and click &ldquo;Save changes&rdquo;.

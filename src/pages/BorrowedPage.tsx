@@ -15,6 +15,8 @@ type LoanRecord = {
   amount: number
   begin: string
   until: string
+  returned?: boolean | null
+  returned_at?: string | null
 }
 
 type ItemRecord = {
@@ -116,7 +118,9 @@ export default function BorrowedPage() {
           return aTime - bTime
         })
 
-      setLoans(combined)
+      const activeLoans = combined.filter((loan) => !loan.returned)
+
+      setLoans(activeLoans)
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Failed to load loans."

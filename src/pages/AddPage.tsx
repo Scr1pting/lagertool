@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Link } from "react-router-dom"
 import RestrictedSearch, {
   type RestrictedSearchItem,
 } from "@/components/RestrictedSearch"
@@ -579,7 +580,12 @@ export default function AddPage() {
                   <tr key={record.id} className="text-sm">
                     <td className="px-6 py-4">
                       <div className="font-medium">
-                        {record.item?.name ?? `Item #${record.item_id}`}
+                        <Link
+                          to={`/items/${record.item_id}`}
+                          className="text-primary underline-offset-2 hover:underline"
+                        >
+                          {record.item?.name ?? `Item #${record.item_id}`}
+                        </Link>
                       </div>
                       <div className="text-xs text-muted-foreground">
                         ID: {record.item_id}

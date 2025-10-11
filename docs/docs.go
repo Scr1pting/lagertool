@@ -1376,7 +1376,7 @@ const docTemplate = `{
         },
         "/loans": {
             "get": {
-                "description": "Retrieve all loan records from the database",
+                "description": "Retrieve all loan records from the database. Optionally filter by returned status using the 'returned' query parameter (true/false).",
                 "produces": [
                     "application/json"
                 ],
@@ -1384,6 +1384,14 @@ const docTemplate = `{
                     "loans"
                 ],
                 "summary": "Get all loans",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by returned status (true/false)",
+                        "name": "returned",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1456,9 +1464,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/loans/item/{item_id}/history": {
+            "get": {
+                "description": "Retrieve all loan records (both active and returned) for a specific item",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "loans"
+                ],
+                "summary": "Get borrow history for an item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/db.Loans"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/loans/overdue": {
             "get": {
-                "description": "Retrieve all loan records where the return date (` + "`" + `until` + "`" + `) is in the past",
+                "description": "Retrieve all non-returned loan records where the return date (` + "`" + `until` + "`" + `) is in the past",
                 "produces": [
                     "application/json"
                 ],
@@ -1548,6 +1606,56 @@ const docTemplate = `{
                     "loans"
                 ],
                 "summary": "Get loans by person ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Person ID",
+                        "name": "person_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/db.Loans"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/loans/person/{person_id}/history": {
+            "get": {
+                "description": "Retrieve all loan records (both active and returned) for a specific person",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "loans"
+                ],
+                "summary": "Get borrow history for a person",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1721,6 +1829,62 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/loans/{id}/return": {
+            "patch": {
+                "description": "Mark a loan as returned by setting the returned flag to true and recording the return timestamp",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "loans"
+                ],
+                "summary": "Mark a loan as returned",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Loan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/db.Loans"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -2422,6 +2586,12 @@ const docTemplate = `{
                 },
                 "person_id": {
                     "type": "integer"
+                },
+                "returned": {
+                    "type": "boolean"
+                },
+                "returned_at": {
+                    "type": "string"
                 },
                 "until": {
                     "type": "string"
