@@ -12,8 +12,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { RxCross2 } from "react-icons/rx";
-import postShelf, { serializeColumns } from '../api/postShelf';
+import postShelf from '../api/postShelf';
 import { type ShelfColumn } from '../types/shelf';
+import { makeId } from '../util/ids';
 
 
 type FormProps = {
@@ -38,8 +39,6 @@ function Form({ columns }: FormProps) {
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [error, setError] = useState<string | null>(null);
-
-  const serializedColumns = useMemo(() => serializeColumns(columns), [columns]);
 
   const updateValue = useCallback(
     (field: keyof FormValues) =>
@@ -68,10 +67,11 @@ function Form({ columns }: FormProps) {
 
       try {
         await postShelf({
+          id: makeId(),
           name: values.name.trim(),
           building: values.building.trim(),
           room: values.room.trim(),
-          columns: serializedColumns,
+          columns: columns,
         });
 
         setStatus("success");
@@ -85,7 +85,7 @@ function Form({ columns }: FormProps) {
         }
       }
     },
-    [columns.length, serializedColumns, values.building, values.name, values.room]
+    [columns.length, columns, values.building, values.name, values.room]
   );
 
   const isSubmitDisabled = status === "submitting" || columns.length === 0;
@@ -157,11 +157,7 @@ type LocationState = {
   from?: FromLocation;
 };
 
-type ActionBarProps = {
-  columns: ShelfColumn[];
-};
-
-function ActionBar({ columns }: ActionBarProps) {
+function ActionBar({ columns }: { columns: ShelfColumn[] }) {
   const navigate = useNavigate();
   const location = useLocation();
   const makePath = (from: FromLocation) => `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`;

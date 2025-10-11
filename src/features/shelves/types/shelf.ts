@@ -1,18 +1,13 @@
-import { BASE_HEIGHT, TALL_HEIGHT } from "../util/shelfUnits";
-
-
 export type ShelfElementType = 'slim' | 'high';
 
 export interface ShelfElementDefinition {
   label: string;
-  unitHeight: number; // expressed in base units (0.4 ratio each)
-  pixelHeight: number;
+  heightUnits: number;  // expressed in base units (0.4 ratio each)
 }
 
 export interface ShelfElement {
   id: string;
   type: ShelfElementType;
-  heightUnits: number;
 }
 
 export interface ShelfColumn {
@@ -20,15 +15,21 @@ export interface ShelfColumn {
   elements: ShelfElement[];
 }
 
+export interface Shelf {
+  id: string;
+  name: string;
+  room: string;
+  building: string;
+  columns: ShelfColumn[];
+}
+
 export const ELEMENT_CATALOG: Record<ShelfElementType, ShelfElementDefinition> = {
   slim: {
-    label: 'Narrow Shelf',
-    unitHeight: 1,
-    pixelHeight: BASE_HEIGHT,
+    label: 'Short Element',
+    heightUnits: 1,
   },
   high: {
-    label: 'High Shelf',
-    unitHeight: 2,
-    pixelHeight: TALL_HEIGHT,
+    label: 'Tall Element',
+    heightUnits: 2,
   },
 };

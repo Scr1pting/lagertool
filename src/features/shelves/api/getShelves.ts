@@ -15,13 +15,12 @@ const parseErrorMessage = async (response: Response) => {
 	return response.statusText || "Unknown error";
 };
 
-const postShelf = async (payload: Shelf) => {
+const getShelves = async (): Promise<Shelf[]> => {
 	const response = await fetch(SHELVES_ENDPOINT, {
-		method: "POST",
+		method: "GET",
 		headers: {
-			"Content-Type": "application/json",
+			"Accept": "application/json",
 		},
-		body: JSON.stringify(payload),
 	});
 
 	if (!response.ok) {
@@ -29,14 +28,22 @@ const postShelf = async (payload: Shelf) => {
 		throw new Error(message);
 	}
 
-	if (response.status !== 204) {
-		// Ensure we drain the body for keep-alive connections.
-		try {
-			await response.json();
-		} catch {
-			await response.text().catch(() => undefined);
+	if (response.status === 204) {
+		return [];
+	}
+
+	try {
+		const data = (await response.json()) as unknown;
+		if (Array.isArray(data)) {
+			return data as Shelf[];
 		}
+		throw new Error("Invalid shelves payload");
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			throw error;
+		}
+		throw new Error("Failed to parse shelves response");
 	}
 };
 
-export default postShelf;
+export default getShelves;

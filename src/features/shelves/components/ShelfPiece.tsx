@@ -6,7 +6,7 @@ import { type ShelfElementDefinition } from '../types/shelf';
 import { type DragItemData } from '../types/drag';
 
 import styles from './ShelfPiece.module.css';
-import { ELEMENT_WIDTH } from '../util/shelfUnits';
+import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT } from '../util/shelfUnits';
 
 
 export function ShelfPieceInner({ itemDef }: { itemDef: ShelfElementDefinition }) {
@@ -16,7 +16,7 @@ export function ShelfPieceInner({ itemDef }: { itemDef: ShelfElementDefinition }
       aria-label={itemDef.label}
       style={{
           width: ELEMENT_WIDTH,
-          height: itemDef.pixelHeight,
+          height: itemDef.heightUnits == 1 ? SHORT_HEIGHT : TALL_HEIGHT,
           pointerEvents: 'none',
       }}
     />

@@ -26,7 +26,7 @@ import styles from './ShelfBuilder.module.css';
 import ActionBar from '@/features/shelves/components/ActionBar';
 
 
-const totalUnits = (elements: ShelfElement[]) => elements.reduce((sum, piece) => sum + piece.heightUnits, 0);
+const totalUnits = (elements: ShelfElement[]) => elements.reduce((sum, element) => sum + ELEMENT_CATALOG[element.type].heightUnits, 0);
 
 const createColumn = (elements: ShelfElement[] = []): ShelfColumn => ({
   id: `column-${makeId()}`,
@@ -52,7 +52,7 @@ const placePiece = (
         continue;
       }
 
-      if (MAX_STACK_UNITS - totalUnits(column.elements) < piece.heightUnits) {
+      if (MAX_STACK_UNITS - totalUnits(column.elements) < ELEMENT_CATALOG[piece.type].heightUnits) {
         return null;
       }
 
@@ -114,15 +114,13 @@ const ShelfBuilder = () => {
 
       // Handle moving elements from the palette into the canvas
       if (activeData.source === 'palette') {
-        const definition = ELEMENT_CATALOG[activeData.itemType];
-        const newPiece: ShelfElement = {
+        const newElement: ShelfElement = {
           id: makeId(),
           type: activeData.itemType,
-          heightUnits: definition.unitHeight,
         };
 
         setColumns((previousColumns) => {
-          const nextColumns = placePiece(previousColumns, newPiece, overData);
+          const nextColumns = placePiece(previousColumns, newElement, overData);
           if (!nextColumns) {
             return previousColumns;
           }
