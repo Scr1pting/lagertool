@@ -1,13 +1,21 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
+import { useNavigate } from "react-router-dom";
 import styles from "./NavBar.module.css";
 
-export default function SearchBar() {
-  const [query, setQuery] = useState("");
+export default function SearchBar({ initial = "" }) {
+  const [query, setQuery] = useState(initial);
+  const [isSearching, setIsSearching] = useState(false);
+  const navigate = useNavigate();
 
   const handleSearch = () => {
-    console.log("User searched for: ", query);
-    fetch(`https://05.hackathon.ethz.ch/search?search_term=${(query)}`)
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    setIsSearching(true);
+    const encoded = encodeURIComponent(trimmed);
+    // navigate to /search?search_term=...
+    navigate(`https://05.hackathon.ethz.ch/search?search_term=${(query)}`);
+    setIsSearching(false);
   };
 
   return (
@@ -20,12 +28,12 @@ export default function SearchBar() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleSearch();
-          }
+          if (e.key === "Enter") handleSearch();
         }}
         aria-label="Search inventory"
       />
+      <button onClick={handleSearch} disabled={isSearching} aria-label="Submit search">
+      </button>
     </div>
   );
 }

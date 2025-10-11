@@ -12,7 +12,7 @@ function App() {
       <NavBar />
       <main className="pt-28">
         <Routes>
-          <Route path="/" element={<Search />} />
+          <Route path="/search" element={<Search />} />
           <Route path="/shelf-builder" element={<ShelfBuilder />} />
           <Route path="/borrowed" element={<BorrowedPage />} />
         </Routes>
