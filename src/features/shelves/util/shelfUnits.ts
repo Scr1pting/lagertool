@@ -1,4 +1,4 @@
-export const ELEMENT_WIDTH = 150;
+export const ELEMENT_WIDTH = 120;
 export const BASE_HEIGHT = ELEMENT_WIDTH * 0.4; // 0.4:1 ratio
 export const TALL_HEIGHT = ELEMENT_WIDTH * 0.8; // 0.8:1 ratio
 export const MAX_STACK_UNITS = 10; // expressed in base-height units (0.4 ratio each)

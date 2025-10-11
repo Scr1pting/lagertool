@@ -44,19 +44,7 @@ const EdgeDropZone = ({ position }: { position: 'left' | 'right' }) => {
     data: { kind: 'edge', position } satisfies DropTargetData,
   });
 
-  const variantClass = position === 'left' ? styles.edgeDropZoneLeft : styles.edgeDropZoneRight;
-
-  return <div ref={setNodeRef} className={`${styles.edgeDropZone} ${variantClass}`} />;
-};
-
-
-const EmptyBoardDropZone = () => {
-  const { setNodeRef } = useDroppable({
-    id: 'board-empty',
-    data: { kind: 'edge', position: 'right' } satisfies DropTargetData,
-  });
-
-  return <div ref={setNodeRef} className={styles.emptyDropZone} />;
+  return <div ref={setNodeRef} className={styles.edgeDropZone} />;
 };
 
 
@@ -64,23 +52,21 @@ const Canvas = ({ columns }: { columns : ShelfColumn[] }) => {
   return (
     <section className={styles.board}>
       <div className={styles.workspace} role="grid" aria-label="Shelf builder workspace">
+        {columns.length === 0 && (
+          <div className={styles.boardEmpty}>
+            <span className={styles.boardEmptyText}>Drop a shelf to begin</span>
+          </div>
+        )}
+
+        <EdgeDropZone position="left" />
+
         <div className={styles.columnsArea}>
-          <EdgeDropZone position="left" />
-
-          {columns.length === 0 && (
-            <div className={styles.boardEmpty}>
-              <span className={styles.boardEmptyText}>Drop a shelf to begin</span>
-            </div>
-          )}
-
-          {columns.length === 0 && <EmptyBoardDropZone />}
-
           {columns.map((column) => (
             <CanvasColumn key={column.id} column={column} />
           ))}
-
-          <EdgeDropZone position="right" />
         </div>
+      
+        <EdgeDropZone position="right" />
       </div>
     </section>
   );

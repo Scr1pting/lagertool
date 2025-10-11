@@ -93,10 +93,26 @@ const ShelfBuilder = () => {
 
       setActiveDrag(null);
 
-      if (!activeData || !overData) {
+      if (!activeData) {
         return;
       }
 
+      // Remove elements that are moved outside the drag area
+      if (!overData) {
+        if (activeData.source === 'board') {
+          setColumns((previousColumns) => {
+            return previousColumns
+              .map((column) => ({
+                ...column,
+                pieces: column.pieces.filter((piece) => piece.id !== activeData.pieceId),
+              }))
+              .filter((column) => column.pieces.length > 0); // Also remove empty columns
+          });
+        }
+        return;
+      }
+
+      // Handle moving elements from the palette into the canvas
       if (activeData.source === 'palette') {
         const definition = ITEM_CATALOG[activeData.itemType];
         const newPiece: ShelfItem = {
@@ -113,34 +129,36 @@ const ShelfBuilder = () => {
           return nextColumns;
         });
         return;
+      
+      // Handle moving elements from one position to another
+      } else {
+        setColumns((previousColumns) => {
+          const originColumnIndex = previousColumns.findIndex(
+            (column) => column.id === activeData.columnId
+          );
+          if (originColumnIndex === -1) {
+            return previousColumns;
+          }
+
+          const originColumn = previousColumns[originColumnIndex];
+          const pieceIndex = originColumn.pieces.findIndex(
+            (piece) => piece.id === activeData.pieceId
+          );
+          if (pieceIndex === -1) {
+            return previousColumns;
+          }
+
+          const movingPiece = originColumn.pieces[pieceIndex];
+          const columnsWithoutPiece = previousColumns.map((column, index) =>
+            index === originColumnIndex
+              ? { ...column, pieces: column.pieces.filter((piece) => piece.id !== movingPiece.id) }
+              : column
+          );
+
+          const nextColumns = placePiece(columnsWithoutPiece, movingPiece, overData);
+          return nextColumns?.filter((column) => column.pieces.length > 0) ?? previousColumns;
+        });
       }
-
-      setColumns((previousColumns) => {
-        const originColumnIndex = previousColumns.findIndex(
-          (column) => column.id === activeData.columnId
-        );
-        if (originColumnIndex === -1) {
-          return previousColumns;
-        }
-
-        const originColumn = previousColumns[originColumnIndex];
-        const pieceIndex = originColumn.pieces.findIndex(
-          (piece) => piece.id === activeData.pieceId
-        );
-        if (pieceIndex === -1) {
-          return previousColumns;
-        }
-
-        const movingPiece = originColumn.pieces[pieceIndex];
-        const columnsWithoutPiece = previousColumns.map((column, index) =>
-          index === originColumnIndex
-            ? { ...column, pieces: column.pieces.filter((piece) => piece.id !== movingPiece.id) }
-            : column
-        );
-
-        const nextColumns = placePiece(columnsWithoutPiece, movingPiece, overData);
-        return nextColumns?.filter((column) => column.pieces.length > 0) ?? previousColumns;
-      });
     },
     []
   );
@@ -148,7 +166,7 @@ const ShelfBuilder = () => {
   const handleDragCancel = useCallback((_: DragCancelEvent) => {
     setActiveDrag(null);
   }, []);
-
+  
   const overlayNode = useMemo(() => {
     if (!activeDrag) {
       return null;
@@ -168,11 +186,9 @@ const ShelfBuilder = () => {
     if (!pieceType) {
       return null;
     }
-
-    const definition = ITEM_CATALOG[pieceType];
-
+    
     return (
-      <ShelfPieceInner itemDef={definition} />
+      <ShelfPieceInner itemDef={ITEM_CATALOG[pieceType]} />
     );
   }, [activeDrag, columns]);
 
