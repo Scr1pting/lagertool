@@ -4,7 +4,8 @@ import styles from "./NavBar.module.css";
 import BorrowButton from "./BorrowButton";
 import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
-import { normalizePerson, type NormalizedPerson } from "@/lib/person"
+import Logo from "./Logo";
+import { type NormalizedPerson } from "@/lib/person"
 
 const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
@@ -74,6 +75,7 @@ export default function NavBar(){
 
   return(
     <div className={styles.NavBar}>
+      <div className="logo"><Logo /></div>
       <div className={styles.input}><SearchBar/></div>
       <div className={styles.input}><BorrowButton counterValue={ borrowedCount }/></div>
       <div><MoreDropdown/></div>
