@@ -18,6 +18,8 @@ import (
 var (
 	googleOauthConfig *oauth2.Config
 	store             *sessions.CookieStore
+	backend_domain    string
+	frontend_domain   string
 )
 
 func init() {
@@ -39,6 +41,17 @@ func init() {
 	if sessionSecret == "" {
 		log.Fatal("SESSION_SECRET_KEY environment variable not set")
 	}
+	production := os.Getenv("PRODUCTION")
+	if production == "1" {
+		backend_domain = "05.hackathon.ethz.ch/"
+		frontend_domain = "05.hackathon.ethz.ch/"
+	} else if production == "0" {
+		backend_domain = "localhost:8000/"
+		frontend_domain = "localhost:5173/"
+	} else {
+		log.Fatal("PRODUCTION envrionment variable not set")
+		return
+	}
 
 	// Initialize session store
 	store = sessions.NewCookieStore([]byte(sessionSecret))
@@ -48,8 +61,9 @@ func init() {
 	}
 
 	// Configure OAuth
+
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8000/auth/google/callback",
+		RedirectURL:  "http://" + backend_domain + "/auth/google/callback",
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
@@ -83,7 +97,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 	}
 	defer resp.Body.Close()
 
-	var userInfo map[string]interface{}
+	var userInfo map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user info: " + err.Error()})
 		return
@@ -99,10 +113,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session: " + err.Error()})
 		return
 	}
-	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173")
-	log.Println("⚠️ Remember to change StatusTemporaryRedirect to domain URI when deploying on VM.")
-	// uncomment for deployment
-	// c.Redirect(http.StatusTemporaryRedirect, "http://05.hackathon.ethz.ch")
+	c.Redirect(http.StatusTemporaryRedirect, "http://"+frontend_domain)
 }
 
 func VerifyGoogleToken(c *gin.Context) {
