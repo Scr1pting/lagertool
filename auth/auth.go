@@ -18,26 +18,47 @@ import (
 var (
 	googleOauthConfig *oauth2.Config
 	store             *sessions.CookieStore
+	backend_domain    string
+	frontend_domain   string
 )
 
-func init() {
+func Init() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, relying on system environment variables")
+		log.Println("No .env file found, relying on system environment variables\nERROR: " + err.Error())
 	}
 
 	// Get environment variables
 	projectID := os.Getenv("GCP_PROJECT_ID")
 	if projectID == "" {
 		log.Fatal("GCP_PROJECT_ID environment variable not set")
+	} else {
+		log.Println("GCP_PROJECT_ID: " + projectID)
 	}
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 	if clientID == "" {
 		log.Fatal("GOOGLE_CLIENT_ID environment variable not set")
+	} else {
+		log.Println("GOOGLE_CLIENT_ID: " + clientID)
 	}
 	sessionSecret := os.Getenv("SESSION_SECRET_KEY")
 	if sessionSecret == "" {
 		log.Fatal("SESSION_SECRET_KEY environment variable not set")
+	} else {
+		log.Println("SESSION_SECRET_KEY: " + sessionSecret)
+	}
+	production := os.Getenv("PRODUCTION")
+	if production == "1" {
+		backend_domain = "https://05.hackathon.ethz.ch/api"
+		frontend_domain = "https://05.hackathon.ethz.ch"
+		log.Println("Using hackathon domain.")
+	} else if production == "0" {
+		log.Println("Using localhost.")
+		backend_domain = "http://localhost:8000"
+		frontend_domain = "http://localhost:5173"
+	} else {
+		log.Fatal("PRODUCTION envrionment variable not set")
+		return
 	}
 
 	// Initialize session store
@@ -48,8 +69,9 @@ func init() {
 	}
 
 	// Configure OAuth
+
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8000/auth/google/callback",
+		RedirectURL:  backend_domain + "/auth/google/callback",
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
@@ -83,7 +105,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 	}
 	defer resp.Body.Close()
 
-	var userInfo map[string]interface{}
+	var userInfo map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user info: " + err.Error()})
 		return
@@ -99,10 +121,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session: " + err.Error()})
 		return
 	}
-	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173")
-	log.Println("⚠️ Remember to change StatusTemporaryRedirect to domain URI when deploying on VM.")
-	// uncomment for deployment
-	// c.Redirect(http.StatusTemporaryRedirect, "http://05.hackathon.ethz.ch")
+	c.Redirect(http.StatusTemporaryRedirect, frontend_domain)
 }
 
 func VerifyGoogleToken(c *gin.Context) {
