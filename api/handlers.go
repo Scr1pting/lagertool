@@ -1045,14 +1045,14 @@ func (h *Handler) GetLoansWithPerson(c *gin.Context) {
 	type LoanResult struct {
 		LoanID    int       `json:"loan_id"`
 		PersonId  int       `json:"person_id"`
-		PermID    int       `json:"perm_id"`
+		ItemID    int       `json:"item_id"`
 		Amount    int       `json:"amount"`
 		Begin     time.Time `json:"begin"`
 		Until     time.Time `json:"until,omitempty"`
 		Firstname string    `json:"firstname"`
 		Lastname  string    `json:"lastname"`
-		Email     string    `json:"email"`
-		Telephone string    `json:"telephone"`
+		SlackID   string    `json:"slack_id"`
+		ItemName  string    `json:"name"`
 	}
 
 	var results []LoanResult
@@ -1060,16 +1060,17 @@ func (h *Handler) GetLoansWithPerson(c *gin.Context) {
 		SELECT 
 			l.id as loan_id,
 			l.person_id,
-			l.perm_id,
+			l.item_id,
 			l.amount,
 			l.begin,
 			l.until,
 			p.firstname,
 			p.lastname,
-			p.email,
-			p.telephone
+			p.slack_id,
+			i.name as item_name
 		FROM loans l
 		JOIN person p ON p.id = l.person_id
+		JOIN item i ON i.id = l.item_id
 	`)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to get loans: " + err.Error()})
@@ -1077,4 +1078,12 @@ func (h *Handler) GetLoansWithPerson(c *gin.Context) {
 	}
 
 	c.JSON(200, results)
+}
+
+func (h *Handler) BorrowCounter(c *gin.Context) {
+	result, err := h.DB.Model(&db.Loans{}).Count()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count loans: " + err.Error()})
+	}
+	c.JSON(http.StatusOK, result)
 }

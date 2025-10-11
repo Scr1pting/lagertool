@@ -50,4 +50,9 @@ func SetupRoutes(r *gin.Engine, db *pg.DB) {
 	r.POST("/loans", h.CreateLoan)
 	r.PUT("/loans/:id", h.UpdateLoan)
 	r.DELETE("/loans/:id", h.DeleteLoan)
+
+	// Searches
+	r.GET("/search", h.Search)
+	r.GET("/borrows", h.GetLoansWithPerson)
+	r.GET("/borrows_count", h.BorrowCounter)
 }
