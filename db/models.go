@@ -26,8 +26,6 @@ type Person struct {
 	ID        int      `json:"id" pg:"id,pk"`
 	Firstname string   `json:"firstname" pg:"firstname"`
 	Lastname  string   `json:"lastname" pg:"lastname"`
-	Email     string   `json:"email" pg:"email"`
-	Telephone string   `json:"telephone" pg:"telephone"`
 	SlackID   string   `json:"slack_id,omitempty" pg:"slack_id"`
 }
 type Inventory struct {
