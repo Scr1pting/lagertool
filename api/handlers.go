@@ -269,15 +269,15 @@ func (h *Handler) SearchShelfUnit(c *gin.Context) {
 
 // ShelfUnitInventoryItem represents an inventory item in a shelf unit with borrow status
 type ShelfUnitInventoryItem struct {
-	InventoryID  int       `json:"inventory_id"`
-	ItemID       int       `json:"item_id"`
-	ItemName     string    `json:"item_name"`
-	Category     string    `json:"category"`
-	Amount       int       `json:"amount"`
-	Note         string    `json:"note"`
-	Borrowed     int       `json:"borrowed"`      // Amount currently borrowed
-	Available    int       `json:"available"`     // Amount available (not borrowed)
-	ActiveLoans  []LoanInfo `json:"active_loans"`  // Active loans for this item
+	InventoryID int        `json:"inventory_id"`
+	ItemID      int        `json:"item_id"`
+	ItemName    string     `json:"item_name"`
+	Category    string     `json:"category"`
+	Amount      int        `json:"amount"`
+	Note        string     `json:"note"`
+	Borrowed    int        `json:"borrowed"`     // Amount currently borrowed
+	Available   int        `json:"available"`    // Amount available (not borrowed)
+	ActiveLoans []LoanInfo `json:"active_loans"` // Active loans for this item
 }
 
 // LoanInfo represents loan details for an item
@@ -1871,6 +1871,48 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 	if err != nil {
 		log.Println("DM send error:", err)
 	}
+}
+
+func (h *Handler) GetDownloadICS(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("loan_id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "invalid loan id")
+	}
+	loan, err := h.LocalGetLoanByID(id)
+	if err != nil {
+		return
+	}
+	item, err := h.LocalGetItemByID(loan.ItemID)
+	if err != nil {
+		return
+	}
+	end := loan.Until
+	if loan.Returned {
+		end = *loan.ReturnedAt
+	}
+	util.GenerateICSContent(item.Name, "Return item", loan.Begin, end)
+}
+
+func (h *Handler) GetDownloadICSALL(c *gin.Context) {
+
+	loans, err := h.LocalGetAllLoans()
+	if err != nil {
+		return
+	}
+	var events []util.Events
+	for _, loan := range loans {
+		item, err := h.LocalGetItemByID(loan.ItemID)
+		if err != nil {
+			return
+		}
+		end := loan.Until
+		if loan.Returned {
+			end = *loan.ReturnedAt
+		}
+
+		events = append(events, util.Events{loan.Begin, end, "Return Item", item.Name})
+	}
+	util.GenerateICSForDates(events)
 }
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
