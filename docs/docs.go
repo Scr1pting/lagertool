@@ -39,7 +39,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.IsIn"
+                                "$ref": "#/definitions/db.Inventory"
                             }
                         }
                     },
@@ -68,26 +68,12 @@ const docTemplate = `{
                 "summary": "Create a new inventory record",
                 "parameters": [
                     {
-                        "description": "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)",
+                        "description": "Inventory record object",
                         "name": "inventory",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "amount": {
-                                    "type": "integer"
-                                },
-                                "item_id": {
-                                    "type": "integer"
-                                },
-                                "location_id": {
-                                    "type": "integer"
-                                },
-                                "note": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Inventory"
                         }
                     }
                 ],
@@ -95,7 +81,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.IsIn"
+                            "$ref": "#/definitions/db.Inventory"
                         }
                     },
                     "400": {
@@ -144,7 +130,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.IsIn"
+                                "$ref": "#/definitions/db.Inventory"
                             }
                         }
                     },
@@ -194,7 +180,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.IsIn"
+                                "$ref": "#/definitions/db.Inventory"
                             }
                         }
                     },
@@ -242,7 +228,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/db.IsIn"
+                            "$ref": "#/definitions/db.Inventory"
                         }
                     },
                     "400": {
@@ -286,26 +272,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)",
+                        "description": "Inventory record object",
                         "name": "inventory",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "amount": {
-                                    "type": "integer"
-                                },
-                                "item_id": {
-                                    "type": "integer"
-                                },
-                                "location_id": {
-                                    "type": "integer"
-                                },
-                                "note": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Inventory"
                         }
                     }
                 ],
@@ -313,7 +285,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/db.IsIn"
+                            "$ref": "#/definitions/db.Inventory"
                         }
                     },
                     "400": {
@@ -425,7 +397,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/db.IsIn"
+                            "$ref": "#/definitions/db.Inventory"
                         }
                     },
                     "400": {
@@ -494,20 +466,12 @@ const docTemplate = `{
                 "summary": "Create a new item",
                 "parameters": [
                     {
-                        "description": "Item object (name and category are required strings)",
+                        "description": "Item object",
                         "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "category": {
-                                    "type": "string"
-                                },
-                                "name": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Item"
                         }
                     }
                 ],
@@ -647,20 +611,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Item object (name and category are required strings)",
+                        "description": "Item object",
                         "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "category": {
-                                    "type": "string"
-                                },
-                                "name": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Item"
                         }
                     }
                 ],
@@ -785,29 +741,12 @@ const docTemplate = `{
                 "summary": "Create a new loan record",
                 "parameters": [
                     {
-                        "description": "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)",
+                        "description": "Loan record object",
                         "name": "loan",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "amount": {
-                                    "type": "integer"
-                                },
-                                "begin": {
-                                    "type": "string"
-                                },
-                                "perm_id": {
-                                    "type": "integer"
-                                },
-                                "person_id": {
-                                    "type": "integer"
-                                },
-                                "until": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Loans"
                         }
                     }
                 ],
@@ -1038,29 +977,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)",
+                        "description": "Loan record object",
                         "name": "loan",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "amount": {
-                                    "type": "integer"
-                                },
-                                "begin": {
-                                    "type": "string"
-                                },
-                                "perm_id": {
-                                    "type": "integer"
-                                },
-                                "person_id": {
-                                    "type": "integer"
-                                },
-                                "until": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Loans"
                         }
                     }
                 ],
@@ -1185,29 +1107,12 @@ const docTemplate = `{
                 "summary": "Create a new location",
                 "parameters": [
                     {
-                        "description": "Location object (all fields are optional strings)",
+                        "description": "Location object",
                         "name": "location",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "building": {
-                                    "type": "string"
-                                },
-                                "campus": {
-                                    "type": "string"
-                                },
-                                "room": {
-                                    "type": "string"
-                                },
-                                "shelf": {
-                                    "type": "string"
-                                },
-                                "shelfunit": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Location"
                         }
                     }
                 ],
@@ -1306,29 +1211,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Location object (all fields are optional strings)",
+                        "description": "Location object",
                         "name": "location",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "building": {
-                                    "type": "string"
-                                },
-                                "campus": {
-                                    "type": "string"
-                                },
-                                "room": {
-                                    "type": "string"
-                                },
-                                "shelf": {
-                                    "type": "string"
-                                },
-                                "shelfunit": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Location"
                         }
                     }
                 ],
@@ -1453,26 +1341,12 @@ const docTemplate = `{
                 "summary": "Create a new person",
                 "parameters": [
                     {
-                        "description": "Person object (all fields are required strings: firstname, lastname, email, telephone)",
+                        "description": "Person object",
                         "name": "person",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "email": {
-                                    "type": "string"
-                                },
-                                "firstname": {
-                                    "type": "string"
-                                },
-                                "lastname": {
-                                    "type": "string"
-                                },
-                                "telephone": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Person"
                         }
                     }
                 ],
@@ -1623,26 +1497,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Person object (all fields are required strings: firstname, lastname, email, telephone)",
+                        "description": "Person object",
                         "name": "person",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "email": {
-                                    "type": "string"
-                                },
-                                "firstname": {
-                                    "type": "string"
-                                },
-                                "lastname": {
-                                    "type": "string"
-                                },
-                                "telephone": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/db.Person"
                         }
                     }
                 ],
@@ -1724,7 +1584,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "db.IsIn": {
+        "db.Inventory": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1770,7 +1630,7 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "perm_id": {
+                "item_id": {
                     "type": "integer"
                 },
                 "person_id": {
@@ -1817,6 +1677,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "lastname": {
+                    "type": "string"
+                },
+                "slack_id": {
                     "type": "string"
                 },
                 "telephone": {
