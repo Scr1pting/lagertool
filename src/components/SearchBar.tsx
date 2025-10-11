@@ -227,13 +227,13 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
 
   return (
     <div className={styles.searchWrapper} ref={containerRef}>
+      <HiOutlineMagnifyingGlass className={styles.searchIcon} aria-hidden="true" />
       <form className={styles.searchForm} onSubmit={handleSubmit}>
-        <HiOutlineMagnifyingGlass className={styles.searchIcon} aria-hidden="true" />
         <input
           ref={inputRef}
           className={styles.searchInput}
           type="text"
-          placeholder="Search items or people…"
+          placeholder="Search for items or people"
           value={query}
           onFocus={openDropdown}
           onChange={(event) => {

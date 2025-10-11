@@ -1,6 +1,6 @@
 import styles from "./NavBar.module.css";
 import { Button } from "@/components/ui/button"
-import { GrAdd } from "react-icons/gr";
+import { IoEllipsisHorizontal } from "react-icons/io5";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +10,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Link } from "react-router-dom";
 
-export default function AddDropdown() {
+export default function MoreDropdown() {
   return (
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
-        <Button className={styles.button}><GrAdd/></Button>
+        <Button className={`${styles.input} ${styles.buttonMore}`}>
+          <IoEllipsisHorizontal />
+        </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuGroup>
           <DropdownMenuItem>
