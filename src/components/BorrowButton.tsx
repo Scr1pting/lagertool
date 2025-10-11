@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import styles from './NavBar.module.css';
 
-export default function BorrowButton({ counterValue }: { counterValue?: number }) {
+export default function BorrowButton({ counterValue = "0" }) {
   const location = useLocation();
   const isHome = location.pathname === '/';
 
@@ -20,4 +20,3 @@ export default function BorrowButton({ counterValue }: { counterValue?: number }
     </Link>
   );
 }
-

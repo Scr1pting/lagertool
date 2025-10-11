@@ -1,65 +1,8 @@
-/*"use client"
-
-import { useState, useEffect } from 'react';
-import DataTable from '@/components/DataTable';
-import type { ColumnDef } from '@tanstack/react-table';
-
-
-type InventoryItem = {
-  name: string;
-  shelf_name: string;
-  room_name: string;
-  building_name: string;
-  amount: number;
-};
-
-export const columns: ColumnDef<InventoryItem>[] = [
-  {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "shelf_name",
-    header: "Shelf",
-  },
-  {
-    accessorKey: "room_name",
-    header: "Room",
-  },
-  {
-    accessorKey: "building_name",
-    header: "Building",
-  },
-  {
-    accessorKey: "amount",
-    header: "Amount",
-  }  
-]
-
-
-function Search() {
-    const [data, setData] = useState([]);
-
-    useEffect(() => {
-        fetch("https://05.hackathon.ethz.ch/api/inventory")
-        .then((response) => response.json())
-        .then((json) => setData(json))
-        .catch((error) => console.error("Error fetching data:", error));
-    }, []);
-
-    return(
-        <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={data} />
-        </div>
-    )
-}
-
-export default Search */
-
 import { useEffect, useMemo, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
 import DataTable from "../components/DataTable"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
 type ItemResult = {
   id: number
@@ -248,44 +191,80 @@ export default function Search() {
         )}
       </header>
 
-      {loading && (
-        <div className="rounded-md border border-dashed border-slate-200 p-6 text-center text-sm text-muted-foreground">
-          Searching…
-        </div>
-      )}
-
       {error && (
         <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {!loading && !error && hasQuery && (
-        <div className="space-y-10">
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold">Items</h2>
-              <p className="text-sm text-muted-foreground">
-                Results from <code>/items/search</code>
-              </p>
+      {loading && (
+        <Card className="animate-pulse">
+          <CardContent>
+            <div className="flex items-center justify-center gap-3 py-6 text-sm text-muted-foreground">
+              <svg
+                className="h-5 w-5 animate-spin text-muted-foreground"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+              Searching…
             </div>
-            <DataTable columns={itemColumns} data={items} />
-          </section>
-
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold">People</h2>
-              <p className="text-sm text-muted-foreground">
-                Results from <code>/persons/search</code>
-              </p>
-            </div>
-            <DataTable columns={personColumns} data={persons} />
-          </section>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      {!loading && !error && hasQuery && (
-        <p className="text-sm text-muted-foreground">{resultsSummary}</p>
+      {!loading && hasQuery && (
+        <div className="space-y-6">
+          <section>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between w-full">
+                  <CardTitle>Items</CardTitle>
+                  <div className="text-sm text-muted-foreground">
+                    {items.length} result{items.length === 1 ? "" : "s"}
+                  </div>
+                </div>
+                <CardDescription>Matches for your query</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DataTable columns={itemColumns} data={items} />
+              </CardContent>
+            </Card>
+          </section>
+
+          <section>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between w-full">
+                  <CardTitle>People</CardTitle>
+                  <div className="text-sm text-muted-foreground">
+                    {persons.length} result{persons.length === 1 ? "" : "s"}
+                  </div>
+                </div>
+                <CardDescription>People matching your query</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DataTable columns={personColumns} data={persons} />
+              </CardContent>
+            </Card>
+          </section>
+
+          <p className="text-sm text-muted-foreground">{resultsSummary}</p>
+        </div>
       )}
     </div>
   )
