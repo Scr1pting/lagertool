@@ -32,20 +32,28 @@ func Init() {
 	projectID := os.Getenv("GCP_PROJECT_ID")
 	if projectID == "" {
 		log.Fatal("GCP_PROJECT_ID environment variable not set")
+	} else {
+		log.Println("GCP_PROJECT_ID: " + projectID)
 	}
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 	if clientID == "" {
 		log.Fatal("GOOGLE_CLIENT_ID environment variable not set")
+	} else {
+		log.Println("GOOGLE_CLIENT_ID: " + clientID)
 	}
 	sessionSecret := os.Getenv("SESSION_SECRET_KEY")
 	if sessionSecret == "" {
 		log.Fatal("SESSION_SECRET_KEY environment variable not set")
+	} else {
+		log.Println("SESSION_SECRET_KEY: " + sessionSecret)
 	}
 	production := os.Getenv("PRODUCTION")
 	if production == "1" {
 		backend_domain = "05.hackathon.ethz.ch"
 		frontend_domain = "05.hackathon.ethz.ch"
+		log.Println("Using hackathon domain.")
 	} else if production == "0" {
+		log.Println("Using localhost.")
 		backend_domain = "localhost:8000"
 		frontend_domain = "localhost:5173"
 	} else {
