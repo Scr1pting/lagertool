@@ -28,8 +28,8 @@ func InsertBasicData(db *pg.DB) error {
 
 	// Sample persons
 	persons := []Person{
-		{Firstname: "Alice", Lastname: "Smith"},
-		{Firstname: "Bob", Lastname: "Johnson"},
+		{Firstname: "Alice", Lastname: "Smith", SlackID: "your momma so fat"},
+		{Firstname: "Bob", Lastname: "Johnson", SlackID: "09KUJW7VQW/C09L080PM9A"},
 	}
 
 	// Begin transaction
