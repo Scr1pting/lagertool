@@ -1318,6 +1318,7 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 		session.Stage = "awaiting_due_date"
 
 	case "awaiting_due_date":
+		log.Println("TEEEEEEEEEEEEEESSSSSSSSSST HERE")
 		layout := "2006-01-02"
 		dueDate, err := time.Parse(layout, text)
 		if err != nil {
