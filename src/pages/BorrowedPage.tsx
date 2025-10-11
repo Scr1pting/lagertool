@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Link } from "react-router-dom"
+import { CalendarDays, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import PersonLink from "@/components/PersonLink"
 import { normalizePerson, type NormalizedPerson } from "@/lib/person"
@@ -200,7 +201,17 @@ export default function BorrowedPage() {
             onClick={handleDownloadLoansCalendar}
             disabled={downloadingCalendar}
           >
-            {downloadingCalendar ? "Preparing download…" : "Download loans calendar (.ics)"}
+            {downloadingCalendar ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Preparing download…
+              </>
+            ) : (
+              <>
+                <CalendarDays className="size-4" aria-hidden="true" />
+                .ics
+              </>
+            )}
           </Button>
         </div>
       </header>
@@ -388,7 +399,17 @@ export default function BorrowedPage() {
                           onClick={() => handleDownloadSingleLoan(loan.id)}
                           disabled={downloadingLoanId === loan.id}
                         >
-                          {downloadingLoanId === loan.id ? "Preparing…" : "Download .ics"}
+                          {downloadingLoanId === loan.id ? (
+                            <>
+                              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                              Preparing…
+                            </>
+                          ) : (
+                            <>
+                              <CalendarDays className="size-4" aria-hidden="true" />
+                              .ics
+                            </>
+                          )}
                         </Button>
                       </td>
                     </tr>
