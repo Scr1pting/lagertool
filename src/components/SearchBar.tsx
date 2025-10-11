@@ -272,6 +272,7 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
           aria-expanded={shouldRenderPanel}
           aria-controls="search-suggestions"
           role="combobox"
+          style={{ outline: 'none', border: 'none' }}
         />
       </form>
 
