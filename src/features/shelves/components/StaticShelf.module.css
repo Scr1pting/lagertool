@@ -1,0 +1,29 @@
+.elementWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.numItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem; /* small (≈12px) */
+  line-height: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px; /* pill shape */
+  font-weight: 500;
+  min-width: 1.6rem;
+  text-align: center;
+}
+
+.idElement {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  color: #ccc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+}

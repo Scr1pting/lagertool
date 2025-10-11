@@ -4,12 +4,12 @@ import { type DropTargetData } from '../types/drag';
 import { type ShelfColumn, ELEMENT_CATALOG } from '../types/shelf';
 import { ELEMENT_WIDTH } from '../util/shelfUnits';
 
-import ShelfPiece from './ShelfPiece';
+import ShelfPiece from './ShelfElementView';
 
 import styles from './Canvas.module.css';
 
 
-const CanvasColumn = ({ column }: { column: ShelfColumn }) => {
+function CanvasColumn ({ column }: { column: ShelfColumn }) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
     data: { kind: 'column', columnId: column.id } satisfies DropTargetData,

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { type ShelfElementType, ELEMENT_CATALOG } from '../types/shelf';
 
 import styles from './Palette.module.css';
-import ShelfPiece from './ShelfPiece';
+import ShelfPiece from './ShelfElementView';
 
 function Palette() {
   const catalogEntries = useMemo(

@@ -20,7 +20,7 @@ import {
 import { type DragItemData, type DropTargetData } from '../features/shelves/types/drag';
 import { MAX_STACK_UNITS } from '../features/shelves/util/shelfUnits';
 import { makeId } from '../features/shelves/util/ids';
-import { ShelfPieceInner } from '../features/shelves/components/ShelfPiece';
+import { ShelfElementViewInner } from '../features/shelves/components/ShelfElementView';
 
 import styles from './ShelfBuilder.module.css';
 import ActionBar from '@/features/shelves/components/ActionBar';
@@ -186,7 +186,7 @@ const ShelfBuilder = () => {
     }
     
     return (
-      <ShelfPieceInner itemDef={ELEMENT_CATALOG[pieceType]} />
+      <ShelfElementViewInner itemDef={ELEMENT_CATALOG[pieceType]} />
     );
   }, [activeDrag, columns]);
 

@@ -1,15 +1,18 @@
 import { useDraggable } from '@dnd-kit/core';
 import { motion } from 'framer-motion';
-import type { CSSProperties, HTMLAttributes } from 'react';
+import { type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
 
 import { type ShelfElementDefinition } from '../types/shelf';
 import { type DragItemData } from '../types/drag';
 
-import styles from './ShelfPiece.module.css';
+import styles from './ShelfElementView.module.css';
 import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT } from '../util/shelfUnits';
 
 
-export function ShelfPieceInner({ itemDef }: { itemDef: ShelfElementDefinition }) {
+export function ShelfElementViewInner(
+  { itemDef, children }:
+  { itemDef: ShelfElementDefinition, children?: ReactNode }
+) {
   return (
     <div
       className={styles.piece}
@@ -19,7 +22,9 @@ export function ShelfPieceInner({ itemDef }: { itemDef: ShelfElementDefinition }
           height: itemDef.heightUnits == 1 ? SHORT_HEIGHT : TALL_HEIGHT,
           pointerEvents: 'none',
       }}
-    />
+    >
+      {children}
+    </div>
   )
 }
 
@@ -30,8 +35,7 @@ interface ShelfPieceProps extends HTMLAttributes<HTMLDivElement> {
   dragData: DragItemData;
 }
 
-
-function ShelfPiece({
+function ShelfElementView({
   itemDef,
   draggableId,
   dragData,
@@ -63,10 +67,10 @@ function ShelfPiece({
         {...restDivProps}
         style={{ width: '100%', height: '100%' }}
       >
-        <ShelfPieceInner itemDef={itemDef} />
+        <ShelfElementViewInner itemDef={itemDef} />
       </div>
     </motion.div>
   );
 };
 
-export default ShelfPiece;
+export default ShelfElementView;
