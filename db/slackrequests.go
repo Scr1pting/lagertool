@@ -54,7 +54,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 	}
 
 	person := new(Person)
-	err = db.Model(&person).Where("firstname = ?", firstname).Where("lastname = ?", lastname).First()
+	err = db.Model(person).Where("firstname = ?", firstname).Where("lastname = ?", lastname).First()
 	if err != nil {
 		log.Printf("Person Error %e", err)
 		person = &Person{
