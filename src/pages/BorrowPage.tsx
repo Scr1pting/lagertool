@@ -1,11 +1,38 @@
 "use client"
 
 import * as React from "react"
+import { Link } from "react-router-dom"
+import { Loader2 } from "lucide-react"
 import RestrictedSearch, {
   type RestrictedSearchItem,
 } from "@/components/RestrictedSearch"
-import { Button } from "@/components/ui/button"
 import PersonLink from "@/components/PersonLink"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldSet,
+  FieldTitle,
+} from "@/components/ui/field"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import {
   normalizePerson,
   personDisplayName,
@@ -561,295 +588,459 @@ export default function BorrowPage() {
     return item.category ? `${item.name} · ${item.category}` : item.name
   }
 
+  const summary = React.useMemo(() => {
+    const now = Date.now()
+    let overdueCount = 0
+    let dueSoonCount = 0
+    let totalItems = 0
+    const borrowers = new Set<number>()
+
+    for (const loan of loans) {
+      totalItems += loan.amount ?? 0
+      borrowers.add(loan.person_id)
+
+      if (!loan.until) {
+        continue
+      }
+
+      const due = new Date(loan.until).getTime()
+      if (Number.isNaN(due)) {
+        continue
+      }
+
+      if (due < now) {
+        overdueCount += 1
+      } else if (due - now <= 3 * 24 * 60 * 60 * 1000) {
+        dueSoonCount += 1
+      }
+    }
+
+    return {
+      totalLoans: loans.length,
+      totalItems,
+      uniqueBorrowers: borrowers.size,
+      overdueCount,
+      dueSoonCount,
+    }
+  }, [loans])
+
   return (
-    <div className="container mx-auto max-w-6xl space-y-8 py-10">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">Borrow Items</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Create and manage active loans using the Lagertool API. Select an item,
-          choose a borrower, and pick the borrowing period.
-        </p>
-      </header>
-
-      {loadError ? (
-        <p className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive">
-          {loadError}
-        </p>
-      ) : null}
-
-      <form
-        className="space-y-6 rounded-lg border bg-card px-6 py-6 shadow-sm"
-        onSubmit={handleCreateLoan}
-      >
-        <fieldset className="grid gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">
-              Item *
-            </label>
-            <RestrictedSearch
-              placeholder="Search for an item…"
-              onSelect={(option) => setSelectedItem(option as ItemOption)}
-              searchFn={searchItems}
-              selectedLabel={selectedItem?.label}
-              minChars={1}
-              renderItem={(option) => {
-                const { item } = option as ItemOption
-                return (
-                  <div className="flex flex-col">
-                    <span className="font-medium">{item.name}</span>
-                    {item.category ? (
-                      <span className="text-xs text-muted-foreground">
-                        Category: {item.category}
-                      </span>
-                    ) : null}
-                  </div>
-                )
-              }}
-            />
-            <div className="text-xs text-muted-foreground">
-              {selectedItem?.item
-                ? renderItemDetails(selectedItem.item)
-                : "Pick an item to loan."}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-foreground">
-              Borrower *
-            </label>
-            <RestrictedSearch
-              placeholder="Search for a person…"
-              onSelect={(option) => setSelectedPerson(option as PersonOption)}
-              searchFn={searchPersons}
-              selectedLabel={selectedPerson?.label}
-              minChars={2}
-              renderItem={(option) => {
-                const { person } = option as PersonOption
-                return (
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {personDisplayName(person)}
-                    </span>
-                    {person.slackId ? (
-                      <span className="text-xs text-muted-foreground">
-                        Slack: {person.slackId}
-                      </span>
-                    ) : null}
-                  </div>
-                )
-              }}
-            />
-            <div className="text-xs text-muted-foreground">
-              {selectedPerson?.person
-                ? selectedPerson.person.slackId
-                  ? `${personDisplayName(selectedPerson.person)} · Slack: ${selectedPerson.person.slackId}`
-                  : personDisplayName(selectedPerson.person)
-                : "Pick a borrower to continue."}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label
-              className="block text-sm font-medium text-foreground"
-              htmlFor="amount"
-            >
-              Amount *
-            </label>
-            <input
-              id="amount"
-              name="amount"
-              type="number"
-              min="1"
-              step="1"
-              value={loanForm.amount}
-              onChange={handleLoanFieldChange}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            />
-          </div>
-
-          <div className="space-y-2" />
-
-          <div className="space-y-2">
-            <label
-              className="block text-sm font-medium text-foreground"
-              htmlFor="begin"
-            >
-              Start date *
-            </label>
-            <input
-              id="begin"
-              name="begin"
-              type="datetime-local"
-              value={loanForm.begin}
-              onChange={handleLoanFieldChange}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label
-              className="block text-sm font-medium text-foreground"
-              htmlFor="until"
-            >
-              Due date *
-            </label>
-            <input
-              id="until"
-              name="until"
-              type="datetime-local"
-              value={loanForm.until}
-              onChange={handleLoanFieldChange}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            />
-          </div>
-        </fieldset>
-
-        {submitError ? (
-          <p className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive">
-            {submitError}
+    <div className="container mx-auto max-w-6xl space-y-10 py-10">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Borrow Items</h1>
+          <p className="text-sm text-muted-foreground">
+            Create and manage active loans using the Lagertool API. Select an item,
+            choose a borrower, and set the borrowing period.
           </p>
-        ) : null}
-
-        {submitSuccess ? (
-          <p className="rounded-md border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-600">
-            {submitSuccess}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap justify-end gap-2">
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
-            onClick={resetLoanForm}
-            disabled={isSubmitting}
+            onClick={fetchAllData}
+            disabled={loading}
           >
-            Reset
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Refreshing
+              </>
+            ) : (
+              "Refresh data"
+            )}
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving…" : "Create loan"}
+          <Button asChild variant="secondary">
+            <Link to="/borrowed">View active loans</Link>
           </Button>
         </div>
+      </div>
+
+      {loadError ? (
+        <div className="border-destructive/50 text-destructive flex flex-col gap-1 rounded-lg border bg-destructive/10 px-4 py-3 text-sm sm:flex-row sm:items-center sm:gap-3">
+          <span className="font-medium">Unable to load borrow data.</span>
+          <span className="text-destructive/80 sm:flex-1">{loadError}</span>
+        </div>
+      ) : null}
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Active loans
+            </p>
+            <p className="mt-3 text-3xl font-semibold">{summary.totalLoans}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {summary.overdueCount} overdue right now.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Items out
+            </p>
+            <p className="mt-3 text-3xl font-semibold">{summary.totalItems}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Total quantity currently on loan.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Due soon
+            </p>
+            <p className="mt-3 text-3xl font-semibold">{summary.dueSoonCount}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Due within the next 3 days.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="px-6 py-5">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Borrowers
+            </p>
+            <p className="mt-3 text-3xl font-semibold">
+              {summary.uniqueBorrowers}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Unique people with outstanding loans.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <form onSubmit={handleCreateLoan} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Create a loan</CardTitle>
+            <CardDescription>
+              Search for an item and borrower, then set the borrowing period.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <FieldSet className="space-y-6">
+              <FieldGroup className="gap-6 md:grid md:grid-cols-2">
+                <Field>
+                  <FieldTitle>
+                    Item <span className="text-destructive">*</span>
+                  </FieldTitle>
+                  <FieldContent>
+                    <RestrictedSearch
+                      placeholder="Search for an item…"
+                      onSelect={(option) => setSelectedItem(option as ItemOption)}
+                      searchFn={searchItems}
+                      selectedLabel={selectedItem?.label}
+                      minChars={1}
+                      renderItem={(option) => {
+                        const { item } = option as ItemOption
+                        return (
+                          <div className="flex flex-col">
+                            <span className="font-medium">{item.name}</span>
+                            {item.category ? (
+                              <span className="text-xs text-muted-foreground">
+                                Category: {item.category}
+                              </span>
+                            ) : null}
+                          </div>
+                        )
+                      }}
+                    />
+                    <FieldDescription>
+                      {selectedItem?.item
+                        ? renderItemDetails(selectedItem.item)
+                        : "Pick an item to loan."}
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+                <Field>
+                  <FieldTitle>
+                    Borrower <span className="text-destructive">*</span>
+                  </FieldTitle>
+                  <FieldContent>
+                    <RestrictedSearch
+                      placeholder="Search for a person…"
+                      onSelect={(option) => setSelectedPerson(option as PersonOption)}
+                      searchFn={searchPersons}
+                      selectedLabel={selectedPerson?.label}
+                      minChars={2}
+                      renderItem={(option) => {
+                        const { person } = option as PersonOption
+                        return (
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {personDisplayName(person)}
+                            </span>
+                            {person.slackId ? (
+                              <span className="text-xs text-muted-foreground">
+                                Slack: {person.slackId}
+                              </span>
+                            ) : null}
+                          </div>
+                        )
+                      }}
+                    />
+                    <FieldDescription>
+                      {selectedPerson?.person
+                        ? selectedPerson.person.slackId
+                          ? `${personDisplayName(selectedPerson.person)} · Slack: ${selectedPerson.person.slackId}`
+                          : personDisplayName(selectedPerson.person)
+                        : "Pick a borrower to continue."}
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+              </FieldGroup>
+
+              <FieldGroup className="gap-6 md:grid md:grid-cols-3">
+                <Field>
+                  <FieldTitle>Amount *</FieldTitle>
+                  <FieldContent>
+                    <Input
+                      id="amount"
+                      name="amount"
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={loanForm.amount}
+                      onChange={handleLoanFieldChange}
+                      className="md:w-28"
+                    />
+                  </FieldContent>
+                </Field>
+                <Field>
+                  <FieldTitle>Start date *</FieldTitle>
+                  <FieldContent>
+                    <Input
+                      id="begin"
+                      name="begin"
+                      type="datetime-local"
+                      value={loanForm.begin}
+                      onChange={handleLoanFieldChange}
+                    />
+                    <FieldDescription>Local timezone.</FieldDescription>
+                  </FieldContent>
+                </Field>
+                <Field>
+                  <FieldTitle>Due date *</FieldTitle>
+                  <FieldContent>
+                    <Input
+                      id="until"
+                      name="until"
+                      type="datetime-local"
+                      value={loanForm.until}
+                      onChange={handleLoanFieldChange}
+                    />
+                    <FieldDescription>
+                      Must be after the start date.
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+              </FieldGroup>
+            </FieldSet>
+
+            {submitError ? (
+              <div className="border-destructive/50 text-destructive flex items-start gap-3 rounded-lg border bg-destructive/10 px-4 py-3 text-sm">
+                {submitError}
+              </div>
+            ) : null}
+
+            {submitSuccess ? (
+              <div className="border-emerald-400/40 text-emerald-700 flex items-start gap-3 rounded-lg border bg-emerald-500/10 px-4 py-3 text-sm">
+                {submitSuccess}
+              </div>
+            ) : null}
+          </CardContent>
+          <CardFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={resetLoanForm}
+              disabled={isSubmitting}
+            >
+              Reset
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  Saving
+                </>
+              ) : (
+                "Create loan"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
       </form>
 
-      <section className="rounded-lg border bg-card shadow-sm">
-        <div className="flex items-center justify-between border-b px-6 py-4">
+      <Card>
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-lg font-medium">Active loans</h2>
-            <p className="text-xs text-muted-foreground">
+            <CardTitle>Active loans</CardTitle>
+            <CardDescription>
               Manage open loans, update due dates, or mark items as returned.
-            </p>
+            </CardDescription>
           </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            {loading ? <span>Refreshing…</span> : null}
-            <Button variant="secondary" size="sm" onClick={fetchAllData}>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            {loading ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Refreshing…
+              </span>
+            ) : null}
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={fetchAllData}
+            >
               Refresh
             </Button>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y">
-            <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-6 py-3 font-medium">Item</th>
-                <th className="px-6 py-3 font-medium">Borrower</th>
-                <th className="px-6 py-3 font-medium">Amount</th>
-                <th className="px-6 py-3 font-medium">Period</th>
-                <th className="px-6 py-3 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        </CardHeader>
+        <CardContent className="px-0">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead className="px-6 py-3">Item</TableHead>
+                <TableHead className="px-6 py-3">Borrower</TableHead>
+                <TableHead className="px-6 py-3 text-center">Amount</TableHead>
+                <TableHead className="px-6 py-3">Period</TableHead>
+                <TableHead className="px-6 py-3 text-center">Status</TableHead>
+                <TableHead className="px-6 py-3 text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {loans.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-8 text-center text-sm text-muted-foreground"
+                <TableRow>
+                  <TableCell
+                    className="px-6 py-10 text-center text-sm text-muted-foreground"
+                    colSpan={6}
                   >
                     No active loans.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 loans.map((loan) => {
                   const rowState = getRowState(loan.id)
                   const isEditing = editingLoanId === loan.id && loanEditBuffer
-                  const overdue =
-                    loan.until && new Date(loan.until).getTime() < Date.now()
                   const borrower = loan.person ?? personsById[loan.person_id]
-
+                  const dueTime = loan.until
+                    ? new Date(loan.until).getTime()
+                    : Number.NaN
+                  const overdue = Number.isFinite(dueTime) && dueTime < Date.now()
+                  const dueSoon =
+                    Number.isFinite(dueTime) &&
+                    !overdue &&
+                    dueTime - Date.now() <= 2 * 24 * 60 * 60 * 1000
+                  const statusLabel = overdue
+                    ? "Overdue"
+                    : dueSoon
+                    ? "Due soon"
+                    : "On schedule"
+                  const statusClass = overdue
+                    ? "bg-red-100 text-red-700"
+                    : dueSoon
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-emerald-100 text-emerald-700"
+                  const item = loan.item ?? itemsById[loan.item_id]
                   return (
-                    <tr
+                    <TableRow
                       key={loan.id}
-                      className={overdue ? "bg-red-50/60 text-red-900" : ""}
+                      className={
+                        overdue
+                          ? "text-red-700"
+                          : dueSoon
+                          ? "text-amber-700"
+                          : undefined
+                      }
                     >
-                      <td className="px-6 py-4 text-sm">
-                        <div className="font-medium">
-                          {renderItemDetails(loan.item ?? itemsById[loan.item_id])}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          ID: {loan.item_id}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        <PersonLink
-                          personId={loan.person_id}
-                          person={borrower}
-                          className="font-medium"
-                        />
-                        <div className="text-xs text-muted-foreground">
-                          ID: {loan.person_id}
-                        </div>
-                        {borrower?.slackId ? (
+                      <TableCell className="px-6 py-4 align-top text-sm">
+                        <div className="space-y-1">
+                          <Link
+                            to={`/items/${loan.item_id}`}
+                            className="font-medium leading-tight text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          >
+                            {item?.name ?? `Item #${loan.item_id}`}
+                          </Link>
                           <div className="text-xs text-muted-foreground">
-                            Slack: {borrower.slackId}
+                            {item?.category
+                              ? `Category: ${item.category}`
+                              : `Item ID: ${loan.item_id}`}
                           </div>
-                        ) : null}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        {isEditing ? (
-                          <input
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-sm">
+                        <div className="space-y-1">
+                          <PersonLink
+                            personId={loan.person_id}
+                            person={borrower}
+                            className="font-medium leading-tight"
+                          />
+                          <div className="text-xs text-muted-foreground">
+                            Person ID: {loan.person_id}
+                          </div>
+                          {borrower?.slackId ? (
+                            <div className="text-xs text-muted-foreground">
+                              Slack: {borrower.slackId}
+                            </div>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-center text-sm font-semibold">
+                        {isEditing && loanEditBuffer ? (
+                          <Input
                             type="number"
-                            min="1"
-                            value={loanEditBuffer.amount}
                             name="amount"
+                            min={1}
+                            step={1}
+                            value={loanEditBuffer.amount}
                             onChange={handleLoanEditChange}
-                            className="w-24 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                            className="ml-auto h-9 w-24"
                           />
                         ) : (
                           loan.amount
                         )}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        {isEditing ? (
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-sm">
+                        {isEditing && loanEditBuffer ? (
                           <div className="grid gap-2">
-                            <input
+                            <Input
                               type="datetime-local"
                               name="begin"
                               value={loanEditBuffer.begin}
                               onChange={handleLoanEditChange}
-                              className="rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
                             />
-                            <input
+                            <Input
                               type="datetime-local"
                               name="until"
                               value={loanEditBuffer.until}
                               onChange={handleLoanEditChange}
-                              className="rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                           </div>
                         ) : (
-                          <div className="flex flex-col">
-                            <span>{formatDateTime(loan.begin)}</span>
-                            <span>{formatDateTime(loan.until)}</span>
-                            {overdue ? (
-                              <span className="mt-1 text-xs font-medium uppercase tracking-wide text-red-600">
-                                Overdue
-                              </span>
-                            ) : null}
+                          <div className="space-y-1">
+                            <div className="font-medium">
+                              {formatDateTime(loan.begin)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Due {formatDateTime(loan.until)}
+                            </div>
                           </div>
                         )}
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-center text-sm">
+                        <span
+                          className={`inline-flex items-center justify-end rounded-full px-3 py-1 text-xs font-medium ${statusClass}`}
+                        >
+                          {statusLabel}
+                        </span>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 align-top text-center">
                         <div className="flex flex-wrap justify-end gap-2">
-                          {isEditing ? (
+                          {isEditing && loanEditBuffer ? (
                             <>
                               <Button
                                 type="button"
@@ -857,7 +1048,17 @@ export default function BorrowPage() {
                                 onClick={() => handleUpdateLoan(loan)}
                                 disabled={rowState === "updating"}
                               >
-                                {rowState === "updating" ? "Saving…" : "Save"}
+                                {rowState === "updating" ? (
+                                  <>
+                                    <Loader2
+                                      className="size-4 animate-spin"
+                                      aria-hidden="true"
+                                    />
+                                    Saving…
+                                  </>
+                                ) : (
+                                  "Save changes"
+                                )}
                               </Button>
                               <Button
                                 type="button"
@@ -887,20 +1088,30 @@ export default function BorrowPage() {
                                 onClick={() => handleReturnLoan(loan.id)}
                                 disabled={rowState === "returning"}
                               >
-                                {rowState === "returning" ? "Marking…" : "Mark returned"}
+                                {rowState === "returning" ? (
+                                  <>
+                                    <Loader2
+                                      className="size-4 animate-spin"
+                                      aria-hidden="true"
+                                    />
+                                    Marking…
+                                  </>
+                                ) : (
+                                  "Mark returned"
+                                )}
                               </Button>
                             </>
                           )}
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )
                 })
               )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -225,8 +225,35 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
     trimmedQuery.length >= MIN_QUERY_LENGTH &&
     (loading || Boolean(error) || results.length > 0)
 
+  const focusInput = React.useCallback(() => {
+    inputRef.current?.focus({ preventScroll: true })
+  }, [])
+
+  const handleWrapperMouseDown = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const target = event.target as HTMLElement | null
+      if (target?.closest("button")) {
+        return
+      }
+      if (document.activeElement !== inputRef.current) {
+        event.preventDefault()
+        focusInput()
+      }
+    },
+    [focusInput]
+  )
+
   return (
-    <div className={styles.searchWrapper} ref={containerRef}>
+    <div
+      className={styles.searchWrapper}
+      ref={containerRef}
+      onMouseDown={handleWrapperMouseDown}
+      onClick={() => {
+        if (document.activeElement !== inputRef.current) {
+          focusInput()
+        }
+      }}
+    >
       <HiOutlineMagnifyingGlass className={styles.searchIcon} aria-hidden="true" />
       <form className={styles.searchForm} onSubmit={handleSubmit}>
         <input
@@ -245,6 +272,7 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
           aria-expanded={shouldRenderPanel}
           aria-controls="search-suggestions"
           role="combobox"
+          style={{ outline: 'none', border: 'none' }}
         />
       </form>
 

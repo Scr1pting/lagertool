@@ -396,7 +396,7 @@ export default function LocationPage() {
                 <th className="px-6 py-3 font-medium">ID</th>
                 <th className="px-6 py-3 font-medium">Summary</th>
                 <th className="px-6 py-3 font-medium">Details</th>
-                <th className="px-6 py-3 font-medium text-right">Actions</th>
+                <th className="px-6 py-3 font-medium text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
