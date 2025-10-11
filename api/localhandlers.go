@@ -413,3 +413,78 @@ func (h *Handler) LocalGetActiveLoansWithPerson() ([]db.Loans, error) {
 
 	return loans, nil
 }
+
+// In the 'api' package, likely within api.go or a similar file
+
+// Result mirrors the specific joined data structure returned by the database query.
+// It combines fields from inventory, item, and location tables.
+type Result struct {
+	InventoryID int    `json:"inventory_id" pg:"inventory_id"`
+	Amount      int    `json:"amount" pg:"amount"`
+	Note        string `json:"note" pg:"note"`
+	ItemName    string `json:"item_name" pg:"item_name"`
+	Category    string `json:"category" pg:"category"`
+	Campus      string `json:"campus" pg:"campus"`
+	Building    string `json:"building" pg:"building"`
+	Room        string `json:"room" pg:"room"`
+	Shelf       string `json:"shelf" pg:"shelf"`
+}
+
+// LocalSearchInventory performs a full-text search on item details and returns
+// a joined list of matching inventory records and their location/item details.
+func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
+	if searchTerm == "" {
+		// Per the original logic, an empty search term is an error condition
+		return nil, nil // Or return an error if you prefer strict validation: errors.New("search_term parameter is required")
+	}
+
+	// 1. Prepare search term
+	searchTerm = strings.ToLower(searchTerm)
+
+	// 2. Get all items and find matches
+	// NOTE: h.LocalGetAllItems() is assumed to be defined (as it is in your context).
+	// NOTE: util.FindItemSearchTermsInDB is assumed to be available.
+	items, err := h.LocalGetAllItems()
+	if err != nil {
+		return nil, err
+	}
+
+	arrayOfMatchingItems := util.FindItemSearchTermsInDB(items, searchTerm)
+
+	// 3. Extract IDs from matching items
+	var itemIDs []int
+	for _, item := range arrayOfMatchingItems {
+		itemIDs = append(itemIDs, item.ID)
+	}
+
+	// If no items match the search, return an empty result set
+	if len(itemIDs) == 0 {
+		return []Result{}, nil
+	}
+
+	// 4. Query the database for inventory linked to the matching item IDs
+	var results []Result
+	// Using the raw SQL query with pg.In for the array of IDs
+	_, err = h.DB.Query(&results, `
+		SELECT 
+			inv.id as inventory_id,
+			inv.amount,
+			inv.note,
+			it.name as item_name,
+			it.category,
+			loc.campus,
+			loc.building,
+			loc.room,
+			loc.shelf
+		FROM inventory inv
+		JOIN item it ON it.id = inv.item_id
+		JOIN location loc ON loc.id = inv.location_id
+		WHERE inv.item_id IN (?)
+	`, pg.In(itemIDs))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}

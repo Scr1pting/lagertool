@@ -36,7 +36,6 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 		log.Println(err)
 	}
 
-	log.Println("TEST", strings.Split(borrow.Location, " ")[0])
 	campus, building, room := strings.Split(borrow.Location, " ")[0], strings.Split(borrow.Location, " ")[1], strings.Split(borrow.Location, " ")[2]
 
 	location := new(Location)
