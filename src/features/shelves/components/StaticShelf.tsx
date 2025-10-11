@@ -1,7 +1,7 @@
 import { ELEMENT_CATALOG, type Shelf, type ShelfColumn } from "../types/shelf";
 import { ShelfElementViewInner } from "./ShelfElementView";
 
-import canvasStyles from './Canvas.module.css';
+import shelfListStyle from './ShelfList.module.css';
 import styles from './StaticShelf.module.css';
 
 
@@ -17,10 +17,10 @@ function StaticShelfColumn({ column }: { column: ShelfColumn }) {
             data-type={element.type}
             classes={styles.elementInner}
           >
-            {element.numElements != null
-              && element.numElements != 0
+            {element.numItems != null
+              && element.numItems != 1
               && (
-              <div className={styles.numElements}>{ element.numElements }</div>
+                <div className={styles.numItem}>{ element.numItems }</div>
             )}
 
             <div className={styles.idElement}>{ element.id }</div>
@@ -33,13 +33,11 @@ function StaticShelfColumn({ column }: { column: ShelfColumn }) {
 
 function StaticShelf({ shelf }: { shelf : Shelf }) {
   return (
-    <section className={canvasStyles.board}>
-      <div className={canvasStyles.workspace} role="grid" aria-label="Shelf representation">
-        <div>
-          {shelf.columns.map((column) => (
-            <StaticShelfColumn key={column.id} column={column} />
-          ))}
-        </div>
+    <section className={styles.StaticShelf}>
+      <div>
+        {shelf.columns.map((column) => (
+          <StaticShelfColumn key={column.id} column={column} />
+        ))}
       </div>
     </section>
   );

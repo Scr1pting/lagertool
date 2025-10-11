@@ -1,9 +1,19 @@
-.numElements {
+.StaticShelf {
+  display: inline-block;
+  padding: 0px 80px;
+  border-bottom: 1px solid #ccc;
+
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.numItem {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.2rem 0.55rem;
-  font-size: 0.75rem; /* small (≈12px) */
+  margin-bottom: 5px;
+  font-size: 16px;
   line-height: 1;
   color: #fff;
   background: rgba(255, 255, 255, 0.2);
@@ -15,7 +25,7 @@
 
 .idElement {
   position: absolute;
-  bottom: 5px;
+  bottom: 2px;
   right: 5px;
   color: #ccc;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;

@@ -8,7 +8,7 @@ export interface ShelfElementDefinition {
 export interface ShelfElement {
   id: string;
   type: ShelfElementType;
-  numElements?: number;
+  numItems?: number;
 }
 
 export interface ShelfColumn {
