@@ -101,6 +101,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.POST("/bulkadd", h.BulkAdd)
 	r.POST("/bulkborrow", h.BulkBorrow)
 	r.POST("/bulksearch", h.BulkSearch)
+	r.POST("/bulkadd/csv", h.BulkAddCSV)
 
 	// Calendar endpoints
 	r.GET("/calendar/all", h.GetDownloadICSALL)

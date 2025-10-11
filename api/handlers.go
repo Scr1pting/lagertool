@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -1986,6 +1987,123 @@ func (h *Handler) GetDownloadICSALL(c *gin.Context) {
 
 	// Write ICS content
 	c.String(http.StatusOK, icsContent)
+}
+
+type RoomData struct {
+	Name     string  `json:"name"`
+	Campus   string  `json:"campus"`
+	Building string  `json:"building"`
+	Room     string  `json:"room"`
+	Amount   float64 `json:"amount"`
+}
+
+func (h *Handler) BulkAddCVS(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file not provided"})
+		return
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot open file"})
+		return
+	}
+	defer f.Close()
+
+	reader := csv.NewReader(f)
+	rows, err := reader.ReadAll()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid CSV"})
+		return
+	}
+
+	inserted := 0
+	for i, row := range rows {
+		if i == 0 {
+			continue // skip header
+		}
+		if len(row) < 5 {
+			continue
+		}
+
+		name := row[0]
+		campus := row[1]
+		building := row[2]
+		room := row[3]
+		amount, _ := strconv.Atoi(row[4])
+
+		// 1. Ensure Item exists
+		item := &db.Item{}
+		err := h.DB.Model(item).Where("name = ?", name).Select()
+		if err != nil { // if not found, create
+			item = &db.Item{Name: name, Category: "Uncategorized"}
+			_, err = h.DB.Model(item).Insert()
+			if err != nil {
+				fmt.Println("Error inserting item:", err)
+				continue
+			}
+		}
+
+		// 2. Ensure Shelf exists (use Name+Building+Room as unique ID)
+		shelfID := fmt.Sprintf("%s-%s-%s", building, room, name)
+		shelf := &db.Shelf{}
+		err = h.DB.Model(db.Location{}).Where("building = ", building).Where("campus = ", campus).Where("room = ", room).Where("shelf_id = ?", shelfID).Select()
+		if err != nil { // create if not exists
+			shelf = &db.Shelf{ID: shelfID, Name: name, Building: building, Room: room}
+			_, err = h.DB.Model(shelf).Insert()
+			if err != nil {
+				fmt.Println("Error inserting shelf:", err)
+				continue
+			}
+		}
+
+		// 3. Ensure a Column exists for Shelf (simplify: single column "C1")
+		columnID := shelfID + "-C1"
+		column := &db.Column{}
+		err = h.DB.Model(column).Where("id = ?", columnID).Select()
+		if err != nil {
+			column = &db.Column{ID: columnID, ShelfID: shelfID}
+			h.DB.Model(column).Insert()
+		}
+
+		// 4. Ensure a ShelfUnit exists (simplify: single unit "U1" type "high")
+		unitID := columnID + "-U1"
+		unit := &db.ShelfUnit{}
+		err = h.DB.Model(unit).Where("id = ?", unitID).Select()
+		if err != nil {
+			unit = &db.ShelfUnit{ID: unitID, ColumnID: columnID, Type: "high"}
+			h.DB.Model(unit).Insert()
+		}
+
+		// 5. Ensure Location exists
+		location := &db.Location{}
+		err = h.DB.Model(location).Where("shelf_unit_id = ?", unitID).Select()
+		if err != nil {
+			location = &db.Location{ShelfUnitID: unitID}
+			h.DB.Model(location).Insert()
+		}
+
+		// 6. Insert Inventory
+		inv := &db.Inventory{
+			LocationId: location.ID,
+			ItemId:     item.ID,
+			Amount:     amount,
+			Note:       "",
+		}
+		_, err = h.DB.Model(inv).Insert()
+		if err != nil {
+			fmt.Println("Error inserting inventory:", err)
+			continue
+		}
+
+		inserted++
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "CSV processed",
+		"inserted": inserted,
+	})
 }
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
