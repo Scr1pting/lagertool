@@ -61,4 +61,26 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	// Slack Events endpoint
 	r.POST("/slack/events", h.Events)
 	r.POST("/slack/interactivity", h.Interactivity)
+
+	// Event endpoints
+	r.GET("/events", h.GetAllEvents)
+	r.POST("/events", h.CreateEvent)
+	r.GET("/events/:id", h.GetEventByID)
+	r.PUT("/events/:id", h.UpdateEvent)
+	r.DELETE("/events/:id", h.DeleteEvent)
+
+	// Event helpers endpoints
+	r.GET("/events/:id/helpers", h.GetEventHelpers)
+	r.POST("/events/:id/helpers", h.AddEventHelper)
+	r.DELETE("/events/:id/helpers/:person_id", h.RemoveEventHelper)
+
+	// Event loans endpoints
+	r.GET("/events/:id/loans/active", h.GetActiveEventLoans)
+	r.POST("/events/:id/loans/return-all", h.ReturnAllEventLoans)
+	r.GET("/events/:id/loans", h.GetEventLoans)
+	r.POST("/events/:id/loans", h.CreateEventLoan)
+	r.POST("/events/:id/loans/:loan_id/return", h.ReturnEventLoan)
+
+	// Person event loans endpoint
+	r.GET("/persons/:id/event-loans", h.GetEventLoansByPerson)
 }
