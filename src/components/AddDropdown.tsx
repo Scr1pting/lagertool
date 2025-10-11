@@ -26,6 +26,11 @@ export default function AddDropdown() {
             Borrow Inventory
           </DropdownMenuItem>
           </Link>
+          <Link to="/events">
+          <DropdownMenuItem>
+            Event Manager
+          </DropdownMenuItem>
+          </Link>
           <Link to="/locations">
           <DropdownMenuItem>
             Location Management

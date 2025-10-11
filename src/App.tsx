@@ -8,6 +8,7 @@ import BorrowPage from './pages/BorrowPage';
 import AddPage from './pages/AddPage';
 import LocationPage from './pages/LocationPage';
 import AddPersonPage from './pages/AddPersonPage';
+import EventsPage from './pages/EventsPage';
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/locations" element={<LocationPage />} />
           <Route path="/add" element={<AddPage />} />
           <Route path="/persons" element={<AddPersonPage />} />
+          <Route path="/events" element={<EventsPage />} />
         </Routes>
 
       </main>
