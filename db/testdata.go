@@ -13,15 +13,47 @@ func InsertBasicData(db *pg.DB) error {
 	log.Println("Loading testdata...")
 	ctx := context.Background()
 
-	// ETH Zürich locations - Main storage at CAB (Zentrum)
-	locations := []Location{
-		{Campus: "Zentrum", Building: "CAB", Room: "H53", Shelf: "A", ShelfUnit: "1"},
-		{Campus: "Zentrum", Building: "CAB", Room: "H53", Shelf: "A", ShelfUnit: "2"},
-		{Campus: "Zentrum", Building: "CAB", Room: "H53", Shelf: "B", ShelfUnit: "1"},
-		{Campus: "Zentrum", Building: "ETZ", Room: "J91", Shelf: "Main", ShelfUnit: "1"},
-		{Campus: "Hönggerberg", Building: "HCI", Room: "J4", Shelf: "Electronics", ShelfUnit: "1"},
-		{Campus: "Hönggerberg", Building: "HPH", Room: "G2", Shelf: "Tools", ShelfUnit: "1"},
+	// ETH Zürich shelves - Main storage at CAB (Zentrum)
+	// Define shelves
+	shelves := []Shelf{
+		{Name: "Electronics Lab Storage", Building: "CAB", Room: "H53"},
+		{Name: "Workshop Tools", Building: "ETZ", Room: "J91"},
+		{Name: "Robotics Components", Building: "HCI", Room: "J4"},
 	}
+
+	// Define shelf units for each shelf
+	shelfUnits := []struct {
+		ShelfIndex int
+		Units      []ShelfUnit
+	}{
+		// CAB H53 - Electronics Lab Storage (2 columns)
+		{
+			ShelfIndex: 0,
+			Units: []ShelfUnit{
+				{ID: "A1H2E", ColumnNum: 0, Type: "high", HeightUnits: 2},
+				{ID: "A2S1X", ColumnNum: 0, Type: "slim", HeightUnits: 1},
+				{ID: "B1H3K", ColumnNum: 1, Type: "high", HeightUnits: 2},
+			},
+		},
+		// ETZ J91 - Workshop Tools (2 columns)
+		{
+			ShelfIndex: 1,
+			Units: []ShelfUnit{
+				{ID: "C1H2P", ColumnNum: 0, Type: "high", HeightUnits: 2},
+				{ID: "D1S2M", ColumnNum: 1, Type: "slim", HeightUnits: 2},
+			},
+		},
+		// HCI J4 - Robotics Components (1 column)
+		{
+			ShelfIndex: 2,
+			Units: []ShelfUnit{
+				{ID: "E1H1R", ColumnNum: 0, Type: "high", HeightUnits: 1},
+				{ID: "E2H2T", ColumnNum: 0, Type: "high", HeightUnits: 2},
+			},
+		},
+	}
+
+	var locations []Location
 
 	// Realistic items for engineering/CS students
 	items := []Item{
@@ -106,39 +138,74 @@ func InsertBasicData(db *pg.DB) error {
 	}
 	defer tx.Close()
 
-	// Insert Locations (only if they don't exist)
-	for i := range locations {
-		// Check if location already exists
-		exists, err := tx.Model(&Location{}).
-			Where("campus = ? AND building = ? AND room = ? AND shelf = ? AND shelfunit = ?",
-				locations[i].Campus, locations[i].Building, locations[i].Room,
-				locations[i].Shelf, locations[i].ShelfUnit).
+	// Insert Shelves
+	for i := range shelves {
+		exists, err := tx.Model(&Shelf{}).
+			Where("building = ? AND room = ? AND name = ?",
+				shelves[i].Building, shelves[i].Room, shelves[i].Name).
 			Exists()
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("failed to check location existence: %w", err)
+			return fmt.Errorf("failed to check shelf existence: %w", err)
 		}
 		if exists {
-			// If exists, fetch the ID
-			err = tx.Model(&locations[i]).
-				Where("campus = ? AND building = ? AND room = ? AND shelf = ? AND shelfunit = ?",
-					locations[i].Campus, locations[i].Building, locations[i].Room,
-					locations[i].Shelf, locations[i].ShelfUnit).
+			err = tx.Model(&shelves[i]).
+				Where("building = ? AND room = ? AND name = ?",
+					shelves[i].Building, shelves[i].Room, shelves[i].Name).
 				Select()
 			if err != nil {
 				tx.Rollback()
-				return fmt.Errorf("failed to fetch existing location: %w", err)
+				return fmt.Errorf("failed to fetch existing shelf: %w", err)
 			}
-			log.Printf("Location already exists: %s %s %s (ID: %d)", locations[i].Campus, locations[i].Building, locations[i].Room, locations[i].ID)
+			log.Printf("Shelf already exists: %s in %s %s (ID: %d)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
 			continue
 		}
 
-		_, err = tx.Model(&locations[i]).Insert()
+		_, err = tx.Model(&shelves[i]).Insert()
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("failed to insert location: %w", err)
+			return fmt.Errorf("failed to insert shelf: %w", err)
 		}
-		log.Printf("Inserted location: %s %s %s (ID: %d)", locations[i].Campus, locations[i].Building, locations[i].Room, locations[i].ID)
+		log.Printf("Inserted shelf: %s in %s %s (ID: %d)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
+	}
+
+	// Insert Shelf Units and Locations
+	for _, shelfUnitGroup := range shelfUnits {
+		shelfID := shelves[shelfUnitGroup.ShelfIndex].ID
+
+		for _, unit := range shelfUnitGroup.Units {
+			// Set the shelf ID
+			unit.ShelfID = shelfID
+
+			// Check if shelf unit exists
+			exists, err := tx.Model(&ShelfUnit{}).Where("id = ?", unit.ID).Exists()
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to check shelf unit existence: %w", err)
+			}
+			if exists {
+				log.Printf("Shelf unit already exists: %s (skipping)", unit.ID)
+				continue
+			}
+
+			// Insert shelf unit
+			_, err = tx.Model(&unit).Insert()
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to insert shelf unit: %w", err)
+			}
+			log.Printf("Inserted shelf unit: %s (Type: %s, Column: %d)", unit.ID, unit.Type, unit.ColumnNum)
+
+			// Create corresponding Location
+			location := Location{ShelfUnitID: unit.ID}
+			_, err = tx.Model(&location).Insert()
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to insert location for shelf unit %s: %w", unit.ID, err)
+			}
+			locations = append(locations, location)
+			log.Printf("Created location for shelf unit %s (Location ID: %d)", unit.ID, location.ID)
+		}
 	}
 
 	// Insert Items (only if they don't exist)
@@ -264,9 +331,9 @@ func InsertBasicData(db *pg.DB) error {
 
 	// Insert sample loans - mix of active, returned, and overdue
 	now := time.Now()
-	returnedTime1 := now.AddDate(0, 0, -2) // Returned 2 days ago
-	returnedTime2 := now.AddDate(0, -1, 5) // Returned 1 month ago, 5 days later
-	returnedTime3 := now.AddDate(0, -2, 0) // Returned 2 months ago
+	returnedTime1 := now.AddDate(0, 0, -2)  // Returned 2 days ago
+	returnedTime2 := now.AddDate(0, -1, 5)  // Returned 1 month ago, 5 days later
+	returnedTime3 := now.AddDate(0, -2, 0)  // Returned 2 months ago
 	returnedTime4 := now.AddDate(0, 0, -14) // Returned 14 days ago
 	returnedTime5 := now.AddDate(0, 0, -30) // Returned 30 days ago
 
@@ -448,8 +515,16 @@ func InsertBasicData(db *pg.DB) error {
 	}
 
 	log.Println("✅ ETH Zürich test data loaded successfully.")
+	log.Printf("   🏗️  Shelves: %d", len(shelves))
+
+	// Count total shelf units
+	totalUnits := 0
+	for _, group := range shelfUnits {
+		totalUnits += len(group.Units)
+	}
+	log.Printf("   📦 Shelf Units: %d", totalUnits)
 	log.Printf("   📍 Locations: %d", len(locations))
-	log.Printf("   📦 Items: %d", len(items))
+	log.Printf("   🔧 Items: %d", len(items))
 	log.Printf("   👥 Persons: %d", len(persons))
 	log.Printf("   📊 Inventory records: %d", len(isInRecords))
 	log.Printf("   📋 Loans: %d (5 active, 11 returned - includes 2 overdue active, 2 late returns)", len(loans))

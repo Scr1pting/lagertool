@@ -37,6 +37,8 @@ func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
 func InitDB(con *pg.DB) {
 	// Create tables using the provided connection
 	models := []interface{}{
+		(*Shelf)(nil),
+		(*ShelfUnit)(nil),
 		(*Location)(nil),
 		(*Item)(nil),
 		(*Inventory)(nil),
@@ -73,6 +75,35 @@ func runMigrations(con *pg.DB) {
 	_, err = con.Exec("ALTER TABLE loans ADD COLUMN IF NOT EXISTS returned_at TIMESTAMP")
 	if err != nil {
 		log.Printf("Warning: Failed to add 'returned_at' column: %v", err)
+	}
+
+	// Migrate location table to new schema
+	// Drop old columns that are no longer needed
+	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS campus")
+	if err != nil {
+		log.Printf("Warning: Failed to drop 'campus' column: %v", err)
+	}
+	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS building")
+	if err != nil {
+		log.Printf("Warning: Failed to drop 'building' column: %v", err)
+	}
+	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS room")
+	if err != nil {
+		log.Printf("Warning: Failed to drop 'room' column: %v", err)
+	}
+	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS shelf")
+	if err != nil {
+		log.Printf("Warning: Failed to drop 'shelf' column: %v", err)
+	}
+	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS shelfunit")
+	if err != nil {
+		log.Printf("Warning: Failed to drop 'shelfunit' column: %v", err)
+	}
+
+	// Add new shelf_unit_id column
+	_, err = con.Exec("ALTER TABLE location ADD COLUMN IF NOT EXISTS shelf_unit_id TEXT")
+	if err != nil {
+		log.Printf("Warning: Failed to add 'shelf_unit_id' column: %v", err)
 	}
 }
 

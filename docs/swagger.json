@@ -2464,9 +2464,330 @@
                     }
                 }
             }
+        },
+        "/shelves": {
+            "get": {
+                "description": "Retrieve all shelves from the database with their layouts",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Get all shelves",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.ShelfResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Parse the JSON shelf definition and create the corresponding Shelf and ShelfUnit entries in the database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Create a new shelf layout",
+                "parameters": [
+                    {
+                        "description": "Shelf layout object",
+                        "name": "shelf",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.ShelfRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shelves/building/{building}": {
+            "get": {
+                "description": "Retrieve all shelves for a specific building with their layout",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Get all shelves in a building",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Building name",
+                        "name": "building",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.ShelfResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shelves/building/{building}/room/{room}": {
+            "get": {
+                "description": "Retrieve all shelves for a specific building and room with their layout",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Get all shelves in a room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Building name",
+                        "name": "building",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Room name",
+                        "name": "room",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.ShelfResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shelves/unit/{id}": {
+            "get": {
+                "description": "Find a shelf unit by its unique 5-letter ID and return its location details",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Search for a shelf unit by its ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shelf Unit ID (5-letter code)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "api.ShelfRequest": {
+            "type": "object",
+            "required": [
+                "building",
+                "columns",
+                "name",
+                "room"
+            ],
+            "properties": {
+                "building": {
+                    "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "elements",
+                            "num"
+                        ],
+                        "properties": {
+                            "elements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "heightUnits",
+                                        "id",
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "heightUnits": {
+                                            "type": "integer"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "num": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "room": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.ShelfResponse": {
+            "type": "object",
+            "properties": {
+                "building": {
+                    "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "elements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "heightUnits": {
+                                            "type": "integer"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "num": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "room": {
+                    "type": "string"
+                }
+            }
+        },
         "db.Event": {
             "type": "object",
             "properties": {
@@ -2598,22 +2919,11 @@
         "db.Location": {
             "type": "object",
             "properties": {
-                "building": {
-                    "type": "string"
-                },
-                "campus": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },
-                "room": {
-                    "type": "string"
-                },
-                "shelf": {
-                    "type": "string"
-                },
-                "shelfunit": {
+                "shelf_unit_id": {
+                    "description": "Reference to ShelfUnit.ID",
                     "type": "string"
                 }
             }

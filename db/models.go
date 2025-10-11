@@ -4,14 +4,30 @@ import (
 	"time"
 )
 
-type Location struct {
-	tableName struct{} `pg:"location"`
+// Shelf represents a physical shelf layout in a room
+type Shelf struct {
+	tableName struct{} `pg:"shelf"`
 	ID        int      `json:"id" pg:"id,pk"`
-	Campus    string   `json:"campus,omitempty" pg:"campus"`
-	Building  string   `json:"building,omitempty" pg:"building"`
-	Room      string   `json:"room,omitempty" pg:"room"`
-	Shelf     string   `json:"shelf,omitempty" pg:"shelf"`
-	ShelfUnit string   `json:"shelfunit,omitempty" pg:"shelfunit"`
+	Name      string   `json:"name" pg:"name"`
+	Building  string   `json:"building" pg:"building"`
+	Room      string   `json:"room" pg:"room"`
+}
+
+// ShelfUnit represents an individual unit/element on a shelf
+type ShelfUnit struct {
+	tableName   struct{} `pg:"shelf_unit"`
+	ID          string   `json:"id" pg:"id,pk"`        // 5-letter unique ID from frontend
+	ShelfID     int      `json:"shelf_id" pg:"shelf_id"`
+	ColumnNum   int      `json:"column_num" pg:"column_num"`
+	Type        string   `json:"type" pg:"type"`                 // "high" or "slim"
+	HeightUnits int      `json:"height_units" pg:"height_units"` // Number of height units
+}
+
+// Location represents a specific shelf unit (for backward compatibility with Inventory)
+type Location struct {
+	tableName   struct{} `pg:"location"`
+	ID          int      `json:"id" pg:"id,pk"`
+	ShelfUnitID string   `json:"shelf_unit_id,omitempty" pg:"shelf_unit_id"` // Reference to ShelfUnit.ID
 }
 
 type Item struct {

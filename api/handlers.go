@@ -28,6 +28,308 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 }
 
 // ============================================================================
+// SHELF HANDLERS
+// ============================================================================
+
+// ShelfRequest represents the JSON structure for creating/updating shelves
+type ShelfRequest struct {
+	Name     string `json:"name" binding:"required"`
+	Building string `json:"building" binding:"required"`
+	Room     string `json:"room" binding:"required"`
+	Columns  []struct {
+		Num      int `json:"num" binding:"required"`
+		Elements []struct {
+			ID          string `json:"id" binding:"required"`
+			Type        string `json:"type" binding:"required"`
+			HeightUnits int    `json:"heightUnits" binding:"required"`
+		} `json:"elements" binding:"required"`
+	} `json:"columns" binding:"required"`
+}
+
+// ShelfResponse represents the JSON structure for returning shelves
+type ShelfResponse struct {
+	Name     string `json:"name"`
+	Building string `json:"building"`
+	Room     string `json:"room"`
+	Columns  []struct {
+		Num      int `json:"num"`
+		Elements []struct {
+			ID          string `json:"id"`
+			Type        string `json:"type"`
+			HeightUnits int    `json:"heightUnits"`
+		} `json:"elements"`
+	} `json:"columns"`
+}
+
+// CreateShelf godoc
+// @Summary Create a new shelf layout
+// @Description Parse the JSON shelf definition and create the corresponding Shelf and ShelfUnit entries in the database
+// @Tags shelves
+// @Accept json
+// @Produce json
+// @Param shelf body ShelfRequest true "Shelf layout object"
+// @Success 201 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shelves [post]
+func (h *Handler) CreateShelf(c *gin.Context) {
+	var req ShelfRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Begin transaction
+	tx, err := h.DB.Begin()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+	defer tx.Close()
+
+	// Create Shelf record
+	shelf := &db.Shelf{
+		Name:     req.Name,
+		Building: req.Building,
+		Room:     req.Room,
+	}
+
+	_, err = tx.Model(shelf).Insert()
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create shelf: " + err.Error()})
+		return
+	}
+
+	// Create ShelfUnit records
+	for _, column := range req.Columns {
+		for _, element := range column.Elements {
+			unit := &db.ShelfUnit{
+				ID:          element.ID,
+				ShelfID:     shelf.ID,
+				ColumnNum:   column.Num,
+				Type:        element.Type,
+				HeightUnits: element.HeightUnits,
+			}
+
+			_, err = tx.Model(unit).Insert()
+			if err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create shelf unit: " + err.Error()})
+				return
+			}
+
+			// Create Location record for inventory compatibility
+			location := &db.Location{
+				ShelfUnitID: element.ID,
+			}
+			_, err = tx.Model(location).Insert()
+			if err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create location: " + err.Error()})
+				return
+			}
+		}
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Shelf created successfully", "shelf_id": shelf.ID})
+}
+
+// GetShelvesByBuilding godoc
+// @Summary Get all shelves in a building
+// @Description Retrieve all shelves for a specific building with their layout
+// @Tags shelves
+// @Produce json
+// @Param building path string true "Building name"
+// @Success 200 {array} ShelfResponse
+// @Failure 500 {object} map[string]string
+// @Router /shelves/building/{building} [get]
+func (h *Handler) GetShelvesByBuilding(c *gin.Context) {
+	building := c.Param("building")
+
+	var shelves []db.Shelf
+	err := h.DB.Model(&shelves).Where("building = ?", building).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Build responses with units
+	responses := make([]ShelfResponse, 0)
+	for _, shelf := range shelves {
+		resp := h.buildShelfResponse(shelf)
+		responses = append(responses, resp)
+	}
+
+	c.JSON(http.StatusOK, responses)
+}
+
+// GetShelvesByRoom godoc
+// @Summary Get all shelves in a room
+// @Description Retrieve all shelves for a specific building and room with their layout
+// @Tags shelves
+// @Produce json
+// @Param building path string true "Building name"
+// @Param room path string true "Room name"
+// @Success 200 {array} ShelfResponse
+// @Failure 500 {object} map[string]string
+// @Router /shelves/building/{building}/room/{room} [get]
+func (h *Handler) GetShelvesByRoom(c *gin.Context) {
+	building := c.Param("building")
+	room := c.Param("room")
+
+	var shelves []db.Shelf
+	err := h.DB.Model(&shelves).Where("building = ? AND room = ?", building, room).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Build responses with units
+	responses := make([]ShelfResponse, 0)
+	for _, shelf := range shelves {
+		resp := h.buildShelfResponse(shelf)
+		responses = append(responses, resp)
+	}
+
+	c.JSON(http.StatusOK, responses)
+}
+
+// GetAllShelves godoc
+// @Summary Get all shelves
+// @Description Retrieve all shelves from the database with their layouts
+// @Tags shelves
+// @Produce json
+// @Success 200 {array} ShelfResponse
+// @Failure 500 {object} map[string]string
+// @Router /shelves [get]
+func (h *Handler) GetAllShelves(c *gin.Context) {
+	var shelves []db.Shelf
+	err := h.DB.Model(&shelves).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Build responses with units
+	responses := make([]ShelfResponse, 0)
+	for _, shelf := range shelves {
+		resp := h.buildShelfResponse(shelf)
+		responses = append(responses, resp)
+	}
+
+	c.JSON(http.StatusOK, responses)
+}
+
+// SearchShelfUnit godoc
+// @Summary Search for a shelf unit by its ID
+// @Description Find a shelf unit by its unique 5-letter ID and return its location details
+// @Tags shelves
+// @Produce json
+// @Param id path string true "Shelf Unit ID (5-letter code)"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shelves/unit/{id} [get]
+func (h *Handler) SearchShelfUnit(c *gin.Context) {
+	unitID := c.Param("id")
+
+	var unit db.ShelfUnit
+	err := h.DB.Model(&unit).Where("id = ?", unitID).Select()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Shelf unit not found"})
+		return
+	}
+
+	// Get the shelf details
+	var shelf db.Shelf
+	err = h.DB.Model(&shelf).Where("id = ?", unit.ShelfID).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get shelf details"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"unit_id":      unit.ID,
+		"type":         unit.Type,
+		"height_units": unit.HeightUnits,
+		"column":       unit.ColumnNum,
+		"shelf_name":   shelf.Name,
+		"building":     shelf.Building,
+		"room":         shelf.Room,
+	})
+}
+
+// Helper function to build shelf response with units
+func (h *Handler) buildShelfResponse(shelf db.Shelf) ShelfResponse {
+	var units []db.ShelfUnit
+	h.DB.Model(&units).Where("shelf_id = ?", shelf.ID).Order("column_num ASC").Select()
+
+	// Group units by column
+	columnMap := make(map[int][]db.ShelfUnit)
+	for _, unit := range units {
+		columnMap[unit.ColumnNum] = append(columnMap[unit.ColumnNum], unit)
+	}
+
+	// Build response
+	resp := ShelfResponse{
+		Name:     shelf.Name,
+		Building: shelf.Building,
+		Room:     shelf.Room,
+		Columns:  make([]struct {
+			Num      int `json:"num"`
+			Elements []struct {
+				ID          string `json:"id"`
+				Type        string `json:"type"`
+				HeightUnits int    `json:"heightUnits"`
+			} `json:"elements"`
+		}, 0),
+	}
+
+	// Sort columns by number
+	for colNum, colUnits := range columnMap {
+		column := struct {
+			Num      int `json:"num"`
+			Elements []struct {
+				ID          string `json:"id"`
+				Type        string `json:"type"`
+				HeightUnits int    `json:"heightUnits"`
+			} `json:"elements"`
+		}{
+			Num: colNum,
+			Elements: make([]struct {
+				ID          string `json:"id"`
+				Type        string `json:"type"`
+				HeightUnits int    `json:"heightUnits"`
+			}, 0),
+		}
+
+		for _, unit := range colUnits {
+			element := struct {
+				ID          string `json:"id"`
+				Type        string `json:"type"`
+				HeightUnits int    `json:"heightUnits"`
+			}{
+				ID:          unit.ID,
+				Type:        unit.Type,
+				HeightUnits: unit.HeightUnits,
+			}
+			column.Elements = append(column.Elements, element)
+		}
+
+		resp.Columns = append(resp.Columns, column)
+	}
+
+	return resp
+}
+
+// ============================================================================
 // LOCATION HANDLERS
 // ============================================================================
 
@@ -1195,40 +1497,48 @@ func (h *Handler) BorrowCounter(c *gin.Context) {
 
 func (h *Handler) InsertNewItem(c *gin.Context) {
 	type Input struct {
-		Category  string `json:"category"`
-		Name      string `json:"name"`
-		Amount    int    `json:"amount"`
-		Campus    string `json:"campus"`
-		Building  string `json:"building"`
-		Room      string `json:"room"`
-		Shelf     string `json:"shelf"`
-		ShelfUnit string `json:"shelf_unit"`
+		Category    string `json:"category"`
+		Name        string `json:"name"`
+		Amount      int    `json:"amount"`
+		ShelfUnitID string `json:"shelf_unit_id"` // 5-letter shelf unit ID
 	}
 	in := Input{}
 	err := c.ShouldBindJSON(&in)
 	if err != nil {
-		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input: " + err.Error()})
+		return
 	}
 
+	// Verify shelf unit exists
+	var shelfUnit db.ShelfUnit
+	err = h.DB.Model(&shelfUnit).Where("id = ?", in.ShelfUnitID).Select()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Shelf unit not found"})
+		return
+	}
+
+	// Create item
 	item := &db.Item{
 		Name:     in.Name,
 		Category: in.Category,
 	}
-
-	h.DB.Model(&item).Insert()
-
-	local := &db.Location{
-		Campus:    in.Campus,
-		Building:  in.Building,
-		Room:      in.Room,
-		Shelf:     in.Shelf,
-		ShelfUnit: in.ShelfUnit,
+	_, err = h.DB.Model(&item).Insert()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert item: " + err.Error()})
+		return
 	}
 
-	h.DB.Model(&local).Insert()
+	// Find location for this shelf unit
+	var location db.Location
+	err = h.DB.Model(&location).Where("shelf_unit_id = ?", in.ShelfUnitID).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Location not found for shelf unit"})
+		return
+	}
 
+	// Create inventory record
 	invent := &db.Inventory{
-		LocationId: local.ID,
+		LocationId: location.ID,
 		ItemId:     item.ID,
 		Amount:     in.Amount,
 	}
@@ -1236,7 +1546,16 @@ func (h *Handler) InsertNewItem(c *gin.Context) {
 	_, err = h.DB.Model(&invent).Insert()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert inventory: " + err.Error()})
+		return
 	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message":       "Item created successfully",
+		"item_id":       item.ID,
+		"location_id":   location.ID,
+		"inventory_id":  invent.ID,
+		"shelf_unit_id": in.ShelfUnitID,
+	})
 }
 
 func (h *Handler) Events(c *gin.Context) {
