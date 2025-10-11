@@ -49,7 +49,7 @@ func init() {
 
 	// Configure OAuth
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8080/auth/google/callback",
+		RedirectURL:  "http://localhost:8000/auth/google/callback",
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
@@ -99,8 +99,9 @@ func GoogleCallbackHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session: " + err.Error()})
 		return
 	}
-
-	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000")
+	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173")
+	// uncomment for deployment
+	// c.Redirect(http.StatusTemporaryRedirect, "http://05.hackathon.ethz.ch")
 }
 
 func VerifyGoogleToken(c *gin.Context) {
