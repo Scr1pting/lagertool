@@ -12,11 +12,12 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	// Shelf endpoints
 	r.POST("/shelves", h.CreateShelf)
 	r.GET("/shelves", h.GetAllShelves)
-	r.GET("/shelves/:id", h.GetShelfByID)
+	// More specific routes MUST come before generic :id route
 	r.GET("/shelves/building/:building", h.GetShelvesByBuilding)
 	r.GET("/shelves/building/:building/room/:room", h.GetShelvesByRoom)
 	r.GET("/shelves/unit/:id", h.SearchShelfUnit)
 	r.GET("/shelves/unit/:id/inventory", h.GetShelfUnitInventory)
+	r.GET("/shelves/:id", h.GetShelfByID)
 
 	// Location endpoints
 	r.GET("/locations", h.GetAllLocations)

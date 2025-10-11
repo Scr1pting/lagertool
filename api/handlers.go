@@ -265,10 +265,10 @@ func (h *Handler) GetShelfByID(c *gin.Context) {
 
 // SearchShelfUnit godoc
 // @Summary Search for a shelf unit by its ID
-// @Description Find a shelf unit by its unique 5-letter ID and return its location details
+// @Description Find a shelf unit by its unique 5-letter ID (case-insensitive) and return its location details
 // @Tags shelves
 // @Produce json
-// @Param id path string true "Shelf Unit ID (5-letter code)"
+// @Param id path string true "Shelf Unit ID (5-letter code, case-insensitive)"
 // @Success 200 {object} map[string]interface{}
 // @Failure 404 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -277,7 +277,7 @@ func (h *Handler) SearchShelfUnit(c *gin.Context) {
 	unitID := c.Param("id")
 
 	var unit db.ShelfUnit
-	err := h.DB.Model(&unit).Where("id = ?", unitID).Select()
+	err := h.DB.Model(&unit).Where("UPPER(id) = UPPER(?)", unitID).Select()
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Shelf unit not found"})
 		return
@@ -336,10 +336,10 @@ type LoanInfo struct {
 
 // GetShelfUnitInventory godoc
 // @Summary Get inventory in a shelf unit
-// @Description Retrieve all inventory items in a specific shelf unit by its 5-letter ID, including borrow status and active loans
+// @Description Retrieve all inventory items in a specific shelf unit by its 5-letter ID (case-insensitive), including borrow status and active loans
 // @Tags shelves
 // @Produce json
-// @Param id path string true "Shelf Unit ID (5-letter code)"
+// @Param id path string true "Shelf Unit ID (5-letter code, case-insensitive)"
 // @Success 200 {array} ShelfUnitInventoryItem
 // @Failure 404 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -347,17 +347,17 @@ type LoanInfo struct {
 func (h *Handler) GetShelfUnitInventory(c *gin.Context) {
 	unitID := c.Param("id")
 
-	// Verify shelf unit exists
+	// Verify shelf unit exists (case-insensitive)
 	var unit db.ShelfUnit
-	err := h.DB.Model(&unit).Where("id = ?", unitID).Select()
+	err := h.DB.Model(&unit).Where("UPPER(id) = UPPER(?)", unitID).Select()
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Shelf unit not found"})
 		return
 	}
 
-	// Find location for this shelf unit
+	// Find location for this shelf unit (use actual unit.ID from DB for exact match)
 	var location db.Location
-	err = h.DB.Model(&location).Where("shelf_unit_id = ?", unitID).Select()
+	err = h.DB.Model(&location).Where("shelf_unit_id = ?", unit.ID).Select()
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Location not found for shelf unit"})
 		return

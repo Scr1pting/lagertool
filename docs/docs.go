@@ -2699,7 +2699,7 @@ const docTemplate = `{
         },
         "/shelves/unit/{id}": {
             "get": {
-                "description": "Find a shelf unit by its unique 5-letter ID and return its location details",
+                "description": "Find a shelf unit by its unique 5-letter ID (case-insensitive) and return its location details",
                 "produces": [
                     "application/json"
                 ],
@@ -2710,7 +2710,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Shelf Unit ID (5-letter code)",
+                        "description": "Shelf Unit ID (5-letter code, case-insensitive)",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -2747,7 +2747,7 @@ const docTemplate = `{
         },
         "/shelves/unit/{id}/inventory": {
             "get": {
-                "description": "Retrieve all inventory items in a specific shelf unit by its 5-letter ID, including borrow status and active loans",
+                "description": "Retrieve all inventory items in a specific shelf unit by its 5-letter ID (case-insensitive), including borrow status and active loans",
                 "produces": [
                     "application/json"
                 ],
@@ -2758,7 +2758,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Shelf Unit ID (5-letter code)",
+                        "description": "Shelf Unit ID (5-letter code, case-insensitive)",
                         "name": "id",
                         "in": "path",
                         "required": true
