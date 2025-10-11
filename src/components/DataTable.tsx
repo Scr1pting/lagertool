@@ -4,6 +4,7 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  type Row,
   useReactTable,
 } from "@tanstack/react-table"
 
@@ -19,11 +20,13 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  getRowClassName?: (row: Row<TData>) => string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  getRowClassName,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -58,6 +61,7 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                className={getRowClassName ? getRowClassName(row) : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

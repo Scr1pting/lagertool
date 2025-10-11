@@ -15,7 +15,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0 1rem;
+  height: 44px; /* or whatever value matches your search bar */
   border: 1px solid #ccc;
   border-radius: 25px;
   background-color: #ffffff;
@@ -81,3 +82,4 @@
   outline: none;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
+

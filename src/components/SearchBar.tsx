@@ -7,6 +7,7 @@ export default function SearchBar() {
 
   const handleSearch = () => {
     console.log("User searched for: ", query);
+    fetch(`https://05.hackathon.ethz.ch/search?search_term=${(query)}`)
   };
 
   return (
