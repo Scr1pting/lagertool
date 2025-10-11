@@ -4,30 +4,24 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
+	"lagertool.com/main/config"
 )
 
-func NewDBConn() (con *pg.DB, err error) {
+func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
 	fmt.Println("Initialising DB")
-	host := getEnv("DB_HOST", "localhost")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "postgres")
-	password := getEnv("DB_PASSWORD", "example")
-	database := getEnv("DB_NAME", "appdb")
-
-	address := fmt.Sprintf("%s:%s", host, port)
+	address := fmt.Sprintf("%s:%s", cfg.DB.Host, cfg.DB.Port)
 	options := &pg.Options{
-		User:     user,
-		Password: password,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
 		Addr:     address,
-		Database: database,
+		Database: cfg.DB.Name,
 		PoolSize: 50,
 	}
 	fmt.Println("Connecting to database...")
-	fmt.Printf("%s:%s\n", host, port)
+	fmt.Printf("%s:%s\n", cfg.DB.Host, cfg.DB.Port)
 	con = pg.Connect(options)
 
 	// Test connection to Postgres
@@ -59,13 +53,6 @@ func InitDB(con *pg.DB) {
 		}
 	}
 	log.Println("✅ Database tables initialized successfully.")
-}
-
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }
 
 func Close(con *pg.DB) {

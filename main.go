@@ -9,6 +9,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"lagertool.com/main/api"
+	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 	_ "lagertool.com/main/docs"
 	"lagertool.com/main/slack1"
@@ -30,6 +31,9 @@ import (
 // @schemes http
 
 func main() {
+	// Load configuration from .env file
+	cfg := config.Load()
+
 	router := gin.Default()
 
 	// Configure CORS middleware
@@ -41,7 +45,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	dbConnection, err := db.NewDBConn()
+	dbConnection, err := db.NewDBConn(cfg)
 	if err != nil {
 		log.Fatal("DBConnection failed: ", err)
 	}
@@ -53,7 +57,7 @@ func main() {
 	}(dbConnection)
 
 	db.InitDB(dbConnection)
-	slack1.SetupSlack()
+	slack1.SetupSlack(cfg)
 
 	if err := db.InsertBasicData(dbConnection); err != nil {
 		log.Printf("⚠️  Failed to insert test data: %v", err)

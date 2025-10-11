@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/slack-go/slack"
+	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 )
 
@@ -25,19 +24,13 @@ type BorrowSession struct {
 
 var Sessions = make(map[string]*BorrowSession)
 
-func SetupSlack() {
-	// Load .env
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	token := os.Getenv("SLACK_BOT_TOKEN")
-	if token == "" {
+func SetupSlack(cfg *config.Config) {
+	if cfg.Slack.BotToken == "" {
 		log.Fatal("SLACK_BOT_TOKEN not set")
 	}
 	fmt.Println("Bot token loaded.")
 
-	api := slack.New(token)
+	api := slack.New(cfg.Slack.BotToken)
 
 	r := gin.Default()
 
@@ -63,16 +56,7 @@ func SetupSlack() {
 			return
 		}
 
-		if err := godotenv.Load(); err != nil {
-			log.Fatal("Error loading .env file")
-		}
-
-		token := os.Getenv("SLACK_BOT_TOKEN")
-		if token == "" {
-			log.Fatal("SLACK_BOT_TOKEN not set")
-		}
-		fmt.Println("Bot token loaded.")
-		api := slack.New(token)
+		// Reuse the api client from outer scope (already initialized with config)
 
 		user := callback.User.ID
 		session, exists := Sessions[user]
@@ -110,7 +94,7 @@ func SetupSlack() {
 						false))
 
 				// Save to DB
-				db.SlackBorrow(db.Borrow{
+				db.SlackBorrow(cfg, db.Borrow{
 					Item:     session.Item,
 					Amount:   session.Quantity,
 					Location: session.Source,
@@ -167,7 +151,7 @@ func SetupSlack() {
 				Sessions[user] = session
 			}
 
-			handleMessage(api, channel, session, text, userInfo)
+			handleMessage(cfg, api, channel, session, text, userInfo)
 		}
 
 		c.Status(http.StatusOK)
@@ -178,7 +162,7 @@ func SetupSlack() {
 }
 
 // handleMessage processes the conversation
-func handleMessage(api *slack.Client, channel string, session *BorrowSession, text string, user *slack.User) {
+func handleMessage(cfg *config.Config, api *slack.Client, channel string, session *BorrowSession, text string, user *slack.User) {
 	log.Println(session.Stage)
 	switch session.Stage {
 	case "start":
@@ -246,7 +230,7 @@ func handleMessage(api *slack.Client, channel string, session *BorrowSession, te
 			false))
 		session.Stage = "start"
 
-		db.SlackBorrow(db.Borrow{
+		db.SlackBorrow(cfg, db.Borrow{
 			Item:     session.Item,
 			Amount:   session.Quantity,
 			Location: session.Source,

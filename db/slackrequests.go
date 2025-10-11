@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"lagertool.com/main/config"
 )
 
 type Borrow struct {
@@ -17,8 +18,8 @@ type Borrow struct {
 	UserName string    `json:"username"`
 }
 
-func SlackBorrow(borrow Borrow) {
-	db, err := NewDBConn()
+func SlackBorrow(cfg *config.Config, borrow Borrow) {
+	db, err := NewDBConn(cfg)
 	if err != nil {
 		log.Println(err)
 	}
