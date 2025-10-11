@@ -1,7 +1,6 @@
 .palette {
   position: relative;
   width: 200px;
-  height: 100%;
   gap: 30px;
   padding: 45px 20px 30px 40px;
   display: flex;
