@@ -1,6 +1,7 @@
-package slack
+package slack1
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,7 +23,7 @@ type BorrowSession struct {
 	DueDate  time.Time
 }
 
-var sessions = make(map[string]*BorrowSession)
+var Sessions = make(map[string]*BorrowSession)
 
 func SetupSlack() {
 	// Load .env
@@ -45,6 +46,86 @@ func SetupSlack() {
 		log.Fatal(err)
 	}
 	botID := authResp.UserID
+	r.POST("/slack/interactivity", func(c *gin.Context) {
+		// Slack sends the interaction payload as form data under the key "payload"
+		payload := c.PostForm("payload")
+		if payload == "" {
+			log.Println("Error: Missing 'payload' in form data.")
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		var callback slack.InteractionCallback
+		// Unmarshal the payload string into the struct
+		if err := json.Unmarshal([]byte(payload), &callback); err != nil {
+			log.Println("Error unmarshaling Slack payload:", err)
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		if err := godotenv.Load(); err != nil {
+			log.Fatal("Error loading .env file")
+		}
+
+		token := os.Getenv("SLACK_BOT_TOKEN")
+		if token == "" {
+			log.Fatal("SLACK_BOT_TOKEN not set")
+		}
+		fmt.Println("Bot token loaded.")
+		api := slack.New(token)
+
+		user := callback.User.ID
+		session, exists := Sessions[user]
+		userInfo, err := api.GetUserInfo(user)
+		if err != nil {
+			log.Println("Error getting user info:", err)
+		} else {
+			fmt.Println("User ID:", userInfo.ID)
+			fmt.Println("Username:", userInfo.Name)
+			fmt.Println("Display Name:", userInfo.Profile.DisplayName)
+		}
+
+		// Corrected stage check: slack1.go sets "awaiting_due_date"
+		if !exists || session.Stage != "awaiting_due_date" {
+			c.Status(http.StatusOK)
+			return
+		}
+
+		for _, action := range callback.ActionCallback.BlockActions {
+			if action.ActionID == "due_date_selected" {
+				dueDate, err := time.Parse("2006-01-02", action.SelectedDate)
+				if err != nil {
+					api.PostMessage(callback.Channel.ID,
+						slack.MsgOptionText("Invalid date. Please try again.", false))
+					return
+				}
+
+				session.DueDate = dueDate
+
+				// Confirm to user
+				api.PostMessage(callback.Channel.ID,
+					slack.MsgOptionText(
+						fmt.Sprintf("✅ Got it! You want %d %s(s) from %s until %s. I’ll check and confirm!",
+							session.Quantity, session.Item, session.Source, session.DueDate.Format("Jan 2, 2006")),
+						false))
+
+				// Save to DB
+				db.SlackBorrow(db.Borrow{
+					Item:     session.Item,
+					Amount:   session.Quantity,
+					Location: session.Source,
+					DueDate:  session.DueDate,
+					UserID:   user,
+					UserName: userInfo.Name,
+				})
+
+				session.Stage = "start"
+			}
+		}
+
+		c.Status(http.StatusOK)
+	})
+
 	// Slack Events endpoint
 	r.POST("/slack/events", func(c *gin.Context) {
 		var body slackevents
@@ -80,10 +161,10 @@ func SetupSlack() {
 				fmt.Println("Display Name:", userInfo.Profile.DisplayName) // e.g., "John"
 			}
 
-			session, exists := sessions[user]
+			session, exists := Sessions[user]
 			if !exists {
 				session = &BorrowSession{Stage: "start"}
-				sessions[user] = session
+				Sessions[user] = session
 			}
 
 			handleMessage(api, channel, session, text, userInfo)
@@ -98,6 +179,7 @@ func SetupSlack() {
 
 // handleMessage processes the conversation
 func handleMessage(api *slack.Client, channel string, session *BorrowSession, text string, user *slack.User) {
+	log.Println(session.Stage)
 	switch session.Stage {
 	case "start":
 		api.PostMessage(channel, slack.MsgOptionText("Hi! What would you like to borrow? (just the item name)", false))
@@ -120,7 +202,32 @@ func handleMessage(api *slack.Client, channel string, session *BorrowSession, te
 
 	case "awaiting_source":
 		session.Source = text
-		api.PostMessage(channel, slack.MsgOptionText("Until when do you need it? (YYYY-MM-DD)", false))
+
+		// Create the datepicker element
+		datePicker := slack.NewDatePickerBlockElement("due_date_selected")
+		datePicker.InitialDate = time.Now().Format("2006-01-02")
+
+		// Text section explaining what to do
+		textSection := slack.NewSectionBlock(
+			slack.NewTextBlockObject("mrkdwn", "Please pick a due date:", false, false),
+			nil,
+			nil,
+		)
+
+		// Action block with the datepicker
+		actionBlock := slack.NewActionBlock(
+			"due_date_action",
+			datePicker,
+		)
+
+		// Send the message
+		api.PostMessage(channel,
+			slack.MsgOptionBlocks(
+				textSection,
+				actionBlock,
+			),
+		)
+
 		session.Stage = "awaiting_due_date"
 
 	case "awaiting_due_date":
@@ -135,7 +242,7 @@ func handleMessage(api *slack.Client, channel string, session *BorrowSession, te
 			fmt.Sprintf("✅ Got it! You want %d %s(s) from %s until %s. I’ll check and confirm!",
 				session.Quantity, session.Item, session.Source, session.DueDate.Format("Jan 2, 2006")),
 			false))
-		session.Stage = "complete"
+		session.Stage = "start"
 
 		db.SlackBorrow(db.Borrow{
 			Item:     session.Item,
