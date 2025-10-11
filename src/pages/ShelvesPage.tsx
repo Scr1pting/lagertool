@@ -5,10 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import fetchShelves from "@/features/shelves/api/getShelves";
 import fetchShelfUnitInventory from "@/features/shelves/api/getShelfUnitInventory";
-import type {
-	ShelfRecord,
-	ShelfUnitInventoryItem,
-} from "@/features/shelves/api/types";
+import type { ShelfUnitInventoryItem } from "@/features/shelves/api/types";
+import type { Shelf } from "@/features/shelves/types/shelf";
 
 const API_BASE_URL =
 	import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api";
@@ -23,13 +21,17 @@ const buildOptionLabel = (raw?: string | null) => raw?.trim() || "Unassigned";
 const asCount = (value?: number | null) =>
 	typeof value === "number" && Number.isFinite(value) ? value : 0;
 
+type ApiShelf = Shelf & {
+	numElements?: number | null;
+};
+
 type RoomGroup = {
 	key: string;
 	buildingKey: string;
 	buildingLabel: string;
 	roomKey: string;
 	roomLabel: string;
-	shelves: ShelfRecord[];
+	shelves: ApiShelf[];
 };
 
 type ShelfInventoryByUnit = {
@@ -50,7 +52,7 @@ type ItemActionState = {
 };
 
 export default function ShelvesPage() {
-	const [shelves, setShelves] = useState<ShelfRecord[]>([]);
+	const [shelves, setShelves] = useState<ApiShelf[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +91,7 @@ export default function ShelvesPage() {
 		return () => controller.abort();
 	}, []);
 
-	const loadShelfInventory = useCallback(async (shelf: ShelfRecord) => {
+	const loadShelfInventory = useCallback(async (shelf: ApiShelf) => {
 		const unitIds = shelf.columns
 			.flatMap((column) => column.elements.map((element) => element.id))
 			.filter((id): id is string => Boolean(id && id.trim().length > 0));
@@ -221,7 +223,7 @@ export default function ShelvesPage() {
 		updateItemActionState(shelfId, inventoryId, { error: null, success: null });
 	};
 
-	const handleUpdateAmount = async (shelf: ShelfRecord, inventoryId: number) => {
+	const handleUpdateAmount = async (shelf: ApiShelf, inventoryId: number) => {
 		const shelfInputs = amountEdits[shelf.id] ?? {};
 		const rawValue = shelfInputs[inventoryId];
 		const parsed = Number(rawValue);
@@ -282,7 +284,7 @@ export default function ShelvesPage() {
 		}
 	};
 
-	const handleDeleteInventory = async (shelf: ShelfRecord, inventoryId: number) => {
+	const handleDeleteInventory = async (shelf: ApiShelf, inventoryId: number) => {
 		const confirmed = window.confirm(
 			"Are you sure you want to remove this inventory entry from the shelf?",
 		);
@@ -434,7 +436,7 @@ export default function ShelvesPage() {
 	}, [filteredShelves]);
 
 	const handleToggleShelf = useCallback(
-		(shelf: ShelfRecord) => {
+		(shelf: ApiShelf) => {
 			setExpandedShelfId((current) => {
 				if (current === shelf.id) {
 					return null;

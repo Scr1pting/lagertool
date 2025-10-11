@@ -1,8 +1,8 @@
-import { type ShelfItemType } from "../types/shelf";
+import { type ShelfElementType } from "../types/shelf";
 
 export interface ShelfUnitPiece {
 	id: string;
-	type: ShelfItemType | string;
+	type: ShelfElementType | string;
 }
 
 export interface ShelfColumnPayload {

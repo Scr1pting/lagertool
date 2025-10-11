@@ -2,6 +2,10 @@ import { type Shelf } from "../types/shelf";
 
 const SHELVES_ENDPOINT = "https://05.hackathon.ethz.ch/api/shelves";
 
+type GetShelvesOptions = {
+	signal?: AbortSignal;
+};
+
 const parseErrorMessage = async (response: Response) => {
 	try {
 		const data = (await response.json()) as { message?: string } | undefined;
@@ -15,12 +19,13 @@ const parseErrorMessage = async (response: Response) => {
 	return response.statusText || "Unknown error";
 };
 
-const getShelves = async (): Promise<Shelf[]> => {
+const getShelves = async ({ signal }: GetShelvesOptions = {}): Promise<Shelf[]> => {
 	const response = await fetch(SHELVES_ENDPOINT, {
 		method: "GET",
 		headers: {
 			"Accept": "application/json",
 		},
+		signal,
 	});
 
 	if (!response.ok) {
