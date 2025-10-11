@@ -23,22 +23,22 @@ export default function AddDropdown() {
           </DropdownMenuItem>
           <Link to="/borrow">
           <DropdownMenuItem>
-            Borrow
+            Borrow Inventory
           </DropdownMenuItem>
           </Link>
           <Link to="/locations">
           <DropdownMenuItem>
-            Locations
+            Location Management
           </DropdownMenuItem>
           </Link>
           <Link to="/add">
           <DropdownMenuItem>
-            Add
+            Track Inventory
           </DropdownMenuItem>
           </Link>
           <Link to="/persons">
           <DropdownMenuItem>
-            Add Person
+            Person Management
           </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>
