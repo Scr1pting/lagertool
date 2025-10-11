@@ -55,7 +55,25 @@ func InitDB(con *pg.DB) {
 			log.Fatalf("Error creating table for %T: %v", model, err)
 		}
 	}
+
+	// Run migrations
+	runMigrations(con)
+
 	log.Println("✅ Database tables initialized successfully.")
+}
+
+func runMigrations(con *pg.DB) {
+	// Add returned column to loans table
+	_, err := con.Exec("ALTER TABLE loans ADD COLUMN IF NOT EXISTS returned BOOLEAN DEFAULT false")
+	if err != nil {
+		log.Printf("Warning: Failed to add 'returned' column: %v", err)
+	}
+
+	// Add returned_at column to loans table
+	_, err = con.Exec("ALTER TABLE loans ADD COLUMN IF NOT EXISTS returned_at TIMESTAMP")
+	if err != nil {
+		log.Printf("Warning: Failed to add 'returned_at' column: %v", err)
+	}
 }
 
 func Close(con *pg.DB) {

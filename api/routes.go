@@ -46,11 +46,14 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	// Loans endpoints
 	r.GET("/loans", h.GetAllLoans)
 	r.GET("/loans/person/:person_id", h.GetLoansByPerson)
+	r.GET("/loans/person/:person_id/history", h.GetLoanHistoryByPerson)
 	r.GET("/loans/permanent/:perm_id", h.GetLoansByPermanent)
 	r.GET("/loans/overdue", h.GetOverdueLoans)
+	r.GET("/loans/item/:item_id/history", h.GetLoanHistoryByItem)
 	r.GET("/loans/:id", h.GetLoanByID)
 	r.POST("/loans", h.CreateLoan)
 	r.PUT("/loans/:id", h.UpdateLoan)
+	r.PATCH("/loans/:id/return", h.ReturnLoan)
 	r.DELETE("/loans/:id", h.DeleteLoan)
 
 	// Searches

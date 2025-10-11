@@ -262,28 +262,160 @@ func InsertBasicData(db *pg.DB) error {
 		log.Printf("Inserted inventory: %s (ID: %d)", isInRecords[i].Note, isInRecords[i].ID)
 	}
 
-	// Insert sample loans
+	// Insert sample loans - mix of active, returned, and overdue
+	now := time.Now()
+	returnedTime1 := now.AddDate(0, 0, -2) // Returned 2 days ago
+	returnedTime2 := now.AddDate(0, -1, 5) // Returned 1 month ago, 5 days later
+	returnedTime3 := now.AddDate(0, -2, 0) // Returned 2 months ago
+	returnedTime4 := now.AddDate(0, 0, -14) // Returned 14 days ago
+	returnedTime5 := now.AddDate(0, 0, -30) // Returned 30 days ago
+
 	loans := []Loans{
+		// Active loans (not returned)
 		{
-			PersonID: persons[0].ID,
-			ItemID:   isInRecords[0].ID,
+			PersonID: persons[0].ID, // Max Müller
+			ItemID:   items[0].ID,   // Arduino Uno
 			Amount:   2,
-			Begin:    time.Now().AddDate(0, 0, -7),
-			Until:    time.Now().AddDate(0, 0, 7), // Due in 1 week
+			Begin:    now.AddDate(0, 0, -7),
+			Until:    now.AddDate(0, 0, 7), // Due in 1 week
+			Returned: false,
 		},
 		{
-			PersonID: persons[1].ID,
-			ItemID:   isInRecords[5].ID,
+			PersonID: persons[1].ID, // Anna Schmidt
+			ItemID:   items[5].ID,   // Oscilloscope
 			Amount:   1,
-			Begin:    time.Now().AddDate(0, 0, -3),
-			Until:    time.Now().AddDate(0, 0, 11), // Due in 2 weeks
+			Begin:    now.AddDate(0, 0, -3),
+			Until:    now.AddDate(0, 0, 11), // Due in 2 weeks
+			Returned: false,
 		},
 		{
-			PersonID: persons[2].ID,
-			ItemID:   isInRecords[4].ID,
+			PersonID: persons[2].ID, // Lukas Fischer
+			ItemID:   items[4].ID,   // Multimeter
 			Amount:   1,
-			Begin:    time.Now().AddDate(0, 0, -10),
-			Until:    time.Now().AddDate(0, 0, -3), // Overdue!
+			Begin:    now.AddDate(0, 0, -10),
+			Until:    now.AddDate(0, 0, -3), // OVERDUE by 3 days!
+			Returned: false,
+		},
+		{
+			PersonID: persons[3].ID, // Sarah Weber
+			ItemID:   items[1].ID,   // Raspberry Pi
+			Amount:   1,
+			Begin:    now.AddDate(0, 0, -5),
+			Until:    now.AddDate(0, 0, 9), // Due in 9 days
+			Returned: false,
+		},
+		{
+			PersonID: persons[4].ID, // Jonas Meyer
+			ItemID:   items[45].ID,  // Loaner Laptop
+			Amount:   1,
+			Begin:    now.AddDate(0, 0, -14),
+			Until:    now.AddDate(0, 0, -1), // OVERDUE by 1 day!
+			Returned: false,
+		},
+
+		// Returned loans - good history
+		{
+			PersonID:   persons[0].ID, // Max Müller (has active + history)
+			ItemID:     items[4].ID,   // Multimeter
+			Amount:     1,
+			Begin:      now.AddDate(0, 0, -30),
+			Until:      now.AddDate(0, 0, -16),
+			Returned:   true,
+			ReturnedAt: &returnedTime1, // Returned on time
+		},
+		{
+			PersonID:   persons[0].ID, // Max Müller (frequent borrower)
+			ItemID:     items[7].ID,   // Soldering Station
+			Amount:     1,
+			Begin:      now.AddDate(0, -2, -10),
+			Until:      now.AddDate(0, -2, 4),
+			Returned:   true,
+			ReturnedAt: &returnedTime3, // Returned on time 2 months ago
+		},
+		{
+			PersonID:   persons[1].ID, // Anna Schmidt
+			ItemID:     items[1].ID,   // Raspberry Pi
+			Amount:     2,
+			Begin:      now.AddDate(0, -1, -5),
+			Until:      now.AddDate(0, -1, 9),
+			Returned:   true,
+			ReturnedAt: &returnedTime2, // Returned on time
+		},
+		{
+			PersonID:   persons[2].ID, // Lukas Fischer (currently has overdue)
+			ItemID:     items[2].ID,   // ESP32 board
+			Amount:     3,
+			Begin:      now.AddDate(0, 0, -45),
+			Until:      now.AddDate(0, 0, -31),
+			Returned:   true,
+			ReturnedAt: &returnedTime5, // Returned on time
+		},
+		{
+			PersonID:   persons[5].ID, // Laura Schneider
+			ItemID:     items[30].ID,  // Stepper Motor
+			Amount:     5,
+			Begin:      now.AddDate(0, 0, -20),
+			Until:      now.AddDate(0, 0, -6),
+			Returned:   true,
+			ReturnedAt: &returnedTime4, // Returned on time
+		},
+		{
+			PersonID:   persons[6].ID, // David Wagner
+			ItemID:     items[46].ID,  // FPGA Board
+			Amount:     1,
+			Begin:      now.AddDate(0, -1, -10),
+			Until:      now.AddDate(0, -1, 4),
+			Returned:   true,
+			ReturnedAt: &returnedTime2, // Returned on time
+		},
+		{
+			PersonID:   persons[7].ID, // Julia Becker
+			ItemID:     items[8].ID,   // Logic Analyzer
+			Amount:     1,
+			Begin:      now.AddDate(0, 0, -40),
+			Until:      now.AddDate(0, 0, -26),
+			Returned:   true,
+			ReturnedAt: &returnedTime5, // Returned on time
+		},
+
+		// Returned loans - some were late
+		{
+			PersonID:   persons[3].ID, // Sarah Weber
+			ItemID:     items[0].ID,   // Arduino Uno
+			Amount:     3,
+			Begin:      now.AddDate(0, 0, -25),
+			Until:      now.AddDate(0, 0, -11),
+			Returned:   true,
+			ReturnedAt: &returnedTime1, // Returned LATE (was due 11 days ago, returned 2 days ago)
+		},
+		{
+			PersonID:   persons[4].ID, // Jonas Meyer
+			ItemID:     items[36].ID,  // Ultrasonic Sensor
+			Amount:     10,
+			Begin:      now.AddDate(0, 0, -50),
+			Until:      now.AddDate(0, 0, -36),
+			Returned:   true,
+			ReturnedAt: &returnedTime4, // Returned LATE (was due 36 days ago, returned 14 days ago)
+		},
+
+		// More history for popular items
+		{
+			PersonID:   persons[8].ID, // Felix Hoffmann
+			ItemID:     items[0].ID,   // Arduino Uno (popular item with history)
+			Amount:     1,
+			Begin:      now.AddDate(0, -2, -5),
+			Until:      now.AddDate(0, -2, 9),
+			Returned:   true,
+			ReturnedAt: &returnedTime3,
+		},
+		{
+			PersonID:   persons[9].ID, // Sophie Koch
+			ItemID:     items[0].ID,   // Arduino Uno
+			Amount:     2,
+			Begin:      now.AddDate(0, -1, -7),
+			Until:      now.AddDate(0, -1, 7),
+			Returned:   true,
+			ReturnedAt: &returnedTime2,
 		},
 	}
 
@@ -316,5 +448,10 @@ func InsertBasicData(db *pg.DB) error {
 	}
 
 	log.Println("✅ ETH Zürich test data loaded successfully.")
+	log.Printf("   📍 Locations: %d", len(locations))
+	log.Printf("   📦 Items: %d", len(items))
+	log.Printf("   👥 Persons: %d", len(persons))
+	log.Printf("   📊 Inventory records: %d", len(isInRecords))
+	log.Printf("   📋 Loans: %d (5 active, 11 returned - includes 2 overdue active, 2 late returns)", len(loans))
 	return nil
 }
