@@ -1,9 +1,12 @@
 package api
 
 import (
+	"strings"
 	"time"
 
+	"github.com/go-pg/pg/v10"
 	"lagertool.com/main/db"
+	"lagertool.com/main/util"
 )
 
 // ============================================================================
@@ -111,8 +114,8 @@ func (h *Handler) LocalDeleteItem(id int) error {
 // ============================================================================
 
 // GetAllInventory retrieves all inventory records
-func (h *Handler) LocalGetAllInventory() ([]db.IsIn, error) {
-	var inventory []db.IsIn
+func (h *Handler) LocalGetAllInventory() ([]db.Inventory, error) {
+	var inventory []db.Inventory
 	err := h.DB.Model(&inventory).Select()
 	if err != nil {
 		return nil, err
@@ -121,8 +124,8 @@ func (h *Handler) LocalGetAllInventory() ([]db.IsIn, error) {
 }
 
 // GetInventoryByID retrieves a specific inventory record by its ID
-func (h *Handler) LocalGetInventoryByID(id int) (*db.IsIn, error) {
-	inventory := &db.IsIn{ID: id}
+func (h *Handler) LocalGetInventoryByID(id int) (*db.Inventory, error) {
+	inventory := &db.Inventory{ID: id}
 	err := h.DB.Model(inventory).WherePK().Select()
 	if err != nil {
 		return nil, err
@@ -131,8 +134,8 @@ func (h *Handler) LocalGetInventoryByID(id int) (*db.IsIn, error) {
 }
 
 // GetInventoryByLocation retrieves inventory records by location ID
-func (h *Handler) LocalGetInventoryByLocation(locationID int) ([]db.IsIn, error) {
-	var inventory []db.IsIn
+func (h *Handler) LocalGetInventoryByLocation(locationID int) ([]db.Inventory, error) {
+	var inventory []db.Inventory
 	err := h.DB.Model(&inventory).
 		Where("location_id = ?", locationID).
 		Select()
@@ -143,8 +146,8 @@ func (h *Handler) LocalGetInventoryByLocation(locationID int) ([]db.IsIn, error)
 }
 
 // GetInventoryByItem retrieves inventory records by item ID
-func (h *Handler) LocalGetInventoryByItem(itemID int) ([]db.IsIn, error) {
-	var inventory []db.IsIn
+func (h *Handler) LocalGetInventoryByItem(itemID int) ([]db.Inventory, error) {
+	var inventory []db.Inventory
 	err := h.DB.Model(&inventory).
 		Where("item_id = ?", itemID).
 		Select()
@@ -155,13 +158,13 @@ func (h *Handler) LocalGetInventoryByItem(itemID int) ([]db.IsIn, error) {
 }
 
 // CreateInventory creates a new inventory record
-func (h *Handler) LocalCreateInventory(inventory *db.IsIn) error {
+func (h *Handler) LocalCreateInventory(inventory *db.Inventory) error {
 	_, err := h.DB.Model(inventory).Insert()
 	return err
 }
 
 // UpdateInventory updates an existing inventory record by ID
-func (h *Handler) LocalUpdateInventory(id int, inventory *db.IsIn) error {
+func (h *Handler) LocalUpdateInventory(id int, inventory *db.Inventory) error {
 	inventory.ID = id
 	_, err := h.DB.Model(inventory).WherePK().Update()
 	return err
@@ -169,7 +172,7 @@ func (h *Handler) LocalUpdateInventory(id int, inventory *db.IsIn) error {
 
 // UpdateInventoryAmount updates only the amount of an inventory record
 func (h *Handler) LocalUpdateInventoryAmount(id int, amount int) error {
-	_, err := h.DB.Model(&db.IsIn{}).
+	_, err := h.DB.Model(&db.Inventory{}).
 		Set("amount = ?", amount).
 		Where("id = ?", id).
 		Update()
@@ -178,7 +181,7 @@ func (h *Handler) LocalUpdateInventoryAmount(id int, amount int) error {
 
 // DeleteInventory deletes an inventory record by ID
 func (h *Handler) LocalDeleteInventory(id int) error {
-	inventory := &db.IsIn{ID: id}
+	inventory := &db.Inventory{ID: id}
 	_, err := h.DB.Model(inventory).WherePK().Delete()
 	return err
 }
@@ -328,4 +331,85 @@ func (h *Handler) LocalDeleteLoan(id int) error {
 	loan := &db.Loans{ID: id}
 	_, err := h.DB.Model(loan).WherePK().Delete()
 	return err
+}
+
+// ------------------------
+// 				EXPERIMENTAL
+// ------------------------
+
+func (h *Handler) LocalSearch(search_term string) ([]db.Inventory, error) {
+	search_term = strings.ToLower(search_term)
+	items, err := h.LocalGetAllItems()
+	if err != nil {
+		return nil, err
+	}
+
+	array_of_matching_items := util.FindItemSearchTermsInDB(items, search_term)
+
+	// Extract IDs from matching items
+	var itemIDs []int
+	for _, item := range array_of_matching_items {
+		itemIDs = append(itemIDs, item.ID)
+	}
+
+	if len(itemIDs) == 0 {
+		return []db.Inventory{}, nil
+	}
+
+	// Perform query with joins to location and item tables
+	var results []db.Inventory
+	err = h.DB.Model(&results).
+		Where("inventory.item_id IN (?)", pg.In(itemIDs)).
+		Column("inventory.*").
+		Relation("Location").
+		Relation("Item").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (h *Handler) LocalGetLoansWithPerson() ([]db.Loans, error) {
+	var loans []db.Loans
+
+	err := h.DB.Model(&loans).
+		Column("loans.*").
+		Relation("Person").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	return loans, nil
+}
+
+func (h *Handler) LocalGetLoansWithPersonByPersonID(personID int) ([]db.Loans, error) {
+	var loans []db.Loans
+
+	err := h.DB.Model(&loans).
+		Column("loans.*").
+		Relation("Person").
+		Where("loans.person_id = ?", personID).
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	return loans, nil
+}
+
+func (h *Handler) LocalGetActiveLoansWithPerson() ([]db.Loans, error) {
+	var loans []db.Loans
+
+	err := h.DB.Model(&loans).
+		Column("loans.*").
+		Relation("Person").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	return loans, nil
 }

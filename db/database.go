@@ -45,7 +45,7 @@ func InitDB(con *pg.DB) {
 	models := []interface{}{
 		(*Location)(nil),
 		(*Item)(nil),
-		(*IsIn)(nil),
+		(*Inventory)(nil),
 		(*Person)(nil),
 		(*Loans)(nil),
 	}

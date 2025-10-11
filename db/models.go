@@ -21,15 +21,6 @@ type Item struct {
 	Category  string   `json:"category" pg:"category"`
 }
 
-type IsIn struct {
-	tableName  struct{} `pg:"is_in"`
-	ID         int      `json:"id" pg:"id,pk"`
-	LocationId int      `json:"location_id" pg:"location_id,fk"`
-	ItemId     int      `json:"item_id" pg:"item_id,fk"`
-	Amount     int      `json:"amount" pg:"amount"`
-	Note       string   `json:"note" pg:"note"`
-}
-
 type Person struct {
 	tableName struct{} `pg:"person"`
 	ID        int      `json:"id" pg:"id,pk"`
@@ -39,15 +30,21 @@ type Person struct {
 	Telephone string   `json:"telephone" pg:"telephone"`
 	// Slack Information missing
 }
+type Inventory struct {
+	tableName  struct{} `pg:"inventory"`
+	ID         int      `json:"id" pg:"id,pk"`
+	LocationId int      `json:"location_id" pg:"location_id"`
+	ItemId     int      `json:"item_id" pg:"item_id"`
+	Amount     int      `json:"amount" pg:"amount"`
+	Note       string   `json:"note" pg:"note"`
+}
 
 type Loans struct {
 	tableName struct{}  `pg:"loans"`
 	ID        int       `json:"id" pg:"id,pk"`
-	PersonId  int       `json:"person_id" pg:"person_id,fk"`
-	PermID    int       `json:"perm_id" pg:"perm_id,fk"`
+	PersonId  int       `json:"person_id" pg:"person_id"`
+	PermID    int       `json:"perm_id" pg:"perm_id"`
 	Amount    int       `json:"amount" pg:"amount"`
 	Begin     time.Time `json:"begin" pg:"begin"`
 	Until     time.Time `json:"until,omitempty" pg:"until"`
-	// Permanent items should never have an undefined due date.
-	// Consumables without a due date should periodically be subject to deletion.
 }

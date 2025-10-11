@@ -3,11 +3,13 @@ package api
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
 	"lagertool.com/main/db"
+	"lagertool.com/main/util"
 )
 
 type Handler struct {
@@ -342,19 +344,18 @@ func (h *Handler) GetAllInventory(c *gin.Context) {
 
 	var result []InventoryResponse
 
-	// Perform a JOIN across is_in, item, and location tables
-	err := h.DB.Model((*db.IsIn)(nil)).
-		ColumnExpr("is_in.id AS id").
+	// Perform a JOIN across inventory, item, and location tables
+	err := h.DB.Model((*db.Inventory)(nil)).
+		ColumnExpr("inventory.id AS id").
 		ColumnExpr("item.name AS name").
 		ColumnExpr("location.shelf AS shelf_name").
 		ColumnExpr("location.room AS room_name").
 		ColumnExpr("location.building AS building_name").
-		ColumnExpr("is_in.amount AS amount").
-		Join("JOIN item ON item.id = is_in.item_id").
-		Join("JOIN location ON location.id = is_in.location_id").
-		Order("is_in.id ASC").
+		ColumnExpr("inventory.amount AS amount").
+		Join("JOIN item ON item.id = inventory.item_id").
+		Join("JOIN location ON location.id = inventory.location_id").
+		Order("inventory.id ASC").
 		Select(&result)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -369,7 +370,7 @@ func (h *Handler) GetAllInventory(c *gin.Context) {
 // @Tags inventory
 // @Produce json
 // @Param id path int true "Inventory Record ID"
-// @Success 200 {object} db.IsIn
+// @Success 200 {object} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Router /inventory/{id} [get]
@@ -380,7 +381,7 @@ func (h *Handler) GetInventoryByID(c *gin.Context) {
 		return
 	}
 
-	inventory := &db.IsIn{ID: id}
+	inventory := &db.Inventory{ID: id}
 	err = h.DB.Model(inventory).WherePK().Select()
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "inventory record not found"})
@@ -396,7 +397,7 @@ func (h *Handler) GetInventoryByID(c *gin.Context) {
 // @Tags inventory
 // @Produce json
 // @Param location_id path int true "Location ID"
-// @Success 200 {array} db.IsIn
+// @Success 200 {array} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /inventory/location/{location_id} [get]
@@ -407,7 +408,7 @@ func (h *Handler) GetInventoryByLocation(c *gin.Context) {
 		return
 	}
 
-	var inventory []db.IsIn
+	var inventory []db.Inventory
 	err = h.DB.Model(&inventory).
 		Where("location_id = ?", locationID).
 		Select()
@@ -425,7 +426,7 @@ func (h *Handler) GetInventoryByLocation(c *gin.Context) {
 // @Tags inventory
 // @Produce json
 // @Param item_id path int true "Item ID"
-// @Success 200 {array} db.IsIn
+// @Success 200 {array} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /inventory/item/{item_id} [get]
@@ -436,7 +437,7 @@ func (h *Handler) GetInventoryByItem(c *gin.Context) {
 		return
 	}
 
-	var inventory []db.IsIn
+	var inventory []db.Inventory
 	err = h.DB.Model(&inventory).
 		Where("item_id = ?", itemID).
 		Select()
@@ -455,12 +456,12 @@ func (h *Handler) GetInventoryByItem(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
-// @Success 201 {object} db.IsIn
+// @Success 201 {object} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /inventory [post]
 func (h *Handler) CreateInventory(c *gin.Context) {
-	var inventory db.IsIn
+	var inventory db.Inventory
 	if err := c.ShouldBindJSON(&inventory); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -483,7 +484,7 @@ func (h *Handler) CreateInventory(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Inventory Record ID"
 // @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
-// @Success 200 {object} db.IsIn
+// @Success 200 {object} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /inventory/{id} [put]
@@ -494,7 +495,7 @@ func (h *Handler) UpdateInventory(c *gin.Context) {
 		return
 	}
 
-	var inventory db.IsIn
+	var inventory db.Inventory
 	if err := c.ShouldBindJSON(&inventory); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -518,7 +519,7 @@ func (h *Handler) UpdateInventory(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Inventory Record ID"
 // @Param request body object{amount=int} true "New amount value"
-// @Success 200 {object} db.IsIn
+// @Success 200 {object} db.Inventory
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /inventory/{id}/amount [patch]
@@ -537,7 +538,7 @@ func (h *Handler) UpdateInventoryAmount(c *gin.Context) {
 		return
 	}
 
-	inventory := &db.IsIn{ID: id}
+	inventory := &db.Inventory{ID: id}
 	_, err = h.DB.Model(inventory).
 		Set("amount = ?", req.Amount).
 		WherePK().
@@ -573,7 +574,7 @@ func (h *Handler) DeleteInventory(c *gin.Context) {
 		return
 	}
 
-	inventory := &db.IsIn{ID: id}
+	inventory := &db.Inventory{ID: id}
 	_, err = h.DB.Model(inventory).WherePK().Delete()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -975,4 +976,105 @@ func (h *Handler) DeleteLoan(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "loan deleted successfully"})
+}
+
+func (h *Handler) Search(c *gin.Context) {
+	search_term := c.Query("search_term")
+	if search_term == "" {
+		c.JSON(400, gin.H{"error": "search_term parameter is required"})
+		return
+	}
+
+	search_term = strings.ToLower(search_term)
+	items, err := h.LocalGetAllItems()
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to get items: " + err.Error()})
+		return
+	}
+
+	array_of_matching_items := util.FindItemSearchTermsInDB(items, search_term)
+
+	var itemIDs []int
+	for _, item := range array_of_matching_items {
+		itemIDs = append(itemIDs, item.ID)
+	}
+
+	if len(itemIDs) == 0 {
+		c.JSON(200, []gin.H{})
+		return
+	}
+
+	type Result struct {
+		InventoryID int    `json:"inventory_id"`
+		Amount      int    `json:"amount"`
+		Note        string `json:"note"`
+		ItemName    string `json:"item_name"`
+		Category    string `json:"category"`
+		Campus      string `json:"campus"`
+		Building    string `json:"building"`
+		Room        string `json:"room"`
+		Shelf       string `json:"shelf"`
+	}
+
+	var results []Result
+	_, err = h.DB.Query(&results, `
+		SELECT 
+			inv.id as inventory_id,
+			inv.amount,
+			inv.note,
+			it.name as item_name,
+			it.category,
+			loc.campus,
+			loc.building,
+			loc.room,
+			loc.shelf
+		FROM inventory inv
+		JOIN item it ON it.id = inv.item_id
+		JOIN location loc ON loc.id = inv.location_id
+		WHERE inv.item_id IN (?)
+	`, pg.In(itemIDs))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to search inventory: " + err.Error()})
+		return
+	}
+
+	c.JSON(200, results)
+}
+
+func (h *Handler) GetLoansWithPerson(c *gin.Context) {
+	type LoanResult struct {
+		LoanID    int       `json:"loan_id"`
+		PersonId  int       `json:"person_id"`
+		PermID    int       `json:"perm_id"`
+		Amount    int       `json:"amount"`
+		Begin     time.Time `json:"begin"`
+		Until     time.Time `json:"until,omitempty"`
+		Firstname string    `json:"firstname"`
+		Lastname  string    `json:"lastname"`
+		Email     string    `json:"email"`
+		Telephone string    `json:"telephone"`
+	}
+
+	var results []LoanResult
+	_, err := h.DB.Query(&results, `
+		SELECT 
+			l.id as loan_id,
+			l.person_id,
+			l.perm_id,
+			l.amount,
+			l.begin,
+			l.until,
+			p.firstname,
+			p.lastname,
+			p.email,
+			p.telephone
+		FROM loans l
+		JOIN person p ON p.id = l.person_id
+	`)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to get loans: " + err.Error()})
+		return
+	}
+
+	c.JSON(200, results)
 }
