@@ -42,7 +42,6 @@ func main() {
 	}))
 
 	dbConnection, err := db.NewDBConn()
-
 	if err != nil {
 		log.Fatal("DBConnection failed: ", err)
 	}

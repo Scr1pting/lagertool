@@ -10,6 +10,7 @@ import (
 )
 
 func InsertBasicData(db *pg.DB) error {
+	log.Println("Loading testdata...")
 	ctx := context.Background()
 
 	// Sample locations
@@ -43,7 +44,7 @@ func InsertBasicData(db *pg.DB) error {
 		_, err := tx.Model(&locations[i]).Insert()
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("failed to insert location: %w", err)
+			return fmt.Errorf("failed to insert location => %d: %w", locations[i].ID, err)
 		}
 		log.Printf("Inserted location: %s %s %s (ID: %d)", locations[i].Campus, locations[i].Building, locations[i].Room, locations[i].ID)
 	}
@@ -68,8 +69,8 @@ func InsertBasicData(db *pg.DB) error {
 		log.Printf("Inserted person: %s %s (ID: %d)", persons[i].Firstname, persons[i].Lastname, persons[i].ID)
 	}
 
-	// Insert IsIn relations (inventory records) - use actual IDs from inserted records
-	isInRecords := []IsIn{
+	// Insert Inventory relations (inventory records) - use actual IDs from inserted records
+	isInRecords := []Inventory{
 		{
 			LocationId: locations[0].ID, // Science Hall 101
 			ItemId:     items[0].ID,     // Oscilloscope
@@ -108,7 +109,7 @@ func InsertBasicData(db *pg.DB) error {
 		_, err := tx.Model(&isInRecords[i]).Insert()
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("failed to insert IsIn: %w", err)
+			return fmt.Errorf("failed to insert Inventory: %w", err)
 		}
 		log.Printf("Inserted inventory: %s (ID: %d)", isInRecords[i].Note, isInRecords[i].ID)
 	}
