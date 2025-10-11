@@ -48,10 +48,11 @@ type ShelfRequest struct {
 
 // ShelfResponse represents the JSON structure for returning shelves
 type ShelfResponse struct {
-	Name     string `json:"name"`
-	Building string `json:"building"`
-	Room     string `json:"room"`
-	Columns  []struct {
+	Name        string `json:"name"`
+	Building    string `json:"building"`
+	Room        string `json:"room"`
+	NumElements int    `json:"numElements"`
+	Columns     []struct {
 		Num      int `json:"num"`
 		Elements []struct {
 			ID          string `json:"id"`
@@ -266,6 +267,139 @@ func (h *Handler) SearchShelfUnit(c *gin.Context) {
 	})
 }
 
+// ShelfUnitInventoryItem represents an inventory item in a shelf unit with borrow status
+type ShelfUnitInventoryItem struct {
+	InventoryID  int       `json:"inventory_id"`
+	ItemID       int       `json:"item_id"`
+	ItemName     string    `json:"item_name"`
+	Category     string    `json:"category"`
+	Amount       int       `json:"amount"`
+	Note         string    `json:"note"`
+	Borrowed     int       `json:"borrowed"`      // Amount currently borrowed
+	Available    int       `json:"available"`     // Amount available (not borrowed)
+	ActiveLoans  []LoanInfo `json:"active_loans"`  // Active loans for this item
+}
+
+// LoanInfo represents loan details for an item
+type LoanInfo struct {
+	LoanID     int       `json:"loan_id"`
+	PersonID   int       `json:"person_id"`
+	PersonName string    `json:"person_name"`
+	Amount     int       `json:"amount"`
+	Begin      time.Time `json:"begin"`
+	Until      time.Time `json:"until"`
+	IsOverdue  bool      `json:"is_overdue"`
+}
+
+// GetShelfUnitInventory godoc
+// @Summary Get inventory in a shelf unit
+// @Description Retrieve all inventory items in a specific shelf unit by its 5-letter ID, including borrow status and active loans
+// @Tags shelves
+// @Produce json
+// @Param id path string true "Shelf Unit ID (5-letter code)"
+// @Success 200 {array} ShelfUnitInventoryItem
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shelves/unit/{id}/inventory [get]
+func (h *Handler) GetShelfUnitInventory(c *gin.Context) {
+	unitID := c.Param("id")
+
+	// Verify shelf unit exists
+	var unit db.ShelfUnit
+	err := h.DB.Model(&unit).Where("id = ?", unitID).Select()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Shelf unit not found"})
+		return
+	}
+
+	// Find location for this shelf unit
+	var location db.Location
+	err = h.DB.Model(&location).Where("shelf_unit_id = ?", unitID).Select()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Location not found for shelf unit"})
+		return
+	}
+
+	// Get all inventory items in this location
+	var inventoryRecords []db.Inventory
+	err = h.DB.Model(&inventoryRecords).
+		Where("location_id = ?", location.ID).
+		Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Build response with borrow status
+	var results []ShelfUnitInventoryItem
+	now := time.Now()
+
+	for _, inv := range inventoryRecords {
+		// Get item details
+		var item db.Item
+		err = h.DB.Model(&item).Where("id = ?", inv.ItemId).Select()
+		if err != nil {
+			continue
+		}
+
+		// Get active loans for this item
+		var loans []db.Loans
+		err = h.DB.Model(&loans).
+			Where("item_id = ? AND returned = ?", inv.ItemId, false).
+			Select()
+		if err != nil {
+			loans = []db.Loans{}
+		}
+
+		// Calculate borrowed amount and build loan info
+		totalBorrowed := 0
+		var activeLoanInfos []LoanInfo
+
+		for _, loan := range loans {
+			totalBorrowed += loan.Amount
+
+			// Get person details
+			var person db.Person
+			err = h.DB.Model(&person).Where("id = ?", loan.PersonID).Select()
+			personName := "Unknown"
+			if err == nil {
+				personName = person.Firstname + " " + person.Lastname
+			}
+
+			isOverdue := loan.Until.Before(now)
+
+			activeLoanInfos = append(activeLoanInfos, LoanInfo{
+				LoanID:     loan.ID,
+				PersonID:   loan.PersonID,
+				PersonName: personName,
+				Amount:     loan.Amount,
+				Begin:      loan.Begin,
+				Until:      loan.Until,
+				IsOverdue:  isOverdue,
+			})
+		}
+
+		available := inv.Amount - totalBorrowed
+		if available < 0 {
+			available = 0
+		}
+
+		results = append(results, ShelfUnitInventoryItem{
+			InventoryID: inv.ID,
+			ItemID:      item.ID,
+			ItemName:    item.Name,
+			Category:    item.Category,
+			Amount:      inv.Amount,
+			Note:        inv.Note,
+			Borrowed:    totalBorrowed,
+			Available:   available,
+			ActiveLoans: activeLoanInfos,
+		})
+	}
+
+	c.JSON(http.StatusOK, results)
+}
+
 // Helper function to build shelf response with units
 func (h *Handler) buildShelfResponse(shelf db.Shelf) ShelfResponse {
 	var units []db.ShelfUnit
@@ -279,10 +413,11 @@ func (h *Handler) buildShelfResponse(shelf db.Shelf) ShelfResponse {
 
 	// Build response
 	resp := ShelfResponse{
-		Name:     shelf.Name,
-		Building: shelf.Building,
-		Room:     shelf.Room,
-		Columns:  make([]struct {
+		Name:        shelf.Name,
+		Building:    shelf.Building,
+		Room:        shelf.Room,
+		NumElements: len(units),
+		Columns: make([]struct {
 			Num      int `json:"num"`
 			Elements []struct {
 				ID          string `json:"id"`

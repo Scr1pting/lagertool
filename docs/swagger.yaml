@@ -1,5 +1,22 @@
 basePath: /
 definitions:
+  api.LoanInfo:
+    properties:
+      amount:
+        type: integer
+      begin:
+        type: string
+      is_overdue:
+        type: boolean
+      loan_id:
+        type: integer
+      person_id:
+        type: integer
+      person_name:
+        type: string
+      until:
+        type: string
+    type: object
   api.ShelfRequest:
     properties:
       building:
@@ -63,7 +80,35 @@ definitions:
         type: array
       name:
         type: string
+      numElements:
+        type: integer
       room:
+        type: string
+    type: object
+  api.ShelfUnitInventoryItem:
+    properties:
+      active_loans:
+        description: Active loans for this item
+        items:
+          $ref: '#/definitions/api.LoanInfo'
+        type: array
+      amount:
+        type: integer
+      available:
+        description: Amount available (not borrowed)
+        type: integer
+      borrowed:
+        description: Amount currently borrowed
+        type: integer
+      category:
+        type: string
+      inventory_id:
+        type: integer
+      item_id:
+        type: integer
+      item_name:
+        type: string
+      note:
         type: string
     type: object
   db.Event:
@@ -1972,6 +2017,40 @@ paths:
               type: string
             type: object
       summary: Search for a shelf unit by its ID
+      tags:
+      - shelves
+  /shelves/unit/{id}/inventory:
+    get:
+      description: Retrieve all inventory items in a specific shelf unit by its 5-letter
+        ID, including borrow status and active loans
+      parameters:
+      - description: Shelf Unit ID (5-letter code)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.ShelfUnitInventoryItem'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get inventory in a shelf unit
       tags:
       - shelves
 schemes:

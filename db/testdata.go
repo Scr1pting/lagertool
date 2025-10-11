@@ -185,6 +185,14 @@ func InsertBasicData(db *pg.DB) error {
 			}
 			if exists {
 				log.Printf("Shelf unit already exists: %s (skipping)", unit.ID)
+				// Fetch existing location for this shelf unit
+				var existingLocation Location
+				err = tx.Model(&existingLocation).Where("shelf_unit_id = ?", unit.ID).Select()
+				if err != nil {
+					tx.Rollback()
+					return fmt.Errorf("failed to fetch existing location for shelf unit %s: %w", unit.ID, err)
+				}
+				locations = append(locations, existingLocation)
 				continue
 			}
 
@@ -262,20 +270,20 @@ func InsertBasicData(db *pg.DB) error {
 		log.Printf("Inserted person: %s %s (ID: %d)", persons[i].Firstname, persons[i].Lastname, persons[i].ID)
 	}
 
-	// Insert Inventory relations - distribute items across CAB storage
+	// Insert Inventory relations - distribute items across storage locations
 	isInRecords := []Inventory{
-		// CAB H53 Shelf A Unit 1 - Microcontrollers & Development Boards
+		// CAB H53 Shelf A Unit 1 (A1H2E) - Microcontrollers & Development Boards
 		{LocationId: locations[0].ID, ItemId: items[0].ID, Amount: 15, Note: "Arduino Uno stock for student projects"},
 		{LocationId: locations[0].ID, ItemId: items[1].ID, Amount: 8, Note: "Raspberry Pi inventory"},
 		{LocationId: locations[0].ID, ItemId: items[2].ID, Amount: 12, Note: "ESP32 boards for IoT projects"},
 
-		// CAB H53 Shelf A Unit 2 - Measurement Equipment
+		// CAB H53 Shelf A Unit 2 (A2S1X) - Measurement Equipment
 		{LocationId: locations[1].ID, ItemId: items[4].ID, Amount: 5, Note: "Handheld multimeters"},
 		{LocationId: locations[1].ID, ItemId: items[5].ID, Amount: 2, Note: "Oscilloscopes for lab use"},
 		{LocationId: locations[1].ID, ItemId: items[6].ID, Amount: 1, Note: "Function generator"},
 		{LocationId: locations[1].ID, ItemId: items[8].ID, Amount: 3, Note: "Logic analyzers"},
 
-		// CAB H53 Shelf B Unit 1 - Consumables
+		// CAB H53 Shelf B Unit 1 (B1H3K) - Consumables
 		{LocationId: locations[2].ID, ItemId: items[10].ID, Amount: 50, Note: "Resistor kits - bulk stock"},
 		{LocationId: locations[2].ID, ItemId: items[11].ID, Amount: 30, Note: "Capacitor kits"},
 		{LocationId: locations[2].ID, ItemId: items[12].ID, Amount: 100, Note: "LED assortment"},
@@ -284,25 +292,30 @@ func InsertBasicData(db *pg.DB) error {
 		{LocationId: locations[2].ID, ItemId: items[3].ID, Amount: 25, Note: "Breadboards for prototyping"},
 		{LocationId: locations[2].ID, ItemId: items[17].ID, Amount: 10, Note: "Solder wire rolls"},
 
-		// ETZ J91 - Tools
+		// ETZ J91 Unit 1 (C1H2P) - Tools
 		{LocationId: locations[3].ID, ItemId: items[20].ID, Amount: 8, Note: "Precision screwdriver sets"},
 		{LocationId: locations[3].ID, ItemId: items[21].ID, Amount: 6, Note: "Wire strippers"},
 		{LocationId: locations[3].ID, ItemId: items[22].ID, Amount: 5, Note: "Pliers sets"},
 		{LocationId: locations[3].ID, ItemId: items[7].ID, Amount: 3, Note: "Soldering stations"},
 		{LocationId: locations[3].ID, ItemId: items[26].ID, Amount: 4, Note: "Digital calipers"},
 
-		// Hönggerberg HCI - Robotics/Mechanics
-		{LocationId: locations[4].ID, ItemId: items[29].ID, Amount: 30, Note: "SG90 servo motors"},
-		{LocationId: locations[4].ID, ItemId: items[30].ID, Amount: 10, Note: "NEMA17 steppers"},
-		{LocationId: locations[4].ID, ItemId: items[31].ID, Amount: 15, Note: "DC geared motors"},
-		{LocationId: locations[4].ID, ItemId: items[32].ID, Amount: 12, Note: "L298N motor drivers"},
+		// ETZ J91 Unit 2 (D1S2M) - More Tools
+		{LocationId: locations[4].ID, ItemId: items[23].ID, Amount: 4, Note: "Desoldering pumps"},
+		{LocationId: locations[4].ID, ItemId: items[24].ID, Amount: 6, Note: "ESD safe tweezers"},
+		{LocationId: locations[4].ID, ItemId: items[27].ID, Amount: 3, Note: "Hot glue guns"},
 
-		// Hönggerberg HPH - Sensors & Special Equipment
-		{LocationId: locations[5].ID, ItemId: items[36].ID, Amount: 20, Note: "Ultrasonic sensors"},
-		{LocationId: locations[5].ID, ItemId: items[37].ID, Amount: 15, Note: "DHT22 temp sensors"},
-		{LocationId: locations[5].ID, ItemId: items[38].ID, Amount: 10, Note: "IMU modules"},
-		{LocationId: locations[5].ID, ItemId: items[45].ID, Amount: 3, Note: "Loaner laptops for students"},
-		{LocationId: locations[5].ID, ItemId: items[46].ID, Amount: 2, Note: "FPGA boards"},
+		// HCI J4 Unit 1 (E1H1R) - Robotics/Mechanics
+		{LocationId: locations[5].ID, ItemId: items[29].ID, Amount: 30, Note: "SG90 servo motors"},
+		{LocationId: locations[5].ID, ItemId: items[30].ID, Amount: 10, Note: "NEMA17 steppers"},
+		{LocationId: locations[5].ID, ItemId: items[31].ID, Amount: 15, Note: "DC geared motors"},
+		{LocationId: locations[5].ID, ItemId: items[32].ID, Amount: 12, Note: "L298N motor drivers"},
+
+		// HCI J4 Unit 2 (E2H2T) - Sensors & Special Equipment
+		{LocationId: locations[6].ID, ItemId: items[36].ID, Amount: 20, Note: "Ultrasonic sensors"},
+		{LocationId: locations[6].ID, ItemId: items[37].ID, Amount: 15, Note: "DHT22 temp sensors"},
+		{LocationId: locations[6].ID, ItemId: items[38].ID, Amount: 10, Note: "IMU modules"},
+		{LocationId: locations[6].ID, ItemId: items[45].ID, Amount: 3, Note: "Loaner laptops for students"},
+		{LocationId: locations[6].ID, ItemId: items[46].ID, Amount: 2, Note: "FPGA boards"},
 	}
 
 	log.Printf("Inserting inventory records...")

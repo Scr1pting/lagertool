@@ -2686,9 +2686,85 @@
                     }
                 }
             }
+        },
+        "/shelves/unit/{id}/inventory": {
+            "get": {
+                "description": "Retrieve all inventory items in a specific shelf unit by its 5-letter ID, including borrow status and active loans",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Get inventory in a shelf unit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shelf Unit ID (5-letter code)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.ShelfUnitInventoryItem"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "api.LoanInfo": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "begin": {
+                    "type": "string"
+                },
+                "is_overdue": {
+                    "type": "boolean"
+                },
+                "loan_id": {
+                    "type": "integer"
+                },
+                "person_id": {
+                    "type": "integer"
+                },
+                "person_name": {
+                    "type": "string"
+                },
+                "until": {
+                    "type": "string"
+                }
+            }
+        },
         "api.ShelfRequest": {
             "type": "object",
             "required": [
@@ -2783,7 +2859,48 @@
                 "name": {
                     "type": "string"
                 },
+                "numElements": {
+                    "type": "integer"
+                },
                 "room": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.ShelfUnitInventoryItem": {
+            "type": "object",
+            "properties": {
+                "active_loans": {
+                    "description": "Active loans for this item",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.LoanInfo"
+                    }
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "available": {
+                    "description": "Amount available (not borrowed)",
+                    "type": "integer"
+                },
+                "borrowed": {
+                    "description": "Amount currently borrowed",
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "inventory_id": {
+                    "type": "integer"
+                },
+                "item_id": {
+                    "type": "integer"
+                },
+                "item_name": {
+                    "type": "string"
+                },
+                "note": {
                     "type": "string"
                 }
             }
