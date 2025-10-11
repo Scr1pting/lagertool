@@ -7,7 +7,8 @@
   overflow-x: scroll;
 
   -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
-  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);}
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}
 
 .workspace {
   position: relative;
