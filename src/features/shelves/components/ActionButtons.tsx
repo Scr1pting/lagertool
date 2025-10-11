@@ -1,9 +1,10 @@
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group"
-import { FieldGroup, Field, FieldLabel } from "@/components/ui/field";
+import { FieldGroup, Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import {
   Popover,
   PopoverContent,
@@ -42,7 +43,39 @@ function Form() {
   )
 }
 
+
+type FromLocation = {
+  pathname: string;
+  search?: string;
+  hash?: string;
+  state?: unknown;
+};
+
+type LocationState = {
+  from?: FromLocation;
+};
+
 function ActionButtons() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const makePath = (from: FromLocation) => `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`;
+
+  // Goes to the last page or home.
+  // Enables using the browser back btn to return.
+  const goBack = () => {
+    const fromLocation = (location.state as LocationState | null)?.from;
+
+    if (fromLocation) {
+      navigate(makePath(fromLocation), {
+        replace: false,
+        state: fromLocation.state,
+      });
+      return;
+    }
+
+    navigate("/", { replace: false });
+  };
+
   return(
     <Popover >
       <ButtonGroup className="fixed top-6 right-6 z-20">
@@ -55,7 +88,7 @@ function ActionButtons() {
           </PopoverTrigger>
         </ButtonGroup>
         <ButtonGroup>
-          <Button variant="outline">
+          <Button variant="outline" onClick={goBack}>
             <RxCross2/>
           </Button>
         </ButtonGroup>
