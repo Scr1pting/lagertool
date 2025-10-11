@@ -1226,6 +1226,23 @@ func (h *Handler) Interactivity(c *gin.Context) {
 				UserName: userInfo.Name,
 			})
 
+			_, _, err = api.PostMessage(
+				session.GroupChannel,
+				slack.MsgOptionText(
+					fmt.Sprintf(
+						"<@%s> borrowed *%d %s* (due %s).",
+						userInfo.ID,
+						session.Quantity,
+						session.Item,
+						session.DueDate.Format("Jan 2"),
+					),
+					false,
+				),
+			)
+			if err != nil {
+				log.Println("Error posting to group:", err)
+			}
+
 			session.Stage = "start"
 		}
 	}
@@ -1242,9 +1259,14 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "parse error")
 		return
 	}
-
 	userID := s.UserID
-	//channelID := s.ChannelID
+	channelID := s.ChannelID
+
+	session := &slack1.BorrowSession{
+		Stage:        "start",
+		GroupChannel: channelID, // e.g., from SlashCommand or event.Channel
+	}
+	slack1.Sessions[userID] = session
 
 	// 1️⃣ Respond ephemerally in the group
 	response := slack.Msg{
@@ -1366,16 +1388,37 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			fmt.Sprintf("✅ Got it! You want %d %s(s) from %s until %s. I’ll check and confirm!",
 				session.Quantity, session.Item, session.Source, session.DueDate.Format("Jan 2, 2006")),
 			false))
-		session.Stage = "start"
+		api.PostMessage(channel, slack.MsgOptionText("Type 'confirm' to finalize.", false))
+		session.Stage = "confirm"
+	case "confirm":
+		if strings.ToLower(text) == "confirm" {
+			db.SlackBorrow(h.Cfg, db.Borrow{
+				Item:     session.Item,
+				Amount:   session.Quantity,
+				Location: session.Source,
+				DueDate:  session.DueDate,
+				UserID:   user.ID,
+				UserName: user.Name,
+			})
+			_, _, err := api.PostMessage(
+				session.GroupChannel,
+				slack.MsgOptionText(
+					fmt.Sprintf(
+						"<@%s> borrowed *%d %s* (due %s).",
+						user.ID,
+						session.Quantity,
+						session.Item,
+						session.DueDate.Format("Jan 2"),
+					),
+					false,
+				),
+			)
+			if err != nil {
+				log.Println("Error posting to group:", err)
+			}
 
-		db.SlackBorrow(h.Cfg, db.Borrow{
-			Item:     session.Item,
-			Amount:   session.Quantity,
-			Location: session.Source,
-			DueDate:  session.DueDate,
-			UserID:   user.ID,
-			UserName: user.Name,
-		})
+		}
+		session.Stage = "start"
 
 	}
 }
