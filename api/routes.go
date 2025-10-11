@@ -101,4 +101,5 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.POST("/bulksearch", h.BulkSearch)
 
 	r.GET("/calendar/:id", h.GetDownloadICS)
+	r.GET("/calendar/all", h.GetDownloadICS)
 }

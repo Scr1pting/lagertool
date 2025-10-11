@@ -1874,7 +1874,7 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 }
 
 func (h *Handler) GetDownloadICS(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("loan_id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.String(http.StatusBadRequest, "invalid loan id")
 	}
