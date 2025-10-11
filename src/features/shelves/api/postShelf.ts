@@ -1,4 +1,4 @@
-import { type ShelfColumn, type ShelfItem } from "../types/shelf";
+import { type ShelfColumn } from "../types/shelf";
 import { type CreateShelfPayload, type ShelfColumnPayload } from "./types";
 
 const API_BASE_URL =
