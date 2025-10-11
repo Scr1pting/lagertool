@@ -4,6 +4,7 @@ import ShelfBuilder from './pages/ShelfBuilder';
 import Search from './pages/Search';
 import NavBar from './components/NavBar';
 import BorrowedPage from './pages/BorrowedPage';
+import BorrowPage from './pages/BorrowPage';
 
 
 function App() {
@@ -15,7 +16,9 @@ function App() {
           <Route path="/" element={<Search />} />
           <Route path="/shelf-builder" element={<ShelfBuilder />} />
           <Route path="/borrowed" element={<BorrowedPage />} />
+          <Route path="/borrow" element={<BorrowPage />} />
         </Routes>
+
       </main>
     </>
   )
