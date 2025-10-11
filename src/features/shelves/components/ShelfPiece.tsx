@@ -2,14 +2,14 @@ import { useDraggable } from '@dnd-kit/core';
 import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes } from 'react';
 
-import { type ShelfItemDefinition } from '../types/shelf';
+import { type ShelfElementDefinition } from '../types/shelf';
 import { type DragItemData } from '../types/drag';
 
 import styles from './ShelfPiece.module.css';
 import { ELEMENT_WIDTH } from '../util/shelfUnits';
 
 
-export function ShelfPieceInner({ itemDef }: { itemDef: ShelfItemDefinition }) {
+export function ShelfPieceInner({ itemDef }: { itemDef: ShelfElementDefinition }) {
   return (
     <div
       className={styles.piece}
@@ -25,7 +25,7 @@ export function ShelfPieceInner({ itemDef }: { itemDef: ShelfItemDefinition }) {
 
 
 interface ShelfPieceProps extends HTMLAttributes<HTMLDivElement> {
-  itemDef: ShelfItemDefinition,
+  itemDef: ShelfElementDefinition,
   draggableId: string;
   dragData: DragItemData;
 }

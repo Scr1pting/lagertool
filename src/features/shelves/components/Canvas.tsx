@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 
 import { type DropTargetData } from '../types/drag';
-import { type ShelfColumn, ITEM_CATALOG } from '../types/shelf';
+import { type ShelfColumn, ELEMENT_CATALOG } from '../types/shelf';
 import { ELEMENT_WIDTH } from '../util/shelfUnits';
 
 import ShelfPiece from './ShelfPiece';
@@ -22,7 +22,7 @@ const CanvasColumn = ({ column }: { column: ShelfColumn }) => {
       style={{ width: ELEMENT_WIDTH }}
     >
       {column.elements.map((element) => {
-        const definition = ITEM_CATALOG[element.type];
+        const definition = ELEMENT_CATALOG[element.type];
         return (
           <ShelfPiece
             key={element.id}

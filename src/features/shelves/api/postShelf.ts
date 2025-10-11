@@ -1,9 +1,9 @@
-import { type ShelfColumn, type ShelfItem } from "../types/shelf";
+import { type ShelfColumn, type ShelfElement } from "../types/shelf";
 
 export interface SerializedShelfPiece {
 	id: string;
-	type: ShelfItem["type"];
-	heightUnits: ShelfItem["heightUnits"];
+	type: ShelfElement["type"];
+	heightUnits: ShelfElement["heightUnits"];
 }
 
 export interface SerializedShelfColumn {
