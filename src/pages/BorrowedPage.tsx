@@ -314,9 +314,9 @@ export default function BorrowedPage() {
                 <TableHead className="px-6 py-3">Item</TableHead>
                 <TableHead className="px-6 py-3">Borrower</TableHead>
                 <TableHead className="px-6 py-3">Period</TableHead>
-                <TableHead className="px-6 py-3 text-right">Qty</TableHead>
-                <TableHead className="px-6 py-3 text-right">Status</TableHead>
-                <TableHead className="px-6 py-3 text-right">Calendar</TableHead>
+                <TableHead className="px-6 py-3 text-center">Qty</TableHead>
+                <TableHead className="px-6 py-3 text-center">Status</TableHead>
+                <TableHead className="px-6 py-3 text-center">Calendar</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -355,9 +355,9 @@ export default function BorrowedPage() {
                       key={loan.id}
                       className={
                         overdue
-                          ? "bg-red-50/70 text-red-900"
+                          ? "text-red-700"
                           : dueSoon
-                          ? "bg-amber-50/70 text-amber-900"
+                          ? "text-amber-700"
                           : undefined
                       }
                     >
@@ -403,17 +403,17 @@ export default function BorrowedPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4 align-top text-right text-sm font-semibold">
+                      <TableCell className="px-6 py-4 align-top text-center text-sm font-semibold">
                         {loan.amount}
                       </TableCell>
-                      <TableCell className="px-6 py-4 align-top text-right text-sm">
+                      <TableCell className="px-6 py-4 align-top text-center text-sm">
                         <span
                           className={`inline-flex items-center justify-end rounded-full px-3 py-1 text-xs font-medium ${statusClass}`}
                         >
                           {statusLabel}
                         </span>
                       </TableCell>
-                      <TableCell className="px-6 py-4 align-top text-right">
+                      <TableCell className="px-6 py-4 align-top text-center">
                         <Button
                           type="button"
                           variant="ghost"

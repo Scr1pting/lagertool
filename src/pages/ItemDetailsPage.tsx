@@ -894,7 +894,7 @@ export default function ItemDetailsPage() {
                 <th className="px-6 py-3 font-medium">Borrowed</th>
                 <th className="px-6 py-3 font-medium">Due</th>
                 <th className="px-6 py-3 font-medium">Returned</th>
-                <th className="px-6 py-3 font-medium text-right">Status</th>
+                <th className="px-6 py-3 font-medium text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -957,7 +957,7 @@ export default function ItemDetailsPage() {
                           {entry.returned ? formatDateTime(entry.returned_at) : "—"}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4 text-center">
                         <span
                           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusClasses}`}
                         >

@@ -906,10 +906,10 @@ export default function BorrowPage() {
               <TableRow>
                 <TableHead className="px-6 py-3">Item</TableHead>
                 <TableHead className="px-6 py-3">Borrower</TableHead>
-                <TableHead className="px-6 py-3 text-right">Amount</TableHead>
+                <TableHead className="px-6 py-3 text-center">Amount</TableHead>
                 <TableHead className="px-6 py-3">Period</TableHead>
-                <TableHead className="px-6 py-3 text-right">Status</TableHead>
-                <TableHead className="px-6 py-3 text-right">Actions</TableHead>
+                <TableHead className="px-6 py-3 text-center">Status</TableHead>
+                <TableHead className="px-6 py-3 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -951,9 +951,9 @@ export default function BorrowPage() {
                       key={loan.id}
                       className={
                         overdue
-                          ? "bg-red-50/70 text-red-900"
+                          ? "text-red-700"
                           : dueSoon
-                          ? "bg-amber-50/70 text-amber-900"
+                          ? "text-amber-700"
                           : undefined
                       }
                     >
@@ -989,7 +989,7 @@ export default function BorrowPage() {
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4 align-top text-right text-sm font-semibold">
+                      <TableCell className="px-6 py-4 align-top text-center text-sm font-semibold">
                         {isEditing && loanEditBuffer ? (
                           <Input
                             type="number"
@@ -1031,14 +1031,14 @@ export default function BorrowPage() {
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="px-6 py-4 align-top text-right text-sm">
+                      <TableCell className="px-6 py-4 align-top text-center text-sm">
                         <span
                           className={`inline-flex items-center justify-end rounded-full px-3 py-1 text-xs font-medium ${statusClass}`}
                         >
                           {statusLabel}
                         </span>
                       </TableCell>
-                      <TableCell className="px-6 py-4 align-top text-right">
+                      <TableCell className="px-6 py-4 align-top text-center">
                         <div className="flex flex-wrap justify-end gap-2">
                           {isEditing && loanEditBuffer ? (
                             <>
