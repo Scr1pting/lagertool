@@ -35,8 +35,7 @@ type Person struct {
 	ID        int      `json:"id" pg:"id,pk"`
 	Firstname string   `json:"firstname" pg:"firstname"`
 	Lastname  string   `json:"lastname" pg:"lastname"`
-	EMail     string   `json:"email" pg:"email"`
-	Telephone string   `json:"telephone" pg:"telephone"`
+	SlackID   string   `json:"slack_id" pg:"slack_id"`
 	// Slack Information missing
 }
 
@@ -44,7 +43,7 @@ type Loans struct {
 	tableName struct{}  `pg:"loans"`
 	ID        int       `json:"id" pg:"id,pk"`
 	PersonId  int       `json:"person_id" pg:"person_id,fk"`
-	PermID    int       `json:"perm_id" pg:"perm_id,fk"`
+	ItemID    int       `json:"item_id" pg:"item_id,fk"`
 	Amount    int       `json:"amount" pg:"amount"`
 	Begin     time.Time `json:"begin" pg:"begin"`
 	Until     time.Time `json:"until,omitempty" pg:"until"`

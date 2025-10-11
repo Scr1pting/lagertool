@@ -27,8 +27,8 @@ func InsertBasicData(db *pg.DB) error {
 
 	// Sample persons
 	persons := []Person{
-		{Firstname: "Alice", Lastname: "Smith", EMail: "alice.smith@example.com", Telephone: "+1-555-1234"},
-		{Firstname: "Bob", Lastname: "Johnson", EMail: "bob.johnson@example.com", Telephone: "+1-555-5678"},
+		{Firstname: "Alice", Lastname: "Smith"},
+		{Firstname: "Bob", Lastname: "Johnson"},
 	}
 
 	// Begin transaction
@@ -116,7 +116,7 @@ func InsertBasicData(db *pg.DB) error {
 	// Example: insert a loan
 	loan := Loans{
 		PersonId: persons[0].ID,
-		PermID:   isInRecords[0].ID, // Use actual inventory record ID instead of hard-coded 1
+		ItemID:   isInRecords[0].ID, // Use actual inventory record ID instead of hard-coded 1
 		Amount:   1,
 		Begin:    time.Now(),
 		Until:    time.Now().AddDate(0, 0, 14), // 2 weeks
@@ -127,7 +127,7 @@ func InsertBasicData(db *pg.DB) error {
 		tx.Rollback()
 		return fmt.Errorf("failed to insert loan: %w", err)
 	}
-	log.Printf("Inserted loan: Person %d borrowed item from inventory %d (Loan ID: %d)", loan.PersonId, loan.PermID, loan.ID)
+	log.Printf("Inserted loan: Person %d borrowed item from inventory %d (Loan ID: %d)", loan.PersonId, loan.ItemID, loan.ID)
 
 	// Commit transaction
 	if err := tx.Commit(); err != nil {
