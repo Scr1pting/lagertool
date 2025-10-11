@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -1086,4 +1087,50 @@ func (h *Handler) BorrowCounter(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count loans: " + err.Error()})
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+func (h *Handler) InsertNewItem(c *gin.Context) {
+	type Input struct {
+		Category  string `json:"category"`
+		Name      string `json:"name"`
+		Amount    int    `json:"amount"`
+		Campus    string `json:"campus"`
+		Building  string `json:"building"`
+		Room      string `json:"room"`
+		Shelf     string `json:"shelf"`
+		ShelfUnit string `json:"shelf_unit"`
+	}
+	in := Input{}
+	err := c.ShouldBindJSON(&in)
+	if err != nil {
+		log.Println(err)
+	}
+
+	item := &db.Item{
+		Name:     in.Name,
+		Category: in.Category,
+	}
+
+	h.DB.Model(&item).Insert()
+
+	local := &db.Location{
+		Campus:    in.Campus,
+		Building:  in.Building,
+		Room:      in.Room,
+		Shelf:     in.Shelf,
+		ShelfUnit: in.ShelfUnit,
+	}
+
+	h.DB.Model(&local).Insert()
+
+	invent := &db.Inventory{
+		LocationId: local.ID,
+		ItemId:     item.ID,
+		Amount:     in.Amount,
+	}
+
+	_, err = h.DB.Model(&invent).Insert()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert inventory: " + err.Error()})
+	}
 }
