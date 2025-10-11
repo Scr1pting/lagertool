@@ -11,7 +11,7 @@ import (
 	"lagertool.com/main/api"
 	"lagertool.com/main/db"
 	_ "lagertool.com/main/docs"
-	"lagertool.com/main/slack"
+	"lagertool.com/main/slack1"
 )
 
 // @title Lagertool Inventory API
@@ -53,7 +53,7 @@ func main() {
 	}(dbConnection)
 
 	db.InitDB(dbConnection)
-	slack.SetupSlack()
+	slack1.SetupSlack()
 
 	if err := db.InsertBasicData(dbConnection); err != nil {
 		log.Printf("⚠️  Failed to insert test data: %v", err)
