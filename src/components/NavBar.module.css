@@ -56,6 +56,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  width: clamp(18rem, 28vw, 28rem);
 }
 
 .searchIcon {
@@ -83,3 +84,102 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
 
+.searchForm {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.searchSubmit {
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.searchSubmit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.searchSubmit:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.searchDropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-radius: 20px;
+  border: 1px solid rgba(26, 64, 147, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.15);
+  padding: 0.75rem;
+  z-index: 20;
+}
+
+.searchStatus,
+.searchError {
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  background: rgba(148, 163, 184, 0.12);
+  color: #1f2937;
+}
+
+.searchError {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.searchResult {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.searchResult:hover,
+.searchResultActive {
+  background: rgba(37, 99, 235, 0.12);
+  transform: translateX(2px);
+}
+
+.searchResultLabel {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.searchResultMeta {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.searchResultKind {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(14, 116, 144, 0.16);
+  color: #0e7490;
+}

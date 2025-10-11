@@ -5,15 +5,31 @@ import ShelfBuilder from './pages/ShelfBuilder';
 import Search from './pages/Search';
 import BorrowedPage from './pages/BorrowedPage';
 import BorrowPage from './pages/BorrowPage';
-import NavBar from './components/NavBar';
+import AddPage from './pages/AddPage';
+import LocationPage from './pages/LocationPage';
+import AddPersonPage from './pages/AddPersonPage';
+import EventsPage from './pages/EventsPage';
+import ItemDetailsPage from './pages/ItemDetailsPage';
+import PersonHistoryPage from './pages/PersonHistoryPage';
 
 
 function App() {
-  // Ensures darkmode
-  useEffect(() => {
-    const root = document.documentElement;
-    root.dataset.theme = 'dark';
-    root.classList.add('dark');
+  return (
+    <>
+      <NavBar />
+      <main className="pt-28">
+        <Routes>
+          <Route path="/search" element={<Search />} />
+          <Route path="/shelf-builder" element={<ShelfBuilder />} />
+          <Route path="/borrowed" element={<BorrowedPage />} />
+          <Route path="/borrow" element={<BorrowPage />} />
+          <Route path="/locations" element={<LocationPage />} />
+          <Route path="/add" element={<AddPage />} />
+          <Route path="/persons" element={<AddPersonPage />} />
+          <Route path="/persons/:personId" element={<PersonHistoryPage />} />
+          <Route path="/items/:itemId" element={<ItemDetailsPage />} />
+          <Route path="/events" element={<EventsPage />} />
+        </Routes>
 
     return () => {
       delete root.dataset.theme;

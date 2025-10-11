@@ -56,66 +56,237 @@ function Search() {
 
 export default Search */
 
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import DataTable from "../components/DataTable"; // adjust path as needed
-import NavBar from "@/components/NavBar";
+import { useEffect, useMemo, useState } from "react"
+import { Link, useSearchParams } from "react-router-dom"
+import type { ColumnDef } from "@tanstack/react-table"
+import DataTable from "../components/DataTable"
 
-const columns = [
-  { accessorKey: "name", header: "Name" },
-  { accessorKey: "shelf_name", header: "Shelf" },
-  { accessorKey: "room_name", header: "Room" },
-  { accessorKey: "building_name", header: "Building" },
-  { accessorKey: "amount", header: "Amount" }
-];
+type ItemResult = {
+  id: number
+  name: string
+  category?: string | null
+}
+
+type PersonResult = {
+  id: number
+  firstname?: string | null
+  lastname?: string | null
+  slack_id?: string | null
+}
+
+type PersonRow = {
+  id: number
+  name: string
+  slack: string
+}
+
+const API_BASE_URL =
+  import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
+
+const itemColumns: ColumnDef<ItemResult>[] = [
+  {
+    accessorKey: "name",
+    header: "Item",
+    cell: ({ row, getValue }) => {
+      const label = getValue<string>() ?? `Item #${row.original.id}`
+      return (
+        <Link
+          to={`/items/${row.original.id}`}
+          className="text-primary underline-offset-2 hover:underline"
+        >
+          {label}
+        </Link>
+      )
+    },
+  },
+  {
+    accessorKey: "category",
+    header: "Category",
+    cell: ({ getValue }) => getValue<string | null | undefined>() ?? "—",
+  },
+]
+
+const personColumns: ColumnDef<PersonRow>[] = [
+  {
+    accessorKey: "name",
+    header: "Person",
+    cell: ({ row, getValue }) => {
+      const label = getValue<string>() ?? `Person #${row.original.id}`
+      return (
+        <Link
+          to={`/persons/${row.original.id}`}
+          className="text-primary underline-offset-2 hover:underline"
+        >
+          {label}
+        </Link>
+      )
+    },
+  },
+  {
+    accessorKey: "slack",
+    header: "Slack",
+    cell: ({ getValue }) => getValue<string>() || "—",
+  },
+]
 
 export default function Search() {
-  const [searchParams] = useSearchParams();
-  const searchTerm = searchParams.get("search_term") || "";
+  const [searchParams] = useSearchParams()
+  const queryParam = searchParams.get("query") ?? ""
+  const trimmedQuery = queryParam.trim()
 
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [items, setItems] = useState<ItemResult[]>([])
+  const [persons, setPersons] = useState<PersonRow[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const controller = new AbortController();
-    async function load() {
+    if (!trimmedQuery) {
+      setItems([])
+      setPersons([])
+      setError(null)
+      setLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    const fetchResults = async () => {
+      setLoading(true)
+      setError(null)
+
       try {
-        setLoading(true);
-        setError(null);
+        const encoded = encodeURIComponent(trimmedQuery)
+        const [itemRes, personRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/items/search?name=${encoded}`, {
+            signal: controller.signal,
+          }),
+          fetch(
+            `${API_BASE_URL}/persons/search?firstname=${encoded}&lastname=${encoded}`,
+            { signal: controller.signal }
+          ),
+        ])
 
-        const endpoint = searchTerm
-          ? `https://05.hackathon.ethz.ch/search?search_term=${encodeURIComponent(searchTerm)}`
-          : `https://05.hackathon.ethz.ch/api/inventory`;
+        if (!itemRes.ok) {
+          throw new Error(`Item search failed (HTTP ${itemRes.status})`)
+        }
+        if (!personRes.ok) {
+          throw new Error(`Person search failed (HTTP ${personRes.status})`)
+        }
 
-        const res = await fetch(endpoint, { signal: controller.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
+        const itemJson: unknown = await itemRes.json()
+        const personJson: unknown = await personRes.json()
 
-        const items = Array.isArray(json) ? json : (json.items || json.results || []);
-        setData(items);
-      } catch (err) {
-        if (err.name !== "AbortError") setError(err.message || "Unknown error");
+        const nextItems: ItemResult[] = Array.isArray(itemJson)
+          ? (itemJson.filter((entry): entry is ItemResult => {
+              return (
+                entry !== null &&
+                typeof entry === "object" &&
+                "id" in entry &&
+                typeof (entry as ItemResult).id === "number" &&
+                "name" in entry
+              )
+            }) as ItemResult[])
+          : []
+
+        const nextPersons: PersonRow[] = Array.isArray(personJson)
+          ? (personJson
+              .filter((entry): entry is PersonResult => {
+                return entry !== null && typeof entry === "object" && "id" in entry
+              })
+              .map<PersonRow>((person) => {
+                const firstname = person.firstname?.trim() ?? ""
+                const lastname = person.lastname?.trim() ?? ""
+                const name = [firstname, lastname].filter(Boolean).join(" ") || "Unknown"
+                const slack = person.slack_id?.trim() ?? ""
+                return {
+                  id: person.id,
+                  name,
+                  slack,
+                }
+              })
+              .filter((person) => Boolean(person.name)) as PersonRow[])
+          : []
+
+        setItems(nextItems)
+        setPersons(nextPersons)
+      } catch (caught) {
+        if (caught instanceof DOMException && caught.name === "AbortError") return
+        const message =
+          caught instanceof Error ? caught.message : "Search failed. Please try again."
+        setError(message)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
 
-    load();
-    return () => controller.abort();
-  }, [searchTerm]);
+    fetchResults()
+    return () => controller.abort()
+  }, [trimmedQuery])
+
+  const hasQuery = trimmedQuery.length > 0
+  const resultsSummary = useMemo(() => {
+    if (!hasQuery || loading) return ""
+    const segments = []
+    if (items.length) segments.push(`${items.length} item${items.length === 1 ? "" : "s"}`)
+    if (persons.length)
+      segments.push(`${persons.length} person${persons.length === 1 ? "" : "s"}`)
+    if (!segments.length) return "No matches found."
+    return `Found ${segments.join(" and ")}.`
+  }, [hasQuery, items.length, loading, persons.length])
 
   return (
-    <div className="container mx-auto py-10">
-        <NavBar />
+    <div className="container mx-auto max-w-5xl space-y-8 py-10">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight">Search</h1>
+        {hasQuery ? (
+          <p className="text-muted-foreground">
+            Showing results for <span className="font-medium">“{trimmedQuery}”</span>
+          </p>
+        ) : (
+          <p className="text-muted-foreground">
+            Type in the search bar above to find items or people across the inventory.
+          </p>
+        )}
+      </header>
 
-        <h1 className="text-2xl mb-4">Search results for "{searchTerm}"</h1>
+      {loading && (
+        <div className="rounded-md border border-dashed border-slate-200 p-6 text-center text-sm text-muted-foreground">
+          Searching…
+        </div>
+      )}
 
-        {loading && <p>Loading…</p>}
-        {error && <p className="text-red-500">Error: {error}</p>}
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
-        {!loading && !error && <DataTable columns={columns} data={data} />}
+      {!loading && !error && hasQuery && (
+        <div className="space-y-10">
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Items</h2>
+              <p className="text-sm text-muted-foreground">
+                Results from <code>/items/search</code>
+              </p>
+            </div>
+            <DataTable columns={itemColumns} data={items} />
+          </section>
+
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">People</h2>
+              <p className="text-sm text-muted-foreground">
+                Results from <code>/persons/search</code>
+              </p>
+            </div>
+            <DataTable columns={personColumns} data={persons} />
+          </section>
+        </div>
+      )}
+
+      {!loading && !error && hasQuery && (
+        <p className="text-sm text-muted-foreground">{resultsSummary}</p>
+      )}
     </div>
-  );
+  )
 }
-
