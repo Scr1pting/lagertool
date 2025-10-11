@@ -1,12 +1,8 @@
 package api
 
 import (
-	"context"
-	"crypto/tls"
 	"encoding/csv"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
 	"github.com/sashabaranov/go-openai"
-	"github.com/slack-go/slack"
 	"lagertool.com/main/chatbot"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
