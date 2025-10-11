@@ -31,7 +31,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 	}(db)
 
 	item := new(Item)
-	err = db.Model(item).Where("name = ?", borrow.Item).Select()
+	err = db.Model(item).Where("name = ?", borrow.Item).First()
 	if err != nil {
 		log.Println(err)
 	}
@@ -39,7 +39,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 	campus, building, room := strings.Split(borrow.Location, ";")[0], strings.Split(borrow.Location, ";")[1], strings.Split(borrow.Location, ";")[2]
 
 	location := new(Location)
-	err = db.Model(&location).Where("campus = ?", campus).Where("building = ?", building).Where("room = ?", room).Select()
+	err = db.Model(&location).Where("campus = ?", campus).Where("building = ?", building).Where("room = ?", room).First()
 	if err != nil {
 		log.Println(err)
 	}
@@ -54,7 +54,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 	}
 
 	person := new(Person)
-	err = db.Model(&person).Where("firstname = ?", firstname).Where("lastname = ?", lastname).Select()
+	err = db.Model(&person).Where("firstname = ?", firstname).Where("lastname = ?", lastname).First()
 	if err != nil {
 		person = &Person{
 			Firstname: firstname,
@@ -75,7 +75,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 		Until:    borrow.DueDate,
 	}
 	log.Println(l)
-	_, err = db.Model(l).Insert()
+	_, err = db.Model(*l).Insert()
 	if err != nil {
 		log.Println(err)
 	}
