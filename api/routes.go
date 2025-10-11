@@ -5,8 +5,8 @@ import (
 	"github.com/go-pg/pg/v10"
 )
 
-func SetupRoutes(r *gin.Engine, db *pg.DB) {
-	h := NewHandler(db)
+func SetupRoutes(r *gin.Engine, dbCon *pg.DB) {
+	h := NewHandler(dbCon)
 
 	// Location endpoints
 	r.GET("/locations", h.GetAllLocations)
@@ -56,4 +56,8 @@ func SetupRoutes(r *gin.Engine, db *pg.DB) {
 	r.GET("/search", h.Search)
 	r.GET("/borrows", h.GetLoansWithPerson)
 	r.GET("/borrows_count", h.BorrowCounter)
+
+	// Slack Events endpoint
+	r.POST("/slack/events", h.Events)
+	r.POST("/slack/interactivity")
 }
