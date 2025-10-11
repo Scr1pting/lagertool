@@ -1190,6 +1190,7 @@ func (h *Handler) Events(c *gin.Context) {
 
 func (h *Handler) Interactivity(c *gin.Context) {
 	// Slack sends the interaction payload as form data under the key "payload"
+	log.Println("TEST INTERACTIVE")
 	api, _ := slack1.SetupSlack(h.Cfg)
 	payload := c.PostForm("payload")
 	if payload == "" {
@@ -1286,9 +1287,6 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 
 	case "awaiting_source":
 		session.Source = text
-
-		log.Println("TEEEEEEEEEEEEEESSSSSSSSSST BEFORE")
-
 		// Create the datepicker element
 		datePicker := slack.NewDatePickerBlockElement("due_date_selected")
 		datePicker.InitialDate = time.Now().Format("2006-01-02")
@@ -1299,8 +1297,6 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			nil,
 			nil,
 		)
-		log.Println("TEEEEEEEEEEEEEESSSSSSSSSST IN THE MIDDLE")
-
 		// Action block with the datepicker
 		actionBlock := slack.NewActionBlock(
 			"due_date_action",
@@ -1314,11 +1310,9 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 				actionBlock,
 			),
 		)
-		log.Println("TEEEEEEEEEEEEEESSSSSSSSSST AFTER")
 		session.Stage = "awaiting_due_date"
 
 	case "awaiting_due_date":
-		log.Println("TEEEEEEEEEEEEEESSSSSSSSSST HERE")
 		layout := "2006-01-02"
 		dueDate, err := time.Parse(layout, text)
 		if err != nil {
