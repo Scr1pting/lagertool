@@ -5,7 +5,7 @@ import useElementItems from "../hooks/useElementItems";
 
 export const columns: ColumnDef<ShelfElementItem>[] = [
   {
-    accessorKey: "name",
+    accessorKey: "item_name",
     header: "Name",
   },
   {
@@ -18,20 +18,17 @@ export const columns: ColumnDef<ShelfElementItem>[] = [
   }
 ]
 
-function ShelfDetail({ elementId, building, room, shelf }: { elementId: string, building: string, room: string, shelf: string }) {
-  const { status, data: shelves, error } = useElementItems(elementId);
+function ShelfDetail({ elementId }: { elementId: string }) {
+  const { status, data: elementItems, error } = useElementItems(elementId);
 
   if (status === "error") return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
-  if (status === "success" && (!shelves || shelves.length === 0)) return <p>No shelves yet.</p>;
-  else if (!shelves || shelves.length === 0) return <></>;
+  if (status === "success" && (!elementItems || elementItems.length === 0)) return <p>No shelves yet.</p>;
+  else if (!elementItems || elementItems.length === 0) return <></>;
 
   return(
     <section>
-      <h1 className=""></h1>
-      <p><i>{building + " - " + room + " - " + shelf}</i></p>
-
       <div className="container mx-auto py-10">
-        <DataTable columns={columns} data={shelves} />
+        <DataTable columns={columns} data={elementItems} />
       </div>
     </section>
   )

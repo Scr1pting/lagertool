@@ -4,15 +4,24 @@ import { ShelfElementViewInner } from "./ShelfElementView";
 import styles from './StaticShelf.module.css';
 
 
-function StaticShelfColumn({ column }: { column: ShelfColumn }) {
+function StaticShelfColumn({ column, shelf, onElementSelect }: { column: ShelfColumn, shelf: Shelf, onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void }) {
   return (
     <div className={styles.column}>
       {column.elements.map((element) => {
         const definition = ELEMENT_CATALOG[element.type];
         return (
-          <button>
+          <button
+            key={element.id}
+            type="button"
+            className={styles.elementTrigger}
+            onClick={() => onElementSelect?.({
+              elementId: element.id,
+              building: shelf.building,
+              room: shelf.room,
+              shelf: shelf.name,
+            })}
+          >
             <ShelfElementViewInner
-              key={element.id}
               itemDef={definition}
               data-type={element.type}
             >
@@ -31,12 +40,12 @@ function StaticShelfColumn({ column }: { column: ShelfColumn }) {
   );
 }
 
-function StaticShelf({ shelf }: { shelf : Shelf }) {
+function StaticShelf({ shelf, onElementSelect }: { shelf : Shelf, onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void }) {
   return (
     <section className={styles.StaticShelf}>
       <div>
         {shelf.columns.map((column) => (
-          <StaticShelfColumn key={column.id} column={column} />
+          <StaticShelfColumn key={column.id} column={column} shelf={shelf} onElementSelect={onElementSelect} />
         ))}
       </div>
     </section>
