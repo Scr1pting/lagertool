@@ -2104,7 +2104,7 @@ func (h *Handler) ChatHandler(c *gin.Context) {
 func callInternalAPI(action string, params map[string]string) (string, error) {
 	switch action {
 	case "get_items":
-		resp, err := http.Get("https://05.hackathon.ethz.ch/api/items")
+		resp, err := http.Get("https://localhost:8000/api/items") //https://05.hackathon.ethz.ch/api/items
 		if err != nil {
 			return "", err
 		}
