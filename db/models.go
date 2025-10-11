@@ -38,11 +38,13 @@ type Inventory struct {
 }
 
 type Loans struct {
-	tableName struct{}  `pg:"loans"`
-	ID        int       `json:"id" pg:"id,pk"`
-	PersonID  int       `json:"person_id" pg:"person_id"`
-	ItemID    int       `json:"item_id" pg:"item_id"`
-	Amount    int       `json:"amount" pg:"amount"`
-	Begin     time.Time `json:"begin" pg:"begin"`
-	Until     time.Time `json:"until,omitempty" pg:"until"`
+	tableName  struct{}   `pg:"loans"`
+	ID         int        `json:"id" pg:"id,pk"`
+	PersonID   int        `json:"person_id" pg:"person_id"`
+	ItemID     int        `json:"item_id" pg:"item_id"`
+	Amount     int        `json:"amount" pg:"amount"`
+	Begin      time.Time  `json:"begin" pg:"begin"`
+	Until      time.Time  `json:"until,omitempty" pg:"until"`
+	Returned   bool       `json:"returned" pg:"returned,use_zero"`
+	ReturnedAt *time.Time `json:"returned_at,omitempty" pg:"returned_at"`
 }

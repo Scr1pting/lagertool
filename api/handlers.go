@@ -746,15 +746,27 @@ func (h *Handler) DeletePerson(c *gin.Context) {
 
 // GetAllLoans godoc
 // @Summary Get all loans
-// @Description Retrieve all loan records from the database
+// @Description Retrieve all loan records from the database. Optionally filter by returned status using the 'returned' query parameter (true/false).
 // @Tags loans
 // @Produce json
+// @Param returned query string false "Filter by returned status (true/false)"
 // @Success 200 {array} db.Loans
 // @Failure 500 {object} map[string]string
 // @Router /loans [get]
 func (h *Handler) GetAllLoans(c *gin.Context) {
+	returnedParam := c.Query("returned")
+
+	query := h.DB.Model(&[]db.Loans{})
+
+	// Filter by returned status if parameter is provided
+	if returnedParam == "true" {
+		query = query.Where("returned = ?", true)
+	} else if returnedParam == "false" {
+		query = query.Where("returned = ?", false)
+	}
+
 	var loans []db.Loans
-	err := h.DB.Model(&loans).Select()
+	err := query.Select(&loans)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -849,7 +861,7 @@ func (h *Handler) GetLoansByPermanent(c *gin.Context) {
 
 // GetOverdueLoans godoc
 // @Summary Get all overdue loans
-// @Description Retrieve all loan records where the return date (`until`) is in the past
+// @Description Retrieve all non-returned loan records where the return date (`until`) is in the past
 // @Tags loans
 // @Produce json
 // @Success 200 {array} db.Loans
@@ -860,6 +872,7 @@ func (h *Handler) GetOverdueLoans(c *gin.Context) {
 	var loans []db.Loans
 	err := h.DB.Model(&loans).
 		Where("until < ?", now).
+		Where("returned = ?", false).
 		Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -956,6 +969,116 @@ func (h *Handler) DeleteLoan(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "loan deleted successfully"})
+}
+
+// ReturnLoan godoc
+// @Summary Mark a loan as returned
+// @Description Mark a loan as returned by setting the returned flag to true and recording the return timestamp
+// @Tags loans
+// @Produce json
+// @Param id path int true "Loan ID"
+// @Success 200 {object} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans/{id}/return [patch]
+func (h *Handler) ReturnLoan(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	// Check if loan exists
+	loan := &db.Loans{ID: id}
+	err = h.DB.Model(loan).WherePK().Select()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "loan not found"})
+		return
+	}
+
+	// Check if already returned
+	if loan.Returned {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "loan already returned"})
+		return
+	}
+
+	// Mark as returned
+	now := time.Now()
+	loan.Returned = true
+	loan.ReturnedAt = &now
+
+	_, err = h.DB.Model(loan).
+		Set("returned = ?", true).
+		Set("returned_at = ?", now).
+		WherePK().
+		Update()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, loan)
+}
+
+// GetLoanHistoryByItem godoc
+// @Summary Get borrow history for an item
+// @Description Retrieve all loan records (both active and returned) for a specific item
+// @Tags loans
+// @Produce json
+// @Param item_id path int true "Item ID"
+// @Success 200 {array} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans/item/{item_id}/history [get]
+func (h *Handler) GetLoanHistoryByItem(c *gin.Context) {
+	itemID, err := strconv.Atoi(c.Param("item_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item_id"})
+		return
+	}
+
+	var loans []db.Loans
+	err = h.DB.Model(&loans).
+		Where("item_id = ?", itemID).
+		Order("begin DESC").
+		Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, loans)
+}
+
+// GetLoanHistoryByPerson godoc
+// @Summary Get borrow history for a person
+// @Description Retrieve all loan records (both active and returned) for a specific person
+// @Tags loans
+// @Produce json
+// @Param person_id path int true "Person ID"
+// @Success 200 {array} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans/person/{person_id}/history [get]
+func (h *Handler) GetLoanHistoryByPerson(c *gin.Context) {
+	personID, err := strconv.Atoi(c.Param("person_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid person_id"})
+		return
+	}
+
+	var loans []db.Loans
+	err = h.DB.Model(&loans).
+		Where("person_id = ?", personID).
+		Order("begin DESC").
+		Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, loans)
 }
 
 func (h *Handler) Search(c *gin.Context) {
