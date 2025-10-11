@@ -23,12 +23,14 @@ type FormProps = {
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
 type FormValues = {
+  shelfId: string;
   name: string;
   building: string;
   room: string;
 };
 
 const INITIAL_VALUES: FormValues = {
+  shelfId: "",
   name: "",
   building: "CAB",
   room: "",
@@ -44,7 +46,9 @@ function Form({ columns }: FormProps) {
   const updateValue = useCallback(
     (field: keyof FormValues) =>
       (event: ChangeEvent<HTMLInputElement>) => {
-        const nextValue = event.target.value;
+        const rawValue = event.target.value;
+        const nextValue =
+          field === "shelfId" ? rawValue.toUpperCase() : rawValue;
         setValues((prev) => ({ ...prev, [field]: nextValue }));
         if (status === "success") {
           setStatus("idle");
@@ -68,6 +72,7 @@ function Form({ columns }: FormProps) {
 
       try {
         await postShelf({
+          id: values.shelfId.trim(),
           name: values.name.trim(),
           building: values.building.trim(),
           room: values.room.trim(),
@@ -75,7 +80,12 @@ function Form({ columns }: FormProps) {
         });
 
         setStatus("success");
-        setValues((prev) => ({ name: "", building: prev.building, room: "" }));
+        setValues((prev) => ({
+          shelfId: "",
+          name: "",
+          building: prev.building,
+          room: "",
+        }));
       } catch (submitError) {
         setStatus("error");
         if (submitError instanceof Error) {
@@ -85,14 +95,37 @@ function Form({ columns }: FormProps) {
         }
       }
     },
-    [columns.length, serializedColumns, values.building, values.name, values.room]
+    [
+      columns.length,
+      serializedColumns,
+      values.building,
+      values.name,
+      values.room,
+      values.shelfId,
+    ]
   );
 
-  const isSubmitDisabled = status === "submitting" || columns.length === 0;
+  const isSubmitDisabled =
+    status === "submitting" ||
+    columns.length === 0 ||
+    values.shelfId.trim().length === 0;
 
   return (
     <form onSubmit={handleSubmit}>
       <FieldGroup className="gap-4">
+        <Field>
+          <div className="grid grid-cols-3 items-center gap-4">
+            <Label htmlFor="shelf-id">Shelf ID</Label>
+            <Input
+              id="shelf-id"
+              value={values.shelfId}
+              onChange={updateValue("shelfId")}
+              placeholder="SHELF1"
+              className="col-span-2 h-8 uppercase"
+              required
+            />
+          </div>
+        </Field>
         <Field>
           <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="shelf-name">Name</Label>

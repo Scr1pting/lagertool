@@ -22,13 +22,16 @@ export default function AddDropdown() {
             <Link to="/shelf-builder">Shelf Builder</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
+            <Link to="/shelves">Browse Shelves</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
             <Link to="/borrow">Borrow Inventory</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/inventory">Inventory Overview</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Link to="/events">Events</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link to="/borrow">Borrow Inventory</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Link to="/add">Track inventory</Link>

@@ -1,24 +1,9 @@
 import { type ShelfColumn, type ShelfItem } from "../types/shelf";
+import { type CreateShelfPayload, type ShelfColumnPayload } from "./types";
 
-export interface SerializedShelfPiece {
-	id: string;
-	type: ShelfItem["type"];
-	heightUnits: ShelfItem["heightUnits"];
-}
-
-export interface SerializedShelfColumn {
-	num: number;
-	elements: SerializedShelfPiece[];
-}
-
-export interface CreateShelfPayload {
-	name: string;
-	building: string;
-	room: string;
-	columns: SerializedShelfColumn[];
-}
-
-const SHELVES_ENDPOINT = "https://05.hackathon.ethz.ch/api/shelve";
+const API_BASE_URL =
+	import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api";
+const SHELVES_ENDPOINT = `${API_BASE_URL}/shelves`;
 
 const parseErrorMessage = async (response: Response) => {
 	try {
@@ -33,13 +18,12 @@ const parseErrorMessage = async (response: Response) => {
 	return response.statusText || "Unknown error";
 };
 
-export const serializeColumns = (columns: ShelfColumn[]): SerializedShelfColumn[] => {
-	return columns.map((column, columnIndex) => ({
-		num: columnIndex,
-		elements: column.elements.map((element, _) => ({
+export const serializeColumns = (columns: ShelfColumn[]): ShelfColumnPayload[] => {
+	return columns.map((column) => ({
+		id: column.id,
+		elements: column.elements.map((element) => ({
 			id: element.id,
 			type: element.type,
-			heightUnits: element.heightUnits,
 		})),
 	}));
 };
