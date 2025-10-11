@@ -1,8 +1,12 @@
 package api
 
 import (
+	"context"
+	"crypto/tls"
 	"encoding/csv"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,6 +14,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
+	"github.com/sashabaranov/go-openai"
+	"github.com/slack-go/slack"
+	"lagertool.com/main/chatbot"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 	"lagertool.com/main/util"
@@ -18,10 +25,14 @@ import (
 type Handler struct {
 	DB  *pg.DB
 	Cfg *config.Config
+	Ai  struct {
+		Client    *openai.Client
+		SysPrompt string
+	}
 }
 
-func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
-	return &Handler{DB: db, Cfg: cfg}
+func NewHandler(db *pg.DB, cfg *config.Config, Ai chatbot.ChatBot) *Handler {
+	return &Handler{DB: db, Cfg: cfg, Ai: Ai}
 }
 
 // ============================================================================
