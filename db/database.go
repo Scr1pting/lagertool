@@ -42,6 +42,9 @@ func InitDB(con *pg.DB) {
 		(*Inventory)(nil),
 		(*Person)(nil),
 		(*Loans)(nil),
+		(*Event)(nil),
+		(*EventHelper)(nil),
+		(*EventLoan)(nil),
 	}
 
 	for _, model := range models {
