@@ -3,10 +3,11 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
+	"lagertool.com/main/config"
 )
 
-func SetupRoutes(r *gin.Engine, dbCon *pg.DB) {
-	h := NewHandler(dbCon)
+func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
+	h := NewHandler(dbCon, cfg)
 
 	// Location endpoints
 	r.GET("/locations", h.GetAllLocations)

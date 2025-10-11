@@ -63,7 +63,7 @@ func main() {
 		log.Printf("⚠️  Failed to insert test data: %v", err)
 	}
 
-	api.SetupRoutes(router, dbConnection)
+	api.SetupRoutes(router, dbConnection, cfg)
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
