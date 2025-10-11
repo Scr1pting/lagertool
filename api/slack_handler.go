@@ -206,9 +206,11 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 		session.Item = text
 		res, err := h.LocalSearchInventory(text)
 		if err != nil {
+			log.Println("Error searching inventory:", err)
 			api.PostMessage(channel, slack.MsgOptionText("Internal Error", false))
 			return
 		} else if len(res) == 0 {
+			log.Println("No items found")
 			api.PostMessage(channel, slack.MsgOptionText("No item with this name found", false))
 			return
 		} else if res[0].ItemName != text {
