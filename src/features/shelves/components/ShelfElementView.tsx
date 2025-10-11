@@ -10,13 +10,12 @@ import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT } from '../util/shelfUnits';
 
 
 export function ShelfElementViewInner(
-  { itemDef, classes, children }:
-  { itemDef: ShelfElementDefinition, classes?: string; children?: ReactNode }
+  { itemDef, children }:
+  { itemDef: ShelfElementDefinition, children?: ReactNode }
 ) {
   return (
     <div
-      className={[styles.element, classes].filter(Boolean).join(" ")}
-      aria-label={itemDef.label}
+      className={styles.element}
       style={{
           width: ELEMENT_WIDTH,
           height: itemDef.heightUnits == 1 ? SHORT_HEIGHT : TALL_HEIGHT,
