@@ -1,61 +1,3 @@
-/*"use client"
-
-import { useState, useEffect } from 'react';
-import DataTable from '@/components/DataTable';
-import type { ColumnDef } from '@tanstack/react-table';
-
-
-type InventoryItem = {
-  name: string;
-  shelf_name: string;
-  room_name: string;
-  building_name: string;
-  amount: number;
-};
-
-export const columns: ColumnDef<InventoryItem>[] = [
-  {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "shelf_name",
-    header: "Shelf",
-  },
-  {
-    accessorKey: "room_name",
-    header: "Room",
-  },
-  {
-    accessorKey: "building_name",
-    header: "Building",
-  },
-  {
-    accessorKey: "amount",
-    header: "Amount",
-  }  
-]
-
-
-function Search() {
-    const [data, setData] = useState([]);
-
-    useEffect(() => {
-        fetch("https://05.hackathon.ethz.ch/api/inventory")
-        .then((response) => response.json())
-        .then((json) => setData(json))
-        .catch((error) => console.error("Error fetching data:", error));
-    }, []);
-
-    return(
-        <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={data} />
-        </div>
-    )
-}
-
-export default Search */
-
 import { useEffect, useMemo, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
@@ -265,9 +207,6 @@ export default function Search() {
           <section className="space-y-4">
             <div>
               <h2 className="text-xl font-semibold">Items</h2>
-              <p className="text-sm text-muted-foreground">
-                Results from <code>/items/search</code>
-              </p>
             </div>
             <DataTable columns={itemColumns} data={items} />
           </section>
@@ -275,9 +214,6 @@ export default function Search() {
           <section className="space-y-4">
             <div>
               <h2 className="text-xl font-semibold">People</h2>
-              <p className="text-sm text-muted-foreground">
-                Results from <code>/persons/search</code>
-              </p>
             </div>
             <DataTable columns={personColumns} data={persons} />
           </section>
