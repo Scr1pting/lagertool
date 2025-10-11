@@ -2053,6 +2053,50 @@ func (h *Handler) BulkAddCSV(c *gin.Context) {
 	})
 }
 
+func callAPIhelper(client *http.Client, url string) (string, error) {
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+
+}
+
+func callInternalAPI(action string, params map[string]string) (string, error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
+	}
+	client := &http.Client{Transport: tr}
+
+	switch action {
+	case "get_items":
+
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/items")
+	case "get_inventory":
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/inventory")
+	case "get_locations":
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/locations")
+	case "get_loans":
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/loans")
+	case "get_shelves":
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/shelves")
+	case "get_persons":
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/persons")
+	case "none":
+		return "", nil
+	default:
+		return "", fmt.Errorf("unknown action: %s", action)
+	}
+}
+
+// Refactored ChatHandler to perform a second AI call to interpret API data.
 func (h *Handler) ChatHandler(c *gin.Context) {
 	var req struct {
 		Message string `json:"message"`
@@ -2062,8 +2106,11 @@ func (h *Handler) ChatHandler(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.Ai.Client.CreateChatCompletion(
-		context.Background(),
+	ctx := context.Background()
+
+	// --- Step 1: Call AI to determine action (Tool Call) ---
+	firstResp, err := h.Ai.Client.CreateChatCompletion(
+		ctx,
 		openai.ChatCompletionRequest{
 			Model: openai.GPT4oMini,
 			Messages: []openai.ChatCompletionMessage{
@@ -2076,58 +2123,64 @@ func (h *Handler) ChatHandler(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("AI decision error: %v", err)})
 		return
 	}
 
 	var tool chatbot.ToolCall
-	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &tool); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "bad AI JSON"})
+	if err := json.Unmarshal([]byte(firstResp.Choices[0].Message.Content), &tool); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "bad AI JSON for tool decision"})
 		return
 	}
 
-	// Default AI reply
-	reply := tool.Reply
+	// Default reply is the initial reply from the AI
+	finalReply := tool.Reply
 
-	// Perform API call if needed
+	// --- Step 2: Perform API call if needed ---
 	if tool.Action != "none" {
 		data, err := callInternalAPI(tool.Action, tool.Params)
+
 		if err != nil {
-			reply += fmt.Sprintf("\n\n(I tried calling your API but got an error: %v)", err)
+			// If API call fails, just append an error message to the AI's initial reply
+			finalReply += fmt.Sprintf("\n\n(I tried calling your API but got an error: %v)", err)
 		} else {
-			reply += fmt.Sprintf("\n\nHere’s what I found:\n%s", data)
+			// If API call succeeds, perform the second AI call for interpretation
+
+			// --- Step 3: Call AI again to interpret the data (Natural Language Generation) ---
+
+			// Construct messages for the interpretation call
+			messages := []openai.ChatCompletionMessage{
+				// System prompt is kept general, focusing on role
+				{Role: "system", Content: "You are an assistant. The user asked a question, and a tool was called. Your job now is to analyze the tool's raw output (provided below) and generate a single, final, user-friendly, natural language response based on it. Do not use JSON."},
+
+				// The raw data is provided as a system message to the model
+				{Role: "system", Content: fmt.Sprintf("Tool %s completed. Raw Data:\n%s", tool.Action, data)},
+
+				// Add the original user message for context
+				{Role: "user", Content: req.Message},
+			}
+
+			secondResp, interpretErr := h.Ai.Client.CreateChatCompletion(
+				ctx,
+				openai.ChatCompletionRequest{
+					Model:    openai.GPT4oMini,
+					Messages: messages,
+					// No ResponseFormat is specified, defaulting to natural text
+				},
+			)
+
+			if interpretErr != nil {
+				log.Printf("AI interpretation error: %v", interpretErr)
+				// Fallback: If the interpretation call fails, return the raw data with an explanation
+				finalReply = fmt.Sprintf("I retrieved the data, but the AI failed to format it (Error: %v). Here is the raw data:\n%s", interpretErr, data)
+			} else {
+				// Success! Use the natural language reply from the second call
+				finalReply = secondResp.Choices[0].Message.Content
+			}
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"reply": reply})
-}
-
-func callInternalAPI(action string, params map[string]string) (string, error) {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			// Set the minimum acceptable TLS version to 1.2.
-			// This is the critical change to resolve the WRONG_VERSION_NUMBER error
-			// when connecting to servers that don't support the client's default (often TLS 1.3).
-			MinVersion: tls.VersionTLS12,
-		},
-	}
-	// 2. Create a custom HTTP client using the custom Transport
-	client := &http.Client{Transport: tr}
-	switch action {
-	case "get_items":
-		log.Println("get_items:")
-		resp, err := client.Get("https://05.hackathon.ethz.ch/api/items") //https://05.hackathon.ethz.ch/api/items
-		if err != nil {
-			return "", err
-		}
-		log.Println("after")
-
-		defer resp.Body.Close()
-		body, _ := ioutil.ReadAll(resp.Body)
-		return string(body), nil
-	default:
-		return "", fmt.Errorf("unknown action")
-	}
+	c.JSON(http.StatusOK, gin.H{"reply": finalReply})
 }
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
