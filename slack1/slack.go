@@ -187,6 +187,7 @@ func handleMessage(api *slack.Client, channel string, session *BorrowSession, te
 
 	case "awaiting_item":
 		session.Item = text
+		//TODO: Check if item exists | maybe list similar items
 		api.PostMessage(channel, slack.MsgOptionText("How many do you need?", false))
 		session.Stage = "awaiting_quantity"
 
@@ -196,6 +197,7 @@ func handleMessage(api *slack.Client, channel string, session *BorrowSession, te
 			api.PostMessage(channel, slack.MsgOptionText("Please enter a valid number.", false))
 			return
 		}
+		//TODO: Check if there is enough of the item
 		session.Quantity = qty
 		api.PostMessage(channel, slack.MsgOptionText("From where do you want to borrow it? (Campus Building Room)", false))
 		session.Stage = "awaiting_source"
