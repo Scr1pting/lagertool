@@ -49,16 +49,18 @@ type ShelfRequest struct {
 
 // ShelfResponse represents the JSON structure for returning shelves
 type ShelfResponse struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Building    string `json:"building"`
-	Room        string `json:"room"`
-	NumElements int    `json:"numElements"`
-	Columns     []struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Building string `json:"building"`
+	Room     string `json:"room"`
+	NumItems int    `json:"numItems"`
+	Columns  []struct {
 		ID       string `json:"id"`
+		NumItems int    `json:"numItems"`
 		Elements []struct {
-			ID   string `json:"id"`
-			Type string `json:"type"`
+			ID       string `json:"id"`
+			Type     string `json:"type"`
+			NumItems int    `json:"numItems"`
 		} `json:"elements"`
 	} `json:"columns"`
 }
@@ -442,70 +444,6 @@ func (h *Handler) GetShelfUnitInventory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, results)
-}
-
-// Helper function to build shelf response with units
-func (h *Handler) buildShelfResponse(shelf db.Shelf) ShelfResponse {
-	// Get all columns for this shelf
-	var columns []db.Column
-	h.DB.Model(&columns).Where("shelf_id = ?", shelf.ID).Select()
-
-	// Build response columns
-	var respColumns []struct {
-		ID       string `json:"id"`
-		Elements []struct {
-			ID   string `json:"id"`
-			Type string `json:"type"`
-		} `json:"elements"`
-	}
-
-	totalElements := 0
-
-	for _, column := range columns {
-		// Get all units for this column
-		var units []db.ShelfUnit
-		h.DB.Model(&units).Where("column_id = ?", column.ID).Select()
-
-		// Build elements array
-		var elements []struct {
-			ID   string `json:"id"`
-			Type string `json:"type"`
-		}
-
-		for _, unit := range units {
-			elements = append(elements, struct {
-				ID   string `json:"id"`
-				Type string `json:"type"`
-			}{
-				ID:   unit.ID,
-				Type: unit.Type,
-			})
-			totalElements++
-		}
-
-		respColumns = append(respColumns, struct {
-			ID       string `json:"id"`
-			Elements []struct {
-				ID   string `json:"id"`
-				Type string `json:"type"`
-			} `json:"elements"`
-		}{
-			ID:       column.ID,
-			Elements: elements,
-		})
-	}
-
-	// Build final response
-	resp := ShelfResponse{
-		ID:          shelf.ID,
-		Name:        shelf.Name,
-		Building:    shelf.Building,
-		Room:        shelf.Room,
-		NumElements: totalElements,
-		Columns:     respColumns,
-	}
-
-	return resp
 }
 
 // ============================================================================
@@ -1604,7 +1542,7 @@ func (h *Handler) Search(c *gin.Context) {
 
 	var results []Result
 	_, err = h.DB.Query(&results, `
-		SELECT 
+		SELECT
 			inv.id as inventory_id,
 			inv.amount,
 			inv.note,
@@ -1643,7 +1581,7 @@ func (h *Handler) GetLoansWithPerson(c *gin.Context) {
 
 	var results []LoanResult
 	_, err := h.DB.Query(&results, `
-		SELECT 
+		SELECT
 			l.id as loan_id,
 			l.person_id,
 			l.item_id,
@@ -1997,7 +1935,7 @@ type RoomData struct {
 	Amount   float64 `json:"amount"`
 }
 
-func (h *Handler) BulkAddCVS(c *gin.Context) {
+func (h *Handler) BulkAddCSV(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file not provided"})
