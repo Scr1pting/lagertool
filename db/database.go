@@ -41,18 +41,7 @@ func NewDBConn() (con *pg.DB, err error) {
 }
 
 func InitDB(con *pg.DB) {
-	dbConn, err := NewDBConn()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer func(dbConn *pg.DB) {
-		err := dbConn.Close()
-		if err != nil {
-		}
-	}(dbConn)
-
-	// Create tables
+	// Create tables using the provided connection
 	models := []interface{}{
 		(*Location)(nil),
 		(*Item)(nil),
@@ -62,13 +51,14 @@ func InitDB(con *pg.DB) {
 	}
 
 	for _, model := range models {
-		err := dbConn.Model(model).CreateTable(&orm.CreateTableOptions{
+		err := con.Model(model).CreateTable(&orm.CreateTableOptions{
 			IfNotExists: true,
 		})
 		if err != nil {
 			log.Fatalf("Error creating table for %T: %v", model, err)
 		}
 	}
+	log.Println("✅ Database tables initialized successfully.")
 }
 
 func getEnv(key, defaultValue string) string {

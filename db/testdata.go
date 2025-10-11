@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/go-pg/pg/v10"
@@ -38,50 +39,84 @@ func InsertBasicData(db *pg.DB) error {
 	defer tx.Close()
 
 	// Insert Locations
-	for _, loc := range locations {
-		_, err := tx.Model(&loc).Insert()
+	for i := range locations {
+		_, err := tx.Model(&locations[i]).Insert()
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert location: %w", err)
 		}
+		log.Printf("Inserted location: %s %s %s (ID: %d)", locations[i].Campus, locations[i].Building, locations[i].Room, locations[i].ID)
 	}
 
 	// Insert Items
-	for _, item := range items {
-		_, err := tx.Model(&item).Insert()
+	for i := range items {
+		_, err := tx.Model(&items[i]).Insert()
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert item: %w", err)
 		}
+		log.Printf("Inserted item: %s (ID: %d)", items[i].Name, items[i].ID)
 	}
 
 	// Insert Persons
-	for _, person := range persons {
-		_, err := tx.Model(&person).Insert()
+	for i := range persons {
+		_, err := tx.Model(&persons[i]).Insert()
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert person: %w", err)
 		}
+		log.Printf("Inserted person: %s %s (ID: %d)", persons[i].Firstname, persons[i].Lastname, persons[i].ID)
 	}
 
-	// Example: insert a relation (IsIn)
-	isIn := IsIn{
-		LocationId: 1, // Assuming first location
-		ItemId:     1, // Assuming first item
-		Amount:     3,
-		Note:       "Stored for lab experiments",
+	// Insert IsIn relations (inventory records) - use actual IDs from inserted records
+	isInRecords := []IsIn{
+		{
+			LocationId: locations[0].ID, // Science Hall 101
+			ItemId:     items[0].ID,     // Oscilloscope
+			Amount:     3,
+			Note:       "Stored for lab experiments",
+		},
+		{
+			LocationId: locations[0].ID, // Science Hall 101
+			ItemId:     items[2].ID,     // Resistor Pack
+			Amount:     50,
+			Note:       "Bulk storage - consumables",
+		},
+		{
+			LocationId: locations[1].ID, // Engineering 202
+			ItemId:     items[0].ID,     // Oscilloscope
+			Amount:     2,
+			Note:       "For student projects",
+		},
+		{
+			LocationId: locations[1].ID, // Engineering 202
+			ItemId:     items[1].ID,     // Screwdriver
+			Amount:     10,
+			Note:       "General toolbox",
+		},
+		{
+			LocationId: locations[1].ID, // Engineering 202
+			ItemId:     items[2].ID,     // Resistor Pack
+			Amount:     25,
+			Note:       "Electronics workbench supply",
+		},
 	}
 
-	_, err = tx.Model(&isIn).Insert()
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("failed to insert IsIn: %w", err)
+	log.Printf("Inserting inventory records...")
+
+	for i := range isInRecords {
+		_, err := tx.Model(&isInRecords[i]).Insert()
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to insert IsIn: %w", err)
+		}
+		log.Printf("Inserted inventory: %s (ID: %d)", isInRecords[i].Note, isInRecords[i].ID)
 	}
 
 	// Example: insert a loan
 	loan := Loans{
 		PersonId: persons[0].ID,
-		PermID:   1,
+		PermID:   isInRecords[0].ID, // Use actual inventory record ID instead of hard-coded 1
 		Amount:   1,
 		Begin:    time.Now(),
 		Until:    time.Now().AddDate(0, 0, 14), // 2 weeks
@@ -92,12 +127,13 @@ func InsertBasicData(db *pg.DB) error {
 		tx.Rollback()
 		return fmt.Errorf("failed to insert loan: %w", err)
 	}
+	log.Printf("Inserted loan: Person %d borrowed item from inventory %d (Loan ID: %d)", loan.PersonId, loan.PermID, loan.ID)
 
 	// Commit transaction
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	fmt.Println("✅ Basic data inserted successfully.")
+	log.Println("✅ Basic data inserted successfully.")
 	return nil
 }

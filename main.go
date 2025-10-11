@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
 	swaggerFiles "github.com/swaggo/files"
@@ -29,6 +30,16 @@ import (
 
 func main() {
 	router := gin.Default()
+
+	// Configure CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Allow all origins, or specify your frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
 	dbConnection, err := db.NewDBConn()
 
 	if err != nil {
@@ -42,7 +53,11 @@ func main() {
 	}(dbConnection)
 
 	db.InitDB(dbConnection)
-	db.InsertBasicData(dbConnection)
+
+	if err := db.InsertBasicData(dbConnection); err != nil {
+		log.Printf("⚠️  Failed to insert test data: %v", err)
+	}
+
 	api.SetupRoutes(router, dbConnection)
 
 	// Swagger endpoint
