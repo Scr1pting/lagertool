@@ -27,25 +27,24 @@ definitions:
             elements:
               items:
                 properties:
-                  heightUnits:
-                    type: integer
                   id:
                     type: string
                   type:
                     type: string
                 required:
-                - heightUnits
                 - id
                 - type
                 type: object
               type: array
-            num:
-              type: integer
+            id:
+              type: string
           required:
           - elements
-          - num
+          - id
           type: object
         type: array
+      id:
+        type: string
       name:
         type: string
       room:
@@ -53,6 +52,7 @@ definitions:
     required:
     - building
     - columns
+    - id
     - name
     - room
     type: object
@@ -66,18 +66,18 @@ definitions:
             elements:
               items:
                 properties:
-                  heightUnits:
-                    type: integer
                   id:
                     type: string
                   type:
                     type: string
                 type: object
               type: array
-            num:
-              type: integer
+            id:
+              type: string
           type: object
         type: array
+      id:
+        type: string
       name:
         type: string
       numElements:
@@ -1924,6 +1924,37 @@ paths:
               type: string
             type: object
       summary: Create a new shelf layout
+      tags:
+      - shelves
+  /shelves/{id}:
+    get:
+      description: Retrieve a specific shelf by its ID with full layout
+      parameters:
+      - description: Shelf ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ShelfResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get shelf by ID
       tags:
       - shelves
   /shelves/building/{building}:

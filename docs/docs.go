@@ -2739,6 +2739,53 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/shelves/{id}": {
+            "get": {
+                "description": "Retrieve a specific shelf by its ID with full layout",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Get shelf by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shelf ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.ShelfResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2773,6 +2820,7 @@ const docTemplate = `{
             "required": [
                 "building",
                 "columns",
+                "id",
                 "name",
                 "room"
             ],
@@ -2786,7 +2834,7 @@ const docTemplate = `{
                         "type": "object",
                         "required": [
                             "elements",
-                            "num"
+                            "id"
                         ],
                         "properties": {
                             "elements": {
@@ -2794,14 +2842,10 @@ const docTemplate = `{
                                 "items": {
                                     "type": "object",
                                     "required": [
-                                        "heightUnits",
                                         "id",
                                         "type"
                                     ],
                                     "properties": {
-                                        "heightUnits": {
-                                            "type": "integer"
-                                        },
                                         "id": {
                                             "type": "string"
                                         },
@@ -2811,11 +2855,14 @@ const docTemplate = `{
                                     }
                                 }
                             },
-                            "num": {
-                                "type": "integer"
+                            "id": {
+                                "type": "string"
                             }
                         }
                     }
+                },
+                "id": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -2841,9 +2888,6 @@ const docTemplate = `{
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "heightUnits": {
-                                            "type": "integer"
-                                        },
                                         "id": {
                                             "type": "string"
                                         },
@@ -2853,11 +2897,14 @@ const docTemplate = `{
                                     }
                                 }
                             },
-                            "num": {
-                                "type": "integer"
+                            "id": {
+                                "type": "string"
                             }
                         }
                     }
+                },
+                "id": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
