@@ -31,7 +31,7 @@ func (h *Handler) BulkBorrow(c *gin.Context) {
 	for _, bor := range borrows {
 		err := h.LocalCreateLoan(&bor)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"Incorrect formatting of bulk add JSON submition: ": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"Incorrect formatting of bulk borrow JSON submition: ": err.Error()})
 			return
 		}
 	}
