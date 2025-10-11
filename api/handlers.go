@@ -1368,7 +1368,7 @@ func (h *Handler) Interactivity(c *gin.Context) {
 				log.Println("Error posting to group:", err)
 			}
 
-			session.Stage = "start"
+			session.Stage = "awaiting_item"
 		}
 	}
 
@@ -1421,9 +1421,9 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
 	switch session.Stage {
-	case "start":
-		api.PostMessage(channel, slack.MsgOptionText("Hi! What would you like to borrow? (just the item name)", false))
-		session.Stage = "awaiting_item"
+	//case "start":
+	//api.PostMessage(channel, slack.MsgOptionText("Hi! What would you like to borrow? (just the item name)", false))
+	//session.Stage = "awaiting_item"
 
 	case "awaiting_item":
 		session.Item = text
@@ -1543,7 +1543,7 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			}
 
 		}
-		session.Stage = "start"
+		session.Stage = "awaiting_item"
 
 	}
 }
