@@ -1228,11 +1228,72 @@ func (h *Handler) Interactivity(c *gin.Context) {
 				UserName: userInfo.Name,
 			})
 
+			_, _, err = api.PostMessage(
+				session.GroupChannel,
+				slack.MsgOptionText(
+					fmt.Sprintf(
+						"<@%s> borrowed *%d %s* (due %s).",
+						userInfo.ID,
+						session.Quantity,
+						session.Item,
+						session.DueDate.Format("Jan 2"),
+					),
+					false,
+				),
+			)
+			if err != nil {
+				log.Println("Error posting to group:", err)
+			}
+
 			session.Stage = "start"
 		}
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func (h *Handler) BorrowHandler(c *gin.Context) {
+	// Parse the slash command payload
+	slackClient, _ := slack1.SetupSlack(h.Cfg)
+
+	s, err := slack.SlashCommandParse(c.Request)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "parse error")
+		return
+	}
+	userID := s.UserID
+	channelID := s.ChannelID
+
+	session := &slack1.BorrowSession{
+		Stage:        "start",
+		GroupChannel: channelID, // e.g., from SlashCommand or event.Channel
+	}
+	slack1.Sessions[userID] = session
+
+	// 1️⃣ Respond ephemerally in the group
+	response := slack.Msg{
+		ResponseType: "ephemeral",
+		Text:         "Got it! I’ll DM you to finish your borrow request.",
+	}
+	c.JSON(http.StatusOK, response)
+
+	// 2️⃣ Open DM channel
+	im, _, _, err := slackClient.OpenConversation(&slack.OpenConversationParameters{
+		Users: []string{userID},
+	})
+	if err != nil {
+		log.Println("open DM error:", err)
+		return
+	}
+
+	dmID := im.ID
+
+	// 3️⃣ Send DM to user
+	_, _, err = slackClient.PostMessage(dmID, slack.MsgOptionText(
+		fmt.Sprintf("Hey <@%s>! Let’s set up your borrow. What item do you need?", userID), false))
+	if err != nil {
+		log.Println("DM send error:", err)
+	}
 }
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
@@ -1329,16 +1390,37 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			fmt.Sprintf("✅ Got it! You want %d %s(s) from %s until %s. I’ll check and confirm!",
 				session.Quantity, session.Item, session.Source, session.DueDate.Format("Jan 2, 2006")),
 			false))
-		session.Stage = "start"
+		api.PostMessage(channel, slack.MsgOptionText("Type 'confirm' to finalize.", false))
+		session.Stage = "confirm"
+	case "confirm":
+		if strings.ToLower(text) == "confirm" {
+			db.SlackBorrow(h.Cfg, db.Borrow{
+				Item:     session.Item,
+				Amount:   session.Quantity,
+				Location: session.Source,
+				DueDate:  session.DueDate,
+				UserID:   user.ID,
+				UserName: user.Name,
+			})
+			_, _, err := api.PostMessage(
+				session.GroupChannel,
+				slack.MsgOptionText(
+					fmt.Sprintf(
+						"<@%s> borrowed *%d %s* (due %s).",
+						user.ID,
+						session.Quantity,
+						session.Item,
+						session.DueDate.Format("Jan 2"),
+					),
+					false,
+				),
+			)
+			if err != nil {
+				log.Println("Error posting to group:", err)
+			}
 
-		db.SlackBorrow(h.Cfg, db.Borrow{
-			Item:     session.Item,
-			Amount:   session.Quantity,
-			Location: session.Source,
-			DueDate:  session.DueDate,
-			UserID:   user.ID,
-			UserName: user.Name,
-		})
+		}
+		session.Stage = "start"
 
 	}
 }
