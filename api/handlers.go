@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -2102,12 +2103,25 @@ func (h *Handler) ChatHandler(c *gin.Context) {
 }
 
 func callInternalAPI(action string, params map[string]string) (string, error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			// Set the minimum acceptable TLS version to 1.2.
+			// This is the critical change to resolve the WRONG_VERSION_NUMBER error
+			// when connecting to servers that don't support the client's default (often TLS 1.3).
+			MinVersion: tls.VersionTLS12,
+		},
+	}
+	// 2. Create a custom HTTP client using the custom Transport
+	client := &http.Client{Transport: tr}
 	switch action {
 	case "get_items":
-		resp, err := http.Get("https://localhost:8000/api/items") //https://05.hackathon.ethz.ch/api/items
+		log.Println("get_items:")
+		resp, err := client.Get("https://05.hackathon.ethz.ch/api/items") //https://05.hackathon.ethz.ch/api/items
 		if err != nil {
 			return "", err
 		}
+		log.Println("after")
+
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
 		return string(body), nil

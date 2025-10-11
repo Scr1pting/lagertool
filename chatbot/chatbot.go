@@ -1,6 +1,7 @@
 package chatbot
 
 import (
+	"log"
 	"os"
 
 	"github.com/sashabaranov/go-openai"
@@ -19,11 +20,12 @@ type ChatBot struct {
 
 func ConnectAI() (*openai.Client, string) {
 	openaiKey := os.Getenv("OPENAI_KEY")
+	log.Println("openaiKey:", openaiKey)
 	client := openai.NewClient(openaiKey)
-	syscall := `
+	sysprompt := `
 You are an assistant that helps users by either answering directly or calling APIs.
 You can use the following actions:
-- "get_items": to retrieve all kind of items GET /api/items)
+- "get_items": to retrieve all kind of items GET https://05.hackathon.ethz.ch/api/items)
 
 Respond in this JSON format only:
 {
@@ -32,5 +34,5 @@ Respond in this JSON format only:
   "reply": "natural language message to the user"
 }
 `
-	return client, syscall
+	return client, sysprompt
 }
