@@ -1380,7 +1380,7 @@ const docTemplate = `{
         },
         "/persons/search": {
             "get": {
-                "description": "Search for persons by email, firstname, or lastname (case-insensitive partial match)",
+                "description": "Search for persons by firstname or lastname (case-insensitive partial match)",
                 "produces": [
                     "application/json"
                 ],
@@ -1389,12 +1389,6 @@ const docTemplate = `{
                 ],
                 "summary": "Search persons",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Email query for search",
-                        "name": "email",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "First name query for search",

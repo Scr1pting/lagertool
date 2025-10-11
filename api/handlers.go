@@ -620,25 +620,20 @@ func (h *Handler) GetPersonByID(c *gin.Context) {
 
 // SearchPersons godoc
 // @Summary Search persons
-// @Description Search for persons by email, firstname, or lastname (case-insensitive partial match)
+// @Description Search for persons by firstname or lastname (case-insensitive partial match)
 // @Tags persons
 // @Produce json
-// @Param email query string false "Email query for search"
 // @Param firstname query string false "First name query for search"
 // @Param lastname query string false "Last name query for search"
 // @Success 200 {array} db.Person
 // @Failure 500 {object} map[string]string
 // @Router /persons/search [get]
 func (h *Handler) SearchPersons(c *gin.Context) {
-	email := c.Query("email")
 	firstname := c.Query("firstname")
 	lastname := c.Query("lastname")
 
 	query := h.DB.Model(&[]db.Person{})
 
-	if email != "" {
-		query = query.Where("email ILIKE ?", "%"+email+"%")
-	}
 	if firstname != "" {
 		query = query.Where("firstname ILIKE ?", "%"+firstname+"%")
 	}

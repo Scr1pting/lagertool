@@ -210,13 +210,10 @@ func (h *Handler) LocalGetPersonByID(id int) (*db.Person, error) {
 	return person, nil
 }
 
-// SearchPersons searches for persons by email, firstname, or lastname
-func (h *Handler) LocalSearchPersons(email, firstname, lastname string) ([]db.Person, error) {
+// SearchPersons searches for persons by firstname or lastname
+func (h *Handler) LocalSearchPersons(firstname, lastname string) ([]db.Person, error) {
 	query := h.DB.Model(&[]db.Person{})
 
-	if email != "" {
-		query = query.Where("email ILIKE ?", "%"+email+"%")
-	}
 	if firstname != "" {
 		query = query.Where("firstname ILIKE ?", "%"+firstname+"%")
 	}
