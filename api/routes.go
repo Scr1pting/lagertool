@@ -32,6 +32,7 @@ func SetupRoutes(r *gin.Engine, db *pg.DB) {
 	r.PUT("/inventory/:id", h.UpdateInventory)
 	r.PATCH("/inventory/:id/amount", h.UpdateInventoryAmount)
 	r.DELETE("/inventory/:id", h.DeleteInventory)
+	r.POST("/inventory/new_item", h.InsertNewItem)
 
 	// Person endpoints
 	r.GET("/persons", h.GetAllPersons)
