@@ -1664,9 +1664,6 @@
         "db.Person": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "firstname": {
                     "type": "string"
                 },
@@ -1677,9 +1674,6 @@
                     "type": "string"
                 },
                 "slack_id": {
-                    "type": "string"
-                },
-                "telephone": {
                     "type": "string"
                 }
             }

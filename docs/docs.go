@@ -1667,9 +1667,6 @@ const docTemplate = `{
         "db.Person": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "firstname": {
                     "type": "string"
                 },
@@ -1680,9 +1677,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "slack_id": {
-                    "type": "string"
-                },
-                "telephone": {
                     "type": "string"
                 }
             }

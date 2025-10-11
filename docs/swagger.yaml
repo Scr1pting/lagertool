@@ -54,8 +54,6 @@ definitions:
     type: object
   db.Person:
     properties:
-      email:
-        type: string
       firstname:
         type: string
       id:
@@ -63,8 +61,6 @@ definitions:
       lastname:
         type: string
       slack_id:
-        type: string
-      telephone:
         type: string
     type: object
 host: localhost:8000
