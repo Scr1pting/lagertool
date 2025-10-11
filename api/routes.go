@@ -64,6 +64,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	// Slack Events endpoint
 	r.POST("/slack/events", h.Events)
 	r.POST("/slack/interactivity", h.Interactivity)
+  r.POST("/slack/borrow", h.BorrowHandler)
 
 	// Event endpoints
 	r.GET("/events", h.GetAllEvents)
@@ -86,4 +87,5 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 
 	// Person event loans endpoint
 	r.GET("/persons/:id/event-loans", h.GetEventLoansByPerson)
+	
 }

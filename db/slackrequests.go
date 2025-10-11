@@ -39,7 +39,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 	campus, building, room := strings.Split(borrow.Location, ";")[0], strings.Split(borrow.Location, ";")[1], strings.Split(borrow.Location, ";")[2]
 	log.Println(campus, building, room)
 	location := new(Location)
-	err = db.Model(location).Where("campus = ?", campus).Where("building = ?", building).Where("room = ?", room).Select()
+	err = db.Model(location).Where("campus = ?", campus).Where("building = ?", building).Where("room = ?", room).Limit(1).Select()
 	if err != nil {
 		log.Printf("Location Error %e", err)
 	}
@@ -75,7 +75,7 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 		Begin:    time.Now(),
 		Until:    borrow.DueDate,
 	}
-	_, err = db.Model(l).Insert()
+	_, err = db.Model(&l).Insert()
 	if err != nil {
 		log.Printf("Insert Error %e", err)
 	}

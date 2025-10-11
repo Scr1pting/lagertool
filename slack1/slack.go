@@ -10,11 +10,12 @@ import (
 )
 
 type BorrowSession struct {
-	Stage    string
-	Item     string
-	Quantity int
-	Source   string
-	DueDate  time.Time
+	Stage        string
+	Item         string
+	Quantity     int
+	Source       string
+	GroupChannel string
+	DueDate      time.Time
 }
 
 var Sessions = make(map[string]*BorrowSession)
