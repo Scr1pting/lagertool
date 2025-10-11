@@ -1,30 +1,30 @@
 import { ELEMENT_CATALOG, type Shelf, type ShelfColumn } from "../types/shelf";
 import { ShelfElementViewInner } from "./ShelfElementView";
 
-import shelfListStyle from './ShelfList.module.css';
 import styles from './StaticShelf.module.css';
 
 
 function StaticShelfColumn({ column }: { column: ShelfColumn }) {
   return (
-    <div>
+    <div className={styles.column}>
       {column.elements.map((element) => {
         const definition = ELEMENT_CATALOG[element.type];
         return (
-          <ShelfElementViewInner
-            key={element.id}
-            itemDef={definition}
-            data-type={element.type}
-            classes={styles.elementInner}
-          >
-            {element.numItems != null
-              && element.numItems != 1
-              && (
-                <div className={styles.numItem}>{ element.numItems }</div>
-            )}
+          <button>
+            <ShelfElementViewInner
+              key={element.id}
+              itemDef={definition}
+              data-type={element.type}
+            >
+              {element.numItems != null
+                && element.numItems != 1
+                && (
+                  <div className={styles.numItem}>{ element.numItems }</div>
+              )}
 
-            <div className={styles.idElement}>{ element.id }</div>
-          </ShelfElementViewInner>
+              <div className={styles.idElement}>{ element.id }</div>
+            </ShelfElementViewInner>
+          </button>
         );
       })}
     </div>
