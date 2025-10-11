@@ -7,8 +7,10 @@ import BorrowPage from './pages/BorrowPage';
 import BorrowedPage from './pages/BorrowedPage';
 import EventsPage from './pages/EventsPage';
 import ItemDetailsPage from './pages/ItemDetailsPage';
+import InventoryStatusPage from './pages/InventoryStatusPage';
 import LocationPage from './pages/LocationPage';
 import PersonHistoryPage from './pages/PersonHistoryPage';
+import ShelvesPage from './pages/ShelvesPage';
 import Search from './pages/Search';
 import ShelfBuilder from './pages/ShelfBuilder';
 
@@ -31,6 +33,8 @@ function App() {
         <Route path="/" element={<Search />} />
         <Route path="/search" element={<Search />} />
         <Route path="/shelf-builder" element={<ShelfBuilder />} />
+        <Route path="/shelves" element={<ShelvesPage />} />
+        <Route path="/inventory" element={<InventoryStatusPage />} />
         <Route path="/borrowed" element={<BorrowedPage />} />
         <Route path="/borrow" element={<BorrowPage />} />
         <Route path="/locations" element={<LocationPage />} />
