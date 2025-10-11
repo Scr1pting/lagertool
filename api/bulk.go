@@ -11,7 +11,11 @@ import (
 // ALlows for bulk .csv adding of db.Inventory to the DB
 func (h *Handler) BulkAdd(c *gin.Context) {
 	var inventories []db.Inventory
-	c.BindJSON(&inventories)
+	e := c.BindJSON(&inventories)
+	if e != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Parsing as list of Inventory failed. Format of JSON body incorrect. Error: ": e.Error()})
+		return
+	}
 	for _, inv := range inventories {
 		err := h.LocalCreateInventory(&inv)
 		if err != nil {

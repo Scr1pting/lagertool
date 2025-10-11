@@ -27,25 +27,24 @@ definitions:
             elements:
               items:
                 properties:
-                  heightUnits:
-                    type: integer
                   id:
                     type: string
                   type:
                     type: string
                 required:
-                - heightUnits
                 - id
                 - type
                 type: object
               type: array
-            num:
-              type: integer
+            id:
+              type: string
           required:
           - elements
-          - num
+          - id
           type: object
         type: array
+      id:
+        type: string
       name:
         type: string
       room:
@@ -53,6 +52,7 @@ definitions:
     required:
     - building
     - columns
+    - id
     - name
     - room
     type: object
@@ -66,18 +66,18 @@ definitions:
             elements:
               items:
                 properties:
-                  heightUnits:
-                    type: integer
                   id:
                     type: string
                   type:
                     type: string
                 type: object
               type: array
-            num:
-              type: integer
+            id:
+              type: string
           type: object
         type: array
+      id:
+        type: string
       name:
         type: string
       numElements:
@@ -228,6 +228,44 @@ info:
   title: Lagertool Inventory API
   version: "1.0"
 paths:
+  /calendar/{id}:
+    get:
+      description: Downloads an iCalendar (.ics) file for a specific loan containing
+        a reminder to return the item
+      parameters:
+      - description: Loan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/calendar
+      responses:
+        "200":
+          description: ICS file content
+          schema:
+            type: string
+        "400":
+          description: Invalid loan ID
+          schema:
+            type: string
+      summary: Download calendar file for a specific loan
+      tags:
+      - calendar
+  /calendar/all:
+    get:
+      description: Downloads an iCalendar (.ics) file containing all loan records
+        with reminders to return items
+      produces:
+      - text/calendar
+      responses:
+        "200":
+          description: ICS file content with all loan events
+          schema:
+            type: string
+      summary: Download calendar file for all loans
+      tags:
+      - calendar
   /events:
     get:
       description: Retrieve all events from the database
@@ -1924,6 +1962,37 @@ paths:
               type: string
             type: object
       summary: Create a new shelf layout
+      tags:
+      - shelves
+  /shelves/{id}:
+    get:
+      description: Retrieve a specific shelf by its ID with full layout
+      parameters:
+      - description: Shelf ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ShelfResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get shelf by ID
       tags:
       - shelves
   /shelves/building/{building}:

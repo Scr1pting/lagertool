@@ -14,11 +14,11 @@ func InsertBasicData(db *pg.DB) error {
 	ctx := context.Background()
 
 	// ETH Zürich shelves - Main storage at CAB (Zentrum)
-	// Define shelves
+	// Define shelves with IDs
 	shelves := []Shelf{
-		{Name: "Electronics Lab Storage", Building: "CAB", Room: "H53"},
-		{Name: "Workshop Tools", Building: "ETZ", Room: "J91"},
-		{Name: "Robotics Components", Building: "HCI", Room: "J4"},
+		{ID: "SHELF1", Name: "Electronics Lab Storage", Building: "CAB", Room: "H53"},
+		{ID: "SHELF2", Name: "Workshop Tools", Building: "ETZ", Room: "J91"},
+		{ID: "SHELF3", Name: "Robotics Components", Building: "HCI", Room: "J4"},
 	}
 
 	// Define shelf units for each shelf
@@ -30,25 +30,25 @@ func InsertBasicData(db *pg.DB) error {
 		{
 			ShelfIndex: 0,
 			Units: []ShelfUnit{
-				{ID: "A1H2E", ColumnNum: 0, Type: "high", HeightUnits: 2},
-				{ID: "A2S1X", ColumnNum: 0, Type: "slim", HeightUnits: 1},
-				{ID: "B1H3K", ColumnNum: 1, Type: "high", HeightUnits: 2},
+				{ID: "A1H2E", ColumnID: "COL01", Type: "high"},
+				{ID: "A2S1X", ColumnID: "COL01", Type: "slim"},
+				{ID: "B1H3K", ColumnID: "COL02", Type: "high"},
 			},
 		},
 		// ETZ J91 - Workshop Tools (2 columns)
 		{
 			ShelfIndex: 1,
 			Units: []ShelfUnit{
-				{ID: "C1H2P", ColumnNum: 0, Type: "high", HeightUnits: 2},
-				{ID: "D1S2M", ColumnNum: 1, Type: "slim", HeightUnits: 2},
+				{ID: "C1H2P", ColumnID: "COL03", Type: "high"},
+				{ID: "D1S2M", ColumnID: "COL04", Type: "slim"},
 			},
 		},
 		// HCI J4 - Robotics Components (1 column)
 		{
 			ShelfIndex: 2,
 			Units: []ShelfUnit{
-				{ID: "E1H1R", ColumnNum: 0, Type: "high", HeightUnits: 1},
-				{ID: "E2H2T", ColumnNum: 0, Type: "high", HeightUnits: 2},
+				{ID: "E1H1R", ColumnID: "COL05", Type: "high"},
+				{ID: "E2H2T", ColumnID: "COL05", Type: "high"},
 			},
 		},
 	}
@@ -141,8 +141,7 @@ func InsertBasicData(db *pg.DB) error {
 	// Insert Shelves
 	for i := range shelves {
 		exists, err := tx.Model(&Shelf{}).
-			Where("building = ? AND room = ? AND name = ?",
-				shelves[i].Building, shelves[i].Room, shelves[i].Name).
+			Where("id = ?", shelves[i].ID).
 			Exists()
 		if err != nil {
 			tx.Rollback()
@@ -150,14 +149,13 @@ func InsertBasicData(db *pg.DB) error {
 		}
 		if exists {
 			err = tx.Model(&shelves[i]).
-				Where("building = ? AND room = ? AND name = ?",
-					shelves[i].Building, shelves[i].Room, shelves[i].Name).
+				Where("id = ?", shelves[i].ID).
 				Select()
 			if err != nil {
 				tx.Rollback()
 				return fmt.Errorf("failed to fetch existing shelf: %w", err)
 			}
-			log.Printf("Shelf already exists: %s in %s %s (ID: %d)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
+			log.Printf("Shelf already exists: %s in %s %s (ID: %s)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
 			continue
 		}
 
@@ -166,17 +164,45 @@ func InsertBasicData(db *pg.DB) error {
 			tx.Rollback()
 			return fmt.Errorf("failed to insert shelf: %w", err)
 		}
-		log.Printf("Inserted shelf: %s in %s %s (ID: %d)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
+		log.Printf("Inserted shelf: %s in %s %s (ID: %s)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
 	}
 
-	// Insert Shelf Units and Locations
+	// Insert Columns and Shelf Units and Locations
+	// First, collect unique column IDs and create Column records
+	columnMap := make(map[string]string) // columnID -> shelfID
 	for _, shelfUnitGroup := range shelfUnits {
 		shelfID := shelves[shelfUnitGroup.ShelfIndex].ID
-
 		for _, unit := range shelfUnitGroup.Units {
-			// Set the shelf ID
-			unit.ShelfID = shelfID
+			columnMap[unit.ColumnID] = shelfID
+		}
+	}
 
+	// Create Column records
+	for columnID, shelfID := range columnMap {
+		exists, err := tx.Model(&Column{}).Where("id = ?", columnID).Exists()
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to check column existence: %w", err)
+		}
+		if !exists {
+			col := &Column{
+				ID:      columnID,
+				ShelfID: shelfID,
+			}
+			_, err = tx.Model(col).Insert()
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to insert column: %w", err)
+			}
+			log.Printf("Inserted column: %s (Shelf: %s)", columnID, shelfID)
+		} else {
+			log.Printf("Column already exists: %s (skipping)", columnID)
+		}
+	}
+
+	// Now insert shelf units
+	for _, shelfUnitGroup := range shelfUnits {
+		for _, unit := range shelfUnitGroup.Units {
 			// Check if shelf unit exists
 			exists, err := tx.Model(&ShelfUnit{}).Where("id = ?", unit.ID).Exists()
 			if err != nil {
@@ -202,7 +228,7 @@ func InsertBasicData(db *pg.DB) error {
 				tx.Rollback()
 				return fmt.Errorf("failed to insert shelf unit: %w", err)
 			}
-			log.Printf("Inserted shelf unit: %s (Type: %s, Column: %d)", unit.ID, unit.Type, unit.ColumnNum)
+			log.Printf("Inserted shelf unit: %s (Type: %s, Column: %s)", unit.ID, unit.Type, unit.ColumnID)
 
 			// Create corresponding Location
 			location := Location{ShelfUnitID: unit.ID}

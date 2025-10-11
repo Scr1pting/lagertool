@@ -38,6 +38,7 @@ func InitDB(con *pg.DB) {
 	// Create tables using the provided connection
 	models := []interface{}{
 		(*Shelf)(nil),
+		(*Column)(nil),
 		(*ShelfUnit)(nil),
 		(*Location)(nil),
 		(*Item)(nil),

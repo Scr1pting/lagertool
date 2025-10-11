@@ -33,31 +33,31 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 
 // ShelfRequest represents the JSON structure for creating/updating shelves
 type ShelfRequest struct {
+	ID       string `json:"id" binding:"required"`
 	Name     string `json:"name" binding:"required"`
 	Building string `json:"building" binding:"required"`
 	Room     string `json:"room" binding:"required"`
 	Columns  []struct {
-		Num      int `json:"num" binding:"required"`
+		ID       string `json:"id" binding:"required"`
 		Elements []struct {
-			ID          string `json:"id" binding:"required"`
-			Type        string `json:"type" binding:"required"`
-			HeightUnits int    `json:"heightUnits" binding:"required"`
+			ID   string `json:"id" binding:"required"`
+			Type string `json:"type" binding:"required"`
 		} `json:"elements" binding:"required"`
 	} `json:"columns" binding:"required"`
 }
 
 // ShelfResponse represents the JSON structure for returning shelves
 type ShelfResponse struct {
+	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Building    string `json:"building"`
 	Room        string `json:"room"`
 	NumElements int    `json:"numElements"`
 	Columns     []struct {
-		Num      int `json:"num"`
+		ID       string `json:"id"`
 		Elements []struct {
-			ID          string `json:"id"`
-			Type        string `json:"type"`
-			HeightUnits int    `json:"heightUnits"`
+			ID   string `json:"id"`
+			Type string `json:"type"`
 		} `json:"elements"`
 	} `json:"columns"`
 }
@@ -90,6 +90,7 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 
 	// Create Shelf record
 	shelf := &db.Shelf{
+		ID:       req.ID,
 		Name:     req.Name,
 		Building: req.Building,
 		Room:     req.Room,
@@ -102,15 +103,25 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 		return
 	}
 
-	// Create ShelfUnit records
+	// Create Column and ShelfUnit records
 	for _, column := range req.Columns {
+		// Create Column record
+		col := &db.Column{
+			ID:      column.ID,
+			ShelfID: shelf.ID,
+		}
+		_, err = tx.Model(col).Insert()
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create column: " + err.Error()})
+			return
+		}
+
 		for _, element := range column.Elements {
 			unit := &db.ShelfUnit{
-				ID:          element.ID,
-				ShelfID:     shelf.ID,
-				ColumnNum:   column.Num,
-				Type:        element.Type,
-				HeightUnits: element.HeightUnits,
+				ID:       element.ID,
+				ColumnID: column.ID,
+				Type:     element.Type,
 			}
 
 			_, err = tx.Model(unit).Insert()
@@ -228,6 +239,30 @@ func (h *Handler) GetAllShelves(c *gin.Context) {
 	c.JSON(http.StatusOK, responses)
 }
 
+// GetShelfByID godoc
+// @Summary Get shelf by ID
+// @Description Retrieve a specific shelf by its ID with full layout
+// @Tags shelves
+// @Produce json
+// @Param id path string true "Shelf ID"
+// @Success 200 {object} ShelfResponse
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shelves/{id} [get]
+func (h *Handler) GetShelfByID(c *gin.Context) {
+	shelfID := c.Param("id")
+
+	var shelf db.Shelf
+	err := h.DB.Model(&shelf).Where("id = ?", shelfID).Select()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Shelf not found"})
+		return
+	}
+
+	resp := h.buildShelfResponse(shelf)
+	c.JSON(http.StatusOK, resp)
+}
+
 // SearchShelfUnit godoc
 // @Summary Search for a shelf unit by its ID
 // @Description Find a shelf unit by its unique 5-letter ID and return its location details
@@ -248,22 +283,30 @@ func (h *Handler) SearchShelfUnit(c *gin.Context) {
 		return
 	}
 
+	// Get the column details
+	var column db.Column
+	err = h.DB.Model(&column).Where("id = ?", unit.ColumnID).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get column details"})
+		return
+	}
+
 	// Get the shelf details
 	var shelf db.Shelf
-	err = h.DB.Model(&shelf).Where("id = ?", unit.ShelfID).Select()
+	err = h.DB.Model(&shelf).Where("id = ?", column.ShelfID).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get shelf details"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"unit_id":      unit.ID,
-		"type":         unit.Type,
-		"height_units": unit.HeightUnits,
-		"column":       unit.ColumnNum,
-		"shelf_name":   shelf.Name,
-		"building":     shelf.Building,
-		"room":         shelf.Room,
+		"unit_id":    unit.ID,
+		"type":       unit.Type,
+		"column_id":  column.ID,
+		"shelf_id":   shelf.ID,
+		"shelf_name": shelf.Name,
+		"building":   shelf.Building,
+		"room":       shelf.Room,
 	})
 }
 
@@ -402,63 +445,63 @@ func (h *Handler) GetShelfUnitInventory(c *gin.Context) {
 
 // Helper function to build shelf response with units
 func (h *Handler) buildShelfResponse(shelf db.Shelf) ShelfResponse {
-	var units []db.ShelfUnit
-	h.DB.Model(&units).Where("shelf_id = ?", shelf.ID).Order("column_num ASC").Select()
+	// Get all columns for this shelf
+	var columns []db.Column
+	h.DB.Model(&columns).Where("shelf_id = ?", shelf.ID).Select()
 
-	// Group units by column
-	columnMap := make(map[int][]db.ShelfUnit)
-	for _, unit := range units {
-		columnMap[unit.ColumnNum] = append(columnMap[unit.ColumnNum], unit)
+	// Build response columns
+	var respColumns []struct {
+		ID       string `json:"id"`
+		Elements []struct {
+			ID   string `json:"id"`
+			Type string `json:"type"`
+		} `json:"elements"`
 	}
 
-	// Build response
+	totalElements := 0
+
+	for _, column := range columns {
+		// Get all units for this column
+		var units []db.ShelfUnit
+		h.DB.Model(&units).Where("column_id = ?", column.ID).Select()
+
+		// Build elements array
+		var elements []struct {
+			ID   string `json:"id"`
+			Type string `json:"type"`
+		}
+
+		for _, unit := range units {
+			elements = append(elements, struct {
+				ID   string `json:"id"`
+				Type string `json:"type"`
+			}{
+				ID:   unit.ID,
+				Type: unit.Type,
+			})
+			totalElements++
+		}
+
+		respColumns = append(respColumns, struct {
+			ID       string `json:"id"`
+			Elements []struct {
+				ID   string `json:"id"`
+				Type string `json:"type"`
+			} `json:"elements"`
+		}{
+			ID:       column.ID,
+			Elements: elements,
+		})
+	}
+
+	// Build final response
 	resp := ShelfResponse{
+		ID:          shelf.ID,
 		Name:        shelf.Name,
 		Building:    shelf.Building,
 		Room:        shelf.Room,
-		NumElements: len(units),
-		Columns: make([]struct {
-			Num      int `json:"num"`
-			Elements []struct {
-				ID          string `json:"id"`
-				Type        string `json:"type"`
-				HeightUnits int    `json:"heightUnits"`
-			} `json:"elements"`
-		}, 0),
-	}
-
-	// Sort columns by number
-	for colNum, colUnits := range columnMap {
-		column := struct {
-			Num      int `json:"num"`
-			Elements []struct {
-				ID          string `json:"id"`
-				Type        string `json:"type"`
-				HeightUnits int    `json:"heightUnits"`
-			} `json:"elements"`
-		}{
-			Num: colNum,
-			Elements: make([]struct {
-				ID          string `json:"id"`
-				Type        string `json:"type"`
-				HeightUnits int    `json:"heightUnits"`
-			}, 0),
-		}
-
-		for _, unit := range colUnits {
-			element := struct {
-				ID          string `json:"id"`
-				Type        string `json:"type"`
-				HeightUnits int    `json:"heightUnits"`
-			}{
-				ID:          unit.ID,
-				Type:        unit.Type,
-				HeightUnits: unit.HeightUnits,
-			}
-			column.Elements = append(column.Elements, element)
-		}
-
-		resp.Columns = append(resp.Columns, column)
+		NumElements: totalElements,
+		Columns:     respColumns,
 	}
 
 	return resp
@@ -1873,8 +1916,17 @@ func (h *Handler) BorrowHandler(c *gin.Context) {
 	}
 }
 
+// GetDownloadICS godoc
+// @Summary Download calendar file for a specific loan
+// @Description Downloads an iCalendar (.ics) file for a specific loan containing a reminder to return the item
+// @Tags calendar
+// @Produce text/calendar
+// @Param id path int true "Loan ID"
+// @Success 200 {string} string "ICS file content"
+// @Failure 400 {string} string "Invalid loan ID"
+// @Router /calendar/{id} [get]
 func (h *Handler) GetDownloadICS(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("loan_id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.String(http.StatusBadRequest, "invalid loan id")
 	}
@@ -1890,9 +1942,23 @@ func (h *Handler) GetDownloadICS(c *gin.Context) {
 	if loan.Returned {
 		end = *loan.ReturnedAt
 	}
-	util.GenerateICSContent(item.Name, "Return item", loan.Begin, end)
+	icsContent := util.GenerateICSContent(item.Name, "Return item", loan.Begin, end)
+
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s.ics", strings.ReplaceAll(item.Name, " ", "_")))
+	c.Header("Content-Type", "text/calendar; charset=utf-8")
+
+	// Write ICS content
+	c.String(http.StatusOK, icsContent)
 }
 
+// GetDownloadICSALL godoc
+// @Summary Download calendar file for all loans
+// @Description Downloads an iCalendar (.ics) file containing all loan records with reminders to return items
+// @Tags calendar
+// @Produce text/calendar
+// @Success 200 {string} string "ICS file content with all loan events"
+// @Router /calendar/all [get]
 func (h *Handler) GetDownloadICSALL(c *gin.Context) {
 
 	loans, err := h.LocalGetAllLoans()
@@ -1912,7 +1978,14 @@ func (h *Handler) GetDownloadICSALL(c *gin.Context) {
 
 		events = append(events, util.Events{loan.Begin, end, "Return Item", item.Name})
 	}
-	util.GenerateICSForDates(events)
+	icsContent := util.GenerateICSForDates(events)
+
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s.ics", strings.ReplaceAll(events[0].Description, " ", "_")))
+	c.Header("Content-Type", "text/calendar; charset=utf-8")
+
+	// Write ICS content
+	c.String(http.StatusOK, icsContent)
 }
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
