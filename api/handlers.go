@@ -1890,7 +1890,12 @@ func (h *Handler) GetDownloadICS(c *gin.Context) {
 	if loan.Returned {
 		end = *loan.ReturnedAt
 	}
-	util.GenerateICSContent(item.Name, "Return item", loan.Begin, end)
+	icsContent := util.GenerateICSContent(item.Name, "Return item", loan.Begin, end)
+
+	// ✅ Send it as JSON
+	c.JSON(http.StatusOK, gin.H{
+		"ics": icsContent,
+	})
 }
 
 func (h *Handler) GetDownloadICSALL(c *gin.Context) {
@@ -1912,7 +1917,11 @@ func (h *Handler) GetDownloadICSALL(c *gin.Context) {
 
 		events = append(events, util.Events{loan.Begin, end, "Return Item", item.Name})
 	}
-	util.GenerateICSForDates(events)
+	icsContent := util.GenerateICSForDates(events)
+
+	c.JSON(http.StatusOK, gin.H{
+		"ics": icsContent,
+	})
 }
 
 func handleMessage(h *Handler, api *slack.Client, channel string, session *slack1.BorrowSession, text string, user *slack.User) {
