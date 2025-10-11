@@ -11,9 +11,7 @@ type Location struct {
 	Building  string   `json:"building,omitempty" pg:"building"`
 	Room      string   `json:"room,omitempty" pg:"room"`
 	Shelf     string   `json:"shelf,omitempty" pg:"shelf"`
-	ShelfUnit string   `json:"shelfunit,omitempty pg"shelfunit"`
-	Lon       float64  `json:"latitude,omitempty" pg:"latitude"`
-	Lat       float64  `json:"longitude,omitempty" pg:"longitude"`
+	ShelfUnit string   `json:"shelfunit,omitempty" pg:"shelfunit"`
 }
 
 type Item struct {

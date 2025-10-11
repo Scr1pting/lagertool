@@ -69,11 +69,11 @@ func (h *Handler) GetLocationByID(c *gin.Context) {
 
 // CreateLocation godoc
 // @Summary Create a new location
-// @Description Create a new location with the provided details
+// @Description Create a new location with the provided details. The ID is auto-generated and should not be included in the request body.
 // @Tags locations
 // @Accept json
 // @Produce json
-// @Param location body db.Location true "Location object"
+// @Param location body object{campus=string,building=string,room=string,shelf=string,shelfunit=string} true "Location object (all fields are optional strings)"
 // @Success 201 {object} db.Location
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -96,12 +96,12 @@ func (h *Handler) CreateLocation(c *gin.Context) {
 
 // UpdateLocation godoc
 // @Summary Update a location
-// @Description Update an existing location by ID
+// @Description Update an existing location by ID. The ID in the request body is ignored; use the path parameter.
 // @Tags locations
 // @Accept json
 // @Produce json
 // @Param id path int true "Location ID"
-// @Param location body db.Location true "Location object"
+// @Param location body object{campus=string,building=string,room=string,shelf=string,shelfunit=string} true "Location object (all fields are optional strings)"
 // @Success 200 {object} db.Location
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -231,11 +231,11 @@ func (h *Handler) SearchItems(c *gin.Context) {
 
 // CreateItem godoc
 // @Summary Create a new item
-// @Description Create a new item with the provided details
+// @Description Create a new item with the provided details. The ID is auto-generated and should not be included in the request body.
 // @Tags items
 // @Accept json
 // @Produce json
-// @Param item body db.Item true "Item object"
+// @Param item body object{name=string,category=string} true "Item object (name and category are required strings)"
 // @Success 201 {object} db.Item
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -256,7 +256,18 @@ func (h *Handler) CreateItem(c *gin.Context) {
 	c.JSON(http.StatusCreated, item)
 }
 
-// PUT /items/:id
+// UpdateItem godoc
+// @Summary Update an item
+// @Description Update an existing item by ID. The ID in the request body is ignored; use the path parameter.
+// @Tags items
+// @Accept json
+// @Produce json
+// @Param id path int true "Item ID"
+// @Param item body object{name=string,category=string} true "Item object (name and category are required strings)"
+// @Success 200 {object} db.Item
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /items/{id} [put]
 func (h *Handler) UpdateItem(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -280,7 +291,16 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
-// DELETE /items/:id
+// DeleteItem godoc
+// @Summary Delete an item
+// @Description Delete an item by ID
+// @Tags items
+// @Produce json
+// @Param id path int true "Item ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /items/{id} [delete]
 func (h *Handler) DeleteItem(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -302,18 +322,57 @@ func (h *Handler) DeleteItem(c *gin.Context) {
 // IS_IN HANDLERS (Inventory Tracking)
 // ============================================================================
 
-// GET /inventory
+// GetAllInventory godoc
+// @Summary Get all inventory records
+// @Description Retrieve all item-location inventory records from the database
+// @Tags inventory
+// @Produce json
+// @Success 200 {array} InventoryResponse
+// @Failure 500 {object} map[string]string
+// @Router /inventory [get]
 func (h *Handler) GetAllInventory(c *gin.Context) {
-	var inventory []db.IsIn
-	err := h.DB.Model(&inventory).Select()
+	type InventoryResponse struct {
+		ID           int    `json:"id"`
+		Name         string `json:"name"`
+		ShelfName    string `json:"shelf_name"`
+		RoomName     string `json:"room_name"`
+		BuildingName string `json:"building_name"`
+		Amount       int    `json:"amount"`
+	}
+
+	var result []InventoryResponse
+
+	// Perform a JOIN across is_in, item, and location tables
+	err := h.DB.Model((*db.IsIn)(nil)).
+		ColumnExpr("is_in.id AS id").
+		ColumnExpr("item.name AS name").
+		ColumnExpr("location.shelf AS shelf_name").
+		ColumnExpr("location.room AS room_name").
+		ColumnExpr("location.building AS building_name").
+		ColumnExpr("is_in.amount AS amount").
+		Join("JOIN item ON item.id = is_in.item_id").
+		Join("JOIN location ON location.id = is_in.location_id").
+		Order("is_in.id ASC").
+		Select(&result)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, inventory)
+
+	c.JSON(http.StatusOK, result)
 }
 
-// GET /inventory/:id
+// GetInventoryByID godoc
+// @Summary Get inventory record by ID
+// @Description Retrieve a specific inventory record by its ID
+// @Tags inventory
+// @Produce json
+// @Param id path int true "Inventory Record ID"
+// @Success 200 {object} db.IsIn
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /inventory/{id} [get]
 func (h *Handler) GetInventoryByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -331,7 +390,16 @@ func (h *Handler) GetInventoryByID(c *gin.Context) {
 	c.JSON(http.StatusOK, inventory)
 }
 
-// GET /inventory/location/:location_id
+// GetInventoryByLocation godoc
+// @Summary Get inventory records by location ID
+// @Description Retrieve all inventory records for a specific location
+// @Tags inventory
+// @Produce json
+// @Param location_id path int true "Location ID"
+// @Success 200 {array} db.IsIn
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /inventory/location/{location_id} [get]
 func (h *Handler) GetInventoryByLocation(c *gin.Context) {
 	locationID, err := strconv.Atoi(c.Param("location_id"))
 	if err != nil {
@@ -351,7 +419,16 @@ func (h *Handler) GetInventoryByLocation(c *gin.Context) {
 	c.JSON(http.StatusOK, inventory)
 }
 
-// GET /inventory/item/:item_id
+// GetInventoryByItem godoc
+// @Summary Get inventory records by item ID
+// @Description Retrieve all inventory records for a specific item
+// @Tags inventory
+// @Produce json
+// @Param item_id path int true "Item ID"
+// @Success 200 {array} db.IsIn
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /inventory/item/{item_id} [get]
 func (h *Handler) GetInventoryByItem(c *gin.Context) {
 	itemID, err := strconv.Atoi(c.Param("item_id"))
 	if err != nil {
@@ -371,7 +448,17 @@ func (h *Handler) GetInventoryByItem(c *gin.Context) {
 	c.JSON(http.StatusOK, inventory)
 }
 
-// POST /inventory
+// CreateInventory godoc
+// @Summary Create a new inventory record
+// @Description Create a new inventory record (link an item to a location with an amount). The ID is auto-generated and should not be included in the request body.
+// @Tags inventory
+// @Accept json
+// @Produce json
+// @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
+// @Success 201 {object} db.IsIn
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /inventory [post]
 func (h *Handler) CreateInventory(c *gin.Context) {
 	var inventory db.IsIn
 	if err := c.ShouldBindJSON(&inventory); err != nil {
@@ -388,7 +475,18 @@ func (h *Handler) CreateInventory(c *gin.Context) {
 	c.JSON(http.StatusCreated, inventory)
 }
 
-// PUT /inventory/:id
+// UpdateInventory godoc
+// @Summary Update an inventory record
+// @Description Update an existing inventory record by ID. The ID in the request body is ignored; use the path parameter.
+// @Tags inventory
+// @Accept json
+// @Produce json
+// @Param id path int true "Inventory Record ID"
+// @Param inventory body object{location_id=int,item_id=int,amount=int,note=string} true "Inventory record object (all fields are required: location_id, item_id, amount as integers, note as string)"
+// @Success 200 {object} db.IsIn
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /inventory/{id} [put]
 func (h *Handler) UpdateInventory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -412,7 +510,18 @@ func (h *Handler) UpdateInventory(c *gin.Context) {
 	c.JSON(http.StatusOK, inventory)
 }
 
-// PATCH /inventory/:id/amount
+// UpdateInventoryAmount godoc
+// @Summary Update inventory amount
+// @Description Partially update the amount of an inventory record by ID
+// @Tags inventory
+// @Accept json
+// @Produce json
+// @Param id path int true "Inventory Record ID"
+// @Param request body object{amount=int} true "New amount value"
+// @Success 200 {object} db.IsIn
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /inventory/{id}/amount [patch]
 func (h *Handler) UpdateInventoryAmount(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -447,7 +556,16 @@ func (h *Handler) UpdateInventoryAmount(c *gin.Context) {
 	c.JSON(http.StatusOK, inventory)
 }
 
-// DELETE /inventory/:id
+// DeleteInventory godoc
+// @Summary Delete an inventory record
+// @Description Delete an inventory record by ID
+// @Tags inventory
+// @Produce json
+// @Param id path int true "Inventory Record ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /inventory/{id} [delete]
 func (h *Handler) DeleteInventory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -469,7 +587,14 @@ func (h *Handler) DeleteInventory(c *gin.Context) {
 // PERSON HANDLERS
 // ============================================================================
 
-// GET /persons
+// GetAllPersons godoc
+// @Summary Get all persons
+// @Description Retrieve all persons from the database
+// @Tags persons
+// @Produce json
+// @Success 200 {array} db.Person
+// @Failure 500 {object} map[string]string
+// @Router /persons [get]
 func (h *Handler) GetAllPersons(c *gin.Context) {
 	var persons []db.Person
 	err := h.DB.Model(&persons).Select()
@@ -480,7 +605,16 @@ func (h *Handler) GetAllPersons(c *gin.Context) {
 	c.JSON(http.StatusOK, persons)
 }
 
-// GET /persons/:id
+// GetPersonByID godoc
+// @Summary Get person by ID
+// @Description Retrieve a specific person by their ID
+// @Tags persons
+// @Produce json
+// @Param id path int true "Person ID"
+// @Success 200 {object} db.Person
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /persons/{id} [get]
 func (h *Handler) GetPersonByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -498,7 +632,17 @@ func (h *Handler) GetPersonByID(c *gin.Context) {
 	c.JSON(http.StatusOK, person)
 }
 
-// GET /persons/search?email=<query>
+// SearchPersons godoc
+// @Summary Search persons
+// @Description Search for persons by email, firstname, or lastname (case-insensitive partial match)
+// @Tags persons
+// @Produce json
+// @Param email query string false "Email query for search"
+// @Param firstname query string false "First name query for search"
+// @Param lastname query string false "Last name query for search"
+// @Success 200 {array} db.Person
+// @Failure 500 {object} map[string]string
+// @Router /persons/search [get]
 func (h *Handler) SearchPersons(c *gin.Context) {
 	email := c.Query("email")
 	firstname := c.Query("firstname")
@@ -526,7 +670,17 @@ func (h *Handler) SearchPersons(c *gin.Context) {
 	c.JSON(http.StatusOK, persons)
 }
 
-// POST /persons
+// CreatePerson godoc
+// @Summary Create a new person
+// @Description Create a new person with the provided details. The ID is auto-generated and should not be included in the request body.
+// @Tags persons
+// @Accept json
+// @Produce json
+// @Param person body object{firstname=string,lastname=string,email=string,telephone=string} true "Person object (all fields are required strings: firstname, lastname, email, telephone)"
+// @Success 201 {object} db.Person
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /persons [post]
 func (h *Handler) CreatePerson(c *gin.Context) {
 	var person db.Person
 	if err := c.ShouldBindJSON(&person); err != nil {
@@ -543,7 +697,18 @@ func (h *Handler) CreatePerson(c *gin.Context) {
 	c.JSON(http.StatusCreated, person)
 }
 
-// PUT /persons/:id
+// UpdatePerson godoc
+// @Summary Update a person
+// @Description Update an existing person by ID. The ID in the request body is ignored; use the path parameter.
+// @Tags persons
+// @Accept json
+// @Produce json
+// @Param id path int true "Person ID"
+// @Param person body object{firstname=string,lastname=string,email=string,telephone=string} true "Person object (all fields are required strings: firstname, lastname, email, telephone)"
+// @Success 200 {object} db.Person
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /persons/{id} [put]
 func (h *Handler) UpdatePerson(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -567,7 +732,16 @@ func (h *Handler) UpdatePerson(c *gin.Context) {
 	c.JSON(http.StatusOK, person)
 }
 
-// DELETE /persons/:id
+// DeletePerson godoc
+// @Summary Delete a person
+// @Description Delete a person by ID
+// @Tags persons
+// @Produce json
+// @Param id path int true "Person ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /persons/{id} [delete]
 func (h *Handler) DeletePerson(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -589,7 +763,14 @@ func (h *Handler) DeletePerson(c *gin.Context) {
 // LOANS HANDLERS
 // ============================================================================
 
-// GET /loans
+// GetAllLoans godoc
+// @Summary Get all loans
+// @Description Retrieve all loan records from the database
+// @Tags loans
+// @Produce json
+// @Success 200 {array} db.Loans
+// @Failure 500 {object} map[string]string
+// @Router /loans [get]
 func (h *Handler) GetAllLoans(c *gin.Context) {
 	var loans []db.Loans
 	err := h.DB.Model(&loans).Select()
@@ -600,7 +781,16 @@ func (h *Handler) GetAllLoans(c *gin.Context) {
 	c.JSON(http.StatusOK, loans)
 }
 
-// GET /loans/:id
+// GetLoanByID godoc
+// @Summary Get loan by ID
+// @Description Retrieve a specific loan record by its ID
+// @Tags loans
+// @Produce json
+// @Param id path int true "Loan ID"
+// @Success 200 {object} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /loans/{id} [get]
 func (h *Handler) GetLoanByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -618,7 +808,16 @@ func (h *Handler) GetLoanByID(c *gin.Context) {
 	c.JSON(http.StatusOK, loan)
 }
 
-// GET /loans/person/:person_id
+// GetLoansByPerson godoc
+// @Summary Get loans by person ID
+// @Description Retrieve all loan records associated with a specific person
+// @Tags loans
+// @Produce json
+// @Param person_id path int true "Person ID"
+// @Success 200 {array} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans/person/{person_id} [get]
 func (h *Handler) GetLoansByPerson(c *gin.Context) {
 	personID, err := strconv.Atoi(c.Param("person_id"))
 	if err != nil {
@@ -638,7 +837,16 @@ func (h *Handler) GetLoansByPerson(c *gin.Context) {
 	c.JSON(http.StatusOK, loans)
 }
 
-// GET /loans/permanent/:perm_id
+// GetLoansByPermanent godoc
+// @Summary Get loans by permanent item ID
+// @Description Retrieve all loan records associated with a specific permanent item
+// @Tags loans
+// @Produce json
+// @Param perm_id path int true "Permanent Item ID"
+// @Success 200 {array} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans/permanent/{perm_id} [get]
 func (h *Handler) GetLoansByPermanent(c *gin.Context) {
 	permID, err := strconv.Atoi(c.Param("perm_id"))
 	if err != nil {
@@ -658,7 +866,14 @@ func (h *Handler) GetLoansByPermanent(c *gin.Context) {
 	c.JSON(http.StatusOK, loans)
 }
 
-// GET /loans/overdue
+// GetOverdueLoans godoc
+// @Summary Get all overdue loans
+// @Description Retrieve all loan records where the return date (`until`) is in the past
+// @Tags loans
+// @Produce json
+// @Success 200 {array} db.Loans
+// @Failure 500 {object} map[string]string
+// @Router /loans/overdue [get]
 func (h *Handler) GetOverdueLoans(c *gin.Context) {
 	now := time.Now()
 	var loans []db.Loans
@@ -673,7 +888,17 @@ func (h *Handler) GetOverdueLoans(c *gin.Context) {
 	c.JSON(http.StatusOK, loans)
 }
 
-// POST /loans
+// CreateLoan godoc
+// @Summary Create a new loan record
+// @Description Create a new loan record. The ID is auto-generated and should not be included in the request body. Date fields must be in RFC3339 format (e.g., "2025-10-10T14:30:00Z").
+// @Tags loans
+// @Accept json
+// @Produce json
+// @Param loan body object{person_id=int,perm_id=int,amount=int,begin=string,until=string} true "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)"
+// @Success 201 {object} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans [post]
 func (h *Handler) CreateLoan(c *gin.Context) {
 	var loan db.Loans
 	if err := c.ShouldBindJSON(&loan); err != nil {
@@ -690,7 +915,18 @@ func (h *Handler) CreateLoan(c *gin.Context) {
 	c.JSON(http.StatusCreated, loan)
 }
 
-// PUT /loans/:id
+// UpdateLoan godoc
+// @Summary Update a loan record
+// @Description Update an existing loan record by ID. The ID in the request body is ignored; use the path parameter. Date fields must be in RFC3339 format (e.g., "2025-10-10T14:30:00Z").
+// @Tags loans
+// @Accept json
+// @Produce json
+// @Param id path int true "Loan ID"
+// @Param loan body object{person_id=int,perm_id=int,amount=int,begin=string,until=string} true "Loan record object (person_id, perm_id, amount are required integers; begin is required RFC3339 timestamp; until is optional RFC3339 timestamp)"
+// @Success 200 {object} db.Loans
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans/{id} [put]
 func (h *Handler) UpdateLoan(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -714,7 +950,16 @@ func (h *Handler) UpdateLoan(c *gin.Context) {
 	c.JSON(http.StatusOK, loan)
 }
 
-// DELETE /loans/:id
+// DeleteLoan godoc
+// @Summary Delete a loan record
+// @Description Delete a loan record by ID
+// @Tags loans
+// @Produce json
+// @Param id path int true "Loan ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /loans/{id} [delete]
 func (h *Handler) DeleteLoan(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

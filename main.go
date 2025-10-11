@@ -3,10 +3,14 @@ package main
 import (
 	"log"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/go-pg/pg/v10"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"lagertool.com/main/api"
 	"lagertool.com/main/db"
 	_ "lagertool.com/main/docs"
-	"lagertool.com/main/util"
 )
 
 // @title Lagertool Inventory API
@@ -25,31 +29,44 @@ import (
 // @schemes http
 
 func main() {
-	con, err := db.NewDBConn()
-	if err != nil {
-		log.Println("Fuck")
-	}
-	handler := api.NewHandler(con)
-	log.Println("Creating objects.")
-	strawberry := db.Item{Name: "Strawberry"}
-	pear := db.Item{Name: "Pear"}
-	bear := db.Item{Name: "Bear"}
-	err1 := handler.LocalCreateItem(&strawberry)
-	err2 := handler.LocalCreateItem(&bear)
-	err3 := handler.LocalCreateItem(&pear)
-	if err1 != nil && err2 != nil && err3 != nil {
-		log.Println("ERROR when creating Item")
-	}
-	ti, _ := handler.LocalGetAllItems()
-	for _, n := range ti {
-		log.Println(n.Name)
-	}
-	sa := util.FindItemSearchTermsInDB(ti, "Strawberry")
-	for _, s := range sa {
-		i, _ := handler.LocalSearchItems(s)
-		for _, v := range i {
-			log.Println("%d : %s", v.ID, v.Name)
-		}
+	router := gin.Default()
 
+	// Configure CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Allow all origins, or specify your frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
+	dbConnection, err := db.NewDBConn()
+
+	if err != nil {
+		log.Fatal("DBConnection failed: ", err)
+	}
+	defer func(db *pg.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(dbConnection)
+
+	db.InitDB(dbConnection)
+
+	if err := db.InsertBasicData(dbConnection); err != nil {
+		log.Printf("⚠️  Failed to insert test data: %v", err)
+	}
+
+	api.SetupRoutes(router, dbConnection)
+
+	// Swagger endpoint
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	log.Println("🚀 Server running on http://localhost:8000")
+	log.Println("📚 Swagger UI available at http://localhost:8000/swagger/index.html")
+	err = router.Run(":8000")
+	if err != nil {
+		return
 	}
 }
