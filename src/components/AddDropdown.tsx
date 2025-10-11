@@ -19,9 +19,8 @@ export default function AddDropdown() {
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            Shelf Builder
+            <Link to="/shelf-builder">Shelf Builder</Link>
           </DropdownMenuItem>
-          <Link to="/borrow">
           <DropdownMenuItem>
             Borrow Inventory
           </DropdownMenuItem>
