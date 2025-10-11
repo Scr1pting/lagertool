@@ -54,7 +54,7 @@ const Canvas = ({ columns }: { columns : ShelfColumn[] }) => {
       <div className={styles.workspace} role="grid" aria-label="Shelf builder workspace">
         {columns.length === 0 && (
           <div className={styles.boardEmpty}>
-            <span className={styles.boardEmptyText}>Drop a shelf to begin</span>
+            <span className={styles.boardEmptyText}>Drop an element to begin</span>
           </div>
         )}
 

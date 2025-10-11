@@ -23,6 +23,7 @@ import { makeId } from '../features/shelves/util/ids';
 import { ShelfPieceInner } from '../features/shelves/components/ShelfPiece';
 
 import styles from './ShelfBuilder.module.css';
+import ActionButtons from '@/features/shelves/components/ActionButtons';
 
 
 const totalUnits = (pieces: ShelfItem[]) => pieces.reduce((sum, piece) => sum + piece.heightUnits, 0);
@@ -199,6 +200,8 @@ const ShelfBuilder = () => {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
+      <ActionButtons />
+
       <div className={styles.wrapper}>
         <Palette />
         <Canvas columns={columns} />

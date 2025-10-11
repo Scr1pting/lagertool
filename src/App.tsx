@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 import ShelfBuilder from './pages/ShelfBuilder';
@@ -8,6 +9,18 @@ import NavBar from './components/NavBar';
 
 
 function App() {
+  // Ensures darkmode
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.theme = 'dark';
+    root.classList.add('dark');
+
+    return () => {
+      delete root.dataset.theme;
+      root.classList.remove('dark');
+    };
+  }, []);
+
   return (
     <main>
       <Routes>
