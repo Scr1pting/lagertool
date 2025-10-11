@@ -49,13 +49,13 @@ func Init() {
 	}
 	production := os.Getenv("PRODUCTION")
 	if production == "1" {
-		backend_domain = "05.hackathon.ethz.ch/api"
-		frontend_domain = "05.hackathon.ethz.ch"
+		backend_domain = "https://05.hackathon.ethz.ch/api"
+		frontend_domain = "https://05.hackathon.ethz.ch"
 		log.Println("Using hackathon domain.")
 	} else if production == "0" {
 		log.Println("Using localhost.")
-		backend_domain = "localhost:8000"
-		frontend_domain = "localhost:5173"
+		backend_domain = "http://localhost:8000"
+		frontend_domain = "http://localhost:5173"
 	} else {
 		log.Fatal("PRODUCTION envrionment variable not set")
 		return
@@ -71,7 +71,7 @@ func Init() {
 	// Configure OAuth
 
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://" + backend_domain + "/auth/google/callback",
+		RedirectURL:  backend_domain + "/auth/google/callback",
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
@@ -121,7 +121,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session: " + err.Error()})
 		return
 	}
-	c.Redirect(http.StatusTemporaryRedirect, "http://"+frontend_domain)
+	c.Redirect(http.StatusTemporaryRedirect, frontend_domain)
 }
 
 func VerifyGoogleToken(c *gin.Context) {
