@@ -59,6 +59,7 @@ export default Search */
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import DataTable from "../components/DataTable"; // adjust path as needed
+import NavBar from "@/components/NavBar";
 
 const columns = [
   { accessorKey: "name", header: "Name" },
@@ -106,12 +107,14 @@ export default function Search() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl mb-4">Search results for "{searchTerm}"</h1>
+        <NavBar />
 
-      {loading && <p>Loading…</p>}
-      {error && <p className="text-red-500">Error: {error}</p>}
+        <h1 className="text-2xl mb-4">Search results for "{searchTerm}"</h1>
 
-      {!loading && !error && <DataTable columns={columns} data={data} />}
+        {loading && <p>Loading…</p>}
+        {error && <p className="text-red-500">Error: {error}</p>}
+
+        {!loading && !error && <DataTable columns={columns} data={data} />}
     </div>
   );
 }

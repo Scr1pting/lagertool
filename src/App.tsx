@@ -2,25 +2,22 @@ import { Routes, Route } from 'react-router-dom';
 
 import ShelfBuilder from './pages/ShelfBuilder';
 import Search from './pages/Search';
-import NavBar from './components/NavBar';
 import BorrowedPage from './pages/BorrowedPage';
 import BorrowPage from './pages/BorrowPage';
+import NavBar from './components/NavBar';
 
 
 function App() {
   return (
-    <>
-      <NavBar />
-      <main className="pt-28">
-        <Routes>
-          <Route path="/search" element={<Search />} />
-          <Route path="/shelf-builder" element={<ShelfBuilder />} />
-          <Route path="/borrowed" element={<BorrowedPage />} />
-          <Route path="/borrow" element={<BorrowPage />} />
-        </Routes>
-
-      </main>
-    </>
+    <main>
+      <Routes>
+        <Route path="/" element={<NavBar/>} />
+        <Route path="/shelf-builder" element={<ShelfBuilder/> } />
+        <Route path="/search" element={<Search />} />
+        <Route path="/borrowed" element={<BorrowedPage />} />
+        <Route path="/borrow" element={<BorrowPage />} />
+      </Routes>
+    </main>
   )
 }
 
