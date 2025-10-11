@@ -26,7 +26,7 @@ import styles from './ShelfBuilder.module.css';
 import ActionBar from '@/features/shelves/components/ActionBar';
 
 
-const totalUnits = (pieces: ShelfItem[]) => pieces.reduce((sum, piece) => sum + piece.heightUnits, 0);
+const totalUnits = (elements: ShelfItem[]) => elements.reduce((sum, piece) => sum + piece.heightUnits, 0);
 
 const createColumn = (elements: ShelfItem[] = []): ShelfColumn => ({
   id: `column-${makeId()}`,
@@ -104,7 +104,7 @@ const ShelfBuilder = () => {
             return previousColumns
               .map((column) => ({
                 ...column,
-                pieces: column.elements.filter((element) => element.id !== activeData.pieceId),
+                elements: column.elements.filter((element) => element.id !== activeData.pieceId),
               }))
               .filter((column) => column.elements.length > 0); // Also remove empty columns
           });
@@ -151,7 +151,7 @@ const ShelfBuilder = () => {
           const movingPiece = originColumn.elements[elementIndex];
           const columnsWithoutPiece = previousColumns.map((column, index) =>
             index === originColumnIndex
-              ? { ...column, pieces: column.elements.filter((element) => element.id !== movingPiece.id) }
+              ? { ...column, elements: column.elements.filter((element) => element.id !== movingPiece.id) }
               : column
           );
 

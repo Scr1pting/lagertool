@@ -56,7 +56,7 @@ function Search() {
 
 export default Search */
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import DataTable from "../components/DataTable"; // adjust path as needed
 import NavBar from "@/components/NavBar";
@@ -75,7 +75,7 @@ export default function Search() {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -95,13 +95,7 @@ export default function Search() {
         const items = Array.isArray(json) ? json : (json.items || json.results || []);
         setData(items);
       } catch (err) {
-        if (err instanceof Error) {
-          if (err.name !== "AbortError") {
-            setError(err.message || "Unknown error");
-          }
-        } else {
-          setError("Unknown error");
-        }
+        if (err.name !== "AbortError") setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
       }
