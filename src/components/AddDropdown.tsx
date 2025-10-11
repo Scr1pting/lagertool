@@ -26,12 +26,21 @@ export default function AddDropdown() {
             Borrow
           </DropdownMenuItem>
           </Link>
+          <Link to="/locations">
+          <DropdownMenuItem>
+            Locations
+          </DropdownMenuItem>
+          </Link>
+          <Link to="/add">
           <DropdownMenuItem>
             Add
           </DropdownMenuItem>
+          </Link>
+          <Link to="/persons">
           <DropdownMenuItem>
-            Remove
+            Add Person
           </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
