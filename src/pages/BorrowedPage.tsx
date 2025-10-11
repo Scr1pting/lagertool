@@ -5,6 +5,7 @@ import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import PersonLink from "@/components/PersonLink"
 import { normalizePerson, type NormalizedPerson } from "@/lib/person"
+import { downloadFile } from "@/lib/download"
 
 type LoanRecord = {
   id: number
@@ -59,6 +60,8 @@ export default function BorrowedPage() {
   const [loans, setLoans] = React.useState<CombinedLoan[]>([])
   const [loading, setLoading] = React.useState<boolean>(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [downloadingCalendar, setDownloadingCalendar] = React.useState<boolean>(false)
+  const [downloadingLoanId, setDownloadingLoanId] = React.useState<number | null>(null)
 
   const fetchData = React.useCallback(async () => {
     setLoading(true)
@@ -132,6 +135,30 @@ export default function BorrowedPage() {
     fetchData()
   }, [fetchData])
 
+  const handleDownloadLoansCalendar = React.useCallback(async () => {
+    try {
+      setDownloadingCalendar(true)
+      await downloadFile(`${API_BASE_URL}/calendar/loans`, "active-loans.ics")
+    } catch (caught) {
+      console.error(caught)
+      window.alert("Unable to download the loans calendar. Please try again.")
+    } finally {
+      setDownloadingCalendar(false)
+    }
+  }, [])
+
+  const handleDownloadSingleLoan = React.useCallback(async (loanId: number) => {
+    try {
+      setDownloadingLoanId(loanId)
+      await downloadFile(`${API_BASE_URL}/calendar/${loanId}`, `loan-${loanId}.ics`)
+    } catch (caught) {
+      console.error(caught)
+      window.alert("Unable to download this loan calendar. Please try again.")
+    } finally {
+      setDownloadingLoanId((current) => (current === loanId ? null : current))
+    }
+  }, [])
+
   const summary = React.useMemo(() => {
     const now = Date.now()
     const overdue = loans.filter(
@@ -166,6 +193,16 @@ export default function BorrowedPage() {
           Monitor every active loan, track due dates, and review borrower details
           such as Slack handles at a glance. Data is refreshed from the Lagertool API.
         </p>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleDownloadLoansCalendar}
+            disabled={downloadingCalendar}
+          >
+            {downloadingCalendar ? "Preparing download…" : "Download loans calendar (.ics)"}
+          </Button>
+        </div>
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -244,6 +281,7 @@ export default function BorrowedPage() {
                 <th className="px-6 py-3 font-medium">Due</th>
                 <th className="px-6 py-3 font-medium text-right">Qty</th>
                 <th className="px-6 py-3 font-medium text-right">Status</th>
+                <th className="px-6 py-3 font-medium text-right">Calendar</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -251,7 +289,7 @@ export default function BorrowedPage() {
                 <tr>
                   <td
                     className="px-6 py-8 text-center text-sm text-muted-foreground"
-                    colSpan={7}
+                    colSpan={8}
                   >
                     No active loans at the moment.
                   </td>
@@ -341,6 +379,17 @@ export default function BorrowedPage() {
                         >
                           {statusLabel}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownloadSingleLoan(loan.id)}
+                          disabled={downloadingLoanId === loan.id}
+                        >
+                          {downloadingLoanId === loan.id ? "Preparing…" : "Download .ics"}
+                        </Button>
                       </td>
                     </tr>
                   )
