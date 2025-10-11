@@ -8,7 +8,7 @@
     flex-direction: row;
     align-items: center;  
     justify-content: center;
-    gap: 15px;    
+    gap: 10px;    
 }
 
 .button {

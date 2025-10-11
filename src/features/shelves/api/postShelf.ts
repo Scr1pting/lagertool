@@ -1,9 +1,6 @@
-import { type ShelfColumn } from "../types/shelf";
-import { type CreateShelfPayload, type ShelfColumnPayload } from "./types";
+import { type Shelf } from "../types/shelf";
 
-const API_BASE_URL =
-	import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api";
-const SHELVES_ENDPOINT = `${API_BASE_URL}/shelves`;
+const SHELVES_ENDPOINT = "https://05.hackathon.ethz.ch/api/shelves";
 
 const parseErrorMessage = async (response: Response) => {
 	try {
@@ -11,24 +8,14 @@ const parseErrorMessage = async (response: Response) => {
 		if (data && typeof data.message === "string" && data.message.trim().length > 0) {
 			return data.message;
 		}
-	} catch (_error) {
+	} catch {
 		// Ignore JSON parse errors; fall back to status text.
 	}
 
 	return response.statusText || "Unknown error";
 };
 
-export const serializeColumns = (columns: ShelfColumn[]): ShelfColumnPayload[] => {
-	return columns.map((column) => ({
-		id: column.id,
-		elements: column.elements.map((element) => ({
-			id: element.id,
-			type: element.type,
-		})),
-	}));
-};
-
-const postShelf = async (payload: CreateShelfPayload) => {
+const postShelf = async (payload: Shelf) => {
 	const response = await fetch(SHELVES_ENDPOINT, {
 		method: "POST",
 		headers: {
@@ -46,7 +33,7 @@ const postShelf = async (payload: CreateShelfPayload) => {
 		// Ensure we drain the body for keep-alive connections.
 		try {
 			await response.json();
-		} catch (_error) {
+		} catch {
 			await response.text().catch(() => undefined);
 		}
 	}

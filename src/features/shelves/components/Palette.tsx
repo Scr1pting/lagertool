@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
-import { type ShelfItemType, ITEM_CATALOG } from '../types/shelf';
+import { type ShelfElementType, ELEMENT_CATALOG } from '../types/shelf';
 
 import styles from './Palette.module.css';
-import ShelfPiece from './ShelfPiece';
+import ShelfPiece from './ShelfElementView';
 
 function Palette() {
   const catalogEntries = useMemo(
-    () => Object.entries(ITEM_CATALOG) as [ShelfItemType, typeof ITEM_CATALOG[keyof typeof ITEM_CATALOG]][],
+    () => Object.entries(ELEMENT_CATALOG) as [ShelfElementType, typeof ELEMENT_CATALOG[keyof typeof ELEMENT_CATALOG]][],
     []
   );
 
@@ -26,7 +26,7 @@ function Palette() {
               dragData={{ source: 'palette', itemType }}
               data-type={itemType}
             />
-            <span className={styles.paletteCaption}>{ITEM_CATALOG[itemType].label}</span>
+            <span className={styles.paletteCaption}>{ELEMENT_CATALOG[itemType].label}</span>
           </div>
         ))}
       </div>

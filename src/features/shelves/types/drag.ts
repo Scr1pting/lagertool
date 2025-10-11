@@ -1,7 +1,7 @@
-import { type ShelfItemType } from './shelf';
+import { type ShelfElementType } from './shelf';
 
 export type DragItemData =
-  | { source: 'palette'; itemType: ShelfItemType }
+  | { source: 'palette'; itemType: ShelfElementType }
   | { source: 'board'; columnId: string; pieceId: string };
 
 export type DropTargetData =

@@ -12,8 +12,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { RxCross2 } from "react-icons/rx";
-import postShelf, { serializeColumns } from '../api/postShelf';
+import postShelf from '../api/postShelf';
 import { type ShelfColumn } from '../types/shelf';
+import { makeId } from '../util/ids';
 
 
 type FormProps = {
@@ -23,14 +24,12 @@ type FormProps = {
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
 type FormValues = {
-  shelfId: string;
   name: string;
   building: string;
   room: string;
 };
 
 const INITIAL_VALUES: FormValues = {
-  shelfId: "",
   name: "",
   building: "CAB",
   room: "",
@@ -41,14 +40,10 @@ function Form({ columns }: FormProps) {
   const [status, setStatus] = useState<FormStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const serializedColumns = useMemo(() => serializeColumns(columns), [columns]);
-
   const updateValue = useCallback(
     (field: keyof FormValues) =>
       (event: ChangeEvent<HTMLInputElement>) => {
-        const rawValue = event.target.value;
-        const nextValue =
-          field === "shelfId" ? rawValue.toUpperCase() : rawValue;
+        const nextValue = event.target.value;
         setValues((prev) => ({ ...prev, [field]: nextValue }));
         if (status === "success") {
           setStatus("idle");
@@ -72,20 +67,15 @@ function Form({ columns }: FormProps) {
 
       try {
         await postShelf({
-          id: values.shelfId.trim(),
+          id: makeId(),
           name: values.name.trim(),
           building: values.building.trim(),
           room: values.room.trim(),
-          columns: serializedColumns,
+          columns: columns,
         });
 
         setStatus("success");
-        setValues((prev) => ({
-          shelfId: "",
-          name: "",
-          building: prev.building,
-          room: "",
-        }));
+        setValues((prev) => ({ name: "", building: prev.building, room: "" }));
       } catch (submitError) {
         setStatus("error");
         if (submitError instanceof Error) {
@@ -95,37 +85,14 @@ function Form({ columns }: FormProps) {
         }
       }
     },
-    [
-      columns.length,
-      serializedColumns,
-      values.building,
-      values.name,
-      values.room,
-      values.shelfId,
-    ]
+    [columns.length, columns, values.building, values.name, values.room]
   );
 
-  const isSubmitDisabled =
-    status === "submitting" ||
-    columns.length === 0 ||
-    values.shelfId.trim().length === 0;
+  const isSubmitDisabled = status === "submitting" || columns.length === 0;
 
   return (
     <form onSubmit={handleSubmit}>
       <FieldGroup className="gap-4">
-        <Field>
-          <div className="grid grid-cols-3 items-center gap-4">
-            <Label htmlFor="shelf-id">Shelf ID</Label>
-            <Input
-              id="shelf-id"
-              value={values.shelfId}
-              onChange={updateValue("shelfId")}
-              placeholder="SHELF1"
-              className="col-span-2 h-8 uppercase"
-              required
-            />
-          </div>
-        </Field>
         <Field>
           <div className="grid grid-cols-3 items-center gap-4">
             <Label htmlFor="shelf-name">Name</Label>
@@ -190,11 +157,7 @@ type LocationState = {
   from?: FromLocation;
 };
 
-type ActionBarProps = {
-  columns: ShelfColumn[];
-};
-
-function ActionBar({ columns }: ActionBarProps) {
+function ActionBar({ columns }: { columns: ShelfColumn[] }) {
   const navigate = useNavigate();
   const location = useLocation();
   const makePath = (from: FromLocation) => `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`;

@@ -246,13 +246,6 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
           aria-controls="search-suggestions"
           role="combobox"
         />
-        <button
-          type="submit"
-          className={styles.searchSubmit}
-          aria-label="Submit search"
-        >
-          Go
-        </button>
       </form>
 
       {shouldRenderPanel && (

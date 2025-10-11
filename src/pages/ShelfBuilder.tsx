@@ -12,23 +12,23 @@ import {
 
 import { Palette, Canvas } from '../features/shelves/';
 import {
-  ITEM_CATALOG,
+  ELEMENT_CATALOG,
   type ShelfColumn,
-  type ShelfItem,
-  type ShelfItemType,
+  type ShelfElement,
+  type ShelfElementType,
 } from '../features/shelves/types/shelf';
 import { type DragItemData, type DropTargetData } from '../features/shelves/types/drag';
 import { MAX_STACK_UNITS } from '../features/shelves/util/shelfUnits';
 import { makeId } from '../features/shelves/util/ids';
-import { ShelfPieceInner } from '../features/shelves/components/ShelfPiece';
+import { ShelfElementViewInner } from '../features/shelves/components/ShelfElementView';
 
 import styles from './ShelfBuilder.module.css';
 import ActionBar from '@/features/shelves/components/ActionBar';
 
 
-const totalUnits = (elements: ShelfItem[]) => elements.reduce((sum, piece) => sum + piece.heightUnits, 0);
+const totalUnits = (elements: ShelfElement[]) => elements.reduce((sum, element) => sum + ELEMENT_CATALOG[element.type].heightUnits, 0);
 
-const createColumn = (elements: ShelfItem[] = []): ShelfColumn => ({
+const createColumn = (elements: ShelfElement[] = []): ShelfColumn => ({
   id: `column-${makeId()}`,
   elements,
 });
@@ -36,7 +36,7 @@ const createColumn = (elements: ShelfItem[] = []): ShelfColumn => ({
 
 const placePiece = (
   columns: ShelfColumn[],
-  piece: ShelfItem,
+  piece: ShelfElement,
   target: DropTargetData
 ): ShelfColumn[] | null => {
   if (target.kind === 'edge') {
@@ -52,7 +52,7 @@ const placePiece = (
         continue;
       }
 
-      if (MAX_STACK_UNITS - totalUnits(column.elements) < piece.heightUnits) {
+      if (MAX_STACK_UNITS - totalUnits(column.elements) < ELEMENT_CATALOG[piece.type].heightUnits) {
         return null;
       }
 
@@ -114,15 +114,13 @@ const ShelfBuilder = () => {
 
       // Handle moving elements from the palette into the canvas
       if (activeData.source === 'palette') {
-        const definition = ITEM_CATALOG[activeData.itemType];
-        const newPiece: ShelfItem = {
+        const newElement: ShelfElement = {
           id: makeId(),
           type: activeData.itemType,
-          heightUnits: definition.unitHeight,
         };
 
         setColumns((previousColumns) => {
-          const nextColumns = placePiece(previousColumns, newPiece, overData);
+          const nextColumns = placePiece(previousColumns, newElement, overData);
           if (!nextColumns) {
             return previousColumns;
           }
@@ -172,7 +170,7 @@ const ShelfBuilder = () => {
       return null;
     }
 
-    const resolveType = (): ShelfItemType | null => {
+    const resolveType = (): ShelfElementType | null => {
       if (activeDrag.source === 'palette') {
         return activeDrag.itemType;
       }
@@ -188,7 +186,7 @@ const ShelfBuilder = () => {
     }
     
     return (
-      <ShelfPieceInner itemDef={ITEM_CATALOG[pieceType]} />
+      <ShelfElementViewInner itemDef={ELEMENT_CATALOG[pieceType]} />
     );
   }, [activeDrag, columns]);
 

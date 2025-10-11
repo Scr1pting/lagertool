@@ -1,118 +1,49 @@
-import {
-	type ShelfColumnPayload,
-	type ShelfRecord,
-	type ShelfUnitPiece,
-} from "./types";
+import { type Shelf } from "../types/shelf";
 
-const API_BASE_URL =
-	import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api";
-const SHELVES_ENDPOINT = `${API_BASE_URL}/shelves`;
+const SHELVES_ENDPOINT = "https://05.hackathon.ethz.ch/api/shelves";
 
-const toStringOrNull = (value: unknown): string | null => {
-	if (typeof value === "string") {
-		const trimmed = value.trim();
-		return trimmed.length > 0 ? trimmed : null;
+const parseErrorMessage = async (response: Response) => {
+	try {
+		const data = (await response.json()) as { message?: string } | undefined;
+		if (data && typeof data.message === "string" && data.message.trim().length > 0) {
+			return data.message;
+		}
+	} catch {
+		// Ignore JSON parse errors; fall back to status text.
 	}
 
-	return null;
+	return response.statusText || "Unknown error";
 };
 
-const parsePiece = (entry: unknown): ShelfUnitPiece | null => {
-	if (!entry || typeof entry !== "object") {
-		return null;
-	}
-
-	const raw = entry as Record<string, unknown>;
-	const id = toStringOrNull(raw.id);
-	const type = toStringOrNull(raw.type);
-
-	if (!id || !type) {
-		return null;
-	}
-
-	return {
-		id,
-		type,
-	};
-};
-
-const parseColumn = (entry: unknown): ShelfColumnPayload | null => {
-	if (!entry || typeof entry !== "object") {
-		return null;
-	}
-
-	const raw = entry as Record<string, unknown>;
-	const id = toStringOrNull(raw.id);
-	if (!id) {
-		return null;
-	}
-
-	const elementsRaw = Array.isArray(raw.elements) ? raw.elements : [];
-	const elements = elementsRaw
-		.map(parsePiece)
-		.filter((piece): piece is ShelfUnitPiece => piece !== null);
-
-	return {
-		id,
-		elements,
-	};
-};
-
-const parseShelfRecord = (entry: unknown): ShelfRecord | null => {
-	if (!entry || typeof entry !== "object") {
-		return null;
-	}
-
-	const raw = entry as Record<string, unknown>;
-
-	const id = toStringOrNull(raw.id);
-	const name = toStringOrNull(raw.name);
-	if (!id || !name) {
-		return null;
-	}
-
-	const columnsRaw = Array.isArray(raw.columns) ? raw.columns : [];
-	const columns = columnsRaw
-		.map(parseColumn)
-		.filter((column): column is ShelfColumnPayload => column !== null);
-
-	return {
-		id,
-		name,
-		building: toStringOrNull(raw.building),
-		room: toStringOrNull(raw.room),
-		numElements:
-			typeof raw.numElements === "number" && Number.isFinite(raw.numElements)
-				? raw.numElements
-				: null,
-		columns,
-	};
-};
-
-export interface FetchShelvesOptions {
-	signal?: AbortSignal;
-}
-
-const fetchShelves = async (
-	options: FetchShelvesOptions = {},
-): Promise<ShelfRecord[]> => {
+const getShelves = async (): Promise<Shelf[]> => {
 	const response = await fetch(SHELVES_ENDPOINT, {
 		method: "GET",
-		signal: options.signal,
+		headers: {
+			"Accept": "application/json",
+		},
 	});
 
 	if (!response.ok) {
-		throw new Error(`Failed to load shelves (HTTP ${response.status})`);
+		const message = await parseErrorMessage(response);
+		throw new Error(message);
 	}
 
-	const data: unknown = await response.json();
-	if (!Array.isArray(data)) {
+	if (response.status === 204) {
 		return [];
 	}
 
-	return data
-		.map(parseShelfRecord)
-		.filter((shelf): shelf is ShelfRecord => shelf !== null);
+	try {
+		const data = (await response.json()) as unknown;
+		if (Array.isArray(data)) {
+			return data as Shelf[];
+		}
+		throw new Error("Invalid shelves payload");
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			throw error;
+		}
+		throw new Error("Failed to parse shelves response");
+	}
 };
 
-export default fetchShelves;
+export default getShelves;

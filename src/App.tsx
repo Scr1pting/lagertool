@@ -7,12 +7,12 @@ import BorrowPage from './pages/BorrowPage';
 import BorrowedPage from './pages/BorrowedPage';
 import EventsPage from './pages/EventsPage';
 import ItemDetailsPage from './pages/ItemDetailsPage';
-import InventoryStatusPage from './pages/InventoryStatusPage';
 import LocationPage from './pages/LocationPage';
 import PersonHistoryPage from './pages/PersonHistoryPage';
-import ShelvesPage from './pages/ShelvesPage';
 import Search from './pages/Search';
 import ShelfBuilder from './pages/ShelfBuilder';
+import Home from './pages/Home';
+import WithNavLayout from './components/WithNavBar';
 
 function App() {
   useEffect(() => {
@@ -30,19 +30,20 @@ function App() {
   return (
     <main>
       <Routes>
-        <Route path="/" element={<Search />} />
-        <Route path="/search" element={<Search />} />
+        <Route element={<WithNavLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/borrowed" element={<BorrowedPage />} />
+          <Route path="/borrow" element={<BorrowPage />} />
+          <Route path="/locations" element={<LocationPage />} />
+          <Route path="/add" element={<AddPage />} />
+          <Route path="/persons" element={<AddPersonPage />} />
+          <Route path="/persons/:personId" element={<PersonHistoryPage />} />
+          <Route path="/items/:itemId" element={<ItemDetailsPage />} />
+          <Route path="/events" element={<EventsPage />} />
+        </Route>
+        
         <Route path="/shelf-builder" element={<ShelfBuilder />} />
-        <Route path="/shelves" element={<ShelvesPage />} />
-        <Route path="/inventory" element={<InventoryStatusPage />} />
-        <Route path="/borrowed" element={<BorrowedPage />} />
-        <Route path="/borrow" element={<BorrowPage />} />
-        <Route path="/locations" element={<LocationPage />} />
-        <Route path="/add" element={<AddPage />} />
-        <Route path="/persons" element={<AddPersonPage />} />
-        <Route path="/persons/:personId" element={<PersonHistoryPage />} />
-        <Route path="/items/:itemId" element={<ItemDetailsPage />} />
-        <Route path="/events" element={<EventsPage />} />
       </Routes>
     </main>
   );
