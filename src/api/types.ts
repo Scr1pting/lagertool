@@ -1,4 +1,4 @@
-import { type ShelfElementType } from "../types/shelf";
+import { type ShelfElementType } from "../features/shelves/types/shelf";
 
 export interface ShelfUnitPiece {
 	id: string;

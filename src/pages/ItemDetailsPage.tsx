@@ -10,7 +10,7 @@ import {
   type NormalizedPerson,
 } from "@/lib/person"
 import fetchShelfUnitDetail from "@/api/getShelfUnit"
-import { type ShelfUnitDetail } from "@/features/shelves/api/types"
+import { type ShelfUnitDetail } from "@/api/types"
 
 type ItemRecord = {
   id: number

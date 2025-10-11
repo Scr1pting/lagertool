@@ -1,4 +1,4 @@
-import { type ShelfUnitDetail } from "../features/shelves/api/types";
+import { type ShelfUnitDetail } from "./types";
 
 const API_BASE_URL =
 	import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api";

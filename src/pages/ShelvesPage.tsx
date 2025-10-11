@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import fetchShelves from "@/features/shelves/api/getShelves";
 import fetchShelfUnitInventory from "@/api/getShelfUnitInventory";
-import type { ShelfUnitInventoryItem } from "@/features/shelves/api/types";
+import type { ShelfUnitInventoryItem } from "@/api/types";
 import type { Shelf } from "@/features/shelves/types/shelf";
 
 const API_BASE_URL =
