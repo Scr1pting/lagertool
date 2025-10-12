@@ -331,7 +331,7 @@ func (h *Handler) ReturnHandler(c *gin.Context) {
 	userID := s.UserID
 	channel := s.ChannelID
 
-	id, err := h.LocalGetPersonBySlackID(userID)
+	pers, err := h.LocalGetPersonBySlackID(userID)
 	if err != nil {
 		return
 	}
@@ -341,7 +341,7 @@ func (h *Handler) ReturnHandler(c *gin.Context) {
 	itemID, err := h.LocalGetItemByName(itemName)
 
 	var loans []db.Loans
-	err = h.DB.Model(&loans).Where("item_id = ?", itemID).Where("person_id = ?", id).Select()
+	err = h.DB.Model(&loans).Where("item_id = ?", itemID).Where("person_id = ?", pers.ID).Select()
 
 	if len(loans) == 0 {
 		slackClient.PostMessage(
