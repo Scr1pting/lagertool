@@ -485,7 +485,7 @@ func InsertBasicData(db *pg.DB) error {
 		{LocationId: locations[37].ID, ItemId: items[46].ID, Amount: 2, Note: "Xilinx FPGA boards"},
 
 		// Unit P1S1R - VR Equipment
-		{LocationId: locations[38].ID, ItemId: items[47].ID, Amount: 1, Note: "Meta Quest 2 VR headsets"},
+		{LocationId: locations[38].ID, ItemId: items[46].ID, Amount: 1, Note: "Meta Quest 2 VR headsets"},
 
 		// Unit P2H2S - Additional Development Boards
 		{LocationId: locations[39].ID, ItemId: items[0].ID, Amount: 10, Note: "Extra Arduino Uno boards"},
