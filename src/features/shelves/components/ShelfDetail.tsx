@@ -78,7 +78,7 @@ function ShelfDetail({ elementId }: { elementId: string }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-12rem)] pb-12 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {/* Items List */}
       <div className="space-y-3">
         {items.map((item, index) => {
