@@ -1,7 +1,9 @@
 package api
 
 import (
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"lagertool.com/main/db"
@@ -26,17 +28,45 @@ func (h *Handler) BulkAdd(c *gin.Context) {
 	c.JSON(http.StatusOK, "Bulk Add Successful!")
 }
 
+type BorrowForm struct {
+	ItemName       string    `json:"itemName"`
+	PersonName     string    `json:"personName"`
+	PersonLastName string    `json:"personLastName"`
+	Amount         int       `json:"amount"`
+	Until          time.Time `json:"until"`
+}
+
 func (h *Handler) BulkBorrow(c *gin.Context) {
-	var borrows []db.Loans
+	var borrows []BorrowForm
 	er := c.BindJSON(&borrows)
 	if er != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"JSON borrow format incorrect": er.Error()})
 		return
 	}
-	for _, bor := range borrows {
-		err := h.LocalCreateLoan(&bor)
+
+	for _, borrow := range borrows {
+		pers, err := h.LocalGetPersonByName(borrow.PersonName, borrow.PersonLastName)
+		if err != nil {
+			log.Println("error getting person by name", err)
+			return
+		}
+		item, err := h.LocalGetItemByName(borrow.ItemName)
+		if err != nil {
+			log.Println("error getting item by name", err)
+			return
+		}
+		err = h.LocalCreateLoan(&db.Loans{
+			PersonID:   pers.ID,
+			ItemID:     item.ID,
+			Amount:     borrow.Amount,
+			Begin:      time.Now(),
+			Until:      borrow.Until,
+			Returned:   false,
+			ReturnedAt: time.Time{},
+		})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"❗\tIncorrect formatting of bulk borrow JSON submition.\n Proper format is:\n %[\n \t %{\n \t \t \"person_id\" : int \n \t \t \"item_id\" : int \n \t \t \"amount\" : int \n \t \t \"begin\" : YYYY-MM-DDThh:mm:sZ \n \t \t \"until\" : YYYY-MM-DDThh:mm:sZ \n\t %}, %{...%}\n %]": err.Error()})
+			log.Println("error creating loan", err)
 			return
 		}
 	}
