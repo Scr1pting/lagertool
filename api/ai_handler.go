@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -99,17 +100,76 @@ func (h *Handler) ChatHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"reply": finalReply})
 }
 
-func callInternalAPI(action string, params map[string]string) (string, error) {
-	switch action {
-	case "get_items":
-		resp, err := http.Get("https://05.hackathon.ethz.ch/api/items")
-		if err != nil {
-			return "", err
-		}
-		defer resp.Body.Close()
-		body, _ := ioutil.ReadAll(resp.Body)
-		return string(body), nil
-	default:
-		return "", fmt.Errorf("unknown action: ", action)
+func callAPIhelper(client *http.Client, url string) (string, error) {
+
+	resp, err := client.Get(url)
+
+	if err != nil {
+
+		return "", err
+
 	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+
+		return "", err
+
+	}
+
+	return string(body), nil
+
+}
+
+func callInternalAPI(action string, params map[string]string) (string, error) {
+
+	tr := &http.Transport{
+
+		TLSClientConfig: &tls.Config{
+
+			MinVersion: tls.VersionTLS12,
+		},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	switch action {
+
+	case "get_items":
+
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/items")
+
+	case "get_inventory":
+
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/inventory")
+
+	case "get_locations":
+
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/locations")
+
+	case "get_loans":
+
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/loans")
+
+	case "get_shelves":
+
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/shelves")
+
+	case "get_persons":
+
+		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/persons")
+
+	case "none":
+
+		return "", nil
+
+	default:
+
+		return "", fmt.Errorf("unknown action: %s", action)
+
+	}
+
 }
