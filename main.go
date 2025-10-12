@@ -59,9 +59,9 @@ func main() {
 	db.InitDB(dbConnection)
 	// slack1.SetupSlack(cfg)
 
-	/* if err := db.InsertBasicData(dbConnection); err != nil {
+	if err := db.InsertBasicData(dbConnection); err != nil {
 		log.Printf("⚠️  Failed to insert test data: %v", err)
-	} */
+	}
 
 	api.SetupRoutes(router, dbConnection, cfg)
 	auth.Init()
