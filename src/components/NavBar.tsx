@@ -6,6 +6,9 @@ import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
 import Logo from "./Logo";
 import { type NormalizedPerson } from "@/lib/person"
+import { Button } from "./ui/button";
+import { Link } from "react-router-dom";
+import { IoAdd } from "react-icons/io5";
 
 const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
@@ -79,6 +82,11 @@ export default function NavBar(){
       <div className={styles.input}><SearchBar/></div>
       <div className={styles.input}><BorrowButton counterValue={ borrowedCount }/></div>
       <div><MoreDropdown/></div>
+      <Link to="/shelf-builder">
+        <Button className={styles.buttonMore}>
+          <IoAdd size={44} />
+        </Button>
+      </Link>
     </div>
   );
 }
