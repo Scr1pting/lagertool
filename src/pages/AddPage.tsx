@@ -45,11 +45,6 @@ type FormState = {
 
 type LocationOption = RestrictedSearchItem & { location: LocationRecord }
 
-const CATEGORY_OPTIONS: { value: CategoryValue; label: string }[] = [
-  { value: "consumable", label: "Consumable" },
-  { value: "nonConsumable", label: "Non-consumable" },
-]
-
 const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
 
@@ -135,7 +130,7 @@ export default function AddPage() {
       const [inventoryRes, itemsRes, locationsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/inventory`),
         fetch(`${API_BASE_URL}/items`),
-        fetch(`${API_BASE_URL}/locations`),
+        fetch(`${API_BASE_URL}/shelves`),
       ])
 
       if (!inventoryRes.ok) {
@@ -193,7 +188,6 @@ export default function AddPage() {
           if (!trimmed) return true
           const haystack = [
             location.id,
-            location.campus,
             location.building,
             location.room,
             location.shelf,
@@ -445,19 +439,14 @@ export default function AddPage() {
             >
               Category
             </label>
-            <select
+            <input
               id="category"
               name="category"
-              value={form.category}
+              value="Electronics"
               onChange={handleInputChange}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
-              {CATEGORY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            </input>
           </div>
 
           <div className="space-y-2">
