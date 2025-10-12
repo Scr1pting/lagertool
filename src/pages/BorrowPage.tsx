@@ -765,7 +765,7 @@ export default function BorrowPage() {
                       onSelect={(option) => setSelectedPerson(option as PersonOption)}
                       searchFn={searchPersons}
                       selectedLabel={selectedPerson?.label}
-                      minChars={2}
+                      minChars={0}
                       renderItem={(option) => {
                         const { person } = option as PersonOption
                         return (
