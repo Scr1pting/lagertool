@@ -15,7 +15,7 @@ type Shelf struct {
 
 // Column represents a column in a shelf with an ID
 type Column struct {
-	tableName struct{} `pg:"column"`
+	tableName struct{} `pg:"col"`
 	ID        string   `json:"id" pg:"id,pk"` // Generated column ID from frontend
 	ShelfID   string   `json:"shelf_id" pg:"shelf_id"`
 }
