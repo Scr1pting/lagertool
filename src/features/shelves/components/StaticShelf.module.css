@@ -1,6 +1,7 @@
 .StaticShelf {
   display: flex;
   flex-direction: row;
+  align-items: flex-end;
   padding: 0px 80px;
   border-bottom: 1px solid #ccc;
 
