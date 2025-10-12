@@ -442,10 +442,10 @@ type Result struct {
 	Note        string `json:"note" pg:"note"`
 	ItemName    string `json:"item_name" pg:"item_name"`
 	Category    string `json:"category" pg:"category"`
-	Campus      string `json:"campus" pg:"campus"`
-	Building    string `json:"building" pg:"building"`
-	Room        string `json:"room" pg:"room"`
-	Shelf       string `json:"shelf" pg:"shelf"`
+	//Campus      string `json:"campus" pg:"campus"`
+	Building string `json:"building" pg:"building"`
+	Room     string `json:"room" pg:"room"`
+	Shelf    string `json:"shelf" pg:"shelf"`
 }
 
 // LocalSearchInventory performs a full-text search on item details and returns
@@ -489,9 +489,6 @@ func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
 		sh.building,
 		sh.room,
 		sh.name as shelf,
-		col.id as column_id,
-		su.id as shelf_unit_id,
-		su.type as shelf_unit_type
 	FROM inventory inv
 	JOIN item it ON it.id = inv.item_id
 	JOIN location loc ON loc.id = inv.location_id
