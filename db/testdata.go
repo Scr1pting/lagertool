@@ -16,94 +16,111 @@ func InsertBasicData(db *pg.DB) error {
 	// ETH Zürich shelves - Main storage across campus
 	// Define shelves with IDs
 	shelves := []Shelf{
-		{ID: "SHELF1", Name: "Electronics Lab Storage", Building: "CAB", Room: "H53"},
-		{ID: "SHELF2", Name: "Workshop Tools", Building: "ETZ", Room: "J91"},
-		{ID: "SHELF3", Name: "Robotics Components", Building: "HCI", Room: "J4"},
-		{ID: "SHELF4", Name: "Sensors & Modules", Building: "CAB", Room: "H55"},
-		{ID: "SHELF5", Name: "Consumables Storage", Building: "ETZ", Room: "J93"},
-		{ID: "SHELF6", Name: "Project Equipment", Building: "HCI", Room: "J6"},
+		{ID: "SHF01", Name: "Electronics Lab Storage", Building: "CAB", Room: "H53"},
+		{ID: "SHF02", Name: "Workshop Tools", Building: "ETZ", Room: "J91"},
+		{ID: "SHF03", Name: "Robotics Components", Building: "HCI", Room: "J4"},
+		{ID: "SHF04", Name: "Sensors & Modules", Building: "CAB", Room: "H55"},
+		{ID: "SHF05", Name: "Consumables Storage", Building: "ETZ", Room: "J93"},
 	}
 
 	// Define shelf units for each shelf
+	// Multiple units can be stacked vertically in the same column
 	shelfUnits := []struct {
 		ShelfIndex int
 		Units      []ShelfUnit
 	}{
-		// CAB H53 - Electronics Lab Storage (3 columns, 8 units)
+		// SHF01: CAB H53 - Electronics Lab Storage (4 columns, 12 units total)
 		{
 			ShelfIndex: 0,
 			Units: []ShelfUnit{
+				// Column A - Development boards (3 units stacked)
 				{ID: "A1H2E", ColumnID: "COL01", Type: "high"},
-				{ID: "A2S1X", ColumnID: "COL01", Type: "slim"},
-				{ID: "A3H1W", ColumnID: "COL01", Type: "high"},
+				{ID: "A2H1W", ColumnID: "COL01", Type: "high"},
+				{ID: "A3S1X", ColumnID: "COL01", Type: "slim"},
+				// Column B - Measurement equipment (3 units stacked)
 				{ID: "B1H3K", ColumnID: "COL02", Type: "high"},
 				{ID: "B2H2M", ColumnID: "COL02", Type: "high"},
-				{ID: "C1S1P", ColumnID: "COL03", Type: "slim"},
-				{ID: "C2H1Q", ColumnID: "COL03", Type: "high"},
-				{ID: "C3S2R", ColumnID: "COL03", Type: "slim"},
+				{ID: "B3S1N", ColumnID: "COL02", Type: "slim"},
+				// Column C - Power & cables (3 units stacked)
+				{ID: "C1H1Q", ColumnID: "COL03", Type: "high"},
+				{ID: "C2H2R", ColumnID: "COL03", Type: "high"},
+				{ID: "C3S1P", ColumnID: "COL03", Type: "slim"},
+				// Column D - Breadboards & accessories (3 units stacked)
+				{ID: "D1H1T", ColumnID: "COL04", Type: "high"},
+				{ID: "D2S2U", ColumnID: "COL04", Type: "slim"},
+				{ID: "D3H1V", ColumnID: "COL04", Type: "high"},
 			},
 		},
-		// ETZ J91 - Workshop Tools (3 columns, 7 units)
+		// SHF02: ETZ J91 - Workshop Tools (3 columns, 9 units total)
 		{
 			ShelfIndex: 1,
 			Units: []ShelfUnit{
-				{ID: "D1H2P", ColumnID: "COL04", Type: "high"},
-				{ID: "D2H1T", ColumnID: "COL04", Type: "high"},
-				{ID: "E1S2M", ColumnID: "COL05", Type: "slim"},
-				{ID: "E2H3N", ColumnID: "COL05", Type: "high"},
-				{ID: "E3S1L", ColumnID: "COL05", Type: "slim"},
-				{ID: "F1H2B", ColumnID: "COL06", Type: "high"},
-				{ID: "F2H1C", ColumnID: "COL06", Type: "high"},
+				// Column A - Hand tools (3 units stacked)
+				{ID: "E1H2A", ColumnID: "COL05", Type: "high"},
+				{ID: "E2H1B", ColumnID: "COL05", Type: "high"},
+				{ID: "E3S1C", ColumnID: "COL05", Type: "slim"},
+				// Column B - Soldering & precision (3 units stacked)
+				{ID: "F1H3D", ColumnID: "COL06", Type: "high"},
+				{ID: "F2H2E", ColumnID: "COL06", Type: "high"},
+				{ID: "F3S1F", ColumnID: "COL06", Type: "slim"},
+				// Column C - Heavy tools & measuring (3 units stacked)
+				{ID: "G1H2G", ColumnID: "COL07", Type: "high"},
+				{ID: "G2H1H", ColumnID: "COL07", Type: "high"},
+				{ID: "G3S1I", ColumnID: "COL07", Type: "slim"},
 			},
 		},
-		// HCI J4 - Robotics Components (2 columns, 6 units)
+		// SHF03: HCI J4 - Robotics Components (3 columns, 9 units total)
 		{
 			ShelfIndex: 2,
 			Units: []ShelfUnit{
-				{ID: "G1H1R", ColumnID: "COL07", Type: "high"},
-				{ID: "G2H2T", ColumnID: "COL07", Type: "high"},
-				{ID: "G3S1V", ColumnID: "COL07", Type: "slim"},
-				{ID: "H1H2W", ColumnID: "COL08", Type: "high"},
-				{ID: "H2H1X", ColumnID: "COL08", Type: "high"},
-				{ID: "H3H2Y", ColumnID: "COL08", Type: "high"},
+				// Column A - Motors (3 units stacked)
+				{ID: "H1H1J", ColumnID: "COL08", Type: "high"},
+				{ID: "H2H2K", ColumnID: "COL08", Type: "high"},
+				{ID: "H3S1L", ColumnID: "COL08", Type: "slim"},
+				// Column B - Motor drivers & controllers (3 units stacked)
+				{ID: "I1H2M", ColumnID: "COL09", Type: "high"},
+				{ID: "I2H1N", ColumnID: "COL09", Type: "high"},
+				{ID: "I3S1O", ColumnID: "COL09", Type: "slim"},
+				// Column C - Mechanical parts & materials (3 units stacked)
+				{ID: "J1H2P", ColumnID: "COL10", Type: "high"},
+				{ID: "J2H1Q", ColumnID: "COL10", Type: "high"},
+				{ID: "J3S1R", ColumnID: "COL10", Type: "slim"},
 			},
 		},
-		// CAB H55 - Sensors & Modules (2 columns, 5 units)
+		// SHF04: CAB H55 - Sensors & Modules (2 columns, 6 units total)
 		{
 			ShelfIndex: 3,
 			Units: []ShelfUnit{
-				{ID: "I1H2A", ColumnID: "COL09", Type: "high"},
-				{ID: "I2S1B", ColumnID: "COL09", Type: "slim"},
-				{ID: "I3H1C", ColumnID: "COL09", Type: "high"},
-				{ID: "J1H2D", ColumnID: "COL10", Type: "high"},
-				{ID: "J2H1E", ColumnID: "COL10", Type: "high"},
+				// Column A - Distance & environment sensors (3 units stacked)
+				{ID: "K1H2S", ColumnID: "COL11", Type: "high"},
+				{ID: "K2H1T", ColumnID: "COL11", Type: "high"},
+				{ID: "K3S1U", ColumnID: "COL11", Type: "slim"},
+				// Column B - Motion & camera sensors (3 units stacked)
+				{ID: "L1H2V", ColumnID: "COL12", Type: "high"},
+				{ID: "L2H1W", ColumnID: "COL12", Type: "high"},
+				{ID: "L3S1X", ColumnID: "COL12", Type: "slim"},
 			},
 		},
-		// ETZ J93 - Consumables Storage (4 columns, 10 units)
+		// SHF05: ETZ J93 - Consumables Storage (4 columns, 12 units total)
 		{
 			ShelfIndex: 4,
 			Units: []ShelfUnit{
-				{ID: "K1H1F", ColumnID: "COL11", Type: "high"},
-				{ID: "K2S2G", ColumnID: "COL11", Type: "slim"},
-				{ID: "K3H2H", ColumnID: "COL11", Type: "high"},
-				{ID: "L1H1I", ColumnID: "COL12", Type: "high"},
-				{ID: "L2H2J", ColumnID: "COL12", Type: "high"},
-				{ID: "M1S1K", ColumnID: "COL13", Type: "slim"},
-				{ID: "M2H3L", ColumnID: "COL13", Type: "high"},
-				{ID: "M3S2M", ColumnID: "COL13", Type: "slim"},
-				{ID: "N1H2N", ColumnID: "COL14", Type: "high"},
-				{ID: "N2H1O", ColumnID: "COL14", Type: "high"},
-			},
-		},
-		// HCI J6 - Project Equipment (2 columns, 5 units)
-		{
-			ShelfIndex: 5,
-			Units: []ShelfUnit{
-				{ID: "O1H2P", ColumnID: "COL15", Type: "high"},
-				{ID: "O2H1Q", ColumnID: "COL15", Type: "high"},
-				{ID: "P1S1R", ColumnID: "COL16", Type: "slim"},
-				{ID: "P2H2S", ColumnID: "COL16", Type: "high"},
-				{ID: "P3H1T", ColumnID: "COL16", Type: "high"},
+				// Column A - Resistors & capacitors (3 units stacked)
+				{ID: "M1H1Y", ColumnID: "COL13", Type: "high"},
+				{ID: "M2H2Z", ColumnID: "COL13", Type: "high"},
+				{ID: "M3S1A", ColumnID: "COL13", Type: "slim"},
+				// Column B - LEDs & wires (3 units stacked)
+				{ID: "N1H2B", ColumnID: "COL14", Type: "high"},
+				{ID: "N2H1C", ColumnID: "COL14", Type: "high"},
+				{ID: "N3S1D", ColumnID: "COL14", Type: "slim"},
+				// Column C - ICs & transistors (3 units stacked)
+				{ID: "O1H2E", ColumnID: "COL15", Type: "high"},
+				{ID: "O2H1F", ColumnID: "COL15", Type: "high"},
+				{ID: "O3S1G", ColumnID: "COL15", Type: "slim"},
+				// Column D - Solder & PCBs (3 units stacked)
+				{ID: "P1H2H", ColumnID: "COL16", Type: "high"},
+				{ID: "P2H1I", ColumnID: "COL16", Type: "high"},
+				{ID: "P3S1J", ColumnID: "COL16", Type: "slim"},
 			},
 		},
 	}
@@ -353,147 +370,99 @@ func InsertBasicData(db *pg.DB) error {
 
 	// Insert Inventory relations - distribute items across storage locations
 	isInRecords := []Inventory{
-		// SHELF1: CAB H53 - Electronics Lab Storage (8 units)
-		// Unit A1H2E - Microcontrollers & Development Boards
-		{LocationId: locations[0].ID, ItemId: items[0].ID, Amount: 15, Note: "Arduino Uno stock for student projects"},
-		{LocationId: locations[0].ID, ItemId: items[1].ID, Amount: 8, Note: "Raspberry Pi inventory"},
-		{LocationId: locations[0].ID, ItemId: items[2].ID, Amount: 12, Note: "ESP32 boards for IoT projects"},
+		// SHF01: CAB H53 - Electronics Lab Storage (4 columns, 12 units)
+		// Column COL01 - Development boards
+		{LocationId: locations[0].ID, ItemId: items[0].ID, Amount: 15, Note: "Arduino Uno - main stock"},
+		{LocationId: locations[0].ID, ItemId: items[1].ID, Amount: 8, Note: "Raspberry Pi 4"},
+		{LocationId: locations[1].ID, ItemId: items[2].ID, Amount: 12, Note: "ESP32 boards"},
+		{LocationId: locations[2].ID, ItemId: items[0].ID, Amount: 10, Note: "Arduino Uno - backup stock"},
 
-		// Unit A2S1X - Power Supplies
-		{LocationId: locations[1].ID, ItemId: items[9].ID, Amount: 4, Note: "Adjustable power supplies"},
+		// Column COL02 - Measurement equipment
+		{LocationId: locations[3].ID, ItemId: items[4].ID, Amount: 5, Note: "Multimeters"},
+		{LocationId: locations[3].ID, ItemId: items[5].ID, Amount: 2, Note: "Oscilloscopes"},
+		{LocationId: locations[4].ID, ItemId: items[8].ID, Amount: 3, Note: "Logic analyzers"},
+		{LocationId: locations[4].ID, ItemId: items[6].ID, Amount: 1, Note: "Function generator"},
+		{LocationId: locations[5].ID, ItemId: items[9].ID, Amount: 4, Note: "Power supplies"},
 
-		// Unit A3H1W - Measurement Equipment
-		{LocationId: locations[2].ID, ItemId: items[4].ID, Amount: 5, Note: "Handheld multimeters"},
-		{LocationId: locations[2].ID, ItemId: items[5].ID, Amount: 2, Note: "Oscilloscopes for lab use"},
-		{LocationId: locations[2].ID, ItemId: items[8].ID, Amount: 3, Note: "Logic analyzers"},
+		// Column COL03 - Cables & power
+		{LocationId: locations[6].ID, ItemId: items[41].ID, Amount: 50, Note: "USB Micro-B cables"},
+		{LocationId: locations[6].ID, ItemId: items[42].ID, Amount: 40, Note: "USB Type-C cables"},
+		{LocationId: locations[7].ID, ItemId: items[43].ID, Amount: 15, Note: "HDMI cables"},
+		{LocationId: locations[7].ID, ItemId: items[44].ID, Amount: 20, Note: "Ethernet Cat6 cables"},
+		{LocationId: locations[8].ID, ItemId: items[9].ID, Amount: 3, Note: "Extra power supplies"},
 
-		// Unit B1H3K - Function Generators & Analyzers
-		{LocationId: locations[3].ID, ItemId: items[6].ID, Amount: 1, Note: "Function generator"},
+		// Column COL04 - Breadboards & accessories
+		{LocationId: locations[9].ID, ItemId: items[3].ID, Amount: 25, Note: "Breadboards 830 points"},
+		{LocationId: locations[10].ID, ItemId: items[3].ID, Amount: 15, Note: "Extra breadboards"},
+		{LocationId: locations[11].ID, ItemId: items[2].ID, Amount: 8, Note: "ESP32 backup"},
 
-		// Unit B2H2M - Breadboards
-		{LocationId: locations[4].ID, ItemId: items[3].ID, Amount: 25, Note: "Breadboards for prototyping"},
+		// SHF02: ETZ J91 - Workshop Tools (3 columns, 9 units)
+		// Column COL05 - Hand tools
+		{LocationId: locations[12].ID, ItemId: items[20].ID, Amount: 8, Note: "Precision screwdriver sets"},
+		{LocationId: locations[12].ID, ItemId: items[21].ID, Amount: 6, Note: "Wire strippers"},
+		{LocationId: locations[13].ID, ItemId: items[22].ID, Amount: 5, Note: "Pliers sets"},
+		{LocationId: locations[13].ID, ItemId: items[24].ID, Amount: 6, Note: "ESD tweezers"},
+		{LocationId: locations[14].ID, ItemId: items[20].ID, Amount: 5, Note: "Extra screwdriver sets"},
 
-		// Unit C1S1P - USB Cables
-		{LocationId: locations[5].ID, ItemId: items[41].ID, Amount: 50, Note: "USB Micro-B cables"},
-		{LocationId: locations[5].ID, ItemId: items[42].ID, Amount: 40, Note: "USB Type-C cables"},
+		// Column COL06 - Soldering & precision
+		{LocationId: locations[15].ID, ItemId: items[7].ID, Amount: 3, Note: "Soldering stations"},
+		{LocationId: locations[16].ID, ItemId: items[23].ID, Amount: 4, Note: "Desoldering pumps"},
+		{LocationId: locations[16].ID, ItemId: items[17].ID, Amount: 10, Note: "Solder wire"},
+		{LocationId: locations[17].ID, ItemId: items[24].ID, Amount: 4, Note: "More tweezers"},
 
-		// Unit C2H1Q - HDMI & Network Cables
-		{LocationId: locations[6].ID, ItemId: items[43].ID, Amount: 15, Note: "HDMI cables"},
-		{LocationId: locations[6].ID, ItemId: items[44].ID, Amount: 20, Note: "Ethernet Cat6 cables"},
+		// Column COL07 - Heavy tools & measuring
+		{LocationId: locations[18].ID, ItemId: items[28].ID, Amount: 2, Note: "Drill sets"},
+		{LocationId: locations[18].ID, ItemId: items[27].ID, Amount: 3, Note: "Hot glue guns"},
+		{LocationId: locations[19].ID, ItemId: items[26].ID, Amount: 4, Note: "Digital calipers"},
+		{LocationId: locations[20].ID, ItemId: items[25].ID, Amount: 10, Note: "A3 cutting mats"},
 
-		// Unit C3S2R - Power Supply Units (compact storage)
-		{LocationId: locations[7].ID, ItemId: items[9].ID, Amount: 3, Note: "Extra power supplies"},
+		// SHF03: HCI J4 - Robotics Components (3 columns, 9 units)
+		// Column COL08 - Motors
+		{LocationId: locations[21].ID, ItemId: items[29].ID, Amount: 30, Note: "SG90 servo motors"},
+		{LocationId: locations[22].ID, ItemId: items[30].ID, Amount: 10, Note: "NEMA17 stepper motors"},
+		{LocationId: locations[23].ID, ItemId: items[31].ID, Amount: 15, Note: "DC geared motors"},
 
-		// SHELF2: ETZ J91 - Workshop Tools (7 units)
-		// Unit D1H2P - Precision Tools
-		{LocationId: locations[8].ID, ItemId: items[20].ID, Amount: 8, Note: "Precision screwdriver sets"},
-		{LocationId: locations[8].ID, ItemId: items[21].ID, Amount: 6, Note: "Wire strippers"},
-		{LocationId: locations[8].ID, ItemId: items[22].ID, Amount: 5, Note: "Pliers sets"},
+		// Column COL09 - Motor drivers & controllers
+		{LocationId: locations[24].ID, ItemId: items[32].ID, Amount: 12, Note: "L298N motor drivers"},
+		{LocationId: locations[25].ID, ItemId: items[32].ID, Amount: 8, Note: "Extra motor drivers"},
+		{LocationId: locations[26].ID, ItemId: items[29].ID, Amount: 20, Note: "Extra servo motors"},
 
-		// Unit D2H1T - Soldering Equipment
-		{LocationId: locations[9].ID, ItemId: items[7].ID, Amount: 3, Note: "Soldering stations"},
-		{LocationId: locations[9].ID, ItemId: items[23].ID, Amount: 4, Note: "Desoldering pumps"},
+		// Column COL10 - Mechanical parts & materials
+		{LocationId: locations[27].ID, ItemId: items[33].ID, Amount: 20, Note: "PLA filament spools"},
+		{LocationId: locations[28].ID, ItemId: items[34].ID, Amount: 15, Note: "Laser cut acrylic"},
+		{LocationId: locations[29].ID, ItemId: items[30].ID, Amount: 5, Note: "Extra steppers"},
 
-		// Unit E1S2M - Small Hand Tools
-		{LocationId: locations[10].ID, ItemId: items[24].ID, Amount: 6, Note: "ESD safe tweezers"},
+		// SHF04: CAB H55 - Sensors & Modules (2 columns, 6 units)
+		// Column COL11 - Distance & environment sensors
+		{LocationId: locations[30].ID, ItemId: items[36].ID, Amount: 20, Note: "Ultrasonic HC-SR04"},
+		{LocationId: locations[31].ID, ItemId: items[37].ID, Amount: 15, Note: "DHT22 temp sensors"},
+		{LocationId: locations[32].ID, ItemId: items[36].ID, Amount: 10, Note: "Extra ultrasonic sensors"},
 
-		// Unit E2H3N - Heavy Tools
-		{LocationId: locations[11].ID, ItemId: items[28].ID, Amount: 2, Note: "Drill sets"},
-		{LocationId: locations[11].ID, ItemId: items[27].ID, Amount: 3, Note: "Hot glue guns"},
+		// Column COL12 - Motion & camera sensors
+		{LocationId: locations[33].ID, ItemId: items[38].ID, Amount: 10, Note: "IMU MPU6050"},
+		{LocationId: locations[34].ID, ItemId: items[39].ID, Amount: 5, Note: "GPS modules"},
+		{LocationId: locations[35].ID, ItemId: items[40].ID, Amount: 8, Note: "OV7670 cameras"},
 
-		// Unit E3S1L - Cutting Mats
-		{LocationId: locations[12].ID, ItemId: items[25].ID, Amount: 10, Note: "A3 cutting mats"},
+		// SHF05: ETZ J93 - Consumables Storage (4 columns, 12 units)
+		// Column COL13 - Resistors & capacitors
+		{LocationId: locations[36].ID, ItemId: items[10].ID, Amount: 50, Note: "Resistor kits E12"},
+		{LocationId: locations[37].ID, ItemId: items[11].ID, Amount: 30, Note: "Capacitor kits"},
+		{LocationId: locations[38].ID, ItemId: items[10].ID, Amount: 30, Note: "Extra resistor kits"},
 
-		// Unit F1H2B - Measuring Tools
-		{LocationId: locations[13].ID, ItemId: items[26].ID, Amount: 4, Note: "Digital calipers"},
+		// Column COL14 - LEDs & wires
+		{LocationId: locations[39].ID, ItemId: items[12].ID, Amount: 100, Note: "LED assortment 5mm"},
+		{LocationId: locations[40].ID, ItemId: items[13].ID, Amount: 200, Note: "M-M jumper wires"},
+		{LocationId: locations[41].ID, ItemId: items[14].ID, Amount: 150, Note: "M-F jumper wires"},
 
-		// Unit F2H1C - Spare Tools
-		{LocationId: locations[14].ID, ItemId: items[20].ID, Amount: 5, Note: "Additional screwdriver sets"},
+		// Column COL15 - ICs & transistors
+		{LocationId: locations[42].ID, ItemId: items[15].ID, Amount: 40, Note: "Transistor kits"},
+		{LocationId: locations[43].ID, ItemId: items[16].ID, Amount: 35, Note: "IC kits (555, OpAmps)"},
+		{LocationId: locations[44].ID, ItemId: items[15].ID, Amount: 20, Note: "Extra transistors"},
 
-		// SHELF3: HCI J4 - Robotics Components (6 units)
-		// Unit G1H1R - Servo Motors
-		{LocationId: locations[15].ID, ItemId: items[29].ID, Amount: 30, Note: "SG90 servo motors"},
-
-		// Unit G2H2T - Stepper Motors
-		{LocationId: locations[16].ID, ItemId: items[30].ID, Amount: 10, Note: "NEMA17 steppers"},
-
-		// Unit G3S1V - DC Motors
-		{LocationId: locations[17].ID, ItemId: items[31].ID, Amount: 15, Note: "DC geared motors"},
-
-		// Unit H1H2W - Motor Drivers
-		{LocationId: locations[18].ID, ItemId: items[32].ID, Amount: 12, Note: "L298N motor drivers"},
-
-		// Unit H2H1X - 3D Printing Materials
-		{LocationId: locations[19].ID, ItemId: items[33].ID, Amount: 20, Note: "PLA filament spools"},
-		{LocationId: locations[19].ID, ItemId: items[34].ID, Amount: 15, Note: "Laser cut acrylic sheets"},
-
-		// Unit H3H2Y - Mechanical Components
-		{LocationId: locations[20].ID, ItemId: items[29].ID, Amount: 20, Note: "Extra servo motors"},
-
-		// SHELF4: CAB H55 - Sensors & Modules (5 units)
-		// Unit I1H2A - Distance & Proximity Sensors
-		{LocationId: locations[21].ID, ItemId: items[36].ID, Amount: 20, Note: "Ultrasonic sensors HC-SR04"},
-
-		// Unit I2S1B - Temperature & Humidity Sensors
-		{LocationId: locations[22].ID, ItemId: items[37].ID, Amount: 15, Note: "DHT22 temp sensors"},
-
-		// Unit I3H1C - IMU & Motion Sensors
-		{LocationId: locations[23].ID, ItemId: items[38].ID, Amount: 10, Note: "IMU modules MPU6050"},
-
-		// Unit J1H2D - GPS & Location Modules
-		{LocationId: locations[24].ID, ItemId: items[39].ID, Amount: 5, Note: "GPS modules"},
-
-		// Unit J2H1E - Camera Modules
-		{LocationId: locations[25].ID, ItemId: items[40].ID, Amount: 8, Note: "OV7670 camera modules"},
-
-		// SHELF5: ETZ J93 - Consumables Storage (10 units)
-		// Unit K1H1F - Resistor Kits
-		{LocationId: locations[26].ID, ItemId: items[10].ID, Amount: 50, Note: "Resistor kits E12 series"},
-
-		// Unit K2S2G - Capacitor Kits
-		{LocationId: locations[27].ID, ItemId: items[11].ID, Amount: 30, Note: "Capacitor kits"},
-
-		// Unit K3H2H - LED Kits
-		{LocationId: locations[28].ID, ItemId: items[12].ID, Amount: 100, Note: "LED assortment 5mm"},
-
-		// Unit L1H1I - Jumper Wires (Male-Male)
-		{LocationId: locations[29].ID, ItemId: items[13].ID, Amount: 200, Note: "Male-male jumper wires"},
-
-		// Unit L2H2J - Jumper Wires (Male-Female)
-		{LocationId: locations[30].ID, ItemId: items[14].ID, Amount: 150, Note: "Male-female jumper wires"},
-
-		// Unit M1S1K - Transistor Kits
-		{LocationId: locations[31].ID, ItemId: items[15].ID, Amount: 40, Note: "NPN/PNP transistor kits"},
-
-		// Unit M2H3L - IC Kits
-		{LocationId: locations[32].ID, ItemId: items[16].ID, Amount: 35, Note: "555 timers and OpAmp kits"},
-
-		// Unit M3S2M - Solder & Flux
-		{LocationId: locations[33].ID, ItemId: items[17].ID, Amount: 10, Note: "Lead-free solder wire"},
-
-		// Unit N1H2N - Heat Shrink & Tubing
-		{LocationId: locations[34].ID, ItemId: items[18].ID, Amount: 25, Note: "Heat shrink tubing kits"},
-
-		// Unit N2H1O - PCB Prototyping Boards
-		{LocationId: locations[35].ID, ItemId: items[19].ID, Amount: 60, Note: "PCB prototyping boards"},
-
-		// SHELF6: HCI J6 - Project Equipment (5 units)
-		// Unit O1H2P - Loaner Laptops
-		{LocationId: locations[36].ID, ItemId: items[45].ID, Amount: 3, Note: "Loaner Lenovo laptops"},
-
-		// Unit O2H1Q - FPGA Boards
-		{LocationId: locations[37].ID, ItemId: items[46].ID, Amount: 2, Note: "Xilinx FPGA boards"},
-
-		// Unit P1S1R - VR Equipment
-		{LocationId: locations[38].ID, ItemId: items[46].ID, Amount: 1, Note: "Meta Quest 2 VR headsets"},
-
-		// Unit P2H2S - Additional Development Boards
-		{LocationId: locations[39].ID, ItemId: items[0].ID, Amount: 10, Note: "Extra Arduino Uno boards"},
-		{LocationId: locations[39].ID, ItemId: items[2].ID, Amount: 8, Note: "Extra ESP32 boards"},
-
-		// Unit P3H1T - Mixed Equipment
-		{LocationId: locations[40].ID, ItemId: items[1].ID, Amount: 5, Note: "Extra Raspberry Pi 4"},
-		{LocationId: locations[40].ID, ItemId: items[4].ID, Amount: 3, Note: "Extra multimeters"},
+		// Column COL16 - Solder & PCBs
+		{LocationId: locations[45].ID, ItemId: items[17].ID, Amount: 10, Note: "Lead-free solder"},
+		{LocationId: locations[46].ID, ItemId: items[18].ID, Amount: 25, Note: "Heat shrink tubing"},
+		{LocationId: locations[47].ID, ItemId: items[19].ID, Amount: 60, Note: "PCB prototyping boards"},
 	}
 
 	log.Printf("Inserting inventory records...")

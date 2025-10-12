@@ -118,5 +118,4 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 
 	// AI Bot
 	r.POST("/chat/", h.ChatHandler)
-
 }
