@@ -1,5 +1,120 @@
 basePath: /
 definitions:
+  api.LoanInfo:
+    properties:
+      amount:
+        type: integer
+      begin:
+        type: string
+      is_overdue:
+        type: boolean
+      loan_id:
+        type: integer
+      person_id:
+        type: integer
+      person_name:
+        type: string
+      until:
+        type: string
+    type: object
+  api.ShelfRequest:
+    properties:
+      building:
+        type: string
+      columns:
+        items:
+          properties:
+            elements:
+              items:
+                properties:
+                  id:
+                    type: string
+                  type:
+                    type: string
+                required:
+                - id
+                - type
+                type: object
+              type: array
+            id:
+              type: string
+          required:
+          - elements
+          - id
+          type: object
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      room:
+        type: string
+    required:
+    - building
+    - columns
+    - id
+    - name
+    - room
+    type: object
+  api.ShelfResponse:
+    properties:
+      building:
+        type: string
+      columns:
+        items:
+          properties:
+            elements:
+              items:
+                properties:
+                  id:
+                    type: string
+                  numItems:
+                    type: integer
+                  type:
+                    type: string
+                type: object
+              type: array
+            id:
+              type: string
+            numItems:
+              type: integer
+          type: object
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      numItems:
+        type: integer
+      room:
+        type: string
+    type: object
+  api.ShelfUnitInventoryItem:
+    properties:
+      active_loans:
+        description: Active loans for this item
+        items:
+          $ref: '#/definitions/api.LoanInfo'
+        type: array
+      amount:
+        type: integer
+      available:
+        description: Amount available (not borrowed)
+        type: integer
+      borrowed:
+        description: Amount currently borrowed
+        type: integer
+      category:
+        type: string
+      inventory_id:
+        type: integer
+      item_id:
+        type: integer
+      item_name:
+        type: string
+      note:
+        type: string
+    type: object
   db.Event:
     properties:
       created_at:
@@ -86,17 +201,10 @@ definitions:
     type: object
   db.Location:
     properties:
-      building:
-        type: string
-      campus:
-        type: string
       id:
         type: integer
-      room:
-        type: string
-      shelf:
-        type: string
-      shelfunit:
+      shelf_unit_id:
+        description: Reference to ShelfUnit.ID
         type: string
     type: object
   db.Person:
@@ -124,6 +232,44 @@ info:
   title: Lagertool Inventory API
   version: "1.0"
 paths:
+  /calendar/{id}:
+    get:
+      description: Downloads an iCalendar (.ics) file for a specific loan containing
+        a reminder to return the item
+      parameters:
+      - description: Loan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/calendar
+      responses:
+        "200":
+          description: ICS file content
+          schema:
+            type: string
+        "400":
+          description: Invalid loan ID
+          schema:
+            type: string
+      summary: Download calendar file for a specific loan
+      tags:
+      - calendar
+  /calendar/all:
+    get:
+      description: Downloads an iCalendar (.ics) file containing all loan records
+        with reminders to return items
+      produces:
+      - text/calendar
+      responses:
+        "200":
+          description: ICS file content with all loan events
+          schema:
+            type: string
+      summary: Download calendar file for all loans
+      tags:
+      - calendar
   /events:
     get:
       description: Retrieve all events from the database
@@ -1765,6 +1911,301 @@ paths:
       summary: Search persons
       tags:
       - persons
+  /shelves:
+    get:
+      description: Retrieve all shelves from the database with their layouts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.ShelfResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all shelves
+      tags:
+      - shelves
+    post:
+      consumes:
+      - application/json
+      description: Parse the JSON shelf definition and create the corresponding Shelf
+        and ShelfUnit entries in the database
+      parameters:
+      - description: Shelf layout object
+        in: body
+        name: shelf
+        required: true
+        schema:
+          $ref: '#/definitions/api.ShelfRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new shelf layout
+      tags:
+      - shelves
+  /shelves/{id}:
+    delete:
+      description: Delete a shelf and all its associated columns, shelf units, and
+        locations
+      parameters:
+      - description: Shelf ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a shelf
+      tags:
+      - shelves
+    get:
+      description: Retrieve a specific shelf by its ID with full layout
+      parameters:
+      - description: Shelf ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ShelfResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get shelf by ID
+      tags:
+      - shelves
+    put:
+      consumes:
+      - application/json
+      description: Update a shelf by completely replacing its structure. All existing
+        columns and shelf units will be deleted and replaced with the new structure.
+      parameters:
+      - description: Shelf ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Shelf layout object
+        in: body
+        name: shelf
+        required: true
+        schema:
+          $ref: '#/definitions/api.ShelfRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an existing shelf layout
+      tags:
+      - shelves
+  /shelves/building/{building}:
+    get:
+      description: Retrieve all shelves for a specific building with their layout
+      parameters:
+      - description: Building name
+        in: path
+        name: building
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.ShelfResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all shelves in a building
+      tags:
+      - shelves
+  /shelves/building/{building}/room/{room}:
+    get:
+      description: Retrieve all shelves for a specific building and room with their
+        layout
+      parameters:
+      - description: Building name
+        in: path
+        name: building
+        required: true
+        type: string
+      - description: Room name
+        in: path
+        name: room
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.ShelfResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all shelves in a room
+      tags:
+      - shelves
+  /shelves/unit/{id}:
+    get:
+      description: Find a shelf unit by its unique 5-letter ID (case-insensitive)
+        and return its location details
+      parameters:
+      - description: Shelf Unit ID (5-letter code, case-insensitive)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search for a shelf unit by its ID
+      tags:
+      - shelves
+  /shelves/unit/{id}/inventory:
+    get:
+      description: Retrieve all inventory items in a specific shelf unit by its 5-letter
+        ID (case-insensitive), including borrow status and active loans
+      parameters:
+      - description: Shelf Unit ID (5-letter code, case-insensitive)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.ShelfUnitInventoryItem'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get inventory in a shelf unit
+      tags:
+      - shelves
 schemes:
 - http
 swagger: "2.0"
