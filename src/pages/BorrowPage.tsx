@@ -650,9 +650,6 @@ export default function BorrowPage() {
               "Refresh data"
             )}
           </Button>
-          <Button asChild variant="secondary">
-            <Link to="/borrowed">View active loans</Link>
-          </Button>
         </div>
       </div>
 
