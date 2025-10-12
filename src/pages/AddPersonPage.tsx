@@ -8,6 +8,21 @@ import { Link } from "react-router-dom"
 import DataTable from "@/components/DataTable"
 import PersonLink from "@/components/PersonLink"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+} from "@/components/ui/field"
 
 type PersonFormState = {
   firstName: string
@@ -313,27 +328,6 @@ export default function AddPersonPage() {
     const actionHeader = "Actions"
     return [
       {
-        accessorKey: "id",
-        header: "ID",
-        cell: ({ row }) => {
-          const person = {
-            id: row.original.id,
-            firstName: row.original.firstName,
-            lastName: row.original.lastName,
-            slackId: row.original.slackId,
-          }
-          return (
-            <PersonLink
-              personId={row.original.id}
-              person={person}
-              className="font-mono text-xs"
-            >
-              {row.original.id}
-            </PersonLink>
-          )
-        },
-      },
-      {
         accessorKey: "firstName",
         header: "First name",
         cell: ({ row }) => row.original.firstName ?? "—",
@@ -344,11 +338,6 @@ export default function AddPersonPage() {
         cell: ({ row }) => row.original.lastName ?? "—",
       },
       {
-        accessorKey: "slackId",
-        header: "Slack ID",
-        cell: ({ row }) => row.original.slackId ?? "—",
-      },
-      {
         id: "actions",
         header: actionHeader,
         enableSorting: false,
@@ -357,19 +346,19 @@ export default function AddPersonPage() {
           <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               size="sm"
-              asChild
+              onClick={() => startEdit(row.original)}
             >
-              <Link to={`/persons/${row.original.id}`}>View history</Link>
+              Edit
             </Button>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => startEdit(row.original)}
+              asChild
             >
-              Edit
+              <Link to={`/persons/${row.original.id}`}>View history</Link>
             </Button>
           </div>
         ),
@@ -409,13 +398,13 @@ export default function AddPersonPage() {
     : "selected person"
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">
             Manage persons
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             {isEditing
               ? "You can update the selected person below."
               : "Add new people to the system. Only first and last name are required."}
@@ -429,78 +418,68 @@ export default function AddPersonPage() {
       </div>
 
       {isEditing ? (
-        <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-          <span className="font-medium">
-            Editing {editingPersonName}
-          </span>
-          <span className="text-muted-foreground">
-            Make changes in the form and click &ldquo;Save changes&rdquo;.
-          </span>
+        <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3.5 text-sm shadow-sm">
+          <div className="flex h-2 w-2 rounded-full bg-primary ring-2 ring-primary/30" />
+          <div className="flex-1">
+            <span className="font-semibold text-primary">
+              Editing {editingPersonName}
+            </span>
+            <span className="ml-2 text-muted-foreground">
+              Make changes in the form and click &ldquo;Save changes&rdquo;.
+            </span>
+          </div>
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr] lg:items-start">
-        <section className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-sm">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">
-              {isEditing ? "Update person" : "Add person"}
-            </h2>
-            <p className="text-sm text-muted-foreground">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,400px)_1fr] lg:items-start">
+        <Card className="shadow-md">
+          <CardHeader>
+            <CardTitle>{isEditing ? "Update person" : "Add person"}</CardTitle>
+            <CardDescription>
               {isEditing
                 ? "Adjust the details and save to update this person."
                 : "Fill out the fields and press add to create a new person."}
-            </p>
-          </div>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              <label className="flex flex-col gap-2 text-sm font-medium">
-                First name
-                <input
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-5">
+              <Field>
+                <Label htmlFor="firstName">First name</Label>
+                <Input
                   id="firstName"
                   name="firstName"
                   type="text"
                   value={form.firstName}
                   onChange={updateFormValue("firstName")}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   required
                   placeholder="Ada"
                 />
-              </label>
-              <label className="flex flex-col gap-2 text-sm font-medium">
-                Last name
-                <input
+              </Field>
+              <Field>
+                <Label htmlFor="lastName">Last name</Label>
+                <Input
                   id="lastName"
                   name="lastName"
                   type="text"
                   value={form.lastName}
                   onChange={updateFormValue("lastName")}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   required
                   placeholder="Lovelace"
                 />
-              </label>
-              <label className="flex flex-col gap-2 text-sm font-medium">
-                Slack ID
-                <input
-                  id="slackId"
-                  name="slackId"
-                  type="text"
-                  value={form.slackId}
-                  onChange={updateFormValue("slackId")}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  placeholder="@ada.l"
-                />
-              </label>
-            </div>
+              </Field>
 
-            {submitError && (
-              <p className="text-sm text-destructive">{submitError}</p>
-            )}
-            {submitSuccess && (
-              <p className="text-sm text-emerald-600">{submitSuccess}</p>
-            )}
-
-            <div className="flex items-center justify-end gap-3">
+              {submitError && (
+                <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                  {submitError}
+                </div>
+              )}
+              {submitSuccess && (
+                <div className="rounded-md border border-emerald-500/50 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600 dark:text-emerald-400">
+                  {submitSuccess}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="ghost"
@@ -516,77 +495,81 @@ export default function AddPersonPage() {
                     ? "Save changes"
                     : "Add person"}
               </Button>
-            </div>
+            </CardFooter>
           </form>
-        </section>
+        </Card>
 
-        <section className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold">Existing persons</h2>
-              <p className="text-sm text-muted-foreground">
-                Showing {filteredCount} of {personCount} people.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2">
-                <label className="sr-only" htmlFor="personFilter">
-                  Filter persons
-                </label>
-                <input
-                  id="personFilter"
-                  type="search"
-                  value={filterValue}
-                  onChange={(event) => setFilterValue(event.target.value)}
-                  placeholder="Search by name, Slack ID, or ID"
-                  className="h-9 w-full min-w-[220px] rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                />
-                {filterValue ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setFilterValue("")}
-                  >
-                    Clear
-                  </Button>
-                ) : null}
+        <Card className="shadow-md">
+          <CardHeader>
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <CardTitle>Existing persons</CardTitle>
+                <CardDescription>
+                  Showing {filteredCount} of {personCount} people.
+                </CardDescription>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={fetchPersons}
-                disabled={loading}
-              >
-                {loading ? "Refreshing…" : "Refresh"}
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-2">
+                  <Label className="sr-only" htmlFor="personFilter">
+                    Filter persons
+                  </Label>
+                  <Input
+                    id="personFilter"
+                    type="search"
+                    value={filterValue}
+                    onChange={(event) => setFilterValue(event.target.value)}
+                    placeholder="Search by name"
+                    className="w-full min-w-[220px]"
+                  />
+                  {filterValue ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setFilterValue("")}
+                    >
+                      Clear
+                    </Button>
+                  ) : null}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchPersons}
+                  disabled={loading}
+                >
+                  {loading ? "Refreshing…" : "Refresh"}
+                </Button>
+              </div>
             </div>
-          </div>
+          </CardHeader>
 
-          {loadError && (
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {loadError}
-            </div>
-          )}
+          <CardContent className="space-y-4">
+            {loadError && (
+              <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {loadError}
+              </div>
+            )}
 
-          {loading && !persons.length ? (
-            <div className="rounded-md border border-dashed border-muted-foreground/40 p-6 text-sm text-muted-foreground">
-              Loading persons…
-            </div>
-          ) : filteredPersons.length ? (
-            <DataTable
-              columns={columns}
-              data={filteredPersons}
-              getRowClassName={highlightEditingRow}
-            />
-          ) : (
-            <div className="rounded-md border border-dashed border-muted-foreground/40 p-6 text-sm text-muted-foreground">
-              No people match your search. Try a different name or clear the
-              filter to see everyone.
-            </div>
-          )}
-        </section>
+            {loading && !persons.length ? (
+              <div className="rounded-md border border-dashed border-muted-foreground/40 p-6 text-center text-sm text-muted-foreground">
+                Loading persons…
+              </div>
+            ) : filteredPersons.length ? (
+              <DataTable
+                columns={columns}
+                data={filteredPersons}
+                getRowClassName={highlightEditingRow}
+              />
+            ) : (
+              <div className="rounded-md border border-dashed border-muted-foreground/40 p-6 text-center text-sm text-muted-foreground">
+                No people match your search. Try a different name or clear the
+                filter to see everyone.
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
