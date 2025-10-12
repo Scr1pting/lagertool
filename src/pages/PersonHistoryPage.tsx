@@ -204,7 +204,7 @@ export default function PersonHistoryPage() {
 
   if (personId === null) {
     return (
-      <div className="container mx-auto max-w-4xl space-y-4 py-10">
+      <div className="container mx-auto max-w-4xl space-y-4 py-10 px-4">
         <h1 className="text-3xl font-semibold tracking-tight">Person not found</h1>
         <p className="text-sm text-muted-foreground">
           The provided person identifier is invalid. Please use the navigation or search to locate a valid record.
@@ -217,7 +217,7 @@ export default function PersonHistoryPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-10 py-10">
+    <div className="container mx-auto max-w-5xl space-y-10 py-10 px-4">
       <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">

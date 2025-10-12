@@ -6,7 +6,6 @@ import { type ColumnDef, type Row } from "@tanstack/react-table"
 import { Link } from "react-router-dom"
 
 import DataTable from "@/components/DataTable"
-import PersonLink from "@/components/PersonLink"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,8 +19,6 @@ import {
 } from "@/components/ui/card"
 import {
   Field,
-  FieldLabel,
-  FieldDescription,
 } from "@/components/ui/field"
 
 type PersonFormState = {

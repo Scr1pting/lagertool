@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import StaticShelf from "@/features/shelves/components/StaticShelf";
 import ShelfDetail from "@/features/shelves/components/ShelfDetail";
 import useShelves from "@/features/shelves/hooks/useShelves";
-import type { Shelf } from "@/features/shelves/types/shelf";
 
 import styles from './Home.module.css';
 import Carousel from "@/components/Carousel";

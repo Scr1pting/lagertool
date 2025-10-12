@@ -393,7 +393,7 @@ export default function AddPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-8 py-10">
+    <div className="container mx-auto max-w-5xl space-y-8 py-10 px-4">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">
           Manage Inventory
