@@ -44,6 +44,12 @@
   font-size: 1rem;
   transition: 0.12s border;
   border-radius: 99999;
+
+  transition: 0.12s background-color;
+}
+
+.input:hover {
+    background-color: #282828;
 }
 
 button {
@@ -106,4 +112,5 @@ button {
   color: #6b7280;
   pointer-events: none;
   font-size: 1.3rem;
+  padding-bottom: .5px;
 }

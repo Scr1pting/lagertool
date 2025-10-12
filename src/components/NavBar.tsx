@@ -81,7 +81,7 @@ export default function NavBar(){
     <div>
       <div className={styles.backdrop} />
       <div className={styles.content}>
-        <div className="logo"><Logo /></div>
+        <div><Logo /></div>
         <div className={styles.input}><SearchBar/></div>
         <BorrowButton counterValue={ borrowedCount }/>
 
