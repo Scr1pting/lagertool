@@ -480,26 +480,26 @@ func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
 	// 4. Query the inventory and reconstruct location via ShelfUnit → Column → Shelf
 	var results []Result
 	_, err = h.DB.Query(&results, `
-		SELECT 
-			inv.id as inventory_id,
-			inv.amount,
-			inv.note,
-			it.name as item_name,
-			it.category,
-			sh.building,
-			sh.room,
-			sh.name as shelf,
-			col.id as column_id,
-			su.id as shelf_unit_id,
-			su.type as shelf_unit_type
-		FROM inventory inv
-		JOIN item it ON it.id = inv.item_id
-		JOIN location loc ON loc.id = inv.location_id
-		JOIN shelf_unit su ON su.id = loc.shelf_unit_id
-		JOIN column col ON col.id = su.column_id
-		JOIN shelf sh ON sh.id = col.shelf_id
-		WHERE inv.item_id IN (?)
-	`, pg.In(itemIDs))
+	SELECT 
+		inv.id as inventory_id,
+		inv.amount,
+		inv.note,
+		it.name as item_name,
+		it.category,
+		sh.building,
+		sh.room,
+		sh.name as shelf,
+		col.id as column_id,
+		su.id as shelf_unit_id,
+		su.type as shelf_unit_type
+	FROM inventory inv
+	JOIN item it ON it.id = inv.item_id
+	JOIN location loc ON loc.id = inv.location_id
+	JOIN shelf_unit su ON su.id = loc.shelf_unit_id
+	JOIN "column" col ON col.id = su.column_id
+	JOIN shelf sh ON sh.id = col.shelf_id
+	WHERE inv.item_id IN (?)
+`, pg.In(itemIDs))
 
 	if err != nil {
 		return nil, err
