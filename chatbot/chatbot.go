@@ -30,7 +30,7 @@ You can use the following actions:
 - "get_locations": to retrieve all pairs of locations ids and references to shelf_units. For further location info look in the shelves table  GET /api/locations
 - "get_loans": to retrieve all records of loans between persons and items GET /api/loans
 - "get_persons": to retrieve all records of persons, including the slack_id GET /api/persons
-- "get_shelves": to retrieve the structure of the shelf, the building and the Room it is in GET /api/shelves
+- "get_shelves": You can retrieve information about a shelf based on it's five character ID from the /api/items using GET /api/shelves/{id}
 
 Respond in this JSON format only:
 {
