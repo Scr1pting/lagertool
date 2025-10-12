@@ -39,6 +39,8 @@ import {
   type NormalizedPerson,
 } from "@/lib/person"
 
+import FileUploader from "@/components/FileUploader"
+
 type LoanRecord = {
   id: number
   item_id: number
@@ -659,6 +661,8 @@ export default function BorrowPage() {
           <span className="text-destructive/80 sm:flex-1">{loadError}</span>
         </div>
       ) : null}
+      
+      
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
@@ -871,6 +875,21 @@ export default function BorrowPage() {
           </CardFooter>
         </Card>
       </form>
+
+      <section className="rounded-lg border bg-card shadow-sm">
+                    <div className="flex items-center justify-between border-b px-6 py-4">
+                      <h2 className="text-lg font-medium">Bulk borrow inventory </h2>
+                    </div>
+                    <div className="px-6 py-6">
+                      <div className="max-w-xl">
+                        <FileUploader
+                                      wrapInCard={false}
+                                      uploadUrl={`${API_BASE_URL}/bulkadd`}
+                                      templateUrl="/TemplateBulkBorrow.csv"
+                                    />
+                      </div>
+                    </div>
+                  </section>
 
       <Card>
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
