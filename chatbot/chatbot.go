@@ -32,7 +32,6 @@ You can use the following actions:
 - "get_persons": to retrieve all records of persons, including the slack_id GET /api/persons
 - "get_shelves": to retrieve the structure of the shelf, the building and the Room it is in GET /api/shelves
 
-
 Respond in this JSON format only:
 {
   "action": "get_items" | "get_inventory" | "get_locations" | "get_loans" | "get_shelves" | "get_persons" | "none"

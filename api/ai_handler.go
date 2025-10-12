@@ -110,6 +110,6 @@ func callInternalAPI(action string, params map[string]string) (string, error) {
 		body, _ := ioutil.ReadAll(resp.Body)
 		return string(body), nil
 	default:
-		return "", fmt.Errorf("unknown action")
+		return "", fmt.Errorf("unknown action: ", action)
 	}
 }
