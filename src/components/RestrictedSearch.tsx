@@ -94,7 +94,7 @@ export default function RestrictedSearch({
           {displayLabel || placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-[--radix-popover-trigger-width] min-w-[18rem]">
+      <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" style={{ width: 'var(--radix-popover-trigger-width)' }}>
         <Command shouldFilter={false}>
           <CommandInput
             autoFocus
