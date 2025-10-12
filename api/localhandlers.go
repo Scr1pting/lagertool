@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -460,6 +461,7 @@ func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
 	// 2. Get all items and find matches
 	items, err := h.LocalGetAllItems()
 	if err != nil {
+		log.Println("get all items:", err)
 		return nil, err
 	}
 
