@@ -10,7 +10,7 @@ export default function BorrowButton({ counterValue = "0" }) {
   return (
     <Link className={styles.input} to={targetPath}>
       <button type="button" className={`${styles.input} ${styles.buttonBorrow}`}>
-        <span className={styles.borrowLabel}>Borrowed</span>
+        <span className={styles.borrowLabel}>Borrow</span>
         {counterValue != null &&
           <span className={styles.placeholder} aria-hidden="true">
             {counterValue}

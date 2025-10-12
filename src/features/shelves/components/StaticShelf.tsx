@@ -1,10 +1,19 @@
+import clsx from 'clsx';
+
 import { ELEMENT_CATALOG, type Shelf, type ShelfColumn } from "../types/shelf";
 import { ShelfElementViewInner } from "./ShelfElementView";
 
 import styles from './StaticShelf.module.css';
 
 
-function StaticShelfColumn({ column, shelf, onElementSelect }: { column: ShelfColumn, shelf: Shelf, onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void }) {
+interface StaticShelfColumnParams {
+  column: ShelfColumn;
+  shelf : Shelf;
+  onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void;
+  highlightedElement?: string;
+}
+
+function StaticShelfColumn({ column, shelf, onElementSelect, highlightedElement }: StaticShelfColumnParams) {
   return (
     <div className={styles.column}>
       {column.elements.map((element) => {
@@ -13,7 +22,7 @@ function StaticShelfColumn({ column, shelf, onElementSelect }: { column: ShelfCo
           <button
             key={element.id}
             type="button"
-            className={styles.elementTrigger}
+            className={clsx(styles.elementTrigger, highlightedElement === element.id ? styles.highlightedElement : "")}
             onClick={() => onElementSelect?.({
               elementId: element.id,
               building: shelf.building,
@@ -40,11 +49,24 @@ function StaticShelfColumn({ column, shelf, onElementSelect }: { column: ShelfCo
   );
 }
 
-function StaticShelf({ shelf, onElementSelect }: { shelf : Shelf, onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void }) {
+
+interface StaticShelfParams {
+  shelf : Shelf;
+  onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void;
+  highlightedElement?: string;
+}
+
+function StaticShelf({ shelf, onElementSelect, highlightedElement }: StaticShelfParams) {
   return (
     <section className={styles.StaticShelf}>
       {shelf.columns.map((column) => (
-        <StaticShelfColumn key={column.id} column={column} shelf={shelf} onElementSelect={onElementSelect} />
+        <StaticShelfColumn
+          key={column.id}
+          column={column}
+          shelf={shelf}
+          highlightedElement={highlightedElement}
+          onElementSelect={onElementSelect}
+        />
       ))}
     </section>
   );

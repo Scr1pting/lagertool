@@ -32,6 +32,16 @@ function Carousel({
     useEffect(() => {
         if (itemCount === 0) return;
 
+        const nextIndex = Math.min(Math.max(initialIndex, 0), itemCount - 1);
+        setActiveIndex((previous) => {
+            if (previous === nextIndex) return previous;
+            return nextIndex;
+        });
+    }, [initialIndex, itemCount]);
+
+    useEffect(() => {
+        if (itemCount === 0) return;
+
         setActiveIndex((previous) => {
             if (previous < itemCount) return previous;
             return Math.max(itemCount - 1, 0);
@@ -57,20 +67,14 @@ function Carousel({
     );
 
     const handlePrevious = useCallback(() => {
-        if (activeIndex === 0) {
-            updateIndex(items.length - 1);
-        } else {
-            updateIndex(activeIndex -1);
-        }
+        if (itemCount === 0 || activeIndex == 0) return;
+        updateIndex(activeIndex -1);
     }, [activeIndex, updateIndex]);
 
     const handleNext = useCallback(() => {
-        if (activeIndex === items.length) {
-            updateIndex(0);
-        } else {
-            updateIndex(activeIndex + 1);
-        }
-    }, [activeIndex, updateIndex]);
+        if (itemCount === 0 || activeIndex === itemCount-1) return;
+        updateIndex(activeIndex + 1);
+    }, [activeIndex, itemCount, updateIndex]);
 
     if (itemCount === 0) {
         return null;
@@ -86,6 +90,7 @@ function Carousel({
                 type="button"
                 className={clsx(styles.navButton, styles.navButtonLeft)}
                 onClick={handlePrevious}
+                disabled={activeIndex === 0}
                 aria-label="Previous item"
             >
                 <IoIosArrowRoundBack />
@@ -113,6 +118,7 @@ function Carousel({
                 type="button"
                 className={clsx(styles.navButton, styles.navButtonRight)}
                 onClick={handleNext}
+                disabled={activeIndex === itemCount-1}
                 aria-label="Next item"
             >  
                 <IoIosArrowRoundForward />

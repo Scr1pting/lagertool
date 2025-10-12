@@ -10,21 +10,19 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 
-import { Palette, Canvas } from '../features/shelves/';
+import { Palette, Canvas } from '..';
 import {
   ELEMENT_CATALOG,
   type ShelfColumn,
   type ShelfElement,
   type ShelfElementType,
-} from '../features/shelves/types/shelf';
-import { type DragItemData, type DropTargetData } from '../features/shelves/types/drag';
-import { MAX_STACK_UNITS } from '../features/shelves/util/shelfUnits';
-import { makeId } from '../features/shelves/util/ids';
-import { ShelfElementViewInner } from '../features/shelves/components/ShelfElementView';
+} from '../types/shelf';
+import { type DragItemData, type DropTargetData } from '../types/drag';
+import { MAX_STACK_UNITS } from '../util/shelfUnits';
+import { makeId } from '../util/ids';
+import { ShelfElementViewInner } from './ShelfElementView';
 
 import styles from './ShelfBuilder.module.css';
-import ActionBar from '@/features/shelves/components/ActionBar';
-
 
 const totalUnits = (elements: ShelfElement[]) => elements.reduce((sum, element) => sum + ELEMENT_CATALOG[element.type].heightUnits, 0);
 
@@ -34,7 +32,7 @@ const createColumn = (elements: ShelfElement[] = []): ShelfColumn => ({
 });
 
 
-const placePiece = (
+const placeElement = (
   columns: ShelfColumn[],
   piece: ShelfElement,
   target: DropTargetData
@@ -67,14 +65,18 @@ const placePiece = (
   }
 };
 
-const ShelfBuilder = () => {
+type ShelfBuilderProps = {
+  columns: ShelfColumn[];
+  setColumns: React.Dispatch<React.SetStateAction<ShelfColumn[]>>;
+};
+
+function ShelfBuilder({ columns, setColumns }: ShelfBuilderProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
     })
   );
 
-  const [columns, setColumns] = useState<ShelfColumn[]>([]);
   const [activeDrag, setActiveDrag] = useState<DragItemData | null>(null);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -120,7 +122,7 @@ const ShelfBuilder = () => {
         };
 
         setColumns((previousColumns) => {
-          const nextColumns = placePiece(previousColumns, newElement, overData);
+          const nextColumns = placeElement(previousColumns, newElement, overData);
           if (!nextColumns) {
             return previousColumns;
           }
@@ -153,7 +155,7 @@ const ShelfBuilder = () => {
               : column
           );
 
-          const nextColumns = placePiece(columnsWithoutPiece, movingPiece, overData);
+          const nextColumns = placeElement(columnsWithoutPiece, movingPiece, overData);
           return nextColumns?.filter((column) => column.elements.length > 0) ?? previousColumns;
         });
       }
@@ -197,8 +199,6 @@ const ShelfBuilder = () => {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-  <ActionBar columns={columns} />
-
       <div className={styles.wrapper}>
         <Palette />
         <Canvas columns={columns} />

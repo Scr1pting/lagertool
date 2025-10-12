@@ -11,7 +11,7 @@ import LocationPage from './pages/LocationPage';
 import PersonHistoryPage from './pages/PersonHistoryPage';
 import InventoryStatusPage from './pages/InventoryStatusPage';
 import Search from './pages/Search';
-import ShelfBuilder from './pages/ShelfBuilder';
+import AddShelf from './pages/AddShelf';
 import ShelvesPage from './pages/ShelvesPage';
 import Home from './pages/Home';
 import WithNavLayout from './components/WithNavBar';
@@ -46,7 +46,7 @@ function App() {
           <Route path="/shelves" element={<ShelvesPage />} />
           <Route path="/events" element={<EventsPage />} />
         </Route>
-        <Route path="/shelf-builder" element={<ShelfBuilder />} />
+        <Route path="/shelf-builder" element={<AddShelf />} />
       </Routes>
     </main>
   );
