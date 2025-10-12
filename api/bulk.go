@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ type BorrowForm struct {
 	ItemName       string    `json:"itemName"`
 	PersonName     string    `json:"personName"`
 	PersonLastName string    `json:"personLastName"`
-	Amount         int       `json:"amount"`
+	Amount         string    `json:"amount"`
 	Until          time.Time `json:"until"`
 }
 
@@ -45,20 +46,24 @@ func (h *Handler) BulkBorrow(c *gin.Context) {
 	}
 
 	for _, borrow := range borrows {
+		log.Println(borrow.ItemName, borrow.PersonName, borrow.PersonLastName, borrow.Amount, borrow.Until)
 		pers, err := h.LocalGetPersonByName(borrow.PersonName, borrow.PersonLastName)
 		if err != nil {
+			pers = &db.Person{Firstname: borrow.PersonName, Lastname: borrow.PersonLastName}
+			err = h.LocalCreatePerson(pers)
 			log.Println("error getting person by name", err)
-			return
 		}
 		item, err := h.LocalGetItemByName(borrow.ItemName)
 		if err != nil {
 			log.Println("error getting item by name", err)
-			return
+			item = &db.Item{Name: borrow.ItemName}
+			err = h.LocalCreateItem(item)
 		}
+		amount, _ := strconv.ParseInt(borrow.Amount, 10, 0)
 		err = h.LocalCreateLoan(&db.Loans{
 			PersonID:   pers.ID,
 			ItemID:     item.ID,
-			Amount:     borrow.Amount,
+			Amount:     int(amount),
 			Begin:      time.Now(),
 			Until:      borrow.Until,
 			Returned:   false,
