@@ -343,6 +343,8 @@ func (h *Handler) ReturnHandler(c *gin.Context) {
 	var loans []db.Loans
 	err = h.DB.Model(&loans).Where("item_id = ?", itemID).Where("person_id = ?", pers.ID).Select()
 
+	log.Println(itemID, pers.ID)
+
 	if len(loans) == 0 {
 		slackClient.PostMessage(
 			channel,
