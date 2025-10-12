@@ -268,6 +268,199 @@ func (h *Handler) GetShelfByID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// UpdateShelf godoc
+// @Summary Update an existing shelf layout
+// @Description Update a shelf by completely replacing its structure. All existing columns and shelf units will be deleted and replaced with the new structure.
+// @Tags shelves
+// @Accept json
+// @Produce json
+// @Param id path string true "Shelf ID"
+// @Param shelf body ShelfRequest true "Shelf layout object"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shelves/{id} [put]
+func (h *Handler) UpdateShelf(c *gin.Context) {
+	shelfID := c.Param("id")
+
+	var req ShelfRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Verify shelf exists
+	var existingShelf db.Shelf
+	err := h.DB.Model(&existingShelf).Where("id = ?", shelfID).Select()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Shelf not found"})
+		return
+	}
+
+	// Begin transaction
+	tx, err := h.DB.Begin()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+	defer tx.Close()
+
+	// Delete existing shelf units and their locations
+	var existingColumns []db.Column
+	err = tx.Model(&existingColumns).Where("shelf_id = ?", shelfID).Select()
+	if err == nil {
+		for _, col := range existingColumns {
+			// Get all shelf units for this column
+			var units []db.ShelfUnit
+			tx.Model(&units).Where("column_id = ?", col.ID).Select()
+
+			// Delete locations for each unit
+			for _, unit := range units {
+				_, err = tx.Model(&db.Location{}).Where("shelf_unit_id = ?", unit.ID).Delete()
+			}
+
+			// Delete shelf units
+			_, err = tx.Model(&db.ShelfUnit{}).Where("column_id = ?", col.ID).Delete()
+		}
+
+		// Delete columns
+		_, err = tx.Model(&db.Column{}).Where("shelf_id = ?", shelfID).Delete()
+	}
+
+	// Update shelf record
+	shelf := &db.Shelf{
+		ID:       req.ID,
+		Name:     req.Name,
+		Building: req.Building,
+		Room:     req.Room,
+	}
+
+	_, err = tx.Model(shelf).Where("id = ?", shelfID).Update()
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update shelf: " + err.Error()})
+		return
+	}
+
+	// Create new columns and shelf units
+	for _, column := range req.Columns {
+		// Create Column record
+		col := &db.Column{
+			ID:      column.ID,
+			ShelfID: shelf.ID,
+		}
+		_, err = tx.Model(col).Insert()
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create column: " + err.Error()})
+			return
+		}
+
+		for _, element := range column.Elements {
+			unit := &db.ShelfUnit{
+				ID:       element.ID,
+				ColumnID: column.ID,
+				Type:     element.Type,
+			}
+
+			_, err = tx.Model(unit).Insert()
+			if err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create shelf unit: " + err.Error()})
+				return
+			}
+
+			// Create Location record for inventory compatibility
+			location := &db.Location{
+				ShelfUnitID: element.ID,
+			}
+			_, err = tx.Model(location).Insert()
+			if err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create location: " + err.Error()})
+				return
+			}
+		}
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Shelf updated successfully", "shelf_id": shelf.ID})
+}
+
+// DeleteShelf godoc
+// @Summary Delete a shelf
+// @Description Delete a shelf and all its associated columns, shelf units, and locations
+// @Tags shelves
+// @Produce json
+// @Param id path string true "Shelf ID"
+// @Success 200 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /shelves/{id} [delete]
+func (h *Handler) DeleteShelf(c *gin.Context) {
+	shelfID := c.Param("id")
+
+	// Verify shelf exists
+	var shelf db.Shelf
+	err := h.DB.Model(&shelf).Where("id = ?", shelfID).Select()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Shelf not found"})
+		return
+	}
+
+	// Begin transaction
+	tx, err := h.DB.Begin()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+	defer tx.Close()
+
+	// Get all columns for this shelf
+	var columns []db.Column
+	err = tx.Model(&columns).Where("shelf_id = ?", shelfID).Select()
+	if err == nil {
+		for _, col := range columns {
+			// Get all shelf units for this column
+			var units []db.ShelfUnit
+			tx.Model(&units).Where("column_id = ?", col.ID).Select()
+
+			// Delete locations for each unit
+			for _, unit := range units {
+				_, err = tx.Model(&db.Location{}).Where("shelf_unit_id = ?", unit.ID).Delete()
+			}
+
+			// Delete shelf units
+			_, err = tx.Model(&db.ShelfUnit{}).Where("column_id = ?", col.ID).Delete()
+		}
+
+		// Delete columns
+		_, err = tx.Model(&db.Column{}).Where("shelf_id = ?", shelfID).Delete()
+	}
+
+	// Delete shelf
+	_, err = tx.Model(&shelf).Where("id = ?", shelfID).Delete()
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete shelf: " + err.Error()})
+		return
+	}
+
+	// Commit transaction
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Shelf deleted successfully"})
+}
+
 // SearchShelfUnit godoc
 // @Summary Search for a shelf unit by its ID
 // @Description Find a shelf unit by its unique 5-letter ID (case-insensitive) and return its location details

@@ -2840,6 +2840,123 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "description": "Update a shelf by completely replacing its structure. All existing columns and shelf units will be deleted and replaced with the new structure.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Update an existing shelf layout",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shelf ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Shelf layout object",
+                        "name": "shelf",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.ShelfRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a shelf and all its associated columns, shelf units, and locations",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Delete a shelf",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shelf ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -2946,6 +3063,9 @@ const docTemplate = `{
                                         "id": {
                                             "type": "string"
                                         },
+                                        "numItems": {
+                                            "type": "integer"
+                                        },
                                         "type": {
                                             "type": "string"
                                         }
@@ -2954,6 +3074,9 @@ const docTemplate = `{
                             },
                             "id": {
                                 "type": "string"
+                            },
+                            "numItems": {
+                                "type": "integer"
                             }
                         }
                     }
@@ -2964,7 +3087,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "numElements": {
+                "numItems": {
                     "type": "integer"
                 },
                 "room": {

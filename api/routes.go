@@ -21,6 +21,8 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/shelves/unit/:id", h.SearchShelfUnit)
 	r.GET("/shelves/unit/:id/inventory", h.GetShelfUnitInventory)
 	r.GET("/shelves/:id", h.GetShelfByID)
+	r.PUT("/shelves/:id", h.UpdateShelf)
+	r.DELETE("/shelves/:id", h.DeleteShelf)
 
 	// Location endpoints
 	r.GET("/locations", h.GetAllLocations)

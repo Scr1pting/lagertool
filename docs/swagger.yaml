@@ -68,19 +68,23 @@ definitions:
                 properties:
                   id:
                     type: string
+                  numItems:
+                    type: integer
                   type:
                     type: string
                 type: object
               type: array
             id:
               type: string
+            numItems:
+              type: integer
           type: object
         type: array
       id:
         type: string
       name:
         type: string
-      numElements:
+      numItems:
         type: integer
       room:
         type: string
@@ -1965,6 +1969,39 @@ paths:
       tags:
       - shelves
   /shelves/{id}:
+    delete:
+      description: Delete a shelf and all its associated columns, shelf units, and
+        locations
+      parameters:
+      - description: Shelf ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a shelf
+      tags:
+      - shelves
     get:
       description: Retrieve a specific shelf by its ID with full layout
       parameters:
@@ -1993,6 +2030,53 @@ paths:
               type: string
             type: object
       summary: Get shelf by ID
+      tags:
+      - shelves
+    put:
+      consumes:
+      - application/json
+      description: Update a shelf by completely replacing its structure. All existing
+        columns and shelf units will be deleted and replaced with the new structure.
+      parameters:
+      - description: Shelf ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Shelf layout object
+        in: body
+        name: shelf
+        required: true
+        schema:
+          $ref: '#/definitions/api.ShelfRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an existing shelf layout
       tags:
       - shelves
   /shelves/building/{building}:
