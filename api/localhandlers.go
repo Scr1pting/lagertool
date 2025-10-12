@@ -77,6 +77,16 @@ func (h *Handler) LocalGetItemByID(id int) (*db.Item, error) {
 	return item, nil
 }
 
+// GetItemByID retrieves a specific item by its Name. If multiple exists with the same name the just one gets returned
+func (h *Handler) LocalGetItemByName(name string) (*db.Item, error) {
+	item := &db.Item{Name: name}
+	err := h.DB.Model(item).Where("name = ?", name).Select()
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
 // SearchItems searches for items with a case-insensitive name query
 func (h *Handler) LocalSearchItems(name string) ([]db.Item, error) {
 	var items []db.Item
@@ -204,6 +214,16 @@ func (h *Handler) LocalGetAllPersons() ([]db.Person, error) {
 func (h *Handler) LocalGetPersonByID(id int) (*db.Person, error) {
 	person := &db.Person{ID: id}
 	err := h.DB.Model(person).WherePK().Select()
+	if err != nil {
+		return nil, err
+	}
+	return person, nil
+}
+
+// GetPersonByID retrieves a specific person by its slack ID
+func (h *Handler) LocalGetPersonBySlackID(id string) (*db.Person, error) {
+	person := &db.Person{SlackID: id}
+	err := h.DB.Model(person).Where("slack_id = ?", id).Select()
 	if err != nil {
 		return nil, err
 	}

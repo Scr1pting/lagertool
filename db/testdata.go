@@ -427,7 +427,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, 0, -30),
 			Until:      now.AddDate(0, 0, -16),
 			Returned:   true,
-			ReturnedAt: &returnedTime1, // Returned on time
+			ReturnedAt: returnedTime1, // Returned on time
 		},
 		{
 			PersonID:   persons[0].ID, // Max Müller (frequent borrower)
@@ -436,7 +436,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, -2, -10),
 			Until:      now.AddDate(0, -2, 4),
 			Returned:   true,
-			ReturnedAt: &returnedTime3, // Returned on time 2 months ago
+			ReturnedAt: returnedTime3, // Returned on time 2 months ago
 		},
 		{
 			PersonID:   persons[1].ID, // Anna Schmidt
@@ -445,7 +445,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, -1, -5),
 			Until:      now.AddDate(0, -1, 9),
 			Returned:   true,
-			ReturnedAt: &returnedTime2, // Returned on time
+			ReturnedAt: returnedTime2, // Returned on time
 		},
 		{
 			PersonID:   persons[2].ID, // Lukas Fischer (currently has overdue)
@@ -454,7 +454,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, 0, -45),
 			Until:      now.AddDate(0, 0, -31),
 			Returned:   true,
-			ReturnedAt: &returnedTime5, // Returned on time
+			ReturnedAt: returnedTime5, // Returned on time
 		},
 		{
 			PersonID:   persons[5].ID, // Laura Schneider
@@ -463,7 +463,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, 0, -20),
 			Until:      now.AddDate(0, 0, -6),
 			Returned:   true,
-			ReturnedAt: &returnedTime4, // Returned on time
+			ReturnedAt: returnedTime4, // Returned on time
 		},
 		{
 			PersonID:   persons[6].ID, // David Wagner
@@ -472,7 +472,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, -1, -10),
 			Until:      now.AddDate(0, -1, 4),
 			Returned:   true,
-			ReturnedAt: &returnedTime2, // Returned on time
+			ReturnedAt: returnedTime2, // Returned on time
 		},
 		{
 			PersonID:   persons[7].ID, // Julia Becker
@@ -481,7 +481,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, 0, -40),
 			Until:      now.AddDate(0, 0, -26),
 			Returned:   true,
-			ReturnedAt: &returnedTime5, // Returned on time
+			ReturnedAt: returnedTime5, // Returned on time
 		},
 
 		// Returned loans - some were late
@@ -492,7 +492,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, 0, -25),
 			Until:      now.AddDate(0, 0, -11),
 			Returned:   true,
-			ReturnedAt: &returnedTime1, // Returned LATE (was due 11 days ago, returned 2 days ago)
+			ReturnedAt: returnedTime1, // Returned LATE (was due 11 days ago, returned 2 days ago)
 		},
 		{
 			PersonID:   persons[4].ID, // Jonas Meyer
@@ -501,7 +501,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, 0, -50),
 			Until:      now.AddDate(0, 0, -36),
 			Returned:   true,
-			ReturnedAt: &returnedTime4, // Returned LATE (was due 36 days ago, returned 14 days ago)
+			ReturnedAt: returnedTime4, // Returned LATE (was due 36 days ago, returned 14 days ago)
 		},
 
 		// More history for popular items
@@ -512,7 +512,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, -2, -5),
 			Until:      now.AddDate(0, -2, 9),
 			Returned:   true,
-			ReturnedAt: &returnedTime3,
+			ReturnedAt: returnedTime3,
 		},
 		{
 			PersonID:   persons[9].ID, // Sophie Koch
@@ -521,7 +521,7 @@ func InsertBasicData(db *pg.DB) error {
 			Begin:      now.AddDate(0, -1, -7),
 			Until:      now.AddDate(0, -1, 7),
 			Returned:   true,
-			ReturnedAt: &returnedTime2,
+			ReturnedAt: returnedTime2,
 		},
 	}
 

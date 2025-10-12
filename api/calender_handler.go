@@ -34,7 +34,7 @@ func (h *Handler) GetDownloadICS(c *gin.Context) {
 	}
 	end := loan.Until
 	if loan.Returned {
-		end = *loan.ReturnedAt
+		end = loan.ReturnedAt
 	}
 	icsContent := util.GenerateICSContent(item.Name, "Return item", loan.Begin, end)
 
@@ -67,7 +67,7 @@ func (h *Handler) GetDownloadICSALL(c *gin.Context) {
 		}
 		end := loan.Until
 		if loan.Returned {
-			end = *loan.ReturnedAt
+			end = loan.ReturnedAt
 		}
 
 		events = append(events, util.Events{loan.Begin, end, "Return Item", item.Name})

@@ -318,3 +318,49 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 
 	}
 }
+
+func (h *Handler) ReturnHandler(c *gin.Context) {
+	// Parse the slash command payload
+	slackClient, _ := slack1.SetupSlack(h.Cfg)
+
+	s, err := slack.SlashCommandParse(c.Request)
+	if err != nil {
+		log.Println(err)
+	}
+
+	userID := s.UserID
+	channel := s.ChannelID
+
+	id, err := h.LocalGetPersonBySlackID(userID)
+	if err != nil {
+		return
+	}
+	// /return [itemname]
+	itemName := s.Text
+
+	itemID, err := h.LocalGetItemByName(itemName)
+
+	var loans []db.Loans
+	err = h.DB.Model(&loans).Where("item_id = ?", itemID).Where("person_id = ?", id).Select()
+
+	if len(loans) == 0 {
+		slackClient.PostMessage(
+			channel,
+			slack.MsgOptionText("No loans found", false),
+		)
+		return
+	}
+	for _, loan := range loans {
+		loan.ReturnedAt = time.Now()
+		loan.Returned = true
+		err := h.LocalUpdateLoan(loan.ID, &loan)
+		if err != nil {
+			log.Println("error while updating loans", err)
+			return
+		}
+	}
+	slackClient.PostMessage(
+		channel,
+		slack.MsgOptionText(fmt.Sprintf("<@%s> returned %s", userID, itemName), false),
+	)
+}

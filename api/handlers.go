@@ -1427,7 +1427,7 @@ func (h *Handler) ReturnLoan(c *gin.Context) {
 	// Mark as returned
 	now := time.Now()
 	loan.Returned = true
-	loan.ReturnedAt = &now
+	loan.ReturnedAt = now
 
 	_, err = h.DB.Model(loan).
 		Set("returned = ?", true).
