@@ -22,6 +22,7 @@ import {
 import PersonLink from "@/components/PersonLink"
 import { normalizePerson, type NormalizedPerson } from "@/lib/person"
 import { downloadFile } from "@/lib/download"
+import FileUploader from "@/components/FileUploader"
 
 type LoanRecord = {
   id: number

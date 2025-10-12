@@ -6,6 +6,7 @@ import RestrictedSearch, {
   type RestrictedSearchItem,
 } from "@/components/RestrictedSearch"
 import { Button } from "@/components/ui/button"
+import FileUploader from "@/components/FileUploader"
 
 type CategoryValue = "consumable" | "nonConsumable"
 
@@ -535,6 +536,22 @@ export default function AddPage() {
           </Button>
         </div>
       </form>
+
+      <section className="rounded-lg border bg-card shadow-sm">
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <h2 className="text-lg font-medium">Bulk upload inventory </h2>
+        </div>
+        <div className="px-6 py-6">
+          <div className="max-w-xl">
+            <FileUploader
+              wrapInCard={false}
+              uploadUrl={`${API_BASE_URL}/bulkadd`}
+              templateUrl="/TemplateBulkAdd.csv"
+            />
+          </div>
+        </div>
+      </section>
+
 
       <section className="rounded-lg border bg-card shadow-sm">
         <div className="flex items-center justify-between border-b px-6 py-4">
