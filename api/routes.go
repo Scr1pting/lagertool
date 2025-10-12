@@ -117,5 +117,5 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.POST("/auth/google/callback", auth.VerifyGoogleToken)
 
 	// AI Bot
-	r.POST("/chat/", h.ChatHandler)
+	r.POST("/chat", h.ChatHandler)
 }
