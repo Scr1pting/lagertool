@@ -7,6 +7,7 @@ import useShelves from "@/features/shelves/hooks/useShelves";
 import type { Shelf } from "@/features/shelves/types/shelf";
 
 import styles from './Home.module.css';
+import Carousel from "@/components/Carousel";
 
 
 function Home() {
@@ -17,22 +18,27 @@ function Home() {
   if (status === "success" && (!shelves || shelves.length === 0)) return <p>No shelves yet.</p>;
   else if (!shelves || shelves.length === 0) return <></>;
 
-  const firstShelf: Shelf = shelves[0];
-
   const selectedElementDetails = selectedElement && {
     ...selectedElement,
     elementId: selectedElement.elementId,
   };
 
-  return (
-    <main className={styles.home}>
-      <div className={styles.content}>
-        <StaticShelf
-          shelf={firstShelf}
+  const shelvesContent = shelves.map((shelf) => (
+    <div className={styles.content}>
+      <StaticShelf
+          shelf={shelf}
           onElementSelect={setSelectedElement}
         />
-        <label className={styles.homeLabel}>{firstShelf.building + " - " + firstShelf.room + " - " + firstShelf.name}</label>
-      </div>
+      <label className={styles.homeLabel}>{shelf.building + " - " + shelf.room + " - " + shelf.name}</label>
+    </div>
+));
+
+  return (
+    <main className={styles.home}>
+      <Carousel
+        items={shelvesContent}
+        ariaLabel="Shelf overview"
+      />
 
       <Dialog open={!!selectedElement} onOpenChange={(open) => !open && setSelectedElement(null)}>
         <DialogOverlay className="backdrop-blur-sm bg-black/70" />
