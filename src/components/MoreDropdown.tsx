@@ -40,6 +40,9 @@ export default function MoreDropdown() {
             <Link to="/add">Track inventory</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
+            <Link to="/locations">Location Management</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
             <Link to="/persons">Person Management</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>

@@ -17,7 +17,7 @@ function Home() {
   if (status === "success" && (!shelves || shelves.length === 0)) return <p>No shelves yet.</p>;
   else if (!shelves || shelves.length === 0) return <></>;
 
-  const firstShelf: Shelf = shelves[2];
+  const firstShelf: Shelf = shelves[0];
 
   const selectedElementDetails = selectedElement && {
     ...selectedElement,
