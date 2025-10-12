@@ -221,6 +221,15 @@ func (h *Handler) LocalGetPersonByID(id int) (*db.Person, error) {
 	return person, nil
 }
 
+func (h *Handler) LocalGetPersonByName(name string, lastName string) (*db.Person, error) {
+	person := &db.Person{Lastname: lastName, Firstname: name}
+	err := h.DB.Model(person).Where("lastname = ?", lastName).Where("firstname = ?", name).Select()
+	if err != nil {
+		return nil, err
+	}
+	return person, nil
+}
+
 // GetPersonByID retrieves a specific person by its slack ID
 func (h *Handler) LocalGetPersonBySlackID(id string) (*db.Person, error) {
 	person := &db.Person{SlackID: id}
