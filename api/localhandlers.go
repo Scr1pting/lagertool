@@ -488,7 +488,7 @@ func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
 		it.category,
 		sh.building,
 		sh.room,
-		sh.name as shelf,
+		sh.name as shelf
 	FROM inventory inv
 	JOIN item it ON it.id = inv.item_id
 	JOIN location loc ON loc.id = inv.location_id
