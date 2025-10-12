@@ -85,16 +85,7 @@ export default function NavBar(){
         <div className={styles.input}><SearchBar/></div>
         <BorrowButton counterValue={ borrowedCount }/>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link to="/shelf-builder">
-              <MoreDropdown/>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>More</p>
-          </TooltipContent>
-        </Tooltip>
+        <MoreDropdown/>
 
         <Tooltip>
           <TooltipTrigger asChild>
