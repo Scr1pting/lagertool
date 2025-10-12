@@ -23,8 +23,6 @@ import { makeId } from '../util/ids';
 import { ShelfElementViewInner } from './ShelfElementView';
 
 import styles from './ShelfBuilder.module.css';
-import ActionBar from '@/components/AddShelfActionBar';
-
 
 const totalUnits = (elements: ShelfElement[]) => elements.reduce((sum, element) => sum + ELEMENT_CATALOG[element.type].heightUnits, 0);
 
