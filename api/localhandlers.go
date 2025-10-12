@@ -451,16 +451,13 @@ type Result struct {
 // a joined list of matching inventory records and their location/item details.
 func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
 	if searchTerm == "" {
-		// Per the original logic, an empty search term is an error condition
-		return nil, nil // Or return an error if you prefer strict validation: errors.New("search_term parameter is required")
+		return nil, nil // or return an error: errors.New("search_term parameter is required")
 	}
 
 	// 1. Prepare search term
 	searchTerm = strings.ToLower(searchTerm)
 
 	// 2. Get all items and find matches
-	// NOTE: h.LocalGetAllItems() is assumed to be defined (as it is in your context).
-	// NOTE: util.FindItemSearchTermsInDB is assumed to be available.
 	items, err := h.LocalGetAllItems()
 	if err != nil {
 		return nil, err
@@ -474,14 +471,12 @@ func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
 		itemIDs = append(itemIDs, item.ID)
 	}
 
-	// If no items match the search, return an empty result set
 	if len(itemIDs) == 0 {
 		return []Result{}, nil
 	}
 
-	// 4. Query the database for inventory linked to the matching item IDs
+	// 4. Query the inventory and reconstruct location via ShelfUnit → Column → Shelf
 	var results []Result
-	// Using the raw SQL query with pg.In for the array of IDs
 	_, err = h.DB.Query(&results, `
 		SELECT 
 			inv.id as inventory_id,
@@ -489,13 +484,18 @@ func (h *Handler) LocalSearchInventory(searchTerm string) ([]Result, error) {
 			inv.note,
 			it.name as item_name,
 			it.category,
-			loc.campus,
-			loc.building,
-			loc.room,
-			loc.shelf
+			sh.building,
+			sh.room,
+			sh.name as shelf,
+			col.id as column_id,
+			su.id as shelf_unit_id,
+			su.type as shelf_unit_type
 		FROM inventory inv
 		JOIN item it ON it.id = inv.item_id
 		JOIN location loc ON loc.id = inv.location_id
+		JOIN shelf_unit su ON su.id = loc.shelf_unit_id
+		JOIN column col ON col.id = su.column_id
+		JOIN shelf sh ON sh.id = col.shelf_id
 		WHERE inv.item_id IN (?)
 	`, pg.In(itemIDs))
 
