@@ -69,3 +69,10 @@ type Loans struct {
 	Returned   bool      `json:"returned" pg:"returned,use_zero"`
 	ReturnedAt time.Time `json:"returned_at,omitempty" pg:"returned_at"`
 }
+
+type Account struct {
+	tableName struct{} `pg:"account"`
+	ID        int      `json:"id" pg:"id,pk"`
+	slack     string   `json:"slack_id" pg:"slack_id"`
+	cookie    string   `json:"cookie" pg:"cookie"`
+}
