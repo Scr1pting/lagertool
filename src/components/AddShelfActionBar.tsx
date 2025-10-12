@@ -12,9 +12,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { RxCross2 } from "react-icons/rx";
-import postShelf from '../api/postShelf';
-import { type ShelfColumn } from '../types/shelf';
-import { makeId } from '../util/ids';
+import postShelf from '../features/shelves/api/postShelf';
+import { type ShelfColumn } from '../features/shelves/types/shelf';
+import { makeId } from '../features/shelves/util/ids';
 
 
 type FormProps = {

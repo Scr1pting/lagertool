@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { type ShelfElementItem } from "../types/shelf";
+import { type ShelfElementItem } from "../features/shelves/types/shelf";
 import DataTable from "@/components/DataTable";
-import useElementItems from "../hooks/useElementItems";
+import useElementItems from "../features/shelves/hooks/useElementItems";
 
 export const columns: ColumnDef<ShelfElementItem>[] = [
   {

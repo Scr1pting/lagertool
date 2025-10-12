@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import StaticShelf from "@/features/shelves/components/StaticShelf";
-import ShelfDetail from "@/features/shelves/components/ShelfDetail";
+import ShelfDetail from "@/pages/ShelfDetail";
 import useShelves from "@/features/shelves/hooks/useShelves";
 
 import styles from './Home.module.css';
