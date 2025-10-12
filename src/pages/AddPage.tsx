@@ -25,11 +25,7 @@ type ItemRecord = {
 
 type LocationRecord = {
   id: number
-  campus?: string | null
-  building?: string | null
-  room?: string | null
-  shelf?: string | null
-  shelfunit?: string | null
+  shelf_unit_id: string
 }
 
 type CombinedInventoryRow = InventoryRecord & {
@@ -49,6 +45,8 @@ const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
 
 const formatLocation = (location?: LocationRecord) => {
+  console.log(location)
+
   if (!location) {
     return "Unknown location"
   }
@@ -111,7 +109,7 @@ export default function AddPage() {
     ): CombinedInventoryRow[] => {
       const itemMap = new Map(itemsList.map((item) => [item.id, item]))
       const locationMap = new Map(
-        locationsList.map((location) => [location.id, location])
+        locationsList.map((location) => [location.id, location.shelf_unit_id])
       )
 
       return inventory.map((record) => ({
@@ -130,7 +128,7 @@ export default function AddPage() {
       const [inventoryRes, itemsRes, locationsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/inventory`),
         fetch(`${API_BASE_URL}/items`),
-        fetch(`${API_BASE_URL}/shelves`),
+        fetch(`${API_BASE_URL}/locations`),
       ])
 
       if (!inventoryRes.ok) {
@@ -188,10 +186,6 @@ export default function AddPage() {
           if (!trimmed) return true
           const haystack = [
             location.id,
-            location.building,
-            location.room,
-            location.shelf,
-            location.shelfunit,
           ]
             .filter(Boolean)
             .join(" ")
@@ -585,9 +579,6 @@ export default function AddPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div>{formatLocation(record.location)}</div>
-                      <div className="text-xs text-muted-foreground">
-                        ID: {record.location_id}
-                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <input
