@@ -14,7 +14,7 @@ export default function MoreDropdown() {
   return (
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
-        <Button className={`${styles.input} ${styles.buttonMore}`}>
+        <Button className={`${styles.input} ${styles.buttonRnd}`}>
           <IoEllipsisHorizontal />
         </Button>
       </DropdownMenuTrigger>

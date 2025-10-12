@@ -1070,7 +1070,7 @@ export default function EventsPage() {
   )
 
   return (
-    <div className="container mx-auto max-w-6xl space-y-8 py-10">
+    <div className="container mx-auto max-w-6xl space-y-8 py-10 px-4">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">Event Manager</h1>
         <p className="text-sm text-muted-foreground">

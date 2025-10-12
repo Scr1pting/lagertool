@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import DataTable from "@/components/DataTable";
+import fetchShelfUnitDetail from "@/api/getShelfUnit";
+import { type ShelfUnitDetail } from "@/api/types";
 
 type InventoryRecord = {
 	id: number;
@@ -25,6 +27,7 @@ type LocationRecord = {
 	room?: string | null;
 	shelf?: string | null;
 	shelfunit?: string | null;
+	shelf_unit_id?: string | null;
 };
 
 type LoanRecord = {
@@ -126,6 +129,14 @@ const parseLocationRecord = (entry: unknown): LocationRecord | null => {
 		return null;
 	}
 
+	const normalizeShelfUnitId = (value: unknown): string | null => {
+		if (typeof value === "string") {
+			const trimmed = value.trim();
+			return trimmed.length > 0 ? trimmed : null;
+		}
+		return null;
+	};
+
 	return {
 		id,
 		campus: typeof raw.campus === "string" ? raw.campus : null,
@@ -133,6 +144,11 @@ const parseLocationRecord = (entry: unknown): LocationRecord | null => {
 		room: typeof raw.room === "string" ? raw.room : null,
 		shelf: typeof raw.shelf === "string" ? raw.shelf : null,
 		shelfunit: typeof raw.shelfunit === "string" ? raw.shelfunit : null,
+		shelf_unit_id:
+			normalizeShelfUnitId(raw.shelf_unit_id) ??
+			normalizeShelfUnitId(raw.shelfUnitId) ??
+			normalizeShelfUnitId(raw.shelfunit) ??
+			normalizeShelfUnitId(raw.shelf_unit),
 	};
 };
 
@@ -159,20 +175,26 @@ const parseLoanRecord = (entry: unknown): LoanRecord | null => {
 	};
 };
 
-const formatLocation = (location?: LocationRecord | null) => {
+const formatLocation = (
+	location?: LocationRecord | null,
+	shelfUnitDetail?: ShelfUnitDetail | null,
+) => {
 	if (!location) {
 		return "Unknown location";
 	}
 
-	const shelfSegment = [location.shelf, location.shelfunit]
-		.filter((value) => typeof value === "string" && value.trim().length > 0)
-		.join(" ");
+	// Use shelf unit detail information if available
+	const building = shelfUnitDetail?.building?.trim() || location.building;
+	const room = shelfUnitDetail?.room?.trim() || location.room;
+	const shelfName = shelfUnitDetail?.shelf_name?.trim() || location.shelf;
+	const unitId = shelfUnitDetail?.id?.trim() || location.shelf_unit_id || location.shelfunit;
 
 	const parts = [
 		location.campus,
-		location.building,
-		location.room,
-		shelfSegment || null,
+		building,
+		room,
+		shelfName,
+		unitId,
 	].filter((value): value is string => Boolean(value && value.trim().length > 0));
 
 	return parts.join(" · ") || `Location #${location.id}`;
@@ -299,6 +321,27 @@ export default function InventoryStatusPage() {
 						activeLoanTotals.set(loan.itemId, current + Math.max(loan.amount, 0));
 					});
 
+				// Collect unique shelf unit IDs
+				const uniqueShelfUnitIds = new Set<string>();
+				for (const location of locationMap.values()) {
+					if (location.shelf_unit_id) {
+						uniqueShelfUnitIds.add(location.shelf_unit_id);
+					}
+				}
+
+				// Fetch shelf unit details for all unique shelf unit IDs
+				const shelfUnitDetailsMap = new Map<string, ShelfUnitDetail | null>();
+				if (uniqueShelfUnitIds.size > 0) {
+					const shelfDetailPromises = Array.from(uniqueShelfUnitIds).map(async (unitId) => {
+						const detail = await fetchShelfUnitDetail(unitId);
+						return [unitId, detail] as const;
+					});
+					const shelfDetails = await Promise.all(shelfDetailPromises);
+					for (const [unitId, detail] of shelfDetails) {
+						shelfUnitDetailsMap.set(unitId, detail);
+					}
+				}
+
 				const byItem = new Map<number, InventoryRecord[]>();
 				for (const record of inventoryData) {
 					const bucket = byItem.get(record.itemId);
@@ -322,11 +365,17 @@ export default function InventoryStatusPage() {
 						: activeLoanTotals.get(itemId) ?? 0;
 					const total = available + borrowed;
 
-					const locations = records.map((record) => ({
-						locationId: record.locationId,
-						label: formatLocation(locationMap.get(record.locationId)),
-						available: Math.max(record.available, 0),
-					}));
+					const locations = records.map((record) => {
+						const location = locationMap.get(record.locationId);
+						const shelfUnitDetail = location?.shelf_unit_id
+							? shelfUnitDetailsMap.get(location.shelf_unit_id) ?? null
+							: null;
+						return {
+							locationId: record.locationId,
+							label: formatLocation(location, shelfUnitDetail),
+							available: Math.max(record.available, 0),
+						};
+					});
 
 					nextRows.push({
 						itemId,
@@ -373,7 +422,7 @@ export default function InventoryStatusPage() {
 	}, [rows]);
 
 	return (
-		<div className="container mx-auto max-w-6xl space-y-8 py-10">
+		<div className="container mx-auto max-w-6xl space-y-8 py-10 px-4">
 			<header className="space-y-2">
 				<h1 className="text-3xl font-semibold tracking-tight">Inventory Overview</h1>
 				<p className="text-sm text-muted-foreground">

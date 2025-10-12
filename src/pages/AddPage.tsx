@@ -6,6 +6,8 @@ import RestrictedSearch, {
   type RestrictedSearchItem,
 } from "@/components/RestrictedSearch"
 import { Button } from "@/components/ui/button"
+import fetchShelfUnitDetail from "@/api/getShelfUnit"
+import { type ShelfUnitDetail } from "@/api/types"
 
 type CategoryValue = "consumable" | "nonConsumable"
 
@@ -25,11 +27,7 @@ type ItemRecord = {
 
 type LocationRecord = {
   id: number
-  campus?: string | null
-  building?: string | null
-  room?: string | null
-  shelf?: string | null
-  shelfunit?: string | null
+  shelf_unit_id: string
 }
 
 type CombinedInventoryRow = InventoryRecord & {
@@ -48,21 +46,20 @@ type LocationOption = RestrictedSearchItem & { location: LocationRecord }
 const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
 
-const formatLocation = (location?: LocationRecord) => {
+const formatLocation = (
+  location?: LocationRecord,
+  shelfUnitDetail?: ShelfUnitDetail | null
+) => {
   if (!location) {
     return "Unknown location"
   }
 
-  const shelfSegment = [location.shelf, location.shelfunit]
-    .filter(Boolean)
-    .join(" ")
+  const building = shelfUnitDetail?.building?.trim() || null
+  const room = shelfUnitDetail?.room?.trim() || null
+  const shelfName = shelfUnitDetail?.shelf_name?.trim() || null
+  const unitId = shelfUnitDetail?.id?.trim() || location.shelf_unit_id
 
-  const parts = [
-    location.campus,
-    location.building,
-    location.room,
-    shelfSegment || null,
-  ].filter(Boolean)
+  const parts = [building, room, shelfName, unitId].filter(Boolean)
 
   return parts.join(" · ") || `Location ${location.id}`
 }
@@ -82,6 +79,9 @@ export default function AddPage() {
     CombinedInventoryRow[]
   >([])
   const [locations, setLocations] = React.useState<LocationRecord[]>([])
+  const [shelfUnitDetails, setShelfUnitDetails] = React.useState<
+    Record<string, ShelfUnitDetail | null>
+  >({})
 
   const [loading, setLoading] = React.useState<boolean>(false)
   const [loadError, setLoadError] = React.useState<string | null>(null)
@@ -94,13 +94,18 @@ export default function AddPage() {
   )
 
   const buildLocationOption = React.useCallback(
-    (location: LocationRecord): LocationOption => ({
-      id: location.id,
-      label: String(location.id),
-      description: formatLocation(location),
-      location,
-    }),
-    []
+    (location: LocationRecord): LocationOption => {
+      const shelfUnitDetail = location.shelf_unit_id
+        ? shelfUnitDetails[location.shelf_unit_id] ?? null
+        : null
+      return {
+        id: location.id,
+        label: String(location.id),
+        description: formatLocation(location, shelfUnitDetail),
+        location,
+      }
+    },
+    [shelfUnitDetails]
   )
 
   const mergeInventoryData = React.useCallback(
@@ -130,7 +135,7 @@ export default function AddPage() {
       const [inventoryRes, itemsRes, locationsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/inventory`),
         fetch(`${API_BASE_URL}/items`),
-        fetch(`${API_BASE_URL}/shelves`),
+        fetch(`${API_BASE_URL}/locations`),
       ])
 
       if (!inventoryRes.ok) {
@@ -179,6 +184,52 @@ export default function AddPage() {
     fetchInitialData()
   }, [fetchInitialData])
 
+  React.useEffect(() => {
+    const uniqueUnitIds = new Set<string>()
+    for (const location of locations) {
+      if (location.shelf_unit_id?.trim()) {
+        uniqueUnitIds.add(location.shelf_unit_id)
+      }
+    }
+
+    const missing = Array.from(uniqueUnitIds).filter(
+      (unitId) => shelfUnitDetails[unitId] === undefined
+    )
+
+    if (missing.length === 0) {
+      return
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      const entries = await Promise.all(
+        missing.map(async (unitId) => {
+          const detail = await fetchShelfUnitDetail(unitId)
+          return [unitId, detail] as const
+        })
+      )
+
+      if (cancelled) {
+        return
+      }
+
+      setShelfUnitDetails((prev) => {
+        const next = { ...prev }
+        for (const [unitId, detail] of entries) {
+          next[unitId] = detail
+        }
+        return next
+      })
+    })().catch(() => {
+      // Swallow errors
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [locations, shelfUnitDetails])
+
   const searchLocations = React.useCallback(
     async (query: string, limit: number) => {
       const trimmed = query.trim().toLowerCase()
@@ -188,10 +239,6 @@ export default function AddPage() {
           if (!trimmed) return true
           const haystack = [
             location.id,
-            location.building,
-            location.room,
-            location.shelf,
-            location.shelfunit,
           ]
             .filter(Boolean)
             .join(" ")
@@ -393,7 +440,7 @@ export default function AddPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-8 py-10">
+    <div className="container mx-auto max-w-5xl space-y-8 py-10 px-4">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">
           Manage Inventory
@@ -584,9 +631,13 @@ export default function AddPage() {
                       {record.item?.category ?? "—"}
                     </td>
                     <td className="px-6 py-4">
-                      <div>{formatLocation(record.location)}</div>
-                      <div className="text-xs text-muted-foreground">
-                        ID: {record.location_id}
+                      <div>
+                        {formatLocation(
+                          record.location,
+                          record.location?.shelf_unit_id
+                            ? shelfUnitDetails[record.location.shelf_unit_id] ?? null
+                            : null
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
