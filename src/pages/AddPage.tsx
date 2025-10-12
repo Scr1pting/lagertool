@@ -6,6 +6,8 @@ import RestrictedSearch, {
   type RestrictedSearchItem,
 } from "@/components/RestrictedSearch"
 import { Button } from "@/components/ui/button"
+import fetchShelfUnitDetail from "@/api/getShelfUnit"
+import { type ShelfUnitDetail } from "@/api/types"
 
 type CategoryValue = "consumable" | "nonConsumable"
 
@@ -44,23 +46,20 @@ type LocationOption = RestrictedSearchItem & { location: LocationRecord }
 const API_BASE_URL =
   import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
 
-const formatLocation = (location?: LocationRecord) => {
-  console.log(location)
-
+const formatLocation = (
+  location?: LocationRecord,
+  shelfUnitDetail?: ShelfUnitDetail | null
+) => {
   if (!location) {
     return "Unknown location"
   }
 
-  const shelfSegment = [location.shelf, location.shelfunit]
-    .filter(Boolean)
-    .join(" ")
+  const building = shelfUnitDetail?.building?.trim() || null
+  const room = shelfUnitDetail?.room?.trim() || null
+  const shelfName = shelfUnitDetail?.shelf_name?.trim() || null
+  const unitId = shelfUnitDetail?.id?.trim() || location.shelf_unit_id
 
-  const parts = [
-    location.campus,
-    location.building,
-    location.room,
-    shelfSegment || null,
-  ].filter(Boolean)
+  const parts = [building, room, shelfName, unitId].filter(Boolean)
 
   return parts.join(" · ") || `Location ${location.id}`
 }
@@ -80,6 +79,9 @@ export default function AddPage() {
     CombinedInventoryRow[]
   >([])
   const [locations, setLocations] = React.useState<LocationRecord[]>([])
+  const [shelfUnitDetails, setShelfUnitDetails] = React.useState<
+    Record<string, ShelfUnitDetail | null>
+  >({})
 
   const [loading, setLoading] = React.useState<boolean>(false)
   const [loadError, setLoadError] = React.useState<string | null>(null)
@@ -92,13 +94,18 @@ export default function AddPage() {
   )
 
   const buildLocationOption = React.useCallback(
-    (location: LocationRecord): LocationOption => ({
-      id: location.id,
-      label: String(location.id),
-      description: formatLocation(location),
-      location,
-    }),
-    []
+    (location: LocationRecord): LocationOption => {
+      const shelfUnitDetail = location.shelf_unit_id
+        ? shelfUnitDetails[location.shelf_unit_id] ?? null
+        : null
+      return {
+        id: location.id,
+        label: String(location.id),
+        description: formatLocation(location, shelfUnitDetail),
+        location,
+      }
+    },
+    [shelfUnitDetails]
   )
 
   const mergeInventoryData = React.useCallback(
@@ -109,7 +116,7 @@ export default function AddPage() {
     ): CombinedInventoryRow[] => {
       const itemMap = new Map(itemsList.map((item) => [item.id, item]))
       const locationMap = new Map(
-        locationsList.map((location) => [location.id, location.shelf_unit_id])
+        locationsList.map((location) => [location.id, location])
       )
 
       return inventory.map((record) => ({
@@ -176,6 +183,52 @@ export default function AddPage() {
   React.useEffect(() => {
     fetchInitialData()
   }, [fetchInitialData])
+
+  React.useEffect(() => {
+    const uniqueUnitIds = new Set<string>()
+    for (const location of locations) {
+      if (location.shelf_unit_id?.trim()) {
+        uniqueUnitIds.add(location.shelf_unit_id)
+      }
+    }
+
+    const missing = Array.from(uniqueUnitIds).filter(
+      (unitId) => shelfUnitDetails[unitId] === undefined
+    )
+
+    if (missing.length === 0) {
+      return
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      const entries = await Promise.all(
+        missing.map(async (unitId) => {
+          const detail = await fetchShelfUnitDetail(unitId)
+          return [unitId, detail] as const
+        })
+      )
+
+      if (cancelled) {
+        return
+      }
+
+      setShelfUnitDetails((prev) => {
+        const next = { ...prev }
+        for (const [unitId, detail] of entries) {
+          next[unitId] = detail
+        }
+        return next
+      })
+    })().catch(() => {
+      // Swallow errors
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [locations, shelfUnitDetails])
 
   const searchLocations = React.useCallback(
     async (query: string, limit: number) => {
@@ -578,7 +631,14 @@ export default function AddPage() {
                       {record.item?.category ?? "—"}
                     </td>
                     <td className="px-6 py-4">
-                      <div>{formatLocation(record.location)}</div>
+                      <div>
+                        {formatLocation(
+                          record.location,
+                          record.location?.shelf_unit_id
+                            ? shelfUnitDetails[record.location.shelf_unit_id] ?? null
+                            : null
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <input
