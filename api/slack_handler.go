@@ -338,12 +338,12 @@ func (h *Handler) ReturnHandler(c *gin.Context) {
 	// /return [itemname]
 	itemName := s.Text
 
-	itemID, err := h.LocalGetItemByName(itemName)
+	newItem, err := h.LocalGetItemByName(itemName)
 
 	var loans []db.Loans
-	err = h.DB.Model(&loans).Where("item_id = ?", itemID).Where("person_id = ?", pers.ID).Select()
+	err = h.DB.Model(&loans).Where("item_id = ?", newItem.ID).Where("person_id = ?", pers.ID).Select()
 
-	log.Println(itemID, pers.ID)
+	log.Println(newItem.ID, pers.ID)
 
 	if len(loans) == 0 {
 		slackClient.PostMessage(
