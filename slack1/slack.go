@@ -13,7 +13,6 @@ type BorrowSession struct {
 	Stage        string
 	Item         string
 	Quantity     int
-	Source       string
 	GroupChannel string
 	DueDate      time.Time
 }

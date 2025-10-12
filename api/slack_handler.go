@@ -114,14 +114,13 @@ func (h *Handler) Interactivity(c *gin.Context) {
 			api.PostMessage(callback.Channel.ID,
 				slack.MsgOptionText(
 					fmt.Sprintf("✅ Got it! You want %d %s(s) from %s until %s. I’ll check and confirm!",
-						session.Quantity, session.Item, session.Source, session.DueDate.Format("Jan 2, 2006")),
+						session.Quantity, session.Item, session.DueDate.Format("Jan 2, 2006")),
 					false))
 
 			// Save to DB
 			db.SlackBorrow(h.Cfg, db.Borrow{
 				Item:     session.Item,
 				Amount:   session.Quantity,
-				Location: session.Source,
 				DueDate:  session.DueDate,
 				UserID:   user,
 				UserName: userInfo.Name,
@@ -246,12 +245,6 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			return
 		}
 		session.Quantity = qty
-		api.PostMessage(channel, slack.MsgOptionText("From where do you want to borrow it? (Campus;Building;Room)", false))
-		session.Stage = "awaiting_source"
-
-	case "awaiting_source":
-		session.Source = text
-		// Create the datepicker element
 		datePicker := slack.NewDatePickerBlockElement("due_date_selected")
 		datePicker.InitialDate = time.Now().Format("2006-01-02")
 
@@ -290,7 +283,7 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 		session.DueDate = dueDate
 		api.PostMessage(channel, slack.MsgOptionText(
 			fmt.Sprintf("✅ Got it! You want %d %s(s) from %s until %s. I’ll check and confirm!",
-				session.Quantity, session.Item, session.Source, session.DueDate.Format("Jan 2, 2006")),
+				session.Quantity, session.Item, session.DueDate.Format("Jan 2, 2006")),
 			false))
 		api.PostMessage(channel, slack.MsgOptionText("Type 'confirm' to finalize.", false))
 		session.Stage = "confirm"
@@ -299,7 +292,6 @@ func handleMessage(h *Handler, api *slack.Client, channel string, session *slack
 			db.SlackBorrow(h.Cfg, db.Borrow{
 				Item:     session.Item,
 				Amount:   session.Quantity,
-				Location: session.Source,
 				DueDate:  session.DueDate,
 				UserID:   user.ID,
 				UserName: user.Name,

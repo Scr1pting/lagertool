@@ -12,7 +12,6 @@ import (
 type Borrow struct {
 	Item     string    `json:"item"`
 	Amount   int       `json:"amount"`
-	Location string    `json:"location"`
 	DueDate  time.Time `json:"due_date"`
 	UserID   string    `json:"userid"`
 	UserName string    `json:"username"`
@@ -34,14 +33,6 @@ func SlackBorrow(cfg *config.Config, borrow Borrow) {
 	err = db.Model(item).Where("name = ?", borrow.Item).Select()
 	if err != nil {
 		log.Printf("Item Error %e\n", err)
-	}
-
-	campus, building, room := strings.Split(borrow.Location, ";")[0], strings.Split(borrow.Location, ";")[1], strings.Split(borrow.Location, ";")[2]
-	log.Println(campus, building, room)
-	location := new(Location)
-	err = db.Model(location).Where("campus = ?", campus).Where("building = ?", building).Where("room = ?", room).Limit(1).Select()
-	if err != nil {
-		log.Printf("Location Error %e", err)
 	}
 
 	firstname, lastname := "", ""
