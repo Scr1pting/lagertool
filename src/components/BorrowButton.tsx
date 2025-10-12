@@ -8,7 +8,7 @@ export default function BorrowButton({ counterValue = "0" }) {
   const targetPath = isHome ? '/borrow' : '/';
 
   return (
-    <Link to={targetPath}>
+    <Link className={styles.input} to={targetPath}>
       <button type="button" className={`${styles.input} ${styles.buttonBorrow}`}>
         <span className={styles.borrowLabel}>Borrowed</span>
         {counterValue != null &&

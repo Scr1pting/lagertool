@@ -1,4 +1,21 @@
 .NavBar {
+  position: relative;
+  width: 100%;
+  z-index: 20;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.content {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -33,7 +50,7 @@ button {
   cursor: pointer;
 }
 
-.buttonMore {
+.buttonRnd {
   width: 48px;
   height: 48px;
   border-radius: 9999999px;
