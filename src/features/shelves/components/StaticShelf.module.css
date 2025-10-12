@@ -1,5 +1,6 @@
 .StaticShelf {
-  display: inline-block;
+  display: flex;
+  flex-direction: row;
   padding: 0px 80px;
   border-bottom: 1px solid #ccc;
 
@@ -43,4 +44,3 @@
   display: block;
   cursor: pointer;
 }
-

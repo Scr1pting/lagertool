@@ -43,11 +43,9 @@ function StaticShelfColumn({ column, shelf, onElementSelect }: { column: ShelfCo
 function StaticShelf({ shelf, onElementSelect }: { shelf : Shelf, onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void }) {
   return (
     <section className={styles.StaticShelf}>
-      <div>
-        {shelf.columns.map((column) => (
-          <StaticShelfColumn key={column.id} column={column} shelf={shelf} onElementSelect={onElementSelect} />
-        ))}
-      </div>
+      {shelf.columns.map((column) => (
+        <StaticShelfColumn key={column.id} column={column} shelf={shelf} onElementSelect={onElementSelect} />
+      ))}
     </section>
   );
 };

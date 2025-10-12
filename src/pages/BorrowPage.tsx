@@ -650,9 +650,6 @@ export default function BorrowPage() {
               "Refresh data"
             )}
           </Button>
-          <Button asChild variant="secondary">
-            <Link to="/borrowed">View active loans</Link>
-          </Button>
         </div>
       </div>
 
@@ -765,7 +762,7 @@ export default function BorrowPage() {
                       onSelect={(option) => setSelectedPerson(option as PersonOption)}
                       searchFn={searchPersons}
                       selectedLabel={selectedPerson?.label}
-                      minChars={2}
+                      minChars={0}
                       renderItem={(option) => {
                         const { person } = option as PersonOption
                         return (

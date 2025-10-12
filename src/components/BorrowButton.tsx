@@ -5,7 +5,7 @@ export default function BorrowButton({ counterValue = "0" }) {
   const location = useLocation();
   const isHome = location.pathname === '/';
 
-  const targetPath = isHome ? '/borrowed' : '/';
+  const targetPath = isHome ? '/borrow' : '/';
 
   return (
     <Link to={targetPath}>
