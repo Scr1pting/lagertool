@@ -7,6 +7,7 @@ import useShelves from "@/features/shelves/hooks/useShelves";
 
 import styles from './Home.module.css';
 import Carousel from "@/components/Carousel";
+import ClippyChat from "@/components/ChatBot";
 
 
 function Home() {
@@ -62,6 +63,8 @@ function Home() {
           </DialogContent>
         )}
       </Dialog>
+
+      <ClippyChat />
     </main>
   );
 }
