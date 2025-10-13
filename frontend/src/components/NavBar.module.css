@@ -1,0 +1,116 @@
+.NavBar {
+  position: relative;
+  width: 100%;
+  z-index: 20;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.content {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    height: 48px;
+    gap: 10px;
+    z-index: 1;
+}
+
+.input {
+  display: flex;
+  align-items: center;
+
+  padding: 0 15px;
+  height: 100%;
+  border: 1px solid #525252;
+  border-radius: 25px;
+  background-color: #222;
+  color: #ccc;
+  font-size: 1rem;
+  transition: 0.12s border;
+  border-radius: 99999;
+
+  transition: 0.12s background-color;
+}
+
+.input:hover {
+    background-color: #282828;
+}
+
+button {
+  cursor: pointer;
+}
+
+.buttonRnd {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999999px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.buttonBorrow {
+  display: flex;
+  background: transparent;
+  gap: 5px;
+  padding: 0;
+  padding-left: 5px;
+  border: 0;
+}
+
+.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  padding: 0 0.5rem;
+  border-radius: 25px;
+  border: 1px rgba(82, 81, 81, 0.6);
+  background-color: rgba(255, 255, 255, 0.12);
+  font-size: 0.85rem;
+  font-weight: 300;
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 350px;
+  gap: 5px;
+}
+
+.searchForm {
+  flex: 1;
+  border: 0;
+}
+
+.searchInput {
+  width: 100%;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  border: none;
+  outline: none;
+}
+
+.searchIcon {
+  color: #6b7280;
+  pointer-events: none;
+  font-size: 1.3rem;
+  padding-bottom: .5px;
+}

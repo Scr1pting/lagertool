@@ -1,0 +1,71 @@
+.board {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow-x: scroll;
+
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}
+
+.workspace {
+  position: relative;
+  margin-bottom: 65px;
+  border-bottom: 2px solid #cccccc;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+}
+
+.columnsArea {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-shrink: 0;
+  min-height: 200px;
+  align-self: stretch;
+}
+
+.edgeDropZone {
+  flex: 1;
+  min-width: 90px;
+  align-self: stretch;
+}
+
+.boardEmpty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #a3a3a3;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.boardEmptyText {
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-height: 360px;
+}
+
+.columnActive {
+  background-color: linear-gradient(to bottom, white, transparent);
+}

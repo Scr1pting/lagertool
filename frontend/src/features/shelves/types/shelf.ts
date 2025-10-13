@@ -1,0 +1,44 @@
+export type ShelfElementType = 'slim' | 'high';
+
+export interface ShelfElementItem {
+    item_id: number,
+    item_name: string;
+    amount: number;
+    available: number;
+    category: string;
+}
+
+export interface ShelfElementDefinition {
+  label: string;
+  heightUnits: number;  // expressed in base units (0.4 ratio each)
+}
+
+export interface ShelfElement {
+  id: string;
+  type: ShelfElementType;
+  numItems?: number;
+}
+
+export interface ShelfColumn {
+  id: string;
+  elements: ShelfElement[];
+}
+
+export interface Shelf {
+  id: string;
+  name: string;
+  room: string;
+  building: string;
+  columns: ShelfColumn[];
+}
+
+export const ELEMENT_CATALOG: Record<ShelfElementType, ShelfElementDefinition> = {
+  slim: {
+    label: 'Short Element',
+    heightUnits: 1,
+  },
+  high: {
+    label: 'Tall Element',
+    heightUnits: 2,
+  },
+};
