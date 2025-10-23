@@ -8,7 +8,7 @@ import type { Shelf, ShelfColumn, ShelfElement } from "@/features/shelves/types/
 import { Link } from "react-router-dom"
 
 const API_BASE_URL =
-  import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
+  import.meta.env?.VITE_API_BASE_URL ?? "http://localhost:8000/api"
 
 type HierarchyNode = {
   building: string

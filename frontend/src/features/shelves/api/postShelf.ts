@@ -1,6 +1,6 @@
 import { type Shelf } from "../types/shelf";
 
-const SHELVES_ENDPOINT = "https://05.hackathon.ethz.ch/api/shelves";
+const SHELVES_ENDPOINT = "http://localhost:8000/api/shelves";
 
 const parseErrorMessage = async (response: Response) => {
 	try {

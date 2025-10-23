@@ -25,7 +25,7 @@ func ConnectAI() (*openai.Client, string) {
 	sysprompt := `
 You are an assistant that helps users by either answering directly or calling APIs.
 You can use the following actions:
-- "get_items": to retrieve all kind of items GET https://05.hackathon.ethz.ch/api/items)
+- "get_items": to retrieve all kind of items GET http://localhost:8000/api/items)
 - "get_inventory": to retrieve all inventory records. The Inventory records connects Items with locations and stores an amount. GET /api/inventory
 - "get_loans": to retrieve all records of loans between persons and items GET /api/loans
 - "get_persons": to retrieve all records of persons, including the slack_id GET /api/persons

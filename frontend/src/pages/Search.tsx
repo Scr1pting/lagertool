@@ -17,7 +17,7 @@ type PersonResult = {
 }
 
 const API_BASE_URL =
-  import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
+  import.meta.env?.VITE_API_BASE_URL ?? "http://localhost:8000/api"
 
 export default function Search() {
   const [searchParams] = useSearchParams()

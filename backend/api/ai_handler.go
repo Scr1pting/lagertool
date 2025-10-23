@@ -140,27 +140,27 @@ func callInternalAPI(action string, params map[string]string) (string, error) {
 
 	case "get_items":
 
-		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/items")
+		return callAPIhelper(client, "http://localhost:8000/api/items")
 
 	case "get_inventory":
 
-		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/inventory")
+		return callAPIhelper(client, "http://localhost:8000/api/inventory")
 
 	case "get_locations":
 
-		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/locations")
+		return callAPIhelper(client, "http://localhost:8000/api/locations")
 
 	case "get_loans":
 
-		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/loans")
+		return callAPIhelper(client, "http://localhost:8000/api/loans")
 
 	case "get_shelves":
 
-		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/shelves")
+		return callAPIhelper(client, "http://localhost:8000/api/shelves")
 
 	case "get_persons":
 
-		return callAPIhelper(client, "https://05.hackathon.ethz.ch/api/persons")
+		return callAPIhelper(client, "http://localhost:8000/api/persons")
 
 	case "none":
 

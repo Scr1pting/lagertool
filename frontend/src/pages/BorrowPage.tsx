@@ -73,7 +73,7 @@ type ItemOption = RestrictedSearchItem & { item: ItemRecord }
 type PersonOption = RestrictedSearchItem & { person: NormalizedPerson }
 
 const API_BASE_URL =
-  import.meta.env?.VITE_API_BASE_URL ?? "https://05.hackathon.ethz.ch/api"
+  import.meta.env?.VITE_API_BASE_URL ?? "http://localhost:8000/api"
 
 const pad = (value: number) => value.toString().padStart(2, "0")
 

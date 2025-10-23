@@ -35,7 +35,7 @@ export default function ClippyChat() {
         setInput("");
         setLoading(true);
         try {
-            const response = await fetch("https://05.hackathon.ethz.ch/api/chat", {
+            const response = await fetch("http://localhost:8000/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: input }),

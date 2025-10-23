@@ -49,7 +49,7 @@ func Init() {
 	}
 	production := os.Getenv("PRODUCTION")
 	if production == "1" {
-		backend_domain = "https://05.hackathon.ethz.ch/api"
+		backend_domain = "http://localhost:8000/api"
 		frontend_domain = "https://05.hackathon.ethz.ch"
 		log.Println("Using hackathon domain.")
 	} else if production == "0" {
