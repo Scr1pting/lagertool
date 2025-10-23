@@ -10,7 +10,8 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 
-import { Palette, Canvas } from '..';
+import Palette from './Palette';
+import Canvas from './Canvas';
 import {
   ELEMENT_CATALOG,
   type ShelfColumn,

@@ -1,9 +1,6 @@
 import { type ShelfUnitDetail } from "./types";
 
-const API_BASE_URL =
-	import.meta.env?.VITE_API_BASE_URL ?? "http://localhost:8000/api";
-
-const SHELF_UNIT_ENDPOINT = `${API_BASE_URL}/shelves/unit`;
+const SHELF_UNIT_ENDPOINT = `${import.meta.env?.VITE_API_BASE_URL}/shelves/unit`;
 
 const normalizeString = (value: unknown): string | null => {
 	if (typeof value === "string") {
