@@ -41,7 +41,7 @@ const useElementItems = (elementId: string) => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  });
 
   return state;
 };

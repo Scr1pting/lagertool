@@ -9,14 +9,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Link } from "react-router-dom";
+import clsx from "clsx";
 
 export default function MoreDropdown() {
   return (
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
-        <Button className={`${styles.input} ${styles.buttonRnd}`}>
+        <button className={clsx(styles.input, styles.buttonRnd)}>
           <IoEllipsisHorizontal />
-        </Button>
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-56" align="start">

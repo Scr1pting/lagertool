@@ -1,5 +1,5 @@
-import { Outlet } from "react-router-dom";
-import NavBar from "../components/NavBar";
+import { Outlet } from 'react-router-dom';
+import NavBar from './NavBar/NavBar';
 
 function WithNavLayout() {
   return (
