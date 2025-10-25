@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 
-import { useDebounce } from "use-debounce";
-
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2"
 import { useNavigate, useLocation } from "react-router-dom"
 import styles from "./NavBar.module.css"
-
-// Only update navigation 300ms after the user stopped typing
-const DEBOUNCE_DELAY = 300
 
 interface SearchBarProps {
   initial?: string
@@ -19,8 +14,7 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
   const location = useLocation()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // MARK: Debounce
-  // Sync query with URL when on search page
+  // Sync Navigation
   useEffect(() => {
     if (location.pathname === "/search") {
       const params = new URLSearchParams(location.search)
@@ -31,21 +25,6 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
     }
   }, [location])
 
-  // Only update query after debounce delay
-  const [debouncedQuery] = useDebounce(query, DEBOUNCE_DELAY)
-  useEffect(() => {
-    const trimmed = debouncedQuery.trim()
-    if (trimmed) {
-      navigate(`/search?query=${encodeURIComponent(trimmed)}`, {
-        replace: location.pathname === "/search",
-      })
-    } else if (location.pathname === "/search") {
-      navigate("/search", { replace: true })
-    }
-  }, [debouncedQuery, navigate, location.pathname])
-
-
-  // MARK: Search
   // keep input focused when clicking the wrapper (prevent mousedown blur)
   const focusInput = () => inputRef.current?.focus({ preventScroll: true })
 

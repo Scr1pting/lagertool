@@ -41,7 +41,7 @@ const useShelves = () => {
     return () => {
       cancelled = true;
     };
-  });
+  }, []);
 
   return state;
 };

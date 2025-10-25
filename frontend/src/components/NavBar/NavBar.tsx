@@ -17,7 +17,7 @@ export default function NavBar(){
     <div>
       <div className={styles.backdrop} />
       <div className={styles.content}>
-        <Link to="/" aria-label="Home">
+        <Link className={styles.logo} to="/" aria-label="Home">
           <img
             className="logo"
             src="/logo.webp"
