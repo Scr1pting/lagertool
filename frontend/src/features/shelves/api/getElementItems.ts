@@ -20,7 +20,7 @@ type GetElementItems = {
 };
 
 const getElementItems = async ({ elementId, signal }: GetElementItems): Promise<ShelfElementItem[]> => {
-    const response = await fetch(`../api/shelves/unit/${elementId}/inventory`, {
+    const response = await fetch(`${import.meta.env?.VITE_API_BASE_URL}/shelves/unit/${elementId}/inventory`, {
         method: "GET",
         headers: {
             "Accept": "application/json",

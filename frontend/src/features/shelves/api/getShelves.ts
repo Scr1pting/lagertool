@@ -1,6 +1,6 @@
 import { type Shelf } from "../types/shelf";
 
-const SHELVES_ENDPOINT = `${import.meta.env?.VITE_API_BASE_URL}/api/shelves`;
+const SHELVES_ENDPOINT = `${import.meta.env?.VITE_API_BASE_URL}/shelves`;
 
 type GetShelvesOptions = {
 	signal?: AbortSignal;
