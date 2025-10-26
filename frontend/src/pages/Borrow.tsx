@@ -1,11 +1,11 @@
 import RegularPage from "@/components/RegularPage";
 
-function Search() {
+function Borrow() {
   return (
-    <RegularPage title="Search Results">
+    <RegularPage title="Borrow">
         <p>Content goes here</p>
     </RegularPage>
   )
 }
 
-export default Search;
+export default Borrow;

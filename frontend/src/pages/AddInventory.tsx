@@ -1,11 +1,11 @@
 import RegularPage from "@/components/RegularPage";
 
-function Search() {
+function AddInventory() {
   return (
-    <RegularPage title="Search Results">
+    <RegularPage title="Add Inventory">
         <p>Content goes here</p>
     </RegularPage>
   )
 }
 
-export default Search;
+export default AddInventory;

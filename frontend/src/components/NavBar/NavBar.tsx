@@ -26,7 +26,7 @@ export default function NavBar(){
 
         <div className={styles.input}><SearchBar/></div>
 
-        <Link className={clsx(styles.input, styles.btnCapsule)} to=''>
+        <Link className={clsx(styles.input, styles.btnCapsule)} to='/borrow'>
           <span className={styles.borrowLabel}>Borrow</span>
           {borrowedCount != null &&
             <span className={styles.badge} aria-hidden="true">
