@@ -5,7 +5,7 @@ function WithNavLayout() {
   return (
     <>
       <NavBar />
-      <div style={{"marginTop": "70px"}}>
+      <div style={{marginTop: "70px"}}>
         <Outlet />
       </div>
     </>

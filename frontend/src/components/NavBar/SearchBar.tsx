@@ -25,15 +25,17 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
     if (urlQuery !== query) {
       setQuery(urlQuery)
     }
-  }, [location, query])
+  }, [location.search, location.pathname])
 
-  // Navigate to search page when debounced query changes
+  // Navigate to search page when debounced query changes, or home if empty
   useEffect(() => {
     const trimmed = debouncedQuery.trim()
     if (trimmed) {
       navigate(`/search?query=${encodeURIComponent(trimmed)}`)
+    } else if (location.pathname === "/search") {
+      navigate("/")
     }
-  }, [debouncedQuery, navigate])
+  }, [debouncedQuery, navigate, location.pathname])
 
   // Keep input focused when clicking the wrapper
   const handleWrapperMouseDown = (event: MouseEvent<HTMLDivElement>) => {

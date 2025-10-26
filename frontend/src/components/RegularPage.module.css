@@ -1,0 +1,13 @@
+.mainWrapper {
+  margin: 0 auto;
+  padding: 0 20px;
+  max-width: 850px;
+  width: 100%;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  padding-top: 20px;
+  padding-bottom: 5px;
+}

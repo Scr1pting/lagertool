@@ -67,19 +67,3 @@
 .navButtonRight:not(:disabled):hover {
     transform: translateX(8px) translateY(-50%);
 }
-
-@media (max-width: 768px) {
-  .carousel {
-    padding: 0 2.5rem;
-  }
-
-  .slide {
-    padding: 0 0.75rem;
-  }
-
-  .navButton {
-    width: 38px;
-    height: 38px;
-    font-size: 1.25rem;
-  }
-}
