@@ -14,8 +14,7 @@ export default function NavBar(){
   const [borrowedCount, setBorrowedCount] = useState<string>("0")
 
   return(
-    <div>
-      <div className={styles.backdrop} />
+    <div className={styles.NavBar}>
       <div className={styles.content}>
         <Link className={styles.logo} to="/" aria-label="Home">
           <img

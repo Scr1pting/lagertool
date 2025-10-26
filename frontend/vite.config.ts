@@ -11,4 +11,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ['shadcn-packaged/**/*.{js,jsx,ts,tsx}'],
+  },
 })
