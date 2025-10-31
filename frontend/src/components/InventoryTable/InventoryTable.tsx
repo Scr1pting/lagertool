@@ -35,7 +35,6 @@ function InventoryTable({ inventory } : { inventory : InventoryItem[] }) {
   })
 
   return (
-    <div className="w-full">
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -83,7 +82,6 @@ function InventoryTable({ inventory } : { inventory : InventoryItem[] }) {
           </TableBody>
         </Table>
       </div>
-    </div>
   )
 }
 
