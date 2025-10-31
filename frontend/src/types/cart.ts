@@ -1,10 +1,5 @@
-export interface CartItem {
-  item_id: number,
-  item_name: string;
-  amount: number;
-  available: number;
-  building: string;
-  room: string;
+import { type InventoryItem } from "./inventory";
 
+export type CartItem = InventoryItem & {
   numSelected: number;
 }
