@@ -23,7 +23,7 @@ function InventoryTableSortedHeader<TData, TValue>({
       size="sm"
       className="data-[state=open]:bg-accent -ml-3 h-8"
       onClick={
-        () => column.toggleSorting(column.getIsSorted() === "asc")
+        () => column.toggleSorting(undefined)
       }
       >
       <span>{title}</span>
@@ -32,7 +32,7 @@ function InventoryTableSortedHeader<TData, TValue>({
       ) : column.getIsSorted() === "asc" ? (
         <ArrowUp />
       ) : (
-        <ArrowUpDown />
+        <ArrowUpDown className="text-neutral-500" />
       )}
     </Button>
   )

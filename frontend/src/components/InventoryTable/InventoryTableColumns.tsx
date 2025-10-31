@@ -1,4 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Pen, Plus, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import type { InventoryItem } from "@/types/inventory";
@@ -10,16 +10,23 @@ import DataTableColumnHeader from "./InventoryTableSortedHeader";
   {
     accessorKey: "item_name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Email" />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => (
-
       <div>{row.getValue("item_name")}</div>
     ),
   },
   {
     accessorKey: "location",
-    header: () => <div>Location</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Location" />
+    ),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const a = (rowA.original.building || "") + "/" + (rowA.original.room || "");
+      const b = (rowB.original.building || "") + "/" + (rowB.original.room || "");
+      return a.localeCompare(b);
+    },
     cell: ({ row }) => {
       const building = row.original.building || "unknown";
       const room = row.original.room || "unknown";
@@ -45,18 +52,29 @@ import DataTableColumnHeader from "./InventoryTableSortedHeader";
     enableHiding: false,
     cell: () => {
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit item</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex justify-end w-full">
+              <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Add to cart</span>
+            <Plus />
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <Pen className="mr-2 h-4 w-4" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       )
     },
   },
