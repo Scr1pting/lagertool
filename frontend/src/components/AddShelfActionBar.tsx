@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/popover'
 import { RxCross2 } from "react-icons/rx";
 import postShelf from '../features/shelves/api/postShelf';
-import { type ShelfColumn } from '../types/shelf';
+import { type ShelfColumn } from '../features/shelves/types/shelf';
 import { makeId } from '../features/shelves/util/ids';
 
 

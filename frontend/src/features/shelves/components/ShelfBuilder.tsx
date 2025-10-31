@@ -17,7 +17,7 @@ import {
   type ShelfColumn,
   type ShelfElement,
   type ShelfElementType,
-} from '../../../types/shelf';
+} from '../types/shelf';
 import { type DragItemData, type DropTargetData } from '../types/drag';
 import { MAX_STACK_UNITS } from '../util/shelfUnits';
 import { makeId } from '../util/ids';

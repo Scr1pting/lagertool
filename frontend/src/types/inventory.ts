@@ -3,5 +3,6 @@ export interface InventoryItem {
   item_name: string;
   amount: number;
   available: number;
-  category: string;
+  building: string;
+  room: string;
 }

@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 
 import { type DropTargetData } from '../types/drag';
-import { type ShelfColumn, ELEMENT_CATALOG } from '../../../types/shelf';
+import { type ShelfColumn, ELEMENT_CATALOG } from '../types/shelf';
 import { ELEMENT_WIDTH } from '../util/shelfUnits';
 
 import ShelfPiece from './ShelfElementView';
