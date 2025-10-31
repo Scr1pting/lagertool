@@ -1,5 +1,6 @@
 import getInventory from "@/api/getInventory";
-import InventoryTable from "@/components/InventoryTable/InventoryTable";
+import DataTable from "@/components/InventoryTable/DataTable";
+import inventoryColumns from "@/components/InventoryTable/InventoryColumns";
 import RegularPage from "@/components/RegularPage";
 import useApi from "@/hooks/useApi";
 import type { InventoryItem } from "@/types/inventory";
@@ -11,7 +12,7 @@ function Search() {
 
   return (
     <RegularPage title="Search Results">
-      <InventoryTable inventory={inventory ?? []} />
+      <DataTable data={inventory ?? []} columns={inventoryColumns} />
     </RegularPage>
   )
 }

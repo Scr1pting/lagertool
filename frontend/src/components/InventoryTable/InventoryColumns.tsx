@@ -1,12 +1,12 @@
 import { MoreHorizontal, Pen, Plus, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import type { InventoryItem } from "@/types/inventory";
 import type { ColumnDef } from "@tanstack/react-table";
-import DataTableColumnHeader from "./InventoryTableSortedHeader";
+import DataTableColumnHeader from "./DataTableSortedHeader";
 
 
- const columns: ColumnDef<InventoryItem>[] = [
+const inventoryColumns: ColumnDef<InventoryItem>[] = [
   {
     accessorKey: "item_name",
     header: ({ column }) => (
@@ -52,8 +52,8 @@ import DataTableColumnHeader from "./InventoryTableSortedHeader";
     enableHiding: false,
     cell: () => {
       return (
-        <div className="flex justify-end w-full">
-              <Button variant="ghost" className="h-8 w-8 p-0">
+        <div className="flex justify-end">
+          <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Add to cart</span>
             <Plus />
           </Button>
@@ -80,4 +80,4 @@ import DataTableColumnHeader from "./InventoryTableSortedHeader";
   },
 ]
 
-export default columns;
+export default inventoryColumns;

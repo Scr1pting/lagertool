@@ -1,6 +1,6 @@
 import * as React from "react"
 import { flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
-import type { ColumnFiltersState, SortingState } from "@tanstack/react-table"
+import type { Column, ColumnDef, ColumnFiltersState, SortingState } from "@tanstack/react-table"
 
 import {
   Table,
@@ -10,18 +10,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { InventoryItem } from "@/types/inventory"
-import columns from "./InventoryTableColumns"
 
 
-function InventoryTable({ inventory } : { inventory : InventoryItem[] }) {
+interface DataTableProps<TData>
+  extends React.HTMLAttributes<HTMLDivElement> {
+  data: TData[],
+  columns: ColumnDef<TData>[],
+}
+
+
+function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
 
-  const table = useReactTable<InventoryItem>({
-    data: inventory,
+  const table = useReactTable<TData>({
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -85,4 +90,4 @@ function InventoryTable({ inventory } : { inventory : InventoryItem[] }) {
   )
 }
 
-export default InventoryTable;
+export default DataTable;

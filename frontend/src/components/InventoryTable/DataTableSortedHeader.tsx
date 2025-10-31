@@ -9,7 +9,7 @@ interface DataTableColumnHeaderProps<TData, TValue>
   title: string
 }
 
-function InventoryTableSortedHeader<TData, TValue>({
+function DataTableSortedHeader<TData, TValue>({
   column,
   title,
   className,
@@ -38,4 +38,4 @@ function InventoryTableSortedHeader<TData, TValue>({
   )
 }
 
-export default InventoryTableSortedHeader;
+export default DataTableSortedHeader;
