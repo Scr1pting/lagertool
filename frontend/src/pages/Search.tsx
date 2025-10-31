@@ -1,6 +1,6 @@
 import getInventory from "@/api/getInventory";
-import DataTable from "@/components/InventoryTable/DataTable";
-import inventoryColumns from "@/components/InventoryTable/InventoryColumns";
+import DataTable from "@/components/DataTable/DataTable";
+import inventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns";
 import RegularPage from "@/components/RegularPage";
 import useApi from "@/hooks/useApi";
 import type { InventoryItem } from "@/types/inventory";

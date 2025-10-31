@@ -1,5 +1,5 @@
-import cartColumns from "@/components/InventoryTable/CartColumns";
-import DataTable from "@/components/InventoryTable/DataTable";
+import cartColumns from "@/components/DataTable/CartColumns";
+import DataTable from "@/components/DataTable/DataTable";
 import RegularPage from "@/components/RegularPage";
 import { useCart } from "@/store/useCart";
 

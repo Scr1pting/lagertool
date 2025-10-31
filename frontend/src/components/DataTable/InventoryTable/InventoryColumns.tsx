@@ -1,9 +1,7 @@
-import { MoreHorizontal, Pen, Plus, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
-import type { InventoryItem } from "@/types/inventory";
 import type { ColumnDef } from "@tanstack/react-table";
-import DataTableColumnHeader from "./DataTableSortedHeader";
+import DataTableColumnHeader from "../DataTableSortedHeader";
+import type { InventoryItem } from "@/types/inventory";
+import InventoryActions from "./InventoryActions";
 
 
 const inventoryColumns: ColumnDef<InventoryItem>[] = [
@@ -50,33 +48,7 @@ const inventoryColumns: ColumnDef<InventoryItem>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: () => {
-      return (
-        <div className="flex justify-end">
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Add to cart</span>
-            <Plus />
-          </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Pen className="mr-2 h-4 w-4" /> Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )
-    },
+    cell: ({ row }) => { return <InventoryActions row={row} /> },
   },
 ]
 
