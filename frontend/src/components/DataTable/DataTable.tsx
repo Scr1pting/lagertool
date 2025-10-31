@@ -40,14 +40,14 @@ function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
   })
 
   return (
-      <div className="overflow-hidden rounded-md border">
+  <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                      <TableHead key={header.id} className="bg-neutral-900">
+                    <TableHead key={header.id} className="bg-neutral-900 px-4">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -65,7 +65,7 @@ function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} className="hover:bg-transparent">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="px-4">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -75,7 +75,7 @@ function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableCell
                   colSpan={columns.length}
                   className="h-24 text-center"

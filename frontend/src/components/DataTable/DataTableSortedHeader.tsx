@@ -20,7 +20,6 @@ function DataTableSortedHeader<TData, TValue>({
   return (
     <Button
       variant="ghost"
-      size="sm"
       className="data-[state=open]:bg-accent -ml-3 h-8"
       onClick={
         () => column.toggleSorting(undefined)
