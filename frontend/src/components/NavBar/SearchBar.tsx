@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type MouseEvent, type FormEvent, type KeyboardEvent, type ChangeEvent } from "react"
 
-import { HiOutlineMagnifyingGlass } from "react-icons/hi2"
 import { useNavigate, useLocation } from "react-router-dom"
 import styles from "./NavBar.module.css"
+import { Search } from "lucide-react"
 
 interface SearchBarProps {
   initial?: string
@@ -93,7 +93,7 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
       className={styles.searchWrapper}
       onMouseDown={handleWrapperMouseDown}
     >
-      <HiOutlineMagnifyingGlass className={styles.searchIcon} aria-hidden="true" />
+      <Search className={styles.searchIcon} aria-hidden="true" />
       <form className={styles.searchForm} onSubmit={handleSubmit}>
         <input
           ref={inputRef}

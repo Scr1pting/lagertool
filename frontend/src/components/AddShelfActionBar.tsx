@@ -11,10 +11,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { RxCross2 } from "react-icons/rx";
 import postShelf from '../features/shelves/api/postShelf';
 import { type ShelfColumn } from '../features/shelves/types/shelf';
 import { makeId } from '../features/shelves/util/ids';
+import { X } from 'lucide-react';
 
 
 type FormProps = {
@@ -189,7 +189,7 @@ function ActionBar({ columns }: { columns: ShelfColumn[] }) {
         </ButtonGroup>
         <ButtonGroup>
           <Button variant="outline" onClick={goBack}>
-            <RxCross2/>
+            <X />
           </Button>
         </ButtonGroup>
       </ButtonGroup>

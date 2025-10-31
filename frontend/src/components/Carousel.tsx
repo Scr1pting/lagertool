@@ -1,130 +1,130 @@
-import { useCallback, useEffect, useState } from 'react';
-import { IoIosArrowRoundForward, IoIosArrowRoundBack } from 'react-icons/io';
+import { useCallback, useEffect, useState } from "react";
 
-import clsx from 'clsx';
+import clsx from "clsx";
 
-import styles from './Carousel.module.css';
+import styles from "./Carousel.module.css";
+import { MoveLeft, MoveRight } from "lucide-react";
 
 interface CarouselProps {
-    items: Array<React.ReactNode>;
-    initialIndex?: number;
-    loop?: boolean;
-    ariaLabel?: string;
-    className?: string;
-    onIndexChange?: (index: number) => void;
+  items: Array<React.ReactNode>;
+  initialIndex?: number;
+  loop?: boolean;
+  ariaLabel?: string;
+  className?: string;
+  onIndexChange?: (index: number) => void;
 }
 
 function Carousel({
-    items,
-    initialIndex = 0,
-    loop = true,
-    ariaLabel = 'Carousel',
-    className,
-    onIndexChange,
+  items,
+  initialIndex = 0,
+  loop = true,
+  ariaLabel = "Carousel",
+  className,
+  onIndexChange,
 }: CarouselProps) {
-    const itemCount = items.length;
+  const itemCount = items.length;
 
-    const [activeIndex, setActiveIndex] = useState(() => {
-        if (itemCount === 0) return 0;
-        return Math.min(Math.max(initialIndex, 0), itemCount - 1);
+  const [activeIndex, setActiveIndex] = useState(() => {
+    if (itemCount === 0) return 0;
+    return Math.min(Math.max(initialIndex, 0), itemCount - 1);
+  });
+
+  useEffect(() => {
+    if (itemCount === 0) return;
+
+    const nextIndex = Math.min(Math.max(initialIndex, 0), itemCount - 1);
+    setActiveIndex((previous) => {
+      if (previous === nextIndex) return previous;
+      return nextIndex;
     });
+  }, [initialIndex, itemCount]);
 
-    useEffect(() => {
-        if (itemCount === 0) return;
+  useEffect(() => {
+    if (itemCount === 0) return;
 
-        const nextIndex = Math.min(Math.max(initialIndex, 0), itemCount - 1);
-        setActiveIndex((previous) => {
-            if (previous === nextIndex) return previous;
-            return nextIndex;
-        });
-    }, [initialIndex, itemCount]);
+    setActiveIndex((previous) => {
+      if (previous < itemCount) return previous;
+      return Math.max(itemCount - 1, 0);
+    });
+  }, [itemCount]);
 
-    useEffect(() => {
-        if (itemCount === 0) return;
+  const updateIndex = useCallback(
+    (nextIndex: number) => {
+      if (itemCount === 0) return;
 
-        setActiveIndex((previous) => {
-            if (previous < itemCount) return previous;
-            return Math.max(itemCount - 1, 0);
-        });
-    }, [itemCount]);
+      let resolvedIndex = nextIndex;
 
-    const updateIndex = useCallback(
-        (nextIndex: number) => {
-            if (itemCount === 0) return;
+      if (loop) {
+        resolvedIndex = (nextIndex + itemCount) % itemCount;
+      } else {
+        resolvedIndex = Math.min(Math.max(nextIndex, 0), itemCount - 1);
+      }
 
-            let resolvedIndex = nextIndex;
+      setActiveIndex(resolvedIndex);
+      onIndexChange?.(resolvedIndex);
+    },
+    [itemCount, loop, onIndexChange]
+  );
 
-            if (loop) {
-                resolvedIndex = (nextIndex + itemCount) % itemCount;
-            } else {
-                resolvedIndex = Math.min(Math.max(nextIndex, 0), itemCount - 1);
-            }
+  const handlePrevious = useCallback(() => {
+    if (itemCount === 0 || activeIndex == 0) return;
+    updateIndex(activeIndex - 1);
+  }, [activeIndex, updateIndex]);
 
-            setActiveIndex(resolvedIndex);
-            onIndexChange?.(resolvedIndex);
-        },
-        [itemCount, loop, onIndexChange],
-    );
+  const handleNext = useCallback(() => {
+    if (itemCount === 0 || activeIndex === itemCount - 1) return;
+    updateIndex(activeIndex + 1);
+  }, [activeIndex, itemCount, updateIndex]);
 
-    const handlePrevious = useCallback(() => {
-        if (itemCount === 0 || activeIndex == 0) return;
-        updateIndex(activeIndex -1);
-    }, [activeIndex, updateIndex]);
+  if (itemCount === 0) {
+    return null;
+  }
 
-    const handleNext = useCallback(() => {
-        if (itemCount === 0 || activeIndex === itemCount-1) return;
-        updateIndex(activeIndex + 1);
-    }, [activeIndex, itemCount, updateIndex]);
+  return (
+    <section
+      className={clsx(styles.carousel, className)}
+      aria-roledescription="carousel"
+      aria-label={ariaLabel}
+    >
+      <button
+        type="button"
+        className={clsx(styles.navButton, styles.navButtonLeft)}
+        onClick={handlePrevious}
+        disabled={activeIndex === 0}
+        aria-label="Previous item"
+      >
+        <MoveLeft />
+      </button>
 
-    if (itemCount === 0) {
-        return null;
-    }
-
-    return (
-        <section
-            className={clsx(styles.carousel, className)}
-            aria-roledescription="carousel"
-            aria-label={ariaLabel}
+      <div className={styles.viewport}>
+        <div
+          className={styles.track}
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
-            <button
-                type="button"
-                className={clsx(styles.navButton, styles.navButtonLeft)}
-                onClick={handlePrevious}
-                disabled={activeIndex === 0}
-                aria-label="Previous item"
+          {items.map((item, index) => (
+            <div
+              key={index}
+              role="tabpanel"
+              aria-hidden={index !== activeIndex}
+              className={styles.slide}
             >
-                <IoIosArrowRoundBack />
-            </button>
-
-            <div className={styles.viewport}>
-                <div
-                    className={styles.track}
-                    style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-                >
-                    {items.map((item, index) => (
-                        <div
-                            key={index}
-                            role="tabpanel"
-                            aria-hidden={index !== activeIndex}
-                            className={styles.slide}
-                        >
-                            {item}
-                        </div>
-                    ))}
-                </div>
+              {item}
             </div>
+          ))}
+        </div>
+      </div>
 
-            <button
-                type="button"
-                className={clsx(styles.navButton, styles.navButtonRight)}
-                onClick={handleNext}
-                disabled={activeIndex === itemCount-1}
-                aria-label="Next item"
-            >  
-                <IoIosArrowRoundForward />
-            </button>
-        </section>
-    );
+      <button
+        type="button"
+        className={clsx(styles.navButton, styles.navButtonRight)}
+        onClick={handleNext}
+        disabled={activeIndex === itemCount - 1}
+        aria-label="Next item"
+      >
+        <MoveRight />
+      </button>
+    </section>
+  );
 }
 
 export default Carousel;
