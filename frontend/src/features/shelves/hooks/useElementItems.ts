@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import getElementItems from "../api/getElementItems";
-import type { ShelfElementItem } from "../types/shelf";
+import type { ShelfElementItem } from "../../../types/shelf";
 
 type ShelfElementItemState =
   | { status: "idle"; data: ShelfElementItem[]; error: null }

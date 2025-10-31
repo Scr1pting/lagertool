@@ -1,4 +1,4 @@
-import { type ShelfElementType } from './shelf';
+import { type ShelfElementType } from '../../../types/shelf';
 
 export type DragItemData =
   | { source: 'palette'; itemType: ShelfElementType }

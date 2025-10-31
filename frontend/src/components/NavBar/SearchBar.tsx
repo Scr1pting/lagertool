@@ -28,15 +28,16 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
   }, [location.search, location.pathname])
 
   // Navigate to search page when debounced query changes, or home if empty
+  // TODO: The logo link doesn't work to take people home
   useEffect(() => {
-    const trimmed = debouncedQuery.trim()
+    const trimmed = debouncedQuery.trim();
     if (trimmed) {
-      navigate(`/search?query=${encodeURIComponent(trimmed)}`)
+      navigate(`/search?query=${encodeURIComponent(trimmed)}`);
     } else if (location.pathname === "/search") {
-      navigate("/")
+      navigate("/");
     }
-  }, [debouncedQuery, navigate, location.pathname])
-
+  }, [debouncedQuery, navigate, location.pathname]);
+  
   // Keep input focused when clicking the wrapper
   const handleWrapperMouseDown = (event: MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement

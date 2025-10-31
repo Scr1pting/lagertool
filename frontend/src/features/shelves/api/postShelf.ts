@@ -1,42 +1,24 @@
-import { type Shelf } from "../types/shelf";
+import axios from "axios";
+import { type Shelf } from "@/types/shelf";
 
 const SHELVES_ENDPOINT = `${import.meta.env?.VITE_API_BASE_URL}/shelves`;
 
-const parseErrorMessage = async (response: Response) => {
-	try {
-		const data = (await response.json()) as { message?: string } | undefined;
-		if (data && typeof data.message === "string" && data.message.trim().length > 0) {
-			return data.message;
-		}
-	} catch {
-		// Ignore JSON parse errors; fall back to status text.
-	}
-
-	return response.statusText || "Unknown error";
-};
-
 const postShelf = async (payload: Shelf) => {
-	const response = await fetch(SHELVES_ENDPOINT, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(payload),
-	});
-
-	if (!response.ok) {
-		const message = await parseErrorMessage(response);
-		throw new Error(message);
-	}
-
-	if (response.status !== 204) {
-		// Ensure we drain the body for keep-alive connections.
-		try {
-			await response.json();
-		} catch {
-			await response.text().catch(() => undefined);
-		}
-	}
+  try {
+    await axios.post(SHELVES_ENDPOINT, payload, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.message || error.message);
+    }
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Unknown error");
+  }
 };
 
 export default postShelf;
