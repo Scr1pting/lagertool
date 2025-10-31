@@ -1,0 +1,92 @@
+[
+  {
+    "item_id": 1,
+    "item_name": "Wireless Mouse",
+    "amount": 150,
+    "available": 120,
+    "category": "Electronics",
+    "building": "CAB",
+    "room": "Office"
+  },
+  {
+    "item_id": 2,
+    "item_name": "Mechanical Keyboard",
+    "amount": 80,
+    "available": 75,
+    "category": "Electronics",
+    "building": "HG",
+    "room": "Storage room"
+  },
+  {
+    "item_id": 3,
+    "item_name": "Office Chair",
+    "amount": 40,
+    "available": 35,
+    "category": "Furniture",
+    "building": "HCL",
+    "room": "Office"
+  },
+  {
+    "item_id": 4,
+    "item_name": "Notebook A5",
+    "amount": 300,
+    "available": 280,
+    "category": "Stationery",
+    "building": "HG",
+    "room": "Office"
+  },
+  {
+    "item_id": 5,
+    "item_name": "Ballpoint Pen",
+    "amount": 1000,
+    "available": 940,
+    "category": "Stationery",
+    "building": "CAB",
+    "room": "Storage room"
+  },
+  {
+    "item_id": 6,
+    "item_name": "LED Desk Lamp",
+    "amount": 60,
+    "available": 55,
+    "category": "Lighting",
+    "building": "HCL",
+    "room": "Storage room"
+  },
+  {
+    "item_id": 7,
+    "item_name": "External Hard Drive 1TB",
+    "amount": 45,
+    "available": 42,
+    "category": "Electronics",
+    "building": "HG",
+    "room": "Office"
+  },
+  {
+    "item_id": 8,
+    "item_name": "USB-C Cable 1m",
+    "amount": 200,
+    "available": 195,
+    "category": "Accessories",
+    "building": "CAB",
+    "room": "Storage room"
+  },
+  {
+    "item_id": 9,
+    "item_name": "Whiteboard Marker Set",
+    "amount": 90,
+    "available": 88,
+    "category": "Stationery",
+    "building": "HCL",
+    "room": "Office"
+  },
+  {
+    "item_id": 10,
+    "item_name": "Filing Cabinet",
+    "amount": 25,
+    "available": 22,
+    "category": "Furniture",
+    "building": "HG",
+    "room": "Storage room"
+  }
+]

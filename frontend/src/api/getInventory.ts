@@ -1,15 +1,12 @@
 import axios from "axios";
 import { type InventoryItem } from "@/types/inventory";
 
-type GetElementItems = {
-  elementId: string;
-  signal?: AbortSignal;
-};
 
-const getElementItems = async ({ elementId, signal }: GetElementItems): Promise<InventoryItem[]> => {
+const getElementItems = async ({ signal }: { signal?: AbortSignal } = {}): Promise<InventoryItem[]> => {
   try {
     const { data } = await axios.get<InventoryItem[]>(
-      `${import.meta.env?.VITE_API_BASE_URL}/shelves/unit/${elementId}/inventory`,
+      // `${import.meta.env?.VITE_API_BASE_URL}/inventory`, 
+      "/inventory.sample.json",
       { signal }
     );
     return data ?? [];

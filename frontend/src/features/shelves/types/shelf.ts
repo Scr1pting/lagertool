@@ -1,12 +1,5 @@
 export type ShelfElementType = 'slim' | 'high';
 
-export interface ShelfElementItem {
-    item_id: number,
-    item_name: string;
-    amount: number;
-    available: number;
-    category: string;
-}
 
 export interface ShelfElementDefinition {
   label: string;

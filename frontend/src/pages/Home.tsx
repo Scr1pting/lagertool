@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import useShelves from "@/features/shelves/hooks/useShelves";
 import StaticShelf from "@/features/shelves/components/StaticShelf";
 
 import styles from './Home.module.css';
 import Carousel from "@/components/Carousel";
 
+import useApi from "@/hooks/useApi";
+import getShelves from "@/features/shelves/api/getShelves";
+import type { Shelf } from "@/features/shelves/types/shelf";
+
 
 function Home() {
-  const { status, data: shelves, error } = useShelves();
+  const { status, data: shelves, error } = useApi<Shelf[]>(getShelves);
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedElement, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
   const shelfParam = searchParams.get("shelf");
