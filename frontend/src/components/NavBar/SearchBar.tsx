@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState, type MouseEvent, type FormEvent, type KeyboardEvent } from "react"
+import { useEffect, useRef, useState, type MouseEvent, type FormEvent, type KeyboardEvent, type ChangeEvent } from "react"
 
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2"
 import { useNavigate, useLocation } from "react-router-dom"
-import { useDebounce } from "../../hooks/useDebounce"
 import styles from "./NavBar.module.css"
 
 interface SearchBarProps {
@@ -11,10 +10,10 @@ interface SearchBarProps {
 
 export default function SearchBar({ initial = "" }: SearchBarProps) {
   const [query, setQuery] = useState(initial)
-  const debouncedQuery = useDebounce(query, 300)
   const navigate = useNavigate()
   const location = useLocation()
   const inputRef = useRef<HTMLInputElement>(null)
+  const shouldNavigateRef = useRef(false)
 
   // Sync state with URL query parameter
   useEffect(() => {
@@ -27,15 +26,37 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
     }
   }, [location.search, location.pathname])
 
-  // Navigate to search page when debounced query changes, or home if empty
   useEffect(() => {
-    const trimmed = debouncedQuery.trim()
+    if (
+      location.pathname === "/search" ||
+      query === "" ||
+      shouldNavigateRef.current
+    ) {
+      return
+    }
+    setQuery("")
+  }, [location.pathname, query])
+
+  // Navigate to search page when query changes, or home if empty
+  useEffect(() => {
+    const trimmed = query.trim()
+    const onSearch = location.pathname === "/search"
+    const targetSearch = trimmed ? `?query=${encodeURIComponent(trimmed)}` : ""
+
     if (trimmed) {
-      navigate(`/search?query=${encodeURIComponent(trimmed)}`)
-    } else if (location.pathname === "/search") {
+      if (onSearch) {
+        if (location.search !== targetSearch) {
+          navigate(`/search${targetSearch}`, { replace: true })
+        }
+      } else if (shouldNavigateRef.current) {
+        navigate(`/search${targetSearch}`)
+      }
+    } else if (onSearch && shouldNavigateRef.current) {
       navigate("/")
     }
-  }, [debouncedQuery, navigate, location.pathname])
+
+    shouldNavigateRef.current = false
+  }, [query, navigate, location.pathname, location.search])
 
   // Keep input focused when clicking the wrapper
   const handleWrapperMouseDown = (event: MouseEvent<HTMLDivElement>) => {
@@ -46,6 +67,11 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
       event.preventDefault()
       inputRef.current?.focus({ preventScroll: true })
     }
+  }
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    shouldNavigateRef.current = true
+    setQuery(event.target.value)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -75,7 +101,7 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
           type="text"
           placeholder="Search for items or people"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           aria-label="Search inventory"
         />
