@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { Link } from "react-router-dom";
-import { TiShoppingCart } from "react-icons/ti";
+import { ShoppingCart } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 import styles from "./NavBar.module.css";
@@ -28,7 +28,7 @@ export default function NavBar(){
          <Tooltip>
           <TooltipTrigger asChild>
             <Link to="/shopping-cart" className={clsx(styles.input, styles.buttonRnd)}>
-              <TiShoppingCart />
+              <ShoppingCart />
             </Link>
           </TooltipTrigger>
           <TooltipContent>

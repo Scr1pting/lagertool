@@ -1,5 +1,5 @@
 import styles from "./NavBar.module.css";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { Ellipsis } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,7 @@ export default function MoreDropdown() {
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
         <button className={clsx(styles.input, styles.buttonRnd)}>
-          <IoEllipsisHorizontal />
+          <Ellipsis />
         </button>
       </DropdownMenuTrigger>
 
