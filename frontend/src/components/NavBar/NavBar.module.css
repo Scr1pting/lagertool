@@ -53,7 +53,6 @@ button {
   justify-content: center;
   align-items: center;
   aspect-ratio: 1 / 1;
-  font-size: 1.2rem;
   cursor: pointer;
   padding: 0;
 }
