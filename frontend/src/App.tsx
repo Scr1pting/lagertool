@@ -4,11 +4,10 @@ import { Routes, Route } from 'react-router-dom';
 import AddShelf from './pages/AddShelf';
 import Home from './pages/Home';
 import Search from './pages/Search';
-import Borrow from './pages/Borrow';
-
 import WithNavLayout from './components/WithNavBar';
 import AddInventory from './pages/AddInventory';
 import Persons from './pages/Persons';
+import ShoppingCart from './pages/ShoppingCart';
 
 function App() {
   useEffect(() => {
@@ -29,9 +28,9 @@ function App() {
         <Route element={<WithNavLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />}/>
-          <Route path="/borrow" element={<Borrow />}/>
           <Route path="/add" element={<AddInventory />}/>
           <Route path="/persons" element={<Persons />}/>
+          <Route path="/shopping-cart" element={<ShoppingCart />}/>
         </Route>
         <Route path="/shelf-builder" element={<AddShelf />} />
       </Routes>

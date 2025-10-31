@@ -1,11 +1,11 @@
 import RegularPage from "@/components/RegularPage";
 
-function Borrow() {
+function ShoppingCart() {
   return (
-    <RegularPage title="Borrow">
+    <RegularPage title="Shoping Cart">
         <p>Content goes here</p>
     </RegularPage>
   )
 }
 
-export default Borrow;
+export default ShoppingCart;

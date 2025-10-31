@@ -1,5 +1,4 @@
 import styles from "./NavBar.module.css";
-import { Button } from "@/components/ui/button"
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import {
   DropdownMenu,
@@ -27,6 +26,9 @@ export default function MoreDropdown() {
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Link to="/persons">Person Management</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/shelf-builder">Add Shelf</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
