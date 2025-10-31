@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pen, Plus, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import type { InventoryItem } from "@/types/inventory";

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
-import type { Column, ColumnDef, ColumnFiltersState, SortingState } from "@tanstack/react-table"
+import type { ColumnDef, ColumnFiltersState, SortingState } from "@tanstack/react-table"
 
 import {
   Table,
