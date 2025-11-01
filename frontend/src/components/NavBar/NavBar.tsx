@@ -22,19 +22,11 @@ export default function NavBar(){
 
         <div className={styles.input}><SearchBar/></div>
 
-
         <MoreDropdown/>
 
-         <Tooltip>
-          <TooltipTrigger asChild>
-            <Link to="/shopping-cart" className={clsx(styles.input, styles.buttonRnd)}>
-              <ShoppingCart />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Shopping Cart</p>
-          </TooltipContent>
-        </Tooltip>
+        <Link to="/shopping-cart" className={clsx(styles.input, styles.buttonRnd)}>
+          <ShoppingCart className={styles.navIcon} />
+        </Link>
       </div>
     </div>
   );
