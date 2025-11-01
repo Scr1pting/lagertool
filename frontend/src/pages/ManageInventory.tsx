@@ -37,9 +37,43 @@ import type { Building } from "@/types/building"
 import type { InventoryItem } from "@/types/inventory"
 import type { Shelf } from "@/types/shelf"
 import useFetchShelves from "@/hooks/useFetchShelves"
+import { Link } from "react-router-dom"
+import { ArrowUpRightIcon } from "lucide-react"
+import shelfColumns from "@/components/DataTable/ShelfColumns"
 
 
-// MARK: ManageInventoryPage
+// MARK: ManageInventoryWrapper
+interface ManageInventoryWrapperProps<T> {
+  type: "item" | "shelf" | "room" | "building"
+  children: ReactNode
+  tableItems: T[] | undefined
+  columnDef: ColumnDef<T>[]
+}
+
+function ManageInventoryWrapper<T>({ type, children, tableItems, columnDef }: ManageInventoryWrapperProps<T>) {
+  return(
+    <TabsContent value={type}>
+      <div className="space-y-10">
+        <Card>
+          <CardHeader>
+            <CardTitle className="capitalize">Add {type}</CardTitle>
+          </CardHeader>
+          {children}
+        </Card>
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">
+            Recently Added
+          </h2>
+          <DataTable data={tableItems == undefined ? [] : tableItems} columns={columnDef} />
+        </section>
+      </div>
+    </TabsContent>
+  )
+}
+
+
+
+// MARK: ManageInventoryElements
 interface ManageInventoryElement {
   size: "full" | "half"
   label: string
@@ -47,45 +81,31 @@ interface ManageInventoryElement {
   input: ReactNode
 }
 
-interface ManageInventoryProps<T> {
-  type: "inventory" | "shelf" | "room" | "building"
-  description?: string | undefined
+interface ManageInventoryElementsProps<T> {
+  type: "item" | "shelf" | "room" | "building"
   elements: ManageInventoryElement[]
   tableItems: T[] | undefined
   columnDef: ColumnDef<T>[]
 }
 
-function ManageInventoryPage<T>({ type, description, elements, tableItems, columnDef }: ManageInventoryProps<T>) {
-  return(
-    <TabsContent value={type}>
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="capitalize">Add {type}</CardTitle>
-            <CardDescription>
-              {description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className={`grid gap-4 sm:grid-cols-2`}>
-            {elements.map((element) =>
-              <div key={element.id} className={`grid gap-2 ${element.size === 'full' ? 'sm:col-span-2' : ''}`}>
-                <Label htmlFor={element.id}>{element.label}</Label>
-                {element.input}
-              </div>
-            )}
-          </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button type="button">Save inventory item</Button>
-          </CardFooter>
-        </Card>
-        <section className="space-y-3">
-          <h2 className="text-muted-foreground">
-            Recently Added {type}
-          </h2>
-          <DataTable data={tableItems == undefined ? [] : tableItems} columns={columnDef} />
-        </section>
-      </div>
-    </TabsContent>
+function ManageInventoryElements<T>({ type, elements, tableItems, columnDef }: ManageInventoryElementsProps<T>) {
+  return (
+    <ManageInventoryWrapper
+    type={type}
+    tableItems={tableItems}
+    columnDef={columnDef} >
+      <CardContent className={`grid gap-4 sm:grid-cols-2`}>
+        {elements.map((element) =>
+          <div key={element.id} className={`grid gap-2 ${element.size === 'full' ? 'sm:col-span-2' : ''}`}>
+            <Label htmlFor={element.id}>{element.label}</Label>
+            {element.input}
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button type="button">Save</Button>
+      </CardFooter>
+    </ManageInventoryWrapper>
   )
 }
 
@@ -121,15 +141,15 @@ function LabeledSelect<T extends { id: string, name: string}>({ id, value, optio
 }
 
 
-// MARK: AddInventory
-interface AddInventoryProps {
+// MARK: AddItem
+interface AddItemProps {
   buildings: Building[]
   rooms: Room[]
   shelves: Shelf[]
   inventory: InventoryItem[]
 }
 
-function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProps) {
+function AddItem({ buildings, rooms, shelves, inventory }: AddItemProps) {
   const [name, setName] = useState("")
   const [amount, setAmount] = useState(1)
 
@@ -141,10 +161,10 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
   const elements: ManageInventoryElement[] = [
     {
       size: "full",
-      id: "inventory-name",
+      id: "item-name",
       label: "Name",
       input: <Input
-        id="inventory-name"
+        id="item-name"
         placeholder="Microphone"
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -152,10 +172,10 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
     },
     {
       size: "full",
-      id: "inventory-amount",
+      id: "item-amount",
       label: "Amount",
       input: <Input
-        id="inventory-amount"
+        id="item-amount"
         type="number"
         min="1"
         placeholder="e.g. 15"
@@ -165,10 +185,10 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
     },
     {
       size: "half",
-      id: "inventory-building-id",
+      id: "item-building-id",
       label: "Building",
       input: <LabeledSelect
-        id="inventory-building-id"
+        id="item-building-id"
         value={buildingId}
         options={buildings}
         onValueChange={(value) => setBuildingId(value) }
@@ -176,10 +196,10 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
     },
     {
       size: "half",
-      id: "inventory-room-id",
+      id: "item-room-id",
       label: "Room",
       input: <LabeledSelect
-        id="inventory-room-id"
+        id="item-room-id"
         value={roomId}
         options={rooms}
         onValueChange={(value) => setRoomId(value) }
@@ -187,10 +207,10 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
     },
     {
       size: "half",
-      id: "inventory-shelf-id",
+      id: "item-shelf-id",
       label: "Shelf",
       input: <LabeledSelect
-        id="inventory-shelf-id"
+        id="item-shelf-id"
         value={shelfId}
         options={shelves}
         onValueChange={(value) => setShelfId(value) }
@@ -198,10 +218,10 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
     },
     {
       size: "half",
-      id: "inventory-shelf-element-id",
+      id: "item-shelf-element-id",
       label: "Shelf Element",
       input: <LabeledSelect
-        id="inventory-shelf-element-id"
+        id="item-shelf-element-id"
         value={shelfElementId}
         options={buildings}
         onValueChange={(value) => setShelfElementId(value) }
@@ -210,8 +230,8 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
   ]
 
   return (
-    <ManageInventoryPage 
-      type={"inventory"}
+    <ManageInventoryElements 
+      type={"item"}
       elements={elements}
       tableItems={inventory}
       columnDef={inventoryColumnsNoCart}
@@ -222,7 +242,33 @@ function AddInventory({ buildings, rooms, shelves, inventory }: AddInventoryProp
 
 
 // MARK: AddShelf
+interface AddShelfProps {
+  shelves: Shelf[]
+}
 
+function AddShelf({ shelves }: AddShelfProps) {
+  return (
+    <ManageInventoryWrapper 
+      type={"shelf"}
+      tableItems={shelves}
+      columnDef={shelfColumns}
+    >
+      <CardContent className="flex flex-col items-center justify-center py-12">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">
+            Shelves can be added in the dedicated Shelf Builder.
+          </p>
+          <Button asChild>
+            <Link to="/add-shelf" className="inline-flex items-center gap-2">
+              Go to Shelf Builder
+              <ArrowUpRightIcon className="size-4" />
+            </Link>
+          </Button>
+        </div>
+      </CardContent>
+    </ManageInventoryWrapper>
+  )
+}
 
 
 
@@ -262,7 +308,7 @@ function AddRoom({ buildings, rooms }: AddRoomProps) {
   ]
 
   return (
-    <ManageInventoryPage 
+    <ManageInventoryElements 
       type={"room"}
       elements={elements}
       tableItems={rooms}
@@ -296,7 +342,7 @@ function AddBuilding({ buildings }: AddBuildingProps) {
   ]
 
   return (
-    <ManageInventoryPage 
+    <ManageInventoryElements 
       type={"building"}
       elements={elements}
       tableItems={buildings}
@@ -317,10 +363,13 @@ function ManageInventory() {
   return (
     <RegularPage title="Manage Inventory">
       <div className="w-full max-w-3xl">
-        <Tabs defaultValue="inventory">
-          <TabsList className="grid w-full grid-cols-3 gap-2 text-sm">
-            <TabsTrigger value="inventory">
-              Inventory
+        <Tabs defaultValue="item" className="space-y-2">
+          <TabsList className="grid w-full grid-cols-4 gap-2 text-sm">
+            <TabsTrigger value="item">
+              Item
+            </TabsTrigger>
+            <TabsTrigger value="shelf">
+              Shelf
             </TabsTrigger>
             <TabsTrigger value="room">
               Room
@@ -330,12 +379,14 @@ function ManageInventory() {
             </TabsTrigger>
           </TabsList>
 
-          <AddInventory
+          <AddItem
             buildings={buildings ?? []}
             rooms={rooms ?? []}
             shelves={shelves ?? []}
             inventory={inventory ?? []}
           />
+
+          <AddShelf shelves={shelves ?? []} />
 
           <AddRoom buildings={buildings ?? []} rooms={rooms ?? []} />
 

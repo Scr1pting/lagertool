@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import AddShelf from './pages/AddShelf';
+import AddShelf from './pages/AddShelfPage';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import WithNavLayout from './components/WithNavBar';
@@ -34,7 +34,7 @@ function App() {
             <Route path="/persons" element={<Persons />}/>
             <Route path="/shopping-cart" element={<ShoppingCart />}/>
           </Route>
-          <Route path="/shelf-builder" element={<AddShelf />} />
+          <Route path="/add-shelf" element={<AddShelf />} />
         </Routes>
       </main>
       <Toaster position="bottom-right" />

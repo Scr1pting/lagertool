@@ -15,7 +15,7 @@
     "available": 75,
     "category": "Electronics",
     "buildingName": "HG",
-    "roomName": "Storage roomName"
+    "roomName": "Storage Room"
   },
   {
     "item_id": "3",
@@ -42,7 +42,7 @@
     "available": 940,
     "category": "Stationery",
     "buildingName": "CAB",
-    "roomName": "Storage roomName"
+    "roomName": "Storage Room"
   },
   {
     "item_id": "6",
@@ -51,7 +51,7 @@
     "available": 55,
     "category": "Lighting",
     "buildingName": "HCL",
-    "roomName": "Storage roomName"
+    "roomName": "Storage Room"
   },
   {
     "item_id": "7",
@@ -69,7 +69,7 @@
     "available": 195,
     "category": "Accessories",
     "buildingName": "CAB",
-    "roomName": "Storage roomName"
+    "roomName": "Storage Room"
   },
   {
     "item_id": "9",
@@ -87,6 +87,6 @@
     "available": 22,
     "category": "Furniture",
     "buildingName": "HG",
-    "roomName": "Storage roomName"
+    "roomName": "Storage Room"
   }
 ]

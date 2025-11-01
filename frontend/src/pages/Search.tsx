@@ -7,7 +7,7 @@ import { useDate } from "@/store/useDate";
 
 
 function Search() {
-  const { status, data: inventory, error } = useInventory();
+  const { data: inventory } = useInventory();
   const selectedRange = useDate((state) => state.selectedRange)
 
   return (
