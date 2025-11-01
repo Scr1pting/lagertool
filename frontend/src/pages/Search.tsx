@@ -5,6 +5,7 @@ import SelectedRangeDesc from "@/components/SelectedRangeDesc";
 import useInventory from "@/hooks/useInventory";
 import { useDate } from "@/store/useDate";
 
+
 function Search() {
   const { status, data: inventory, error } = useInventory();
   const selectedRange = useDate((state) => state.selectedRange)
@@ -15,8 +16,11 @@ function Search() {
       description={<SelectedRangeDesc range={selectedRange} />}
     >
       <DataTable data={inventory ?? []} columns={inventoryColumnsFull} />
+
+    
     </RegularPage>
   )
 }
 
 export default Search;
+  

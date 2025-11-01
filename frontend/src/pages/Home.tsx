@@ -11,7 +11,7 @@ import useShelves from "@/hooks/useShelves";
 function Home() {
   const { status, data: shelves, error } = useShelves();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedElement, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
+  const [, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
   const shelfParam = searchParams.get("shelf");
   const elementParam = searchParams.get("element");
 
