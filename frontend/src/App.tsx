@@ -8,6 +8,7 @@ import WithNavLayout from './components/WithNavBar';
 import AddInventory from './pages/AddInventory';
 import Persons from './pages/Persons';
 import ShoppingCart from './pages/ShoppingCart';
+import { Toaster } from './components/Shadcn/sonner';
 
 function App() {
   useEffect(() => {
@@ -23,18 +24,21 @@ function App() {
   }, []);
 
   return (
-    <main>
-      <Routes>
-        <Route element={<WithNavLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/search" element={<Search />}/>
-          <Route path="/add" element={<AddInventory />}/>
-          <Route path="/persons" element={<Persons />}/>
-          <Route path="/shopping-cart" element={<ShoppingCart />}/>
-        </Route>
-        <Route path="/shelf-builder" element={<AddShelf />} />
-      </Routes>
-    </main>
+    <>
+      <main>
+        <Routes>
+          <Route element={<WithNavLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/search" element={<Search />}/>
+            <Route path="/add" element={<AddInventory />}/>
+            <Route path="/persons" element={<Persons />}/>
+            <Route path="/shopping-cart" element={<ShoppingCart />}/>
+          </Route>
+          <Route path="/shelf-builder" element={<AddShelf />} />
+        </Routes>
+      </main>
+      <Toaster position="bottom-right" />
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../Shadcn/dropdown-menu";
+import { Button } from "../Shadcn/button";
 import type { InventoryItem } from "@/types/inventory";
 import type { ColumnDef } from "@tanstack/react-table";
 import DataTableColumnHeader from "./DataTableSortedHeader";
