@@ -1,5 +1,3 @@
-import styles from './RegularPage.module.css';
-
 interface RegularPageProps {
   title: string;
   children: React.ReactNode;
@@ -7,8 +5,8 @@ interface RegularPageProps {
 
 function RegularPage({ title, children }: RegularPageProps) {
   return (
-    <main className={styles.mainWrapper}>
-      <h1 className={styles.title}>{title}</h1>
+    <main className="mx-auto w-full max-w-[850px] px-5">
+      <h1 className="pt-5 pb-1 text-3xl font-semibold">{title}</h1>
       {children}
     </main>
   );
