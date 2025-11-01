@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from '@/components/shadcn/popover'
 import postShelf from '../features/shelves/api/postShelf';
-import { type ShelfColumn } from '../features/shelves/types/shelf';
+import { type ShelfColumn } from '../types/shelf';
 import { makeId } from '../features/shelves/util/ids';
 import { X } from 'lucide-react';
 
@@ -69,8 +69,8 @@ function Form({ columns }: FormProps) {
         await postShelf({
           id: makeId(),
           name: values.name.trim(),
-          building: values.building.trim(),
-          room: values.room.trim(),
+          buildingName: values.building.trim(),
+          roomName: values.room.trim(),
           columns: columns,
         });
 

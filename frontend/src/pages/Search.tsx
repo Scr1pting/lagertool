@@ -1,14 +1,12 @@
-import getInventory from "@/api/getInventory";
 import DataTable from "@/components/DataTable/DataTable";
 import { inventoryColumnsFull } from "@/components/DataTable/InventoryTable/InventoryColumns";
 import RegularPage from "@/components/RegularPage";
 import SelectedRangeDesc from "@/components/SelectedRangeDesc";
-import useApi from "@/hooks/useApi";
+import useInventory from "@/hooks/useInventory";
 import { useDate } from "@/store/useDate";
-import type { InventoryItem } from "@/types/inventory";
 
 function Search() {
-  const { status, data: inventory, error } = useApi<InventoryItem[]>(getInventory);
+  const { status, data: inventory, error } = useInventory();
   const selectedRange = useDate((state) => state.selectedRange)
 
   return (

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { type ShelfElementType, ELEMENT_CATALOG } from '../types/shelf';
+import { type ShelfElementType, ELEMENT_CATALOG } from '../../../types/shelf';
 
 import styles from './Palette.module.css';
 import ShelfPiece from './ShelfElementView';

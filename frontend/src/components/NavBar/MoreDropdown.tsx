@@ -22,7 +22,7 @@ export default function MoreDropdown() {
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Link to="/add">Manage Inventory</Link>
+            <Link to="/manage-inventory">Manage Inventory</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Link to="/persons">Person Management</Link>

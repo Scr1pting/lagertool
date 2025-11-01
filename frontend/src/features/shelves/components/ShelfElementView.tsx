@@ -2,7 +2,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { motion } from 'framer-motion';
 import { type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
 
-import { type ShelfElementDefinition } from '../types/shelf';
+import { type ShelfElementDefinition } from '../../../types/shelf';
 import { type DragItemData } from '../types/drag';
 
 import styles from './ShelfElementView.module.css';

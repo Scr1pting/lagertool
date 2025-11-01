@@ -1,0 +1,7 @@
+[
+  { "id": "11", "name": "Studio A", "buildingName": "HG" },
+  { "id": "12", "name": "Studio B", "buildingName": "HG" },
+  { "id": "13", "name": "Control Room", "buildingName": "LAB" },
+  { "id": "14", "name": "Conference 1", "buildingName": "HQ" },
+  { "id": "15", "name": "Workshop Bay", "buildingName": "Warehouse" }
+]

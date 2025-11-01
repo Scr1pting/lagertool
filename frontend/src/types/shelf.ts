@@ -20,8 +20,8 @@ export interface ShelfColumn {
 export interface Shelf {
   id: string;
   name: string;
-  room: string;
-  building: string;
+  roomName: string;
+  buildingName: string;
   columns: ShelfColumn[];
 }
 

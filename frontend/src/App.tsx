@@ -5,10 +5,10 @@ import AddShelf from './pages/AddShelf';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import WithNavLayout from './components/WithNavBar';
-import AddInventory from './pages/AddInventory';
 import Persons from './pages/Persons';
 import ShoppingCart from './pages/ShoppingCart';
 import { Toaster } from './components/shadcn/sonner';
+import ManageInventory from './pages/ManageInventory';
 
 function App() {
   useEffect(() => {
@@ -30,7 +30,7 @@ function App() {
           <Route element={<WithNavLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/search" element={<Search />}/>
-            <Route path="/add" element={<AddInventory />}/>
+            <Route path="/manage-inventory" element={<ManageInventory />}/>
             <Route path="/persons" element={<Persons />}/>
             <Route path="/shopping-cart" element={<ShoppingCart />}/>
           </Route>

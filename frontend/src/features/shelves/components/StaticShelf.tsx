@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import { ELEMENT_CATALOG, type Shelf, type ShelfColumn } from "../types/shelf";
+import { ELEMENT_CATALOG, type Shelf, type ShelfColumn } from "../../../types/shelf";
 import { ShelfElementViewInner } from "./ShelfElementView";
 
 import styles from './StaticShelf.module.css';

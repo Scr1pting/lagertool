@@ -5,14 +5,11 @@ import StaticShelf from "@/features/shelves/components/StaticShelf";
 
 import styles from './Home.module.css';
 import Carousel from "@/components/Carousel/Carousel";
-
-import useApi from "@/hooks/useApi";
-import getShelves from "@/features/shelves/api/getShelves";
-import type { Shelf } from "@/features/shelves/types/shelf";
+import useShelves from "@/hooks/useShelves";
 
 
 function Home() {
-  const { status, data: shelves, error } = useApi<Shelf[]>(getShelves);
+  const { status, data: shelves, error } = useShelves();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedElement, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
   const shelfParam = searchParams.get("shelf");
@@ -78,7 +75,7 @@ function Home() {
           onElementSelect={setSelectedElement}
           highlightedElement={shelf.id === shelfParam ? (elementParam ?? undefined) : undefined}
         />
-      <label className={styles.homeLabel}>{shelf.building + " - " + shelf.room + " - " + shelf.name}</label>
+      <label className={styles.homeLabel}>{shelf.buildingName + " - " + shelf.roomName + " - " + shelf.name}</label>
     </div>
   ));
 

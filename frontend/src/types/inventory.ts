@@ -1,9 +1,9 @@
 export interface InventoryItem {
-  item_id: number,
-  item_name: string;
+  id: string,
+  name: string;
   amount: number;
   available: number;
-  building: string;
-  room: string;
+  buildingName: string;
+  roomName: string;
   shelf_id: string;
 }
