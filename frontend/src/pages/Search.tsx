@@ -7,6 +7,7 @@ import useApi from "@/hooks/useApi";
 import { useDate } from "@/store/useDate";
 import type { InventoryItem } from "@/types/inventory";
 
+
 function Search() {
   const { status, data: inventory, error } = useApi<InventoryItem[]>(getInventory);
   const selectedRange = useDate((state) => state.selectedRange)
@@ -17,8 +18,11 @@ function Search() {
       description={<SelectedRangeDesc range={selectedRange} />}
     >
       <DataTable data={inventory ?? []} columns={inventoryColumnsFull} />
+
+    
     </RegularPage>
   )
 }
 
 export default Search;
+  

@@ -4,6 +4,7 @@ import { ShoppingCart } from 'lucide-react';
 import styles from "./NavBar.module.css";
 import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
+import MiniCart from '../MiniCart';
 
 export default function NavBar(){
 
@@ -22,9 +23,17 @@ export default function NavBar(){
 
         <MoreDropdown/>
 
-        <Link to="/shopping-cart" className={clsx(styles.input, styles.buttonRnd)}>
-          <ShoppingCart className={styles.navIcon} />
-        </Link>
+        <MiniCart
+          trigger={
+            <button
+              type="button"
+              className={clsx(styles.input, styles.buttonRnd)}
+              aria-label="Open cart"
+            >
+              <ShoppingCart className={styles.navIcon} />
+            </button>
+          }
+        />
       </div>
     </div>
   );
