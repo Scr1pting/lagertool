@@ -29,6 +29,12 @@
   box-sizing: border-box;
 }
 
+.arrowIcon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.5;
+}
+
 .navButton {
   position: absolute;
   top: 50%;
@@ -57,7 +63,7 @@
 }
 
 .navButtonLeft:not(:disabled):hover {
-    transform: translateX(-8px) translateY(-50%);
+    transform: translateX(-5px) translateY(-50%);
 }
 
 .navButtonRight {
@@ -65,5 +71,5 @@
 }
 
 .navButtonRight:not(:disabled):hover {
-    transform: translateX(8px) translateY(-50%);
+    transform: translateX(5px) translateY(-50%);
 }

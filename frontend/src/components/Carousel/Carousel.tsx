@@ -93,7 +93,7 @@ function Carousel({
         disabled={activeIndex === 0}
         aria-label="Previous item"
       >
-        <MoveLeft />
+        <MoveLeft className={styles.arrowIcon} />
       </button>
 
       <div className={styles.viewport}>
@@ -121,7 +121,7 @@ function Carousel({
         disabled={activeIndex === itemCount - 1}
         aria-label="Next item"
       >
-        <MoveRight />
+        <MoveRight className={styles.arrowIcon} />
       </button>
     </section>
   );
