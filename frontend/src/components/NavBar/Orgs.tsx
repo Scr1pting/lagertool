@@ -12,9 +12,11 @@ import {
 import styles from "./NavBar.module.css"
 import getOrgs from "@/api/getOrgs"
 import useApi from "@/hooks/useApi"
+import useOrgs from "@/store/useOrgs"
 
 function Orgs() {
-  const [selectedId, setSelectedId] = useState<string>("")
+  const selectedId = useOrgs((s) => s.selectedOrgId ?? "")
+  const setSelectedId = useOrgs((s) => s.setSelectedOrgId)
   const { status, data: orgs } = useApi<Org[]>(getOrgs)
 
   const selectedOrg = useMemo(() => {
@@ -44,11 +46,11 @@ function Orgs() {
 
       <DropdownMenuContent className="w-64" align="start" sideOffset={8}>
         {orgs?.length ? (
-          <DropdownMenuRadioGroup
-            value={selectedId}
-            onValueChange={(value) => setSelectedId(value)}
-            className="max-h-64 overflow-y-auto"
-          >
+            <DropdownMenuRadioGroup
+              value={selectedId}
+              onValueChange={(value) => setSelectedId(value)}
+              className="max-h-64 overflow-y-auto"
+            >
             {orgs.map((org) => (
               <DropdownMenuRadioItem
                 key={org.org_id}
