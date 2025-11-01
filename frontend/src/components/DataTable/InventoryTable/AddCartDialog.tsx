@@ -1,4 +1,4 @@
-import { Button } from "@/components/Shadcn/button"
+import { Button } from "@/components/shadcn/button"
 import {
   Dialog,
   DialogClose,
@@ -8,9 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/Shadcn/dialog"
-import { Input } from "@/components/Shadcn/input"
-import { Label } from "@/components/Shadcn/label"
+} from "@/components/shadcn/dialog"
+import { Input } from "@/components/shadcn/input"
+import { Label } from "@/components/shadcn/label"
 import { toast } from "sonner"
 import { useCart } from "@/store/useCart"
 import type { CartItem } from "@/types/cart"

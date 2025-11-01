@@ -1,5 +1,5 @@
 import type { Column } from "@tanstack/react-table"
-import { Button } from "../Shadcn/button"
+import { Button } from "../shadcn/button"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 

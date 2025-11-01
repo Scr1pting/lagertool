@@ -1,8 +1,8 @@
 import cartColumns from "@/components/DataTable/CartColumns";
 import DataTable from "@/components/DataTable/DataTable";
 import RegularPage from "@/components/RegularPage";
-import { Button } from "@/components/Shadcn/button";
-import { ButtonGroup } from "@/components/Shadcn/button-group";
+import { Button } from "@/components/shadcn/button";
+import { ButtonGroup } from "@/components/shadcn/button-group";
 import { useCart } from "@/store/useCart";
 
 function ShoppingCart() {
@@ -11,6 +11,7 @@ function ShoppingCart() {
   return (
     <RegularPage title="Shopping Cart">
       <DataTable data={cart ?? []} columns={cartColumns} />
+
       <div className="flex w-full flex-wrap items-center justify-center gap-13 pt-4 md:flex-row">
         <ButtonGroup>
           <Button variant="destructive">Clear</Button>
@@ -19,7 +20,6 @@ function ShoppingCart() {
           <Button>Borrow</Button>
         </ButtonGroup>
       </div>
-
     </RegularPage>
   );
 }

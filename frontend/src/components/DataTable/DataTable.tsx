@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/Shadcn/table"
+} from "@/components/shadcn/table"
 
 
 interface DataTableProps<TData>

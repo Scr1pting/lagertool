@@ -1,16 +1,16 @@
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Button } from "@/components/Shadcn/button";
-import { ButtonGroup } from "@/components/Shadcn/button-group"
-import { FieldGroup, Field } from "@/components/Shadcn/field";
-import { Input } from "@/components/Shadcn/input";
-import { Label } from "@/components/Shadcn/label";
+import { Button } from "@/components/shadcn/button";
+import { ButtonGroup } from "@/components/shadcn/button-group"
+import { FieldGroup, Field } from "@/components/shadcn/field";
+import { Input } from "@/components/shadcn/input";
+import { Label } from "@/components/shadcn/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/Shadcn/popover'
+} from '@/components/shadcn/popover'
 import postShelf from '../features/shelves/api/postShelf';
 import { type ShelfColumn } from '../features/shelves/types/shelf';
 import { makeId } from '../features/shelves/util/ids';
