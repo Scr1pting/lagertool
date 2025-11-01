@@ -5,11 +5,11 @@ import StaticShelf from "@/features/shelves/components/StaticShelf";
 
 import styles from './Home.module.css';
 import Carousel from "@/components/Carousel/Carousel";
-import useShelves from "@/hooks/useShelves";
+import useFetchShelves from "@/hooks/useFetchShelves";
 
 
 function Home() {
-  const { status, data: shelves, error } = useShelves();
+  const { status, data: shelves, error } = useFetchShelves();
   const [searchParams, setSearchParams] = useSearchParams();
   const [, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
   const shelfParam = searchParams.get("shelf");

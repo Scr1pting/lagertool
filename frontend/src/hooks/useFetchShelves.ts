@@ -1,8 +1,8 @@
 import useApi from "./useApi";
 import type { Shelf } from "@/types/shelf";
 
-function useRooms() {
+function useFetchShelves() {
   return useApi<Shelf[]>('/shelves.sample.json')
 }
 
-export default useRooms;
+export default useFetchShelves;

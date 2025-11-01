@@ -1,4 +1,3 @@
-import type { Org } from "@/types/org"
 import { useMemo} from "react"
 import clsx from "clsx"
 import { PersonStanding } from "lucide-react"
@@ -10,18 +9,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu"
 import styles from "./NavBar.module.css"
-import getOrgs from "@/api/getOrgs"
-import useApi from "@/hooks/useApi"
+
 import useOrgs from "@/store/useOrgs"
+import useFetchOrgs from "@/hooks/useFetchOrgs"
 
 function Orgs() {
   const selectedId = useOrgs((s) => s.selectedOrgId ?? "")
   const setSelectedId = useOrgs((s) => s.setSelectedOrgId)
-  const { status, data: orgs } = useApi<Org[]>(getOrgs)
+  const { data: orgs } = useFetchOrgs();
 
   const selectedOrg = useMemo(() => {
     if (!orgs?.length || !selectedId) return undefined
-    return orgs.find((org) => org.org_id === selectedId)
+    return orgs.find((org) => org.id === selectedId)
   }, [orgs, selectedId])
 
   return (
@@ -34,8 +33,8 @@ function Orgs() {
         >
           {selectedOrg ? (
             <img
-              src={selectedOrg.img_url}
-              alt={selectedOrg.org_name}
+              src={selectedOrg.imgUrl}
+              alt={selectedOrg.name}
               className="size-6 object-contain"
             />
           ) : (
@@ -53,17 +52,17 @@ function Orgs() {
             >
             {orgs.map((org) => (
               <DropdownMenuRadioItem
-                key={org.org_id}
-                value={org.org_id}
+                key={org.id}
+                value={org.id}
                 className="pl-10 pr-2"
               >
                 <span className="flex items-center gap-3">
                   <img
-                    src={org.img_url}
-                    alt={org.org_name}
+                    src={org.imgUrl}
+                    alt={org.name}
                     className="size-8 rounded-sm border object-contain"
                   />
-                  <span className="text-sm font-medium">{org.org_name}</span>
+                  <span className="text-sm font-medium">{org.name}</span>
                 </span>
               </DropdownMenuRadioItem>
             ))}

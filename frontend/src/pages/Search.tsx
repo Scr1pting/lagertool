@@ -2,7 +2,7 @@ import DataTable from "@/components/DataTable/DataTable";
 import { inventoryColumnsFull } from "@/components/DataTable/InventoryTable/InventoryColumns";
 import RegularPage from "@/components/RegularPage";
 import SelectedRangeDesc from "@/components/SelectedRangeDesc";
-import useInventory from "@/hooks/useInventory";
+import useInventory from "@/hooks/useFetchInventory";
 import { useDate } from "@/store/useDate";
 
 
@@ -16,8 +16,6 @@ function Search() {
       description={<SelectedRangeDesc range={selectedRange} />}
     >
       <DataTable data={inventory ?? []} columns={inventoryColumnsFull} />
-
-    
     </RegularPage>
   )
 }

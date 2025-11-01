@@ -27,9 +27,6 @@ export default function MoreDropdown() {
           <DropdownMenuItem>
             <Link to="/persons">Person Management</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link to="/shelf-builder">Add Shelf</Link>
-          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

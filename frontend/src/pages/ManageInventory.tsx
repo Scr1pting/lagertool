@@ -28,15 +28,15 @@ import {
   SelectValue,
 } from "@/components/shadcn/select"
 import { inventoryColumnsNoCart } from "@/components/DataTable/InventoryTable/InventoryColumns"
-import useBuilding from "@/hooks/useBuildings"
-import useRooms from "@/hooks/useRooms"
-import useInventory from "@/hooks/useInventory"
+import useBuilding from "@/hooks/useFetchBuildings"
+import useFetchRooms from "@/hooks/useFetchRooms"
+import useInventory from "@/hooks/useFetchInventory"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { Room } from "@/types/room"
 import type { Building } from "@/types/building"
 import type { InventoryItem } from "@/types/inventory"
 import type { Shelf } from "@/types/shelf"
-import useShelves from "@/hooks/useShelves"
+import useFetchShelves from "@/hooks/useFetchShelves"
 
 
 // MARK: ManageInventoryPage
@@ -310,8 +310,8 @@ function AddBuilding({ buildings }: AddBuildingProps) {
 // MARK: ManageInventory
 function ManageInventory() {
   const { data: buildings } = useBuilding()
-  const { data: rooms } = useRooms()
-  const { data: shelves } = useShelves()
+  const { data: rooms } = useFetchRooms()
+  const { data: shelves } = useFetchShelves()
   const { data: inventory } = useInventory()
 
   return (

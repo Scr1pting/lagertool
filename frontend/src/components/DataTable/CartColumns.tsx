@@ -23,13 +23,13 @@ const cartColumns: ColumnDef<InventoryItem>[] = [
     ),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
-      const a = (rowA.original.building || "") + "/" + (rowA.original.room || "");
-      const b = (rowB.original.building || "") + "/" + (rowB.original.room || "");
+      const a = (rowA.original.buildingName || "") + "/" + (rowA.original.roomName || "");
+      const b = (rowB.original.buildingName || "") + "/" + (rowB.original.roomName || "");
       return a.localeCompare(b);
     },
     cell: ({ row }) => {
-      const building = row.original.building || "unknown";
-      const room = row.original.room || "unknown";
+      const building = row.original.buildingName || "unknown";
+      const room = row.original.roomName || "unknown";
       return <div>{building + "/" + room}</div>;
     },
   },

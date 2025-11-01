@@ -56,7 +56,7 @@ function CheckoutSubmit({ numSelected, item, title, description, onBack, resetVa
     event.preventDefault();
 
     toast("Added to cart", {
-      description: `${item.item_name} - ${numSelected}`,
+      description: `${item.name} - ${numSelected}`,
       action: {
         label: "Undo",
         onClick: () => console.log("Undo"),
@@ -92,7 +92,7 @@ function CheckoutSubmit({ numSelected, item, title, description, onBack, resetVa
 
           <div className="flex justify-between">
             <span className="text-muted-foreground">Name</span>
-            <span className="font-medium">{item.item_name}</span>
+            <span className="font-medium">{item.name}</span>
           </div>
 
           <Separator />
@@ -230,7 +230,7 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
       add(cartItem);
 
       toast("Added to cart", {
-        description: `${cartItem.item_name} - ${cartItem.numSelected}`,
+        description: `${cartItem.name} - ${cartItem.numSelected}`,
         action: {
           label: "Undo",
           onClick: () => console.log("Undo"),
@@ -244,7 +244,7 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
   return(
     <>
       <DialogHeader>
-        <DialogTitle>{item.item_name}</DialogTitle>
+        <DialogTitle>{item.name}</DialogTitle>
         <DialogDescription>
           {item.available} Available.
         </DialogDescription>
