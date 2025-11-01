@@ -8,7 +8,7 @@ import WithNavLayout from './components/WithNavBar';
 import AddInventory from './pages/AddInventory';
 import Persons from './pages/Persons';
 import ShoppingCart from './pages/ShoppingCart';
-import { Toaster } from './components/Shadcn/sonner';
+import { Toaster } from './components/shadcn/sonner';
 
 function App() {
   useEffect(() => {

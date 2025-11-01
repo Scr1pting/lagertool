@@ -1,5 +1,5 @@
-import { Button } from "@/components/Shadcn/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/Shadcn/dropdown-menu";
+import { Button } from "@/components/shadcn/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/shadcn/dropdown-menu";
 import { useCart } from "@/store/useCart";
 import type { CartItem } from "@/types/cart";
 import type { InventoryItem } from "@/types/inventory";
