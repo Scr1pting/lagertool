@@ -11,15 +11,15 @@ function ShoppingCart() {
   return (
     <RegularPage title="Shopping Cart">
       <DataTable data={cart ?? []} columns={cartColumns} />
-
-      <ButtonGroup>
+      <div className="flex w-full flex-wrap items-center justify-center gap-13 pt-4 md:flex-row">
         <ButtonGroup>
           <Button variant="destructive">Clear</Button>
         </ButtonGroup>
         <ButtonGroup>
           <Button>Borrow</Button>
         </ButtonGroup>
-      </ButtonGroup>
+      </div>
+
     </RegularPage>
   );
 }
