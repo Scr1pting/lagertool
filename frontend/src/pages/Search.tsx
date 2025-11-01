@@ -9,7 +9,7 @@ import type { InventoryItem } from "@/types/inventory";
 
 
 function Search() {
-  const { status, data: inventory, error } = useApi<InventoryItem[]>(getInventory);
+  const { data: inventory } = useApi<InventoryItem[]>(getInventory);
   const selectedRange = useDate((state) => state.selectedRange)
 
   return (
