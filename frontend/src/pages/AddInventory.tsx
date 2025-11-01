@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import RegularPage from "@/components/RegularPage"
 import DataTable from "@/components/DataTable/DataTable"
-import createInventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns"
 import roomColumns from "@/components/DataTable/RoomColumns"
 import buildingColumns from "@/components/DataTable/BuildingColumns"
 import { Button } from "@/components/shadcn/button"
@@ -31,6 +30,7 @@ import {
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
 import type { Building } from "@/types/building"
+import { inventoryColumnsNoCart } from "@/components/DataTable/InventoryTable/InventoryColumns"
 
 const recentInventory: InventoryItem[] = [
   {
@@ -95,8 +95,6 @@ const recentBuildings: Building[] = [
   { building_id: 24, name: "HQ" },
   { building_id: 25, name: "Annex" },
 ]
-
-const inventoryTableColumns = createInventoryColumns({ showAddToCart: false })
 
 function AddInventory() {
   const [buildings, setBuildings] = useState<Building[]>([])
@@ -233,7 +231,7 @@ function AddInventory() {
                 <h3 className="text-sm font-medium text-muted-foreground">
                   Recently added inventory
                 </h3>
-                <DataTable data={recentInventory} columns={inventoryTableColumns} />
+                <DataTable data={recentInventory} columns={inventoryColumnsNoCart} />
               </section>
             </div>
           </TabsContent>

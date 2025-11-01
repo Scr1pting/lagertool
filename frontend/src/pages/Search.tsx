@@ -1,7 +1,6 @@
-import { useMemo } from "react"
 import getInventory from "@/api/getInventory";
 import DataTable from "@/components/DataTable/DataTable";
-import createInventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns";
+import { inventoryColumnsFull } from "@/components/DataTable/InventoryTable/InventoryColumns";
 import RegularPage from "@/components/RegularPage";
 import SelectedRangeDesc from "@/components/SelectedRangeDesc";
 import useApi from "@/hooks/useApi";
@@ -17,7 +16,7 @@ function Search() {
       title="Search Results"
       description={<SelectedRangeDesc range={selectedRange} />}
     >
-      <DataTable data={inventory ?? []} columns={inventoryColumns} />
+      <DataTable data={inventory ?? []} columns={inventoryColumnsFull} />
     </RegularPage>
   )
 }
