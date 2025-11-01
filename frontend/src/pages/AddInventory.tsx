@@ -202,7 +202,7 @@ function AddInventory() {
                     <Select
                       value={inventoryRoomId || undefined}
                       onValueChange={setInventoryRoomId}
-                      disabled={!inventoryBuildingId}
+                      disabled={!inventoryBuildingId && inventoryRoomOptions.length !== 0}
                     >
                       <SelectTrigger id="inventory-room">
                         <SelectValue

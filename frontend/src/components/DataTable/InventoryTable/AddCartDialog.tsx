@@ -21,6 +21,7 @@ import { format } from "date-fns"
 import { Textarea } from "@/components/shadcn/textarea"
 import { Field, FieldDescription } from "@/components/shadcn/field"
 import { useState, type FormEvent } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 
 
 // MARK: CheckoutSubmit
@@ -82,8 +83,8 @@ function CheckoutSubmit({ numSelected, item, title, description, onBack, resetVa
           {description !== "" &&
             <>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Description</span>
-                <span className="font-medium">{description}</span>
+                <p className="text-muted-foreground">Description</p>
+                <p className="font-medium">{description}</p>
               </div>
               <Separator />
             </>
@@ -142,59 +143,64 @@ interface InstantCheckoutDialogProps {
 }
 
 function CheckoutAddInfo({ title, setTitle, description, setDescription, onBack, onProceed }: InstantCheckoutDialogProps) {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (title !== "") {
+      onProceed();
+    }
+  };
+
   return(
     <>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Direct Checkout</DialogTitle>
-          <DialogDescription>
-            Please add some info to your request.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={onProceed} className="grid gap-5">
-          <Field>
-            <Label htmlFor="title">Title (Required)</Label>
-            <Input
-              id="title"
-              name="title"
-              type="text"
-              value={title}
-              onChange={(event) => {
-                setTitle(event.target.value);
-              }}
-            />
-          </Field>
+      <DialogHeader>
+        <DialogTitle>Direct Checkout</DialogTitle>
+        <DialogDescription>
+          Please add some info to your request.
+        </DialogDescription>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="grid gap-5">
+        <Field>
+          <Label htmlFor="title">Title (Required)</Label>
+          <Input
+            id="title"
+            name="title"
+            type="text"
+            value={title}
+            onChange={(event) => {
+              setTitle(event.target.value);
+            }}
+          />
+        </Field>
 
-          <Field>
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="descriptoin"
-              value={description}
-              onChange={(event) => {
-                setDescription(event.target.value);
-              }}
-            />
-          </Field>
+        <Field>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            name="description"
+            value={description}
+            onChange={(event) => {
+              setDescription(event.target.value);
+            }}
+          />
+        </Field>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={onBack}
-            >
-              Back
-            </Button>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+          >
+            Back
+          </Button>
 
-            <Button
-              disabled={title === ""}
-              type="submit"
-              onClick={onProceed}
-            >
-              Next
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+          <Button
+            disabled={title === ""}
+            type="submit"
+          >
+            Next
+          </Button>
+        </DialogFooter>
+      </form>
     </>
   )
 }
@@ -267,6 +273,7 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
         <DialogFooter>
           <Button
             disabled={isInvalidQuantity}
+            type="button"
             onClick={onProceed}
             variant="outline"
           >
@@ -287,6 +294,8 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
 
 
 // MARK: AddCartDialog
+const MotionDialogContent = motion(DialogContent)
+
 function AddCartDialog({ item }: { item: InventoryItem }) {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState<"Main" | "CheckoutAddInfo" | "CheckoutSubmit">("Main")
@@ -359,9 +368,25 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
           <PlusIcon />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        {renderPage()}
-      </DialogContent>
+      <MotionDialogContent
+        className="sm:max-w-[425px] overflow-hidden"
+        layout="size"
+        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={page}
+            layout
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="space-y-4"
+          >
+            {renderPage()}
+          </motion.div>
+        </AnimatePresence>
+      </MotionDialogContent>
     </Dialog>
   )
 }
