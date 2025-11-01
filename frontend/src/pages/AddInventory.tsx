@@ -137,17 +137,17 @@ function AddInventory() {
   )
 
   return (
-    <RegularPage title="Add Inventory">
-      <div className="flex w-full max-w-3xl flex-col gap-6">
+    <RegularPage title="Manage Inventory">
+      <div className="w-full max-w-3xl">
         <Tabs defaultValue="inventory">
-          <TabsList className="grid w-full grid-cols-3 gap-2 self-center">
-            <TabsTrigger value="inventory" className="text-sm">
+          <TabsList className="grid w-full grid-cols-3 gap-2 text-sm">
+            <TabsTrigger value="inventory">
               Inventory
             </TabsTrigger>
-            <TabsTrigger value="room" className="text-sm">
+            <TabsTrigger value="room">
               Room
             </TabsTrigger>
-            <TabsTrigger value="building" className="text-sm">
+            <TabsTrigger value="building">
               Building
             </TabsTrigger>
           </TabsList>
@@ -202,7 +202,7 @@ function AddInventory() {
                     <Select
                       value={inventoryRoomId || undefined}
                       onValueChange={setInventoryRoomId}
-                      disabled={!inventoryBuildingId && inventoryRoomOptions.length !== 0}
+                      disabled={!inventoryBuildingId || inventoryRoomOptions.length === 0}
                     >
                       <SelectTrigger id="inventory-room">
                         <SelectValue
@@ -228,9 +228,9 @@ function AddInventory() {
                 </CardFooter>
               </Card>
               <section className="space-y-3">
-                <h3 className="text-sm font-medium text-muted-foreground">
+                <h2 className="text-sm font-medium text-muted-foreground">
                   Recently added inventory
-                </h3>
+                </h2>
                 <DataTable data={recentInventory} columns={inventoryColumnsNoCart} />
               </section>
             </div>
