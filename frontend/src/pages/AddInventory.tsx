@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react"
 import RegularPage from "@/components/RegularPage"
 import DataTable from "@/components/DataTable/DataTable"
 import createInventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns"
@@ -20,6 +21,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/Shadcn/tabs"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/Shadcn/select"
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
 import type { Building } from "@/types/building"
@@ -91,6 +99,45 @@ const recentBuildings: Building[] = [
 const inventoryTableColumns = createInventoryColumns({ showAddToCart: false })
 
 function AddInventory() {
+  const [buildings, setBuildings] = useState<Building[]>([])
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [inventoryBuildingId, setInventoryBuildingId] = useState<string>("")
+  const [inventoryRoomId, setInventoryRoomId] = useState<string>("")
+  const [roomBuildingId, setRoomBuildingId] = useState<string>("")
+
+  useEffect(() => {
+    // TODO: replace with real API calls when backend endpoints are ready
+    setBuildings(recentBuildings)
+    setRooms(recentRooms)
+  }, [])
+
+  const buildingOptions = useMemo(
+    () =>
+      buildings.map((building) => ({
+        id: building.building_id.toString(),
+        label: building.name,
+      })),
+    [buildings]
+  )
+
+  const inventoryRoomOptions = useMemo(
+    () =>
+      rooms
+        .filter((room) => {
+          const selectedBuilding = buildings.find(
+            (building) => building.building_id.toString() === inventoryBuildingId
+          )
+          if (!selectedBuilding) return true
+          return room.building === selectedBuilding.name
+        })
+        .map((room) => ({
+          id: room.room_id.toString(),
+          label: room.name,
+          building: room.building,
+        })),
+    [rooms, buildings, inventoryBuildingId]
+  )
+
   return (
     <RegularPage title="Add Inventory">
       <div className="flex w-full max-w-3xl flex-col gap-6">
@@ -132,12 +179,50 @@ function AddInventory() {
                     />
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
-                    <Label htmlFor="inventory-room">Room</Label>
-                    <Input id="inventory-room" placeholder="F 21" />
+                  <Label htmlFor="inventory-building">Building</Label>
+                    <Select
+                      value={inventoryBuildingId || undefined}
+                      onValueChange={(value) => {
+                        setInventoryBuildingId(value)
+                        setInventoryRoomId("")
+                      }}
+                    >
+                      <SelectTrigger id="inventory-building">
+                        <SelectValue placeholder="Select building" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {buildingOptions.map((building) => (
+                          <SelectItem key={building.id} value={building.id}>
+                            {building.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
-                    <Label htmlFor="inventory-building">Building</Label>
-                    <Input id="inventory-building" placeholder="HG" />
+                  <Label htmlFor="inventory-room">Room</Label>
+                    <Select
+                      value={inventoryRoomId || undefined}
+                      onValueChange={setInventoryRoomId}
+                      disabled={!inventoryBuildingId}
+                    >
+                      <SelectTrigger id="inventory-room">
+                        <SelectValue
+                          placeholder={
+                            inventoryBuildingId
+                              ? "Select room"
+                              : "Select building first"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {inventoryRoomOptions.map((room) => (
+                          <SelectItem key={room.id} value={room.id}>
+                            {room.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
@@ -168,8 +253,24 @@ function AddInventory() {
                     <Input id="room-name" placeholder="Studio A" />
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
-                    <Label htmlFor="room-building">Building</Label>
-                    <Input id="room-building" placeholder="HG" />
+                  <Label htmlFor="room-building">Building</Label>
+                    <Select
+                      value={roomBuildingId || undefined}
+                      onValueChange={(value) => {
+                        setRoomBuildingId(value)
+                      }}
+                    >
+                      <SelectTrigger id="room-building">
+                        <SelectValue placeholder="Select building" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {buildingOptions.map((building) => (
+                          <SelectItem key={building.id} value={building.id}>
+                            {building.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
