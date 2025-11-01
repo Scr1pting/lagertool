@@ -5,10 +5,11 @@ import styles from "./NavBar.module.css";
 import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
 import MiniCart from '../MiniCart';
+import Org from './Orgs';
 
-export default function NavBar(){
+export default function NavBar() {
 
-  return(
+  return (
     <div className={styles.NavBar}>
       <div className={styles.content}>
         <Link className={styles.logo} to="/" aria-label="Home">
@@ -19,9 +20,9 @@ export default function NavBar(){
           />
         </Link>
 
-        <div className={styles.input}><SearchBar/></div>
+        <div className={styles.input}><SearchBar /></div>
 
-        <MoreDropdown/>
+        <MoreDropdown />
 
         <MiniCart
           trigger={
@@ -34,6 +35,7 @@ export default function NavBar(){
             </button>
           }
         />
+        <Org />
       </div>
     </div>
   );
