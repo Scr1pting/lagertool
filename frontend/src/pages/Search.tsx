@@ -1,6 +1,7 @@
+import { useMemo } from "react"
 import getInventory from "@/api/getInventory";
 import DataTable from "@/components/DataTable/DataTable";
-import inventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns";
+import createInventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns";
 import RegularPage from "@/components/RegularPage";
 import useApi from "@/hooks/useApi";
 import type { InventoryItem } from "@/types/inventory";
@@ -8,11 +9,11 @@ import type { InventoryItem } from "@/types/inventory";
 function Search() {
   const { status, data: inventory, error } = useApi<InventoryItem[]>(getInventory);
 
-  console.log(inventory);
+  const columns = useMemo(() => createInventoryColumns(), [])
 
   return (
     <RegularPage title="Search Results">
-      <DataTable data={inventory ?? []} columns={inventoryColumns} />
+      <DataTable data={inventory ?? []} columns={columns} />
     </RegularPage>
   )
 }

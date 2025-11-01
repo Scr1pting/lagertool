@@ -1,18 +1,25 @@
-import { Button } from "@/components/Shadcn/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/Shadcn/dropdown-menu";
-import { useCart } from "@/store/useCart";
-import type { CartItem } from "@/types/cart";
-import type { InventoryItem } from "@/types/inventory";
-import type { Row } from "@tanstack/react-table";
-import { MoreHorizontal, Pen, Plus, Trash2 } from "lucide-react";
-import AddCartDialog from "./AddCartDialog";
+import { Button } from "@/components/Shadcn/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/Shadcn/dropdown-menu"
+import type { InventoryItem } from "@/types/inventory"
+import type { Row } from "@tanstack/react-table"
+import { MoreHorizontal, Pen, Trash2 } from "lucide-react"
+import AddCartDialog from "./AddCartDialog"
 
+interface InventoryActionsProps {
+  row: Row<InventoryItem>
+  showAddToCart?: boolean
+}
 
-function InventoryActions({ row }: { row: Row<InventoryItem> }) {
+function InventoryActions({ row, showAddToCart = true }: InventoryActionsProps) {
   return (
     <div className="flex justify-end">
       <DropdownMenu>
-        <AddCartDialog item={row.original} />
+        {showAddToCart && <AddCartDialog item={row.original} />}
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Open menu</span>
@@ -32,4 +39,4 @@ function InventoryActions({ row }: { row: Row<InventoryItem> }) {
   )
 }
 
-export default InventoryActions;
+export default InventoryActions
