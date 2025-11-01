@@ -1,10 +1,10 @@
-import { Button } from "@/components/Shadcn/button"
+import { Button } from "@/components/shadcn/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/Shadcn/dropdown-menu"
+} from "@/components/shadcn/dropdown-menu"
 import type { InventoryItem } from "@/types/inventory"
 import type { Row } from "@tanstack/react-table"
 import { MoreHorizontal, Pen, Trash2 } from "lucide-react"

@@ -4,7 +4,7 @@ import DataTable from "@/components/DataTable/DataTable"
 import createInventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns"
 import roomColumns from "@/components/DataTable/RoomColumns"
 import buildingColumns from "@/components/DataTable/BuildingColumns"
-import { Button } from "@/components/Shadcn/button"
+import { Button } from "@/components/shadcn/button"
 import {
   Card,
   CardContent,
@@ -12,22 +12,22 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/Shadcn/card"
-import { Input } from "@/components/Shadcn/input"
-import { Label } from "@/components/Shadcn/label"
+} from "@/components/shadcn/card"
+import { Input } from "@/components/shadcn/input"
+import { Label } from "@/components/shadcn/label"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/Shadcn/tabs"
+} from "@/components/shadcn/tabs"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/Shadcn/select"
+} from "@/components/shadcn/select"
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
 import type { Building } from "@/types/building"
