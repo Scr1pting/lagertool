@@ -1,6 +1,7 @@
+import { useMemo } from "react"
 import getInventory from "@/api/getInventory";
 import DataTable from "@/components/DataTable/DataTable";
-import inventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns";
+import createInventoryColumns from "@/components/DataTable/InventoryTable/InventoryColumns";
 import RegularPage from "@/components/RegularPage";
 import SelectedRangeDesc from "@/components/SelectedRangeDesc";
 import useApi from "@/hooks/useApi";

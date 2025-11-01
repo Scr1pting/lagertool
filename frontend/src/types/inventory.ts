@@ -5,4 +5,5 @@ export interface InventoryItem {
   available: number;
   building: string;
   room: string;
+  shelf_id: string;
 }
