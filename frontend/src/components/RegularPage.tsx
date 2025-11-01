@@ -5,8 +5,8 @@ interface RegularPageProps {
 
 function RegularPage({ title, children }: RegularPageProps) {
   return (
-    <main className="mx-auto w-full max-w-[850px] px-5">
-      <h1 className="pt-5 pb-1 text-3xl font-semibold">{title}</h1>
+    <main className="mx-auto w-full max-w-[850px] px-5 py-10">
+      <h1 className="pt-5 pb-4 text-3xl font-semibold">{title}</h1>
       {children}
     </main>
   );

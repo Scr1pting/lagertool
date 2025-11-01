@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import StaticShelf from "@/features/shelves/components/StaticShelf";
 
 import styles from './Home.module.css';
-import Carousel from "@/components/Carousel";
+import Carousel from "@/components/Carousel/Carousel";
 
 import useApi from "@/hooks/useApi";
 import getShelves from "@/features/shelves/api/getShelves";

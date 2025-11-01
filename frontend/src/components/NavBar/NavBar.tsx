@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { Link } from "react-router-dom";
 import { ShoppingCart } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../Shadcn/tooltip";
 
 import styles from "./NavBar.module.css";
 import MoreDropdown from "./MoreDropdown";

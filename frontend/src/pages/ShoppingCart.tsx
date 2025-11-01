@@ -1,8 +1,8 @@
 import cartColumns from "@/components/DataTable/CartColumns";
 import DataTable from "@/components/DataTable/DataTable";
 import RegularPage from "@/components/RegularPage";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import { Button } from "@/components/Shadcn/button";
+import { ButtonGroup } from "@/components/Shadcn/button-group";
 import { useCart } from "@/store/useCart";
 
 function ShoppingCart() {
