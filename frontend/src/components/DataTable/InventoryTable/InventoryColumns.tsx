@@ -6,11 +6,11 @@ import InventoryActions from "./InventoryActions"
 
 const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
   {
-    accessorKey: "item_name",
+    accessorKey: "name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row }) => <div>{row.getValue("item_name")}</div>,
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
     accessorKey: "location",

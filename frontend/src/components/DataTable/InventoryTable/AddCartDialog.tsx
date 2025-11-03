@@ -20,7 +20,7 @@ import { useDate } from "@/store/useDate"
 import { format } from "date-fns"
 import { Textarea } from "@/components/shadcn/textarea"
 import { Field, FieldDescription } from "@/components/shadcn/field"
-import { useLayoutEffect, useRef, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 
@@ -303,48 +303,6 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
   const [numSelected, setNumSelected] = useState<number>(1);
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [contentHeight, setContentHeight] = useState<number | null>(null)
-
-  const contentWrapperRef = useRef<HTMLDivElement>(null)
-
-  useLayoutEffect(() => {
-    if (!open) {
-      setContentHeight(null)
-      return
-    }
-
-    const wrapper = contentWrapperRef.current
-
-    if (!wrapper) {
-      return
-    }
-
-    const updateHeight = () => {
-      const nextHeight = wrapper.offsetHeight
-
-      if (nextHeight === 0) {
-        return
-      }
-
-      setContentHeight(nextHeight)
-    }
-
-    updateHeight()
-
-    if (typeof ResizeObserver === "undefined") {
-      return
-    }
-
-    const observer = new ResizeObserver(() => {
-      updateHeight()
-    })
-
-    observer.observe(wrapper)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [open, page, numSelected, title, description])
 
   function renderPage() {
     switch (page) {
@@ -412,40 +370,22 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
       </DialogTrigger>
       <MotionDialogContent
         className="sm:max-w-[425px] overflow-hidden"
-        style={{ transformOrigin: "top center" }}
+        layout="size"
+        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div
-          style={{
-            height: contentHeight != null ? `${contentHeight}px` : undefined,
-            transition: "height 0.32s cubic-bezier(0.16, 1, 0.3, 1)",
-            overflow: "hidden",
-            width: "100%",
-          }}
-        >
-          <div
-            ref={contentWrapperRef}
-            style={{ width: "100%" }}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={page}
+            layout
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="space-y-4"
           >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={page}
-                layout
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{
-                  layout: { duration: 0.24, ease: [0.16, 1, 0.3, 1] },
-                  opacity: { duration: 0.18, ease: "easeOut" },
-                  y: { duration: 0.18, ease: "easeOut" },
-                }}
-                className="space-y-4"
-                style={{ width: "100%" }}
-              >
-                {renderPage()}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+            {renderPage()}
+          </motion.div>
+        </AnimatePresence>
       </MotionDialogContent>
     </Dialog>
   )

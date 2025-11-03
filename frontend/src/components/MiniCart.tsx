@@ -26,10 +26,10 @@ function MiniCart({ trigger }: MiniCartProps) {
   const columns = useMemo<ColumnDef<CartItem>[]>(
     () => [
       {
-        accessorKey: "item_name",
+        accessorKey: "name",
         header: "Item",
         cell: ({ row }) => (
-          <span className="font-medium">{row.getValue("item_name")}</span>
+          <span className="font-medium">{row.getValue("name")}</span>
         ),
       },
       {

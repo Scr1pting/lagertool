@@ -18,9 +18,9 @@ function ShoppingCart() {
     >
       <DataTable data={cart ?? []} columns={cartColumns} />
 
-      <div className="flex w-full flex-wrap items-center justify-center gap-13 pt-4 md:flex-row">
+      <div className="w-full gap-13">
         <ButtonGroup>
-          <Button variant="destructive">Clear</Button>
+          <Button variant="outline">Clear</Button>
         </ButtonGroup>
         <ButtonGroup>
           <Button>Borrow</Button>
