@@ -20,7 +20,7 @@ import { useDate } from "@/store/useDate"
 import { format } from "date-fns"
 import { Textarea } from "@/components/shadcn/textarea"
 import { Field, FieldDescription } from "@/components/shadcn/field"
-import { useState, type FormEvent } from "react"
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 
@@ -295,14 +295,109 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
 
 // MARK: AddCartDialog
 const MotionDialogContent = motion(DialogContent)
+type DialogPage = "Main" | "CheckoutAddInfo" | "CheckoutSubmit"
 
 function AddCartDialog({ item }: { item: InventoryItem }) {
   const [open, setOpen] = useState(false);
-  const [page, setPage] = useState<"Main" | "CheckoutAddInfo" | "CheckoutSubmit">("Main")
+  const [page, setPage] = useState<DialogPage>("Main")
 
   const [numSelected, setNumSelected] = useState<number>(1);
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
+
+  const animatedContainerRef = useRef<HTMLDivElement>(null)
+  const contentWrapperRef = useRef<HTMLDivElement>(null)
+  const previousHeightRef = useRef<number | null>(null)
+  const pendingAnimationRef = useRef(false)
+  const heightAnimationRef = useRef<Animation | null>(null)
+
+  // Smoothly animate the dialog height only when the wizard page changes.
+  const animateToPage = (nextPage: DialogPage) => {
+    if (contentWrapperRef.current) {
+      previousHeightRef.current = contentWrapperRef.current.offsetHeight
+      pendingAnimationRef.current = true
+    }
+    setPage(nextPage)
+  }
+
+  const animateHeightChange = () => {
+    if (!open) {
+      pendingAnimationRef.current = false
+      return
+    }
+
+    const container = animatedContainerRef.current
+    const content = contentWrapperRef.current
+
+    if (!container || !content) {
+      pendingAnimationRef.current = false
+      return
+    }
+
+    const startHeight = previousHeightRef.current
+    const nextHeight = content.offsetHeight
+
+    pendingAnimationRef.current = false
+    previousHeightRef.current = nextHeight
+
+    if (startHeight == null || startHeight === nextHeight) {
+      container.style.height = "auto"
+      return
+    }
+
+    heightAnimationRef.current?.cancel()
+
+    container.style.height = `${startHeight}px`
+
+    const animation = container.animate(
+      [
+        { height: `${startHeight}px` },
+        { height: `${nextHeight}px` },
+      ],
+      {
+        duration: 280,
+        easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+      },
+    )
+
+    animation.onfinish = () => {
+      container.style.height = "auto"
+      heightAnimationRef.current = null
+    }
+
+    animation.oncancel = () => {
+      container.style.height = "auto"
+      heightAnimationRef.current = null
+    }
+
+    heightAnimationRef.current = animation
+  }
+
+  useLayoutEffect(() => {
+    if (!open) {
+      heightAnimationRef.current?.cancel()
+      pendingAnimationRef.current = false
+      previousHeightRef.current = null
+
+      if (animatedContainerRef.current) {
+        animatedContainerRef.current.style.height = "auto"
+      }
+
+      return
+    }
+
+    if (contentWrapperRef.current) {
+      previousHeightRef.current = contentWrapperRef.current.offsetHeight
+    }
+  }, [open])
+
+  const handleExitComplete = () => {
+    if (!pendingAnimationRef.current) {
+      return
+    }
+
+    requestAnimationFrame(animateHeightChange)
+  }
 
   function renderPage() {
     switch (page) {
@@ -312,7 +407,7 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
             item={item}
             numSelected={numSelected}
             setNumSelected={setNumSelected}
-            onProceed={() => setPage("CheckoutAddInfo")}
+            onProceed={() => animateToPage("CheckoutAddInfo")}
             resetValues={resetValues}
           />
         )
@@ -323,8 +418,8 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
             setTitle={setTitle}
             description={description}
             setDescription={setDescription}
-            onBack={() => setPage("Main")}
-            onProceed={() => setPage("CheckoutSubmit")}
+            onBack={() => animateToPage("Main")}
+            onProceed={() => animateToPage("CheckoutSubmit")}
           />
         )
       case "CheckoutSubmit":
@@ -334,7 +429,7 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
             numSelected={numSelected}
             title={title}
             description={description}
-            onBack={() => setPage("CheckoutAddInfo")}
+            onBack={() => animateToPage("CheckoutAddInfo")}
             resetValues={resetValues}
           />
         )
@@ -368,24 +463,26 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
           <PlusIcon />
         </Button>
       </DialogTrigger>
-      <MotionDialogContent
-        className="sm:max-w-[425px] overflow-hidden"
-        layout="size"
-        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={page}
-            layout
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="space-y-4"
-          >
-            {renderPage()}
-          </motion.div>
-        </AnimatePresence>
+      <MotionDialogContent className="sm:max-w-[425px]">
+        <div
+          ref={animatedContainerRef}
+          style={{ overflow: "hidden", width: "100%" }}
+        >
+          <div ref={contentWrapperRef} style={{ width: "100%" }}>
+            <AnimatePresence mode="wait" initial={false} onExitComplete={handleExitComplete}>
+              <motion.div
+                key={page}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="space-y-4 px-3 py-4"
+              >
+                {renderPage()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
       </MotionDialogContent>
     </Dialog>
   )
