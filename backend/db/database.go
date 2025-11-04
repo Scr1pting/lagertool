@@ -34,7 +34,7 @@ func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
 	return con, nil
 }
 
-func InitDB(con *pg.DB) {
+func ffInitDB(con *pg.DB) {
 	// Create tables using the provided connection
 	models := []interface{}{
 		(*Shelf)(nil),

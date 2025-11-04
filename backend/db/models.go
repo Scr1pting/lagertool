@@ -4,75 +4,172 @@ import (
 	"time"
 )
 
-// Shelf represents a physical shelf layout in a room
+type Organisation struct {
+	ID   int    `json:"id" pg:"id,pk"`
+	Name string `json:"name" pg:"name"`
+}
+
+type User struct {
+	tableName      struct{}  `pg:"user"`
+	ID             int       `json:"id" pg:"id,pk"`
+	Subject        string    `json:"subject" pg:"subject"`
+	Issuer         string    `json:"issuer" pg:"issuer"`
+	Email          string    `json:"email" pg:"email"`
+	Name           string    `json:"name" pg:"name"`
+	AccessToken    string    `json:"access_token" pg:"access_token"`
+	RefreshToken   string    `json:"refresh_token" pg:"refresh_token"`
+	CreatedAt      time.Time `json:"created_at" pg:"created_at"`
+	LastLogin      time.Time `json:"last_login" pg:"last_login"`
+	OrganisationID int       `json:"organisation_id" pg:"organisation_id"`
+
+	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:organisation_id"`
+}
+
+type HasSpecialRightsFor struct {
+	tableName      struct{} `pg:"has_special_rights_for"`
+	OrganisationID int      `json:"organisation-id" pg:"organisation_id"`
+	UserID         int      `json:"user_id" pg:"user_id"`
+
+	Organisation *Organisation `json:"organisation" pg:"rel:has-many,fk:organisation_id"`
+	User         *User         `json:"user" pg:"rel:has-many,fk:user_id"`
+}
+
+type Building struct {
+	tableName struct{} `pg:"building"`
+	ID        int      `json:"id" pg:"id,pk"`
+	Name      string   `json:"name" pg:"name"`
+	GPS       string   `json:"gps" pg:"gps"`
+	Campus    string   `json:"campus" pg:"campus"`
+}
+
+type Room struct {
+	tableName  struct{} `pg:"room"`
+	ID         int      `json:"id" pg:"id,pk"`
+	Number     int      `json:"number" pg:"number"`
+	Floor      string   `json:"floor" pg:"floor"`
+	BuildingID int      `json:"building_id" pg:"building_id"`
+
+	Building *Building `json:"building" pg:"rel:has-one,fk:building_id"`
+}
+
 type Shelf struct {
 	tableName struct{} `pg:"shelf"`
-	ID        string   `json:"id" pg:"id,pk"` // 5-letter unique ID from frontend
-	Name      string   `json:"name" pg:"name"`
-	Building  string   `json:"building" pg:"building"`
-	Room      string   `json:"room" pg:"room"`
+	ID        int      `json:"id" pg:"id,pk"`
+	OwnedBy   int      `json:"owned_by" pg:"owned_by"`
+	RoomID    int      `json:"room_id" pg:"room_id"`
+
+	Room         *Room         `json:"room" pg:"rel:has-one,fk:room_id"`
+	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:owned_by"`
 }
 
-// Column represents a column in a shelf with an ID
 type Column struct {
-	tableName struct{} `pg:"col"`
-	ID        string   `json:"id" pg:"id,pk"` // Generated column ID from frontend
-	ShelfID   string   `json:"shelf_id" pg:"shelf_id"`
-}
+	tableName struct{} `pg:"column"`
+	ID        int      `json:"id" pg:"id,pk"`
+	ShelfID   int      `json:"shelf_id" pg:"shelf_id"`
 
-// ShelfUnit represents an individual unit/element on a shelf
-type ShelfUnit struct {
-	tableName struct{} `pg:"shelf_unit"`
-	ID        string   `json:"id" pg:"id,pk"` // 5-letter unique ID from frontend
-	ColumnID  string   `json:"column_id" pg:"column_id"`
-	Type      string   `json:"type" pg:"type"` // "high" or "slim"
+	Shelf *Shelf `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
 }
+type ShelfUnit struct { //it is also the new LOCATION
+	tableName        struct{} `pg:"shelf_unit"`
+	ID               int      `json:"id" pg:"id,pk"`
+	Type             bool     `json:"type" pg:"type"`                             //0 is small, 1 is big
+	PositionInColumn int      `json:"position_in_column" pg:"position_in_column"` //to change the order of the units in the column later
+	ColumnID         int      `json:"column_id" pg:"column_id"`
 
-// Location represents a specific shelf unit (for backward compatibility with Inventory)
-type Location struct {
-	tableName   struct{} `pg:"location"`
-	ID          int      `json:"id" pg:"id,pk"`
-	ShelfUnitID string   `json:"shelf_unit_id,omitempty" pg:"shelf_unit_id"` // Reference to ShelfUnit.ID
+	Column *Column `json:"column" pg:"rel:has-one,fk:column_id"`
 }
 
 type Item struct {
-	tableName struct{} `pg:"item"`
-	ID        int      `json:"id" pg:"id,pk"`
-	Name      string   `json:"name" pg:"name"`
-	Category  string   `json:"category" pg:"category"`
+	tableName    struct{} `pg:"item"`
+	ID           int      `json:"id" pg:"id,pk"`
+	Name         string   `json:"name" pg:"name"`
+	Description  string   `json:"description" pg:"description"`
+	Category     string   `json:"category" pg:"category"`
+	IsConsumable bool     `json:"is_consumable" pg:"is_consumable"`
 }
 
-type Person struct {
-	tableName struct{} `pg:"person"`
-	ID        int      `json:"id" pg:"id,pk"`
-	Firstname string   `json:"firstname" pg:"firstname"`
-	Lastname  string   `json:"lastname" pg:"lastname"`
-	SlackID   string   `json:"slack_id,omitempty" pg:"slack_id"`
+//type NonConsumable struct { //This should be implemented into the logic not in the database
+//	tableName struct{} `pg:"non_consumable"`
+//	ID        int      `json:"id" pg:"id,pk"`
+//	ItemID    int      `json:"item_id" pg:"item_id"`
+//
+//	Item *Item `json:"item" pg:"rel:has-one,fk:item_id"`
+//}
+//
+//type Consumable struct {
+//	tableName struct{} `pg:"consumable"`
+//	ID        int      `json:"id" pg:"id,pk"`
+//	ItemID    int      `json:"item_id" pg:"item_id"`
+//
+//	Item *Item `json:"item" pg:"rel:has-one,fk:item_id"`
+//}
+
+type ShoppingCart struct {
+	tableName   struct{} `pg:"shopping_cart"`
+	ID          int      `json:"id" pg:"id,pk"`
+	UserID      int      `json:"user_id" pg:"user_id"`
+	InventoryID int      `json:"inventory_id" pg:"inventory_id"`
+	Amount      int      `json:"amount" pg:"amount"`
+
+	Inventory *Inventory `json:"inventory" pg:"rel:has-one,fk:inventory_id"`
 }
+
 type Inventory struct {
-	tableName  struct{} `pg:"inventory"`
-	ID         int      `json:"id" pg:"id,pk"`
-	LocationId int      `json:"location_id" pg:"location_id"`
-	ItemId     int      `json:"item_id" pg:"item_id"`
-	Amount     int      `json:"amount" pg:"amount"`
-	Note       string   `json:"note" pg:"note"`
+	tableName   struct{} `pg:"Inventory"`
+	ID          int      `json:"id" pg:"id,pk"`
+	ItemID      int      `json:"item_id" pg:"item_id"`
+	ShelfUnitID int      `json:"shelf_unit_id" pg:"shelf_unit_id"`
+	Amount      int      `json:"amount" pg:"amount"`
+
+	Item      *Item      `json:"item" pg:"rel:has-one,fk:item_id"`
+	ShelfUnit *ShelfUnit `json:"shelf_unit" pg:"rel:has-one,fk:item_id"`
+}
+
+type Request struct {
+	tableName struct{}  `pg:"request"`
+	UserID    int       `json:"user_id" pg:"user_id"`
+	StartDate time.Time `json:"start_date" pg:"start_date"`
+	EndDate   time.Time `json:"end_date" pg:"end_date"`
+	Note      string    `json:"note" pg:"note"`
+	Status    string    `json:"status" pg:"status"`
+
+	User *User `json:"user" pg:"rel:has-one,fk:user_id"`
+}
+
+type RequestItems struct {
+	tableName   struct{} `pg:"request_items"`
+	RequestID   int      `json:"request_id" pg:"request_id"`
+	InventoryID int      `json:"inventory_id" pg:"inventory_id"`
+	Amount      int      `json:"amount" pg:"amount"`
+
+	Request   *Request   `json:"request" pg:"rel:has-many,fk:request_id"`
+	Inventory *Inventory `json:"inventory" pg:"rel:has-many,fk:inventory_id"`
+}
+type RequestReview struct {
+	tableName struct{} `pg:"request_review"`
+	UserID    int      `json:"user_id" pg:"user_id"`
+	RequestID int      `json:"request_id" pg:"request_id"`
+	Outcome   string   `json:"outcome" pg:"outcome"`
+	Note      string   `json:"note" pg:"note"`
+
+	User    *User    `json:"user" pg:"rel:has-one,fk:user_id"`
+	Request *Request `json:"request" pg:"rel:has-one,fk:request_id"`
 }
 
 type Loans struct {
-	tableName  struct{}  `pg:"loans"`
-	ID         int       `json:"id" pg:"id,pk"`
-	PersonID   int       `json:"person_id" pg:"person_id"`
-	ItemID     int       `json:"item_id" pg:"item_id"`
-	Amount     int       `json:"amount" pg:"amount"`
-	Begin      time.Time `json:"begin" pg:"begin"`
-	Until      time.Time `json:"until,omitempty" pg:"until"`
-	Returned   bool      `json:"returned" pg:"returned,use_zero"`
-	ReturnedAt time.Time `json:"returned_at,omitempty" pg:"returned_at"`
+	tableName     struct{}  `pg:"loans"`
+	ID            int       `json:"id" pg:"id,pk"`
+	RequestItemID int       `json:"request_item_id" pg:"request_item_id"`
+	IsReturned    bool      `json:"returned" pg:"returned,use_zero"`
+	ReturnedAt    time.Time `json:"returned_at,omitempty" pg:"returned_at"`
+
+	RequestItems *RequestItems `json:"request_items" pg:"rel:has-one,fk:request_item_id"`
 }
 
-type Account struct {
-	tableName struct{} `pg:"account"`
-	ID        int      `json:"id" pg:"id,pk"`
-	slack     string   `json:"slack_id" pg:"slack_id"`
-	cookie    string   `json:"cookie" pg:"cookie"`
+type Consumed struct {
+	tableName     struct{} `pg:"consumed"`
+	ID            int      `json:"id" pg:"id,pk"`
+	RequestItemID int      `json:"request_item_id" pg:"request_item_id"`
+
+	RequestItems *RequestItems `json:"request_items" pg:"rel:has-one,fk:request_item_id"`
 }
