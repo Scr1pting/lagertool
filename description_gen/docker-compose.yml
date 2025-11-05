@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8080:8080"  # Exposes FastAPI on localhost:8080
+    volumes:
+      - ./models:/app/models  # Persist models outside the container
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PIP_NO_CACHE_DIR=1
+    restart: unless-stopped
