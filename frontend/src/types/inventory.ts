@@ -5,5 +5,5 @@ export interface InventoryItem {
   available: number;
   buildingName: string;
   roomName: string;
-  shelf_id: string;
+  shelfId: string;
 }
