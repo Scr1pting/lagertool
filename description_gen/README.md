@@ -1,4 +1,4 @@
-Example request:
+Example request to `localhost:8080/generate`:
 
 ```json
 [
