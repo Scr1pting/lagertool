@@ -1,5 +1,8 @@
 # React .gitignore Template - Updated 2025
 
+# Models
+description_gen/models/*
+
 # Dependencies
 node_modules/
 npm-debug.log*

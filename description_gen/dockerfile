@@ -3,7 +3,8 @@ FROM python:3.11-slim
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    LLAMA_LOG_LEVEL=warn
 
 # Set working directory
 WORKDIR /app
@@ -23,16 +24,6 @@ RUN apt-get update && apt-get install -y \
     && pip install -r requirements.txt \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# Create models directory and download model using huggingface-hub
-RUN pip install huggingface-hub \
-    && mkdir -p ./models \
-    && python -c "from huggingface_hub import hf_hub_download; \
-    hf_hub_download( \
-        repo_id='ggml-org/gemma-3-1b-it-GGUF', \
-        filename='gemma-3-1b-it-Q4_K_M.gguf', \
-        local_dir='./models' \
-    )"
 
 # Copy app code
 COPY ./app ./app

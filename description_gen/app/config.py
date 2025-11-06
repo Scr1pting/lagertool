@@ -1,7 +1,7 @@
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = "./models/gemma-3-1b-it-Q4_K_M.gguf"
+MODEL_PATH = "./models/qwen2.5-1.5b-instruct-q4_k_m.gguf"
 
 # Llama inference settings
-MAX_TOKENS = 50
+MAX_TOKENS = 15
