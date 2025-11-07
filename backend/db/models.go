@@ -75,7 +75,6 @@ type Account struct {
 	tableName struct{} `pg:"account"`
 	ID        int      `json:"id" pg:"id,pk"`
 	slack     string   `json:"slack_id" pg:"slack_id"`
-	cookie    string   `json:"cookie" pg:"cookie"`
 }
 
 type Session struct {

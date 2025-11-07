@@ -48,6 +48,8 @@ func InitDB(con *pg.DB) {
 		(*Event)(nil),
 		(*EventHelper)(nil),
 		(*EventLoan)(nil),
+		(*Session)(nil),
+		(*Account)(nil),
 	}
 
 	for _, model := range models {
