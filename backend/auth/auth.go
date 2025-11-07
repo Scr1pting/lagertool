@@ -69,7 +69,6 @@ func Init() {
 	}
 
 	// Configure OAuth
-
 	googleOauthConfig = &oauth2.Config{
 		RedirectURL:  backend_domain + "/auth/google/callback",
 		ClientID:     clientID,
