@@ -1,6 +1,7 @@
 package db
 
 import (
+	"net"
 	"time"
 )
 
@@ -75,4 +76,13 @@ type Account struct {
 	ID        int      `json:"id" pg:"id,pk"`
 	slack     string   `json:"slack_id" pg:"slack_id"`
 	cookie    string   `json:"cookie" pg:"cookie"`
+}
+
+type Session struct {
+	tableName struct{}  `pg:"session"`
+	ID        int       `json:"session_id" pg:"session_id"`
+	AccountID int       `json:"account_id" pg:"account_id"`
+	CreatedAt time.Time `json:"created_at" pg:"created_at"`
+	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`
+	UserIP    net.IP    `json:"user_ip" pg:"user_ip"`
 }
