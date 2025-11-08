@@ -57,7 +57,7 @@ func main() {
 
 	db.InitDB(dbConnection)
 	// slack1.SetupSlack(cfg)
-	db.InsertDummyData(dbConnection)
+	//db.InsertDummyData(dbConnection)
 	//if err := db.InsertBasicData(dbConnection); err != nil {
 	//	log.Printf("⚠️  Failed to insert test data: %v", err)
 	//}
