@@ -1,12 +1,27 @@
 .StaticShelf {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   align-items: flex-end;
-  padding: 0px 80px;
-  border-bottom: 1px solid #ccc;
+}
 
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+.leftElement, .rightElement {
+  width: 80px;
+  border-bottom: 1px solid #ccc;
+}
+
+.leftElement {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 100%);
+  mask-image: linear-gradient(to right, transparent, black 100%);
+}
+
+.rightElement {
+  -webkit-mask-image: linear-gradient(to left, transparent, black 100%);
+  mask-image: linear-gradient(to left, transparent, black 100%);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
 }
 
 .numItem {
@@ -38,11 +53,6 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
 }
 
 .elementTrigger {

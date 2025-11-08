@@ -25,8 +25,8 @@ function StaticShelfColumn({ column, shelf, onElementSelect, highlightedElement 
             className={clsx(styles.elementTrigger, highlightedElement === element.id ? styles.highlightedElement : "")}
             onClick={() => onElementSelect?.({
               elementId: element.id,
-              building: shelf.building,
-              room: shelf.room,
+              building: shelf.buildingName,
+              room: shelf.roomName,
               shelf: shelf.name,
             })}
           >
@@ -59,6 +59,7 @@ interface StaticShelfParams {
 function StaticShelf({ shelf, onElementSelect, highlightedElement }: StaticShelfParams) {
   return (
     <section className={styles.StaticShelf}>
+      <div className={styles.leftElement} />
       {shelf.columns.map((column) => (
         <StaticShelfColumn
           key={column.id}
@@ -68,6 +69,7 @@ function StaticShelf({ shelf, onElementSelect, highlightedElement }: StaticShelf
           onElementSelect={onElementSelect}
         />
       ))}
+      <div className={styles.rightElement} />
     </section>
   );
 };
