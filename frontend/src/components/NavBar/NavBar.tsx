@@ -12,6 +12,7 @@ export default function NavBar() {
   return (
     <div className={styles.NavBar}>
       <div className={styles.content}>
+        
         <Link className={styles.logo} to="/" aria-label="Home">
           <img
             className="logo"
@@ -19,6 +20,8 @@ export default function NavBar() {
             alt="Viscon logo"
           />
         </Link>
+
+        <Org />
 
         <div className={styles.input}><SearchBar /></div>
 
@@ -35,7 +38,6 @@ export default function NavBar() {
             </button>
           }
         />
-        <Org />
       </div>
     </div>
   );
