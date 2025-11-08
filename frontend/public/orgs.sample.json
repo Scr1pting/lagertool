@@ -1,12 +1,10 @@
 [
   {
     "id": "hjkash",
-    "name": "VIS",
-    "imgUrl": "/vis_logo.png"
+    "name": "VIS"
   },
   {
     "id": "org123",
-    "name": "VMP",
-    "imgUrl": "/vmp_logo.png"
+    "name": "VMP"
   }
 ]
