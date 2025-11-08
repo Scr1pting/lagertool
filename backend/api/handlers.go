@@ -91,7 +91,9 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	var shoppingCart db.ShoppingCart
-	err = h.DB.Model(&shoppingCart).Where("user_id = ?", id).Select()
+	err = h.DB.Model(&shoppingCart).Relation("ShoppingCartItems.Inventory.Item").
+		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Room.Building").
+		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Organisation").Where("user_id = ?", id).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
