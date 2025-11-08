@@ -35,77 +35,41 @@ func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
 }
 
 func ffInitDB(con *pg.DB) {
-	// Create tables using the provided connection
 	models := []interface{}{
+		(*Organisation)(nil),
+		(*User)(nil),
+		(*Session)(nil),
+		(*HasSpecialRightsFor)(nil),
+		(*Building)(nil),
+		(*Room)(nil),
 		(*Shelf)(nil),
 		(*Column)(nil),
 		(*ShelfUnit)(nil),
-		(*Location)(nil),
 		(*Item)(nil),
 		(*Inventory)(nil),
-		(*Person)(nil),
+		(*ShoppingCart)(nil),
+		(*Request)(nil),
+		(*RequestItems)(nil),
+		(*RequestReview)(nil),
 		(*Loans)(nil),
-		(*Event)(nil),
-		(*EventHelper)(nil),
-		(*EventLoan)(nil),
+		(*Consumed)(nil),
 	}
+
+	log.Println("🚀 Initializing database tables...")
 
 	for _, model := range models {
 		err := con.Model(model).CreateTable(&orm.CreateTableOptions{
-			IfNotExists: true,
+			IfNotExists:   true,
+			FKConstraints: true,
 		})
 		if err != nil {
-			log.Fatalf("Error creating table for %T: %v", model, err)
+			log.Fatalf("❌ Error creating table for %T: %v", model, err)
+		} else {
+			log.Printf("✅ Created/verified table for %T", model)
 		}
 	}
 
-	// Run migrations
-	runMigrations(con)
-
-	log.Println("✅ Database tables initialized successfully.")
-}
-
-func runMigrations(con *pg.DB) {
-	// Add returned column to loans table
-	_, err := con.Exec("ALTER TABLE loans ADD COLUMN IF NOT EXISTS returned BOOLEAN DEFAULT false")
-	if err != nil {
-		log.Printf("Warning: Failed to add 'returned' column: %v", err)
-	}
-
-	// Add returned_at column to loans table
-	_, err = con.Exec("ALTER TABLE loans ADD COLUMN IF NOT EXISTS returned_at TIMESTAMP")
-	if err != nil {
-		log.Printf("Warning: Failed to add 'returned_at' column: %v", err)
-	}
-
-	// Migrate location table to new schema
-	// Drop old columns that are no longer needed
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS campus")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'campus' column: %v", err)
-	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS building")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'building' column: %v", err)
-	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS room")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'room' column: %v", err)
-	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS shelf")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'shelf' column: %v", err)
-	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS shelfunit")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'shelfunit' column: %v", err)
-	}
-
-	// Add new shelf_unit_id column
-	_, err = con.Exec("ALTER TABLE location ADD COLUMN IF NOT EXISTS shelf_unit_id TEXT")
-	if err != nil {
-		log.Printf("Warning: Failed to add 'shelf_unit_id' column: %v", err)
-	}
+	log.Println("✅ Database tables initialized and migrations completed successfully.")
 }
 
 func Close(con *pg.DB) {

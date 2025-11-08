@@ -1,6 +1,7 @@
 package db
 
 import (
+	"net"
 	"time"
 )
 
@@ -10,19 +11,27 @@ type Organisation struct {
 }
 
 type User struct {
-	tableName      struct{}  `pg:"user"`
-	ID             int       `json:"id" pg:"id,pk"`
-	Subject        string    `json:"subject" pg:"subject"`
-	Issuer         string    `json:"issuer" pg:"issuer"`
-	Email          string    `json:"email" pg:"email"`
-	Name           string    `json:"name" pg:"name"`
-	AccessToken    string    `json:"access_token" pg:"access_token"`
-	RefreshToken   string    `json:"refresh_token" pg:"refresh_token"`
-	CreatedAt      time.Time `json:"created_at" pg:"created_at"`
-	LastLogin      time.Time `json:"last_login" pg:"last_login"`
-	OrganisationID int       `json:"organisation_id" pg:"organisation_id"`
+	tableName    struct{}  `pg:"user"`
+	ID           int       `json:"id" pg:"id,pk"`
+	Subject      string    `json:"subject" pg:"subject"`
+	Issuer       string    `json:"issuer" pg:"issuer"`
+	Email        string    `json:"email" pg:"email"`
+	Name         string    `json:"name" pg:"name"`
+	AccessToken  string    `json:"access_token" pg:"access_token"`
+	RefreshToken string    `json:"refresh_token" pg:"refresh_token"`
+	CreatedAt    time.Time `json:"created_at" pg:"created_at"`
+	LastLogin    time.Time `json:"last_login" pg:"last_login"`
+}
 
-	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:organisation_id"`
+type Session struct {
+	tableName struct{}  `pg:"session"`
+	ID        int       `json:"session_id" pg:"session_id"`
+	UserID    int       `json:"user_id" pg:"user_id"`
+	CreatedAt time.Time `json:"created_at" pg:"created_at"`
+	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`
+	UserIP    net.IP    `json:"user_ip" pg:"user_ip"`
+
+	User *User `json:"user" pg:"rel:has-one,fk:user_id"`
 }
 
 type HasSpecialRightsFor struct {
@@ -35,57 +44,65 @@ type HasSpecialRightsFor struct {
 }
 
 type Building struct {
-	tableName struct{} `pg:"building"`
-	ID        int      `json:"id" pg:"id,pk"`
-	Name      string   `json:"name" pg:"name"`
-	GPS       string   `json:"gps" pg:"gps"`
-	Campus    string   `json:"campus" pg:"campus"`
+	tableName  struct{} `pg:"building"`
+	ID         int      `json:"id" pg:"id,pk"`
+	Name       string   `json:"name" pg:"name"`
+	GPS        string   `json:"gps" pg:"gps"`
+	Campus     string   `json:"campus" pg:"campus"`
+	UpdateDate string   `json:"update_date" pg:"update_date"`
 }
 
 type Room struct {
 	tableName  struct{} `pg:"room"`
 	ID         int      `json:"id" pg:"id,pk"`
-	Number     int      `json:"number" pg:"number"`
+	Number     string   `json:"number" pg:"number"`
 	Floor      string   `json:"floor" pg:"floor"`
+	Name       string   `json:"name" pg:"name"`
 	BuildingID int      `json:"building_id" pg:"building_id"`
+	UpdateDate string   `json:"update_date" pg:"update_date"`
 
 	Building *Building `json:"building" pg:"rel:has-one,fk:building_id"`
 }
 
 type Shelf struct {
-	tableName struct{} `pg:"shelf"`
-	ID        int      `json:"id" pg:"id,pk"`
-	OwnedBy   int      `json:"owned_by" pg:"owned_by"`
-	RoomID    int      `json:"room_id" pg:"room_id"`
+	tableName  struct{} `pg:"shelf"`
+	ID         string   `json:"id" pg:"id,pk"`
+	Name       string   `json:"name" pg:"name"`
+	OwnedBy    int      `json:"owned_by" pg:"owned_by"`
+	RoomID     int      `json:"room_id" pg:"room_id"`
+	UpdateDate string   `json:"update_date" pg:"update_date"`
 
 	Room         *Room         `json:"room" pg:"rel:has-one,fk:room_id"`
 	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:owned_by"`
+	Columns      *[]Column     `json:"columns" pg:"rel:has-many,fk:shelf_id"`
 }
 
 type Column struct {
 	tableName struct{} `pg:"column"`
-	ID        int      `json:"id" pg:"id,pk"`
+	ID        string   `json:"id" pg:"id,pk"`
 	ShelfID   int      `json:"shelf_id" pg:"shelf_id"`
 
-	Shelf *Shelf `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
+	Shelf      *Shelf       `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
+	ShelfUnits *[]ShelfUnit `json:"shelf_units" pg:"rel:has-many,fk:column_id"`
 }
 type ShelfUnit struct { //it is also the new LOCATION
 	tableName        struct{} `pg:"shelf_unit"`
-	ID               int      `json:"id" pg:"id,pk"`
-	Type             bool     `json:"type" pg:"type"`                             //0 is small, 1 is big
+	ID               string   `json:"id" pg:"id,pk"`
+	Type             int      `json:"type" pg:"type"`                             //0 is small, 1 is big
 	PositionInColumn int      `json:"position_in_column" pg:"position_in_column"` //to change the order of the units in the column later
 	ColumnID         int      `json:"column_id" pg:"column_id"`
+	Description      string   `json:"description" pg:"description"`
 
 	Column *Column `json:"column" pg:"rel:has-one,fk:column_id"`
 }
 
 type Item struct {
-	tableName    struct{} `pg:"item"`
-	ID           int      `json:"id" pg:"id,pk"`
-	Name         string   `json:"name" pg:"name"`
-	Description  string   `json:"description" pg:"description"`
-	Category     string   `json:"category" pg:"category"`
-	IsConsumable bool     `json:"is_consumable" pg:"is_consumable"`
+	tableName struct{} `pg:"item"`
+	ID        int      `json:"id" pg:"id,pk"`
+	Name      string   `json:"name" pg:"name"`
+	//Description  string   `json:"description" pg:"description"`
+	//Category     string   `json:"category" pg:"category"`
+	IsConsumable bool `json:"is_consumable" pg:"is_consumable"`
 }
 
 //type NonConsumable struct { //This should be implemented into the logic not in the database
@@ -118,8 +135,9 @@ type Inventory struct {
 	tableName   struct{} `pg:"Inventory"`
 	ID          int      `json:"id" pg:"id,pk"`
 	ItemID      int      `json:"item_id" pg:"item_id"`
-	ShelfUnitID int      `json:"shelf_unit_id" pg:"shelf_unit_id"`
+	ShelfUnitID string   `json:"shelf_unit_id" pg:"shelf_unit_id"`
 	Amount      int      `json:"amount" pg:"amount"`
+	UpdateDate  string   `json:"update_date" pg:"update_date"`
 
 	Item      *Item      `json:"item" pg:"rel:has-one,fk:item_id"`
 	ShelfUnit *ShelfUnit `json:"shelf_unit" pg:"rel:has-one,fk:item_id"`
