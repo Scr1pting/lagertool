@@ -12,6 +12,8 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 
 	r.GET("/shelves", h.GetShelves)
 
+	r.GET("/item:id:start:end", h.GetItem)
+
 	// Calendar endpoints
 	r.GET("/calendar/all", h.GetDownloadICSALL)
 	r.GET("/calendar/:id", h.GetDownloadICS)

@@ -28,30 +28,27 @@ func (h *Handler) GetShelves(c *gin.Context) {
 	}
 
 	for _, shelf := range dbRes {
-		var shelfObj Shelves
-		shelfObj.ID = shelf.ID
-		shelfObj.Name = shelf.Name
-		if shelf.Room.Name != "" {
-			shelfObj.RoomName = shelf.Room.Name
-		} else {
-			shelfObj.RoomName = shelf.Room.Floor + shelf.Room.Number
-		}
-		shelfObj.BuildingName = shelf.Room.Building.Name
-		var col Columns
-		for _, c := range *shelf.Columns {
-			col.ID = c.ID
-			var el Element
-			for _, e := range *c.ShelfUnits {
-				el.ID = e.ID
-				if e.Type == 0 {
-					el.Type = "slim"
-				} else if e.Type == 1 {
-					el.Type = "high"
-				}
-				col.Elements = append(col.Elements, el)
-			}
-			shelfObj.Columns = append(shelfObj.Columns, col)
+		shelfObj, err2 := h.GetShelfHelper(shelf.ID)
+		if err2 != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err2.Error()})
 		}
 		res = append(res, shelfObj)
 	}
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *Handler) GetItem(c *gin.Context) {
+	//id := c.Param("id") //the id should be the id of the inventory entry
+	//var item Item
+	//var dbItem []db.Inventory
+	//err := h.DB.Model(&dbItem).Where("id = ?", id).Select()
+	//item.Name = dbItem.Name
+	//item.ID = dbItem.ID
+	//item.IsConsumable = dbItem.IsConsumable
+	//shelf, err := h.GetShelfHelper(dbItem.)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	//}
+	//item.Shelf = shelf
+	//c.JSON(http.StatusOK, item)
 }

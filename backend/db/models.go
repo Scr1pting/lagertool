@@ -139,8 +139,9 @@ type Inventory struct {
 	Amount      int      `json:"amount" pg:"amount"`
 	UpdateDate  string   `json:"update_date" pg:"update_date"`
 
-	Item      *Item      `json:"item" pg:"rel:has-one,fk:item_id"`
-	ShelfUnit *ShelfUnit `json:"shelf_unit" pg:"rel:has-one,fk:item_id"`
+	Item         *Item           `json:"item" pg:"rel:has-one,fk:item_id"`
+	ShelfUnit    *ShelfUnit      `json:"shelf_unit" pg:"rel:has-one,fk:item_id"`
+	RequestItems *[]RequestItems `json:"request_item" pg:"rel:has-many,fk:inventory_id"`
 }
 
 type Request struct {

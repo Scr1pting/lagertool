@@ -17,3 +17,18 @@ type Element struct {
 	ID   string `json:"id"`
 	Type string `json:"type"`
 }
+
+type InventoryItem struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	Amount       int    `json:"amount"`
+	Available    int    `json:"available"`
+	BuildingName string `json:"buildingName"`
+	RoomName     string `json:"roomName"`
+	ShelfID      string `json:"shelfId"`
+}
+
+type InventoryItemWithShelf struct {
+	InventoryItem
+	Shelf Shelves `json:"shelf"`
+}
