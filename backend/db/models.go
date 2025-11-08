@@ -21,6 +21,8 @@ type User struct {
 	RefreshToken string    `json:"refresh_token" pg:"refresh_token"`
 	CreatedAt    time.Time `json:"created_at" pg:"created_at"`
 	LastLogin    time.Time `json:"last_login" pg:"last_login"`
+
+	ShoppingCart *ShoppingCart `json:"shopping_cart" pg:"rel:has-one,fk:user_id"`
 }
 
 type Session struct {
@@ -122,13 +124,21 @@ type Item struct {
 //}
 
 type ShoppingCart struct {
-	tableName   struct{} `pg:"shopping_cart"`
-	ID          int      `json:"id" pg:"id,pk"`
-	UserID      int      `json:"user_id" pg:"user_id"`
-	InventoryID int      `json:"inventory_id" pg:"inventory_id"`
-	Amount      int      `json:"amount" pg:"amount"`
+	tableName struct{} `pg:"shopping_cart"`
+	UserID    int      `json:"user_id" pg:"user_id"`
+	ID        int      `json:"id" pg:"id,pk"`
 
-	Inventory *Inventory `json:"inventory" pg:"rel:has-one,fk:inventory_id"`
+	ShoppingCartItems []ShoppingCartItem `json:"shopping_cart_items" pg:"rel:has-many,fk:shopping_cart_id"`
+}
+
+type ShoppingCartItem struct {
+	ID             int `json:"id" pg:"id,pk"`
+	Amount         int `json:"amount" pg:"amount"`
+	InventoryID    int `json:"inventory_id" pg:"inventory_id"`
+	ShoppingCartID int `json:"shopping_cart_id" pg:"shopping_cart_id"`
+
+	Inventory    *Inventory    `json:"inventory" pg:"rel:has-one,fk:inventory_id"`
+	ShoppingCart *ShoppingCart `json:"shopping_cart" pg:"rel:has-one,fk:shopping_cart_id"`
 }
 
 type Inventory struct {

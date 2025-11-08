@@ -32,3 +32,13 @@ type InventoryItemWithShelf struct {
 	InventoryItem
 	Shelf Shelves `json:"shelf"`
 }
+
+type ShoppingCart struct {
+	Organisation string     `json:"organisation"`
+	Items        []CartItem `json:"items"`
+}
+
+type CartItem struct {
+	InventoryItem
+	AmountSelected int `json:"amount_selected"`
+}

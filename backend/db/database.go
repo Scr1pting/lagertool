@@ -48,6 +48,7 @@ func ffInitDB(con *pg.DB) {
 		(*Item)(nil),
 		(*Inventory)(nil),
 		(*ShoppingCart)(nil),
+		(*ShoppingCartItem)(nil),
 		(*Request)(nil),
 		(*RequestItems)(nil),
 		(*RequestReview)(nil),
