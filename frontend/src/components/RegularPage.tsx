@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 interface RegularPageProps {
   title: string;
   description?: ReactNode;
-  narrow?: boolean
+  children: ReactNode
 }
 
 function RegularPage({ title, description = undefined, children }: RegularPageProps) {
