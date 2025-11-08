@@ -22,7 +22,7 @@ type User struct {
 	CreatedAt    time.Time `json:"created_at" pg:"created_at"`
 	LastLogin    time.Time `json:"last_login" pg:"last_login"`
 
-	ShoppingCart *ShoppingCart `json:"shopping_cart" pg:"rel:has-one,fk:user_id"`
+	//ShoppingCart *ShoppingCart `json:"shopping_cart" pg:"rel:has-one"`
 }
 
 type Session struct {
@@ -38,11 +38,11 @@ type Session struct {
 
 type HasSpecialRightsFor struct {
 	tableName      struct{} `pg:"has_special_rights_for"`
-	OrganisationID int      `json:"organisation-id" pg:"organisation_id"`
-	UserID         int      `json:"user_id" pg:"user_id"`
+	OrganisationID int      `json:"organisation-id" pg:"organisation_id, pk"`
+	UserID         int      `json:"user_id" pg:"user_id, pk"`
 
-	Organisation *Organisation `json:"organisation" pg:"rel:has-many,fk:organisation_id"`
-	User         *User         `json:"user" pg:"rel:has-many,fk:user_id"`
+	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:organisation_id"`
+	User         *User         `json:"user" pg:"rel:has-one,fk:user_id"`
 }
 
 type Building struct {
@@ -76,13 +76,13 @@ type Shelf struct {
 
 	Room         *Room         `json:"room" pg:"rel:has-one,fk:room_id"`
 	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:owned_by"`
-	Columns      *[]Column     `json:"columns" pg:"rel:has-many,fk:shelf_id"`
+	Columns      *[]Column     `json:"columns" pg:"rel:has-many"`
 }
 
 type Column struct {
 	tableName struct{} `pg:"column"`
 	ID        string   `json:"id" pg:"id,pk"`
-	ShelfID   int      `json:"shelf_id" pg:"shelf_id"`
+	ShelfID   string   `json:"shelf_id" pg:"shelf_id"`
 
 	Shelf      *Shelf       `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
 	ShelfUnits *[]ShelfUnit `json:"shelf_units" pg:"rel:has-many,fk:column_id"`
@@ -92,7 +92,7 @@ type ShelfUnit struct { //it is also the new LOCATION
 	ID               string   `json:"id" pg:"id,pk"`
 	Type             int      `json:"type" pg:"type"`                             //0 is small, 1 is big
 	PositionInColumn int      `json:"position_in_column" pg:"position_in_column"` //to change the order of the units in the column later
-	ColumnID         int      `json:"column_id" pg:"column_id"`
+	ColumnID         string   `json:"column_id" pg:"column_id"`
 	Description      string   `json:"description" pg:"description"`
 
 	Column *Column `json:"column" pg:"rel:has-one,fk:column_id"`
@@ -149,13 +149,14 @@ type Inventory struct {
 	Amount      int      `json:"amount" pg:"amount"`
 	UpdateDate  string   `json:"update_date" pg:"update_date"`
 
-	Item         *Item           `json:"item" pg:"rel:has-one,fk:item_id"`
-	ShelfUnit    *ShelfUnit      `json:"shelf_unit" pg:"rel:has-one,fk:item_id"`
+	Item         *Item           `json:"item" pg:"rel:has-one,fk:id"`
+	ShelfUnit    *ShelfUnit      `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`
 	RequestItems *[]RequestItems `json:"request_item" pg:"rel:has-many,fk:inventory_id"`
 }
 
 type Request struct {
 	tableName struct{}  `pg:"request"`
+	ID        int       `json:"id" pg:"id,pk"`
 	UserID    int       `json:"user_id" pg:"user_id"`
 	StartDate time.Time `json:"start_date" pg:"start_date"`
 	EndDate   time.Time `json:"end_date" pg:"end_date"`
@@ -167,12 +168,13 @@ type Request struct {
 
 type RequestItems struct {
 	tableName   struct{} `pg:"request_items"`
+	ID          int      `json:"id" pg:"id,pk"`
 	RequestID   int      `json:"request_id" pg:"request_id"`
 	InventoryID int      `json:"inventory_id" pg:"inventory_id"`
 	Amount      int      `json:"amount" pg:"amount"`
 
-	Request   *Request   `json:"request" pg:"rel:has-many,fk:request_id"`
-	Inventory *Inventory `json:"inventory" pg:"rel:has-many,fk:inventory_id"`
+	Request   *Request   `json:"request" pg:"rel:has-one,fk:request_id"`
+	Inventory *Inventory `json:"inventory" pg:"rel:has-one,fk:inventory_id"`
 }
 type RequestReview struct {
 	tableName struct{} `pg:"request_review"`
@@ -192,7 +194,7 @@ type Loans struct {
 	IsReturned    bool      `json:"returned" pg:"returned,use_zero"`
 	ReturnedAt    time.Time `json:"returned_at,omitempty" pg:"returned_at"`
 
-	RequestItems *RequestItems `json:"request_items" pg:"rel:has-one,fk:request_item_id"`
+	RequestItems *RequestItems `pg:"rel:belongs-to,fk:request_item_id"`
 }
 
 type Consumed struct {
@@ -200,5 +202,5 @@ type Consumed struct {
 	ID            int      `json:"id" pg:"id,pk"`
 	RequestItemID int      `json:"request_item_id" pg:"request_item_id"`
 
-	RequestItems *RequestItems `json:"request_items" pg:"rel:has-one,fk:request_item_id"`
+	RequestItems *RequestItems `json:"request_items" pg:"rel:belongs-to,fk:request_item_id"`
 }
