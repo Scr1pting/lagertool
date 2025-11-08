@@ -1,3 +1,5 @@
+import { type Shelf } from "./shelf"
+
 export interface InventoryItem {
   id: string,
   name: string;
@@ -6,4 +8,9 @@ export interface InventoryItem {
   buildingName: string;
   roomName: string;
   shelfId: string;
+}
+
+export interface InventoryItemFull extends InventoryItem {
+  shelf: Shelf
+  shelfElementId: string
 }

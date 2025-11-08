@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import DataTableColumnHeader from "../DataTableSortedHeader"
 import type { InventoryItem } from "@/types/inventory"
 import InventoryActions from "./InventoryActions"
+import AddCartDialog from "./AddCartDialog"
 
 
 const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
@@ -51,7 +52,7 @@ export const inventoryColumnsFull: ColumnDef<InventoryItem>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => (
-      <InventoryActions row={row} showAddToCart={true} />
+      <AddCartDialog item={row.original} />
     ),
   },
 ]
@@ -61,8 +62,8 @@ export const inventoryColumnsNoCart: ColumnDef<InventoryItem>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => (
-      <InventoryActions row={row} showAddToCart={false} />
+    cell: () => (
+      <InventoryActions />
     ),
   },
 ]
