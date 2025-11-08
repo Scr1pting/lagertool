@@ -10,7 +10,7 @@ func (h *Handler) GetShelfHelper(id string) (Shelves, error) {
 	var shelf db.Shelf
 	err := h.DB.Model(&shelf).
 		Relation("Room.Building").
-		Relation("Columns.ShelfUnits").Where("id = ?", id).Select()
+		Relation("Columns.ShelfUnits").Where("shelf.id = ?", id).Select()
 	if err != nil {
 		return Shelves{}, err
 	}
@@ -25,10 +25,10 @@ func (h *Handler) GetShelfHelper(id string) (Shelves, error) {
 	}
 	shelfObj.BuildingName = shelf.Room.Building.Name
 	var col Columns
-	for _, c := range *shelf.Columns {
+	for _, c := range shelf.Columns {
 		col.ID = c.ID
 		var el Element
-		for _, e := range *c.ShelfUnits {
+		for _, e := range c.ShelfUnits {
 			el.ID = e.ID
 			if e.Type == 0 {
 				el.Type = "slim"
@@ -54,7 +54,7 @@ func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, 
 		return dbInv.Amount, nil
 	}
 	count := 0
-	for _, reqItem := range *dbInv.RequestItems {
+	for _, reqItem := range dbInv.RequestItems {
 		if !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate)) {
 		}
 		count += reqItem.Amount
