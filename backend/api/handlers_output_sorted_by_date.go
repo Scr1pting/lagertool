@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) GetRoomsS(c *gin.Context) {
 	var dbRes []db.Room
-	err := h.DB.Model(&dbRes).Order("update_date desc").Select()
+	err := h.DB.Model(&dbRes).Relation("Building").Order("update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
@@ -40,7 +40,7 @@ func (h *Handler) GetBuildingsS(c *gin.Context) {
 
 func (h *Handler) GetShelvesS(c *gin.Context) {
 	var dbRes []db.Shelf
-	err := h.DB.Model(&dbRes).Order("update_date desc").Select()
+	err := h.DB.Model(&dbRes).Relation("Room.Building").Order("update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
@@ -63,7 +63,7 @@ func (h *Handler) GetInventoryS(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	var dbRes []db.Inventory
-	err = h.DB.Model(&dbRes).Order("update_date desc").Select()
+	err = h.DB.Model(&dbRes).Relation("ShelfUnit.Column.Shelf.Room.Building").Order("update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
