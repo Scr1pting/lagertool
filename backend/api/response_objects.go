@@ -63,8 +63,8 @@ type Building struct {
 type ShelfSorted struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
-	RoomName     string `json:"room_name"`
-	BuildingName string `json:"building_name"`
+	RoomName     string `json:"roomName"`
+	BuildingName string `json:"buildingName"`
 }
 
 type InventorySorted struct {
