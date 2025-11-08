@@ -14,7 +14,7 @@ import { toast } from "sonner"
 import { useCart } from "@/store/useCart"
 import type { CartItem } from "@/types/cart"
 import type { InventoryItem } from "@/types/inventory"
-import { PlusIcon } from "lucide-react"
+import { ShoppingCartIcon } from "lucide-react"
 import { Separator } from "@/components/shadcn/separator"
 import { useDate } from "@/store/useDate"
 import { format } from "date-fns"
@@ -456,11 +456,11 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
     >
       <DialogTrigger asChild>
         <Button
-          variant="ghost"
-          className="h-8 w-8 p-0"
+          variant="outline"
+          className="h-8 p-0"
         >
-          <span className="sr-only">Add to cart</span>
-          <PlusIcon />
+          Add to cart
+          <ShoppingCartIcon />
         </Button>
       </DialogTrigger>
       <MotionDialogContent className="sm:max-w-[425px]">
@@ -476,7 +476,7 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="space-y-4 px-3 py-4"
+                className="space-y-4 p-1"
               >
                 {renderPage()}
               </motion.div>

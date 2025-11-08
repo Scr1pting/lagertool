@@ -3,7 +3,7 @@ import ShelfBuilder from "@/features/shelves/components/ShelfBuilder";
 import type { ShelfColumn } from "@/types/shelf";
 import { useState } from "react";
 
-function AddShelfPage() {
+function AddShelf() {
   const [columns, setColumns] = useState<ShelfColumn[]>([])
 
   return (
@@ -14,4 +14,4 @@ function AddShelfPage() {
   )
 }
 
-export default AddShelfPage;
+export default AddShelf;
