@@ -19,4 +19,10 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/auth/google/login", auth.GoogleLoginHandler)
 	r.GET("/auth/google/callback", auth.GoogleCallbackHandler)
 	r.POST("/auth/google/callback", auth.VerifyGoogleToken)
+
+	//sorted by date
+	r.GET("/rooms_sorted", h.GetRoomsS)
+	r.GET("/buildings_sorted", h.GetBuildingsS)
+	r.GET("/shelves_sorted", h.GetShelvesS)
+	r.GET("/inventory_sorted:start:end", h.GetInventoryS)
 }
