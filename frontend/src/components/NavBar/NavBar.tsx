@@ -26,8 +26,10 @@ export default function NavBar() {
 
         <div className={styles.input}><SearchBar /></div>
 
+        <RangeSelector />
+
         <div className={styles.actionGroup}>
-          <RangeSelector />
+          
           <MiniCart
             trigger={
               <button
