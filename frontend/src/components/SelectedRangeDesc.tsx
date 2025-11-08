@@ -17,9 +17,9 @@ function SelectedRangeDesc({ range }: {range: DateRange | undefined}) {
   }
 
   return (
-    <>
-      Showing availability for <b>{formattedDate}</b>. Modify by clicking on the magnifying glass in the search bar.
-    </>
+    <div className="text-base text-gray-300">
+      Availability for <b>{formattedDate}</b>.
+    </div>
   );
 };
 

@@ -6,6 +6,8 @@ import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
 import MiniCart from '../MiniCart';
 import Org from './Orgs';
+import RangeSelector from './RangeSelector';
+import AccountButton from './AccountButton';
 
 export default function NavBar() {
 
@@ -25,19 +27,25 @@ export default function NavBar() {
 
         <div className={styles.input}><SearchBar /></div>
 
-        <MoreDropdown />
+        <RangeSelector />
 
-        <MiniCart
-          trigger={
-            <button
-              type="button"
-              className={clsx(styles.input, styles.buttonRnd)}
-              aria-label="Open cart"
-            >
-              <ShoppingCart className={styles.navIcon} />
-            </button>
-          }
-        />
+        <div className={styles.actionGroup}>
+          
+          <MiniCart
+            trigger={
+              <button
+                type="button"
+                className={clsx(styles.input, styles.buttonRnd, styles.actionButton)}
+                aria-label="Open cart"
+              >
+                <ShoppingCart className={styles.navIcon} />
+              </button>
+            }
+          />
+          <AccountButton />
+          <MoreDropdown />
+        </div>
+        
       </div>
     </div>
   );

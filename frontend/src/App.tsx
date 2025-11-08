@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
+import Account from './pages/Account';
 import AddShelf from './pages/AddShelf';
 import Home from './pages/Home';
 import Search from './pages/Search';
@@ -35,6 +36,7 @@ function App() {
             <Route path="/persons" element={<Persons />}/>
             <Route path="/shopping-cart" element={<ShoppingCart />}/>
             <Route path="/item" element={<ItemDetail />}/>
+            <Route path="/account" element={<Account />} />
           </Route>
           <Route path="/add-shelf" element={<AddShelf />} />
         </Routes>
