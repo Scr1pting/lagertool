@@ -3,10 +3,8 @@ import clsx from "clsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu"
 import styles from "./NavBar.module.css"
@@ -19,28 +17,23 @@ function Orgs() {
   const selectedId = useOrgs((s) => s.selectedOrgId ?? "")
   const setSelectedId = useOrgs((s) => s.setSelectedOrgId)
   const { status, data: orgs } = useFetchOrgs();
-
-  const selectedOrg = useMemo(() => {
-    if (!orgs?.length || !selectedId) return undefined
-    return orgs.find((org) => org.id === selectedId)
-  }, [orgs, selectedId])
+  
+  const selectedOrg = orgs?.find((org) => org.id === selectedId)
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={clsx(styles.input, styles.buttonRnd, "overflow-hidden")}
+          className={clsx(styles.input, styles.buttonCapsule)}
           aria-label="Select organization"
         >
-          {  }
+          { selectedOrg?.name ?? "Org" }
           <ChevronDown className={styles.navIconSecondary} aria-hidden="true" />
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" sideOffset={8}>
-        <DropdownMenuLabel>Organization</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="start">
         {orgs?.length ? (
           <DropdownMenuRadioGroup
             value={selectedId}
@@ -57,7 +50,7 @@ function Orgs() {
             ))}
           </DropdownMenuRadioGroup>
         ) : (
-          <div className="pointer-events-none py-4 text-center text-sm text-muted-foreground">
+          <div className="pointer-events-none p-4 text-center text-sm text-muted-foreground">
             {status === "loading" ? "Loading…" : "No organizations available"}
           </div>
         )}
