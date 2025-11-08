@@ -9,7 +9,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"lagertool.com/main/api"
-	"lagertool.com/main/auth"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 	_ "lagertool.com/main/docs"
@@ -64,7 +63,7 @@ func main() {
 	} */
 
 	api.SetupRoutes(router, dbConnection, cfg)
-	auth.Init()
+	// auth.Init()
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
