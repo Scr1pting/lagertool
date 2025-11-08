@@ -104,21 +104,24 @@ button {
 .rangeSelectorBtn {
   display: flex;
   align-items: center;
-  padding: 0.4rem 0.35rem 0.4rem 0.5rem;
-  border-radius: 99999px;
+  justify-content: center;
+  padding: 0;
 }
 
 .rangeSelectorBtn:hover,
 .rangeSelectorBtn[data-state="open"] {
-  background-color: #161616;
+  background-color: #282828;
+  border-color: #6d6d6d;
 }
 
-.rangeSelectorBtnActive,
-.rangeSelectorBtnActive[data-state="open"] {
-  background-color: #d0d0d0;
-  color: black;
+.rangeSelectorBtn[data-active="true"],
+.rangeSelectorBtn[data-active="true"][data-state="open"] {
+  background-color: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
 }
 
-.rangeSelectorBtnActive:hover {
-  background-color: #b5b5b5;
+.rangeSelectorBtn[data-active="true"]:hover {
+  background-color: #e5e5e5;
+  border-color: #e5e5e5;
 }

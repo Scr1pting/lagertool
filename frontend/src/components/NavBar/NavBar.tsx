@@ -6,6 +6,7 @@ import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
 import MiniCart from '../MiniCart';
 import Org from './Orgs';
+import RangeSelector from './RangeSelector';
 
 export default function NavBar() {
 
@@ -22,8 +23,8 @@ export default function NavBar() {
 
         <div className={styles.input}><SearchBar /></div>
 
-        <MoreDropdown />
-
+        
+        <RangeSelector />
         <MiniCart
           trigger={
             <button
@@ -36,6 +37,8 @@ export default function NavBar() {
           }
         />
         <Org />
+        <MoreDropdown />
+        
       </div>
     </div>
   );

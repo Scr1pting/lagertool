@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { Button } from "../shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import { ChevronDown, Search } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { Calendar } from "../shadcn/calendar";
 
 import styles from "./NavBar.module.css";
@@ -28,6 +28,8 @@ function RangeSelector() {
     if (selectedRange?.from) setVisibleMonth(selectedRange.from)
   }, [selectedRange?.from])
 
+  const isRangeActive = Boolean(selectedRange?.from)
+
   return (
     <>
       <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
@@ -36,13 +38,15 @@ function RangeSelector() {
             type="button"
             aria-label="Open calendar search filters"
             data-state={isCalendarOpen ? "open" : undefined}
+            data-active={isRangeActive ? "true" : undefined}
+            aria-pressed={isRangeActive}
             className={clsx(
-              styles.rangeSelectorBtn,
-              selectedRange?.from && styles.rangeSelectorBtnActive
+              styles.input,
+              styles.buttonRnd,
+              styles.rangeSelectorBtn
             )}
           >
-            <Search className={styles.navIcon} aria-hidden="true" />
-            <ChevronDown className={styles.navIconSecondary} aria-hidden="true" />
+            <CalendarDays className={styles.navIcon} aria-hidden="true" />
           </button>
         </PopoverTrigger>
         <PopoverContent align="start" className="rounded-lg w-auto p-2">
@@ -61,7 +65,7 @@ function RangeSelector() {
           <div className="mt-3 flex w-full items-center justify-center gap-2 pb-2">
             <Button
               type="button"
-              variant="ghost"
+              variant="secondary"
               onClick={clearRange}
               disabled={!selectedRange?.from}
             >
