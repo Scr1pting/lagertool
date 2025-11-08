@@ -20,7 +20,7 @@ import { useDate } from "@/store/useDate"
 import { format } from "date-fns"
 import { Textarea } from "@/components/shadcn/textarea"
 import { Field, FieldDescription } from "@/components/shadcn/field"
-import { useLayoutEffect, useRef, useState, type FormEvent } from "react"
+import { useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 
@@ -297,7 +297,7 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
 const MotionDialogContent = motion(DialogContent)
 type DialogPage = "Main" | "CheckoutAddInfo" | "CheckoutSubmit"
 
-function AddCartDialog({ item }: { item: InventoryItem }) {
+function AddCartDialog({ item, children }: { item: InventoryItem, children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState<DialogPage>("Main")
 
@@ -455,13 +455,7 @@ function AddCartDialog({ item }: { item: InventoryItem }) {
       }}
     >
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="h-8 p-0"
-        >
-          Add to cart
-          <ShoppingCartIcon />
-        </Button>
+        {children}
       </DialogTrigger>
       <MotionDialogContent className="sm:max-w-[425px]">
         <div

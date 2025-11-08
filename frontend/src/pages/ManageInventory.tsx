@@ -7,7 +7,6 @@ import { Button } from "@/components/shadcn/button"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,

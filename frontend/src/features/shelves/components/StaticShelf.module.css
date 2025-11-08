@@ -10,18 +10,19 @@
 }
 
 .leftElement {
-  -webkit-mask-image: linear-gradient(to right, transparent, black 100%);
-  mask-image: linear-gradient(to right, transparent, black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 90%);
+  mask-image: linear-gradient(to right, transparent, black 90%);
 }
 
 .rightElement {
-  -webkit-mask-image: linear-gradient(to left, transparent, black 100%);
-  mask-image: linear-gradient(to left, transparent, black 100%);
+  -webkit-mask-image: linear-gradient(to left, transparent, black 90%);
+  mask-image: linear-gradient(to left, transparent, black 90%);
 }
 
 .column {
   display: flex;
   flex-direction: column;
+  border-bottom: 1px solid #ccc;
 }
 
 .numItem {

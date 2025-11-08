@@ -2,7 +2,9 @@ import type { ColumnDef } from "@tanstack/react-table"
 import DataTableColumnHeader from "../DataTableSortedHeader"
 import type { InventoryItem } from "@/types/inventory"
 import InventoryActions from "./InventoryActions"
-import AddCartDialog from "./AddCartDialog"
+import AddCartDialog from "../../AddCartDialog"
+import { Button } from "@/components/shadcn/button"
+import { ShoppingCartIcon } from "lucide-react"
 
 
 const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
@@ -56,7 +58,15 @@ export const inventoryColumnsFull: ColumnDef<InventoryItem>[] = [
         className="flex w-full justify-end"
         onClick={(e) => e.stopPropagation()}
       >
-        <AddCartDialog item={row.original} />
+        <AddCartDialog item={row.original}>
+          <Button
+            variant="outline"
+            className="h-8 p-0"
+          >
+            Add to cart
+            <ShoppingCartIcon />
+          </Button>
+        </AddCartDialog>
       </div>
     ),
   },
