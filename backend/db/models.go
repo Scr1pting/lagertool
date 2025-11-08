@@ -76,7 +76,7 @@ type Shelf struct {
 
 	Room         *Room         `json:"room" pg:"rel:has-one,fk:room_id"`
 	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:owned_by"`
-	Columns      *[]Column     `json:"columns" pg:"rel:has-many"`
+	Columns      []Column      `json:"columns" pg:"rel:has-many"`
 }
 
 type Column struct {
@@ -84,8 +84,8 @@ type Column struct {
 	ID        string   `json:"id" pg:"id,pk"`
 	ShelfID   string   `json:"shelf_id" pg:"shelf_id"`
 
-	Shelf      *Shelf       `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
-	ShelfUnits *[]ShelfUnit `json:"shelf_units" pg:"rel:has-many,fk:column_id"`
+	Shelf      *Shelf      `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
+	ShelfUnits []ShelfUnit `json:"shelf_units" pg:"rel:has-many,fk:column_id"`
 }
 type ShelfUnit struct { //it is also the new LOCATION
 	tableName        struct{} `pg:"shelf_unit"`
@@ -137,8 +137,8 @@ type ShoppingCartItem struct {
 	InventoryID    int `json:"inventory_id" pg:"inventory_id"`
 	ShoppingCartID int `json:"shopping_cart_id" pg:"shopping_cart_id"`
 
-	Inventory    *Inventory    `json:"inventory" pg:"rel:has-one,fk:inventory_id"`
-	ShoppingCart *ShoppingCart `json:"shopping_cart" pg:"rel:has-one,fk:shopping_cart_id"`
+	Inventory    *Inventory   `json:"inventory" pg:"rel:has-one,fk:inventory_id"`
+	ShoppingCart ShoppingCart `json:"shopping_cart" pg:"rel:has-one,fk:shopping_cart_id"`
 }
 
 type Inventory struct {
@@ -149,9 +149,9 @@ type Inventory struct {
 	Amount      int      `json:"amount" pg:"amount"`
 	UpdateDate  string   `json:"update_date" pg:"update_date"`
 
-	Item         *Item           `json:"item" pg:"rel:has-one,fk:id"`
-	ShelfUnit    *ShelfUnit      `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`
-	RequestItems *[]RequestItems `json:"request_item" pg:"rel:has-many,fk:inventory_id"`
+	Item         *Item          `json:"item" pg:"rel:has-one,fk:id"`
+	ShelfUnit    *ShelfUnit     `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`
+	RequestItems []RequestItems `json:"request_item" pg:"rel:has-many,fk:inventory_id"`
 }
 
 type Request struct {

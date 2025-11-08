@@ -74,7 +74,7 @@ func GetDummyData() (
 		Building:   building,
 	}
 
-	// 5️⃣ Shelf + Columns + Units
+	// 5️⃣ Shelf + Columns + ShelfUnits
 	shelf := &Shelf{
 		ID:           "S-001",
 		Name:         "Chemical Storage Shelf",
@@ -95,6 +95,11 @@ func GetDummyData() (
 		{ID: "U-002", Type: 1, PositionInColumn: 2, ColumnID: columns[0].ID, Column: &columns[0], Description: "Large bin for glassware"},
 	}
 
+	// Link ShelfUnits to Columns
+	columns[0].ShelfUnits = []ShelfUnit{shelfUnits[0], shelfUnits[1]}
+	columns[1].ShelfUnits = []ShelfUnit{} // empty column
+	shelf.Columns = columns
+
 	// 6️⃣ Item
 	item := &Item{
 		ID:           1,
@@ -114,7 +119,7 @@ func GetDummyData() (
 	}
 
 	// 8️⃣ ShoppingCart + Items
-	shoppingCart := &ShoppingCart{
+	shoppingCart := ShoppingCart{
 		ID:     1,
 		UserID: user.ID,
 	}
@@ -176,5 +181,5 @@ func GetDummyData() (
 		RequestItems:  &requestItems[0],
 	}
 
-	return org, user, session, building, room, shelf, columns, shelfUnits, item, inventory, shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed
+	return org, user, session, building, room, shelf, columns, shelfUnits, item, inventory, &shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed
 }
