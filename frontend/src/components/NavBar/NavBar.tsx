@@ -7,6 +7,7 @@ import SearchBar from "./SearchBar";
 import MiniCart from '../MiniCart';
 import Org from './Orgs';
 import RangeSelector from './RangeSelector';
+import AccountButton from './AccountButton';
 
 export default function NavBar() {
 
@@ -41,6 +42,7 @@ export default function NavBar() {
               </button>
             }
           />
+          <AccountButton />
           <MoreDropdown />
         </div>
         
