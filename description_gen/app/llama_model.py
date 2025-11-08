@@ -7,7 +7,7 @@ llm = Llama(model_path=MODEL_PATH)
 
 def generate_category(item_names: list[str]) -> str:
     if not item_names:
-        return "Uncategorized"
+        return "Empty"
 
     item_list = "\n".join(f"- {name}" for name in item_names)
     prompt = (

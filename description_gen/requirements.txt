@@ -2,3 +2,4 @@ fastapi
 pydantic>=2
 uvicorn[standard]
 llama-cpp-python
+nltk
