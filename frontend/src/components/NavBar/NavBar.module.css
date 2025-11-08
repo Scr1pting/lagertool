@@ -76,6 +76,23 @@ button {
   cursor: pointer;
 }
 
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.3rem;
+  border-radius: 99999px;
+  background-color: rgba(26, 26, 26, 0.85);
+  border: 1px solid #303030;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.actionButton {
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
 
 /* Search */
 .searchWrapper {
@@ -116,12 +133,12 @@ button {
 
 .rangeSelectorBtn[data-active="true"],
 .rangeSelectorBtn[data-active="true"][data-state="open"] {
-  background-color: #ffffff;
+  background-color: #FDD62F;
   color: #000000;
-  border-color: #ffffff;
+  border-color: #f9c700;
 }
 
 .rangeSelectorBtn[data-active="true"]:hover {
-  background-color: #e5e5e5;
-  border-color: #e5e5e5;
+  background-color: #FDD62F;
+  border-color: #f9c700;
 }

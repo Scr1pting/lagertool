@@ -43,6 +43,7 @@ function RangeSelector() {
             className={clsx(
               styles.input,
               styles.buttonRnd,
+              styles.actionButton,
               styles.rangeSelectorBtn
             )}
           >

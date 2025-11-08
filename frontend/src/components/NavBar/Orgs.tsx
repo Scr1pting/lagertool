@@ -28,7 +28,7 @@ function Orgs() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={clsx(styles.input, styles.buttonRnd, "overflow-hidden")}
+          className={clsx(styles.input, styles.buttonRnd, styles.actionButton, "overflow-hidden")}
           aria-label="Select organization"
         >
           {selectedOrg ? (

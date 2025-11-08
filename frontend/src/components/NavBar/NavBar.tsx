@@ -23,21 +23,22 @@ export default function NavBar() {
 
         <div className={styles.input}><SearchBar /></div>
 
-        
-        <RangeSelector />
-        <MiniCart
-          trigger={
-            <button
-              type="button"
-              className={clsx(styles.input, styles.buttonRnd)}
-              aria-label="Open cart"
-            >
-              <ShoppingCart className={styles.navIcon} />
-            </button>
-          }
-        />
-        <Org />
-        <MoreDropdown />
+        <div className={styles.actionGroup}>
+          <RangeSelector />
+          <MiniCart
+            trigger={
+              <button
+                type="button"
+                className={clsx(styles.input, styles.buttonRnd, styles.actionButton)}
+                aria-label="Open cart"
+              >
+                <ShoppingCart className={styles.navIcon} />
+              </button>
+            }
+          />
+          <Org />
+          <MoreDropdown />
+        </div>
         
       </div>
     </div>
