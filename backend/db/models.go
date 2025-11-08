@@ -204,12 +204,3 @@ type Consumed struct {
 
 	RequestItems *RequestItems `json:"request_items" pg:"rel:belongs-to,fk:request_item_id"`
 }
-
-type Session struct {
-	tableName struct{}  `pg:"session"`
-	ID        int       `json:"session_id" pg:"session_id"`
-	AccountID int       `json:"account_id" pg:"account_id"`
-	CreatedAt time.Time `json:"created_at" pg:"created_at"`
-	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`
-	UserIP    net.IP    `json:"user_ip" pg:"user_ip"`
-}

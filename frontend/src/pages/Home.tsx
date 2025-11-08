@@ -51,9 +51,12 @@ function Home() {
     [searchParams, setSearchParams, shelves],
   );
 
-  if (status === "error") return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
-  if (status === "success" && (!shelves || shelves.length === 0)) return <p>No shelves yet.</p>;
-  else if (!shelves || shelves.length === 0) return <></>;
+  if (status === "error")
+    return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
+  if (status === "success" && (!shelves || shelves.length === 0)) 
+    return <p>No shelves yet.</p>;
+  if (!shelves || !Array.isArray(shelves) || shelves.length === 0)
+    return <></>;
 
   const shelvesContent = shelves.map((shelf) => (
     <div key={shelf.id} className={styles.content}>

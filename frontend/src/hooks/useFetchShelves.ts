@@ -1,8 +1,10 @@
 import useApi from "./useApi";
 import type { Shelf } from "@/types/shelf";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 function useFetchShelves() {
-  return useApi<Shelf[]>('/shelves.sample.json')
+  return useApi<Shelf[]>(`${API_BASE_URL}/shelves_sorted`)
 }
 
 export default useFetchShelves;
