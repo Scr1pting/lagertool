@@ -4,7 +4,7 @@ import { type DropTargetData } from '../types/drag';
 import { type ShelfColumn, ELEMENT_CATALOG } from '../../../types/shelf';
 import { ELEMENT_WIDTH } from '../util/shelfUnits';
 
-import ShelfPiece from './ShelfElementView';
+import ShelfPiece from '../shared/ShelfElementView';
 
 import styles from './Canvas.module.css';
 

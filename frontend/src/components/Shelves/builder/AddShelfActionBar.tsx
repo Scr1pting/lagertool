@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
+import { type ChangeEvent, useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button } from "@/components/shadcn/button";
@@ -11,9 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/shadcn/popover'
-import postShelf from '../features/shelves/api/postShelf';
-import { type ShelfColumn } from '../types/shelf';
-import { makeId } from '../features/shelves/util/ids';
+import { type ShelfColumn } from '../../../types/shelf';
 import { X } from 'lucide-react';
 
 
@@ -52,41 +50,7 @@ function Form({ columns }: FormProps) {
     [status]
   );
 
-  const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      setError(null);
-
-      if (columns.length === 0) {
-        setStatus("error");
-        setError("Add at least one shelf before submitting.");
-        return;
-      }
-
-      setStatus("submitting");
-
-      try {
-        await postShelf({
-          id: makeId(),
-          name: values.name.trim(),
-          buildingName: values.building.trim(),
-          roomName: values.room.trim(),
-          columns: columns,
-        });
-
-        setStatus("success");
-        setValues((prev) => ({ name: "", building: prev.building, room: "" }));
-      } catch (submitError) {
-        setStatus("error");
-        if (submitError instanceof Error) {
-          setError(submitError.message);
-        } else {
-          setError("Something went wrong while saving the shelf.");
-        }
-      }
-    },
-    [columns.length, columns, values.building, values.name, values.room]
-  );
+  const handleSubmit = () => {}
 
   const isSubmitDisabled = status === "submitting" || columns.length === 0;
 

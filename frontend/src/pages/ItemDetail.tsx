@@ -2,7 +2,7 @@ import AddCartDialog from "@/components/AddCartDialog"
 import RegularPage from "@/components/RegularPage"
 import { Button } from "@/components/shadcn/button"
 import { Separator } from "@/components/shadcn/separator"
-import StaticShelf from "@/features/shelves/components/StaticShelf"
+import StaticShelf from "@/components/Shelves/viewer/StaticShelf"
 import useFetchItem from "@/hooks/useFetchItem"
 import { PencilIcon, ShoppingCartIcon } from "lucide-react"
 
