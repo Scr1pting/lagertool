@@ -15,7 +15,11 @@ function Search() {
       title="Search Results"
       description={<SelectedRangeDesc range={selectedRange} />}
     >
-      <DataTable data={inventory ?? []} columns={inventoryColumnsFull} />
+      <DataTable
+        data={inventory ?? []}
+        columns={inventoryColumnsFull}
+        rowLink={(row) => `/item?id=${row.id}`}
+      />
     </RegularPage>
   )
 }

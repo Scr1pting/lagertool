@@ -52,7 +52,12 @@ export const inventoryColumnsFull: ColumnDef<InventoryItem>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => (
-      <AddCartDialog item={row.original} />
+      <div
+        className="flex w-full justify-end"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <AddCartDialog item={row.original} />
+      </div>
     ),
   },
 ]
