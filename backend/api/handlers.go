@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
@@ -91,14 +90,32 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	var shoppingCart db.ShoppingCart
-	err = h.DB.Model(&shoppingCart).Relation("ShoppingCartItems.Inventory.Item").
-		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Room.Building").
-		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Organisation").Where("user_id = ?", id).Select()
+	err = h.DB.Model(&shoppingCart).
+		Relation("ShoppingCartItems.Inventory.Item").
+		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Room").
+		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Organisation").
+		Where("user_id = ?", id).
+		Select()
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	var m map[string][]CartItem
+
+	m := make(map[string][]CartItem)
 	for _, item := range shoppingCart.ShoppingCartItems {
+		if item.Inventory.ShelfUnit.Column.Shelf.Room.Building == nil {
+			var building db.Building
+			err = h.DB.Model(&building).
+				Where("id = ?", item.Inventory.ShelfUnit.Column.Shelf.Room.BuildingID).
+				Select()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			item.Inventory.ShelfUnit.Column.Shelf.Room.Building = &building
+		}
+
 		var ci CartItem
 		ci.ID = item.Inventory.ItemID
 		ci.Name = item.Inventory.Item.Name
@@ -115,11 +132,7 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 		ci.BuildingName = item.Inventory.ShelfUnit.Column.Shelf.Room.Building.Name
 		ci.ShelfID = item.Inventory.ShelfUnit.Column.Shelf.ID
 		ci.AmountSelected = item.Amount
-		m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name] = append(m[item.Inventory.ShelfUnit.Column.Shelf.Name], ci)
+		m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name] = append(m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name], ci)
 	}
-	jsonData, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	c.JSON(http.StatusOK, string(jsonData))
+	c.JSON(http.StatusOK, m)
 }

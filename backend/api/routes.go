@@ -13,7 +13,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/shelves", h.GetShelves)
 	r.GET("/item/:id/:start/:end", h.GetItem) //inventory Item ID, DateRange
 	r.GET("/organisations", h.GetOrganisations)
-	r.GET("/shopping_cart/:id", h.GetShoppingCart) //userID
+	r.GET("/shopping_cart/:id/:start/:end", h.GetShoppingCart) //userID
 
 	// Google OAuth2
 	r.GET("/auth/google/login", auth.GoogleLoginHandler)
