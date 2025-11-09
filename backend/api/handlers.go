@@ -45,11 +45,11 @@ func (h *Handler) GetItem(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	start, err := time.Parse("2002-06-31", c.Param("start"))
+	start, err := time.Parse("2006-01-02", c.Param("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	end, err := time.Parse("2002-06-31", c.Param("end"))
+	end, err := time.Parse("2006-01-02", c.Param("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
@@ -79,11 +79,11 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	start, err := time.Parse("2002-06-31", c.Param("start"))
+	start, err := time.Parse("2006-01-02", c.Param("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	end, err := time.Parse("2002-06-31", c.Param("end"))
+	end, err := time.Parse("2006-01-02", c.Param("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}

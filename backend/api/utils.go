@@ -46,7 +46,7 @@ func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, 
 	var dbInv db.Inventory
 	err := h.DB.Model(&dbInv).
 		Relation("Item").
-		Relation("RequestItems.Request").Where("id = ?", invId).Select()
+		Relation("RequestItems.Request").Where("inventory.id = ?", invId).Select()
 	if err != nil {
 		return 0, err
 	}

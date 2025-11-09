@@ -54,16 +54,16 @@ func (h *Handler) GetShelvesS(c *gin.Context) {
 }
 
 func (h *Handler) GetInventoryS(c *gin.Context) {
-	start, err := time.Parse("2002-06-31", c.Param("start"))
+	start, err := time.Parse("2006-01-02", c.Param("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	end, err := time.Parse("2002-06-31", c.Param("end"))
+	end, err := time.Parse("2006-01-02", c.Param("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	var dbRes []db.Inventory
-	err = h.DB.Model(&dbRes).Relation("ShelfUnit.Column.Shelf.Room.Building").Order("update_date desc").Select()
+	err = h.DB.Model(&dbRes).Column("inventory.*").Relation("Item").Relation("ShelfUnit.Column.Shelf.Room.Building").Relation("ShelfUnit.Column.Shelf.Room").Order("inventory.update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
