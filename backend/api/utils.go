@@ -67,7 +67,7 @@ func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time)
 	var res InventoryItem
 	err := h.DB.Model(&dbInv).
 		Relation("Item").
-		Relation("ShelfUnit.Column.Shelf.Room.Building").Where("id = ?", id).Select()
+		Relation("ShelfUnit.Column.Shelf.Room.Building").Where("inventory.id = ?", id).Select()
 	if err != nil {
 		return InventoryItem{}, err
 	}
