@@ -5,12 +5,12 @@ import type { ManageInventoryElement } from "./types/ManageInventoryElement"
 
 
 
-interface ManageInventoryCardProps1 {
+interface ManageInventoryCardProps {
   title: string
   elements: ManageInventoryElement[]
 }
 
-function ManageInventoryForm({ title, elements }: ManageInventoryCardProps1) {
+function ManageInventoryCard({ title, elements }: ManageInventoryCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -32,4 +32,4 @@ function ManageInventoryForm({ title, elements }: ManageInventoryCardProps1) {
   )
 }
 
-export default ManageInventoryForm
+export default ManageInventoryCard

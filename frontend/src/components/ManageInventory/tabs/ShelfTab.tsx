@@ -8,11 +8,11 @@ import DataTable from "@/components/DataTable/DataTable"
 import shelfColumns from "@/components/DataTable/ManageInventory/ShelfColumns"
 
 
-interface AddShelfProps {
+interface ShelfTabProps {
   shelves: Shelf[]
 }
 
-function AddShelf({ shelves }: AddShelfProps) {
+function ShelfTab({ shelves }: ShelfTabProps) {
   return (
     <TabsContent value="buildings">
       <div className="space-y-10">
@@ -50,4 +50,4 @@ function AddShelf({ shelves }: AddShelfProps) {
   )
 }
 
-export default AddShelf
+export default ShelfTab

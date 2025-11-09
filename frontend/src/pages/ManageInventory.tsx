@@ -8,10 +8,10 @@ import useBuilding from "@/hooks/useFetchBuildings"
 import useFetchRooms from "@/hooks/useFetchRooms"
 import useInventory from "@/hooks/useFetchInventory"
 import useFetchShelvesMeta from "@/hooks/useFetchShelvesMeta"
-import AddItem from "@/components/ManageInventory/tabs/AddItemForm"
-import AddBuilding from "@/components/ManageInventory/tabs/AddBuildingForm"
-import AddRoom from "@/components/ManageInventory/tabs/AddRoomForm"
-import AddShelf from "@/components/ManageInventory/tabs/AddShelfForm"
+import ItemTab from "@/components/ManageInventory/tabs/ItemTab"
+import ShelfTab from "@/components/ManageInventory/tabs/ShelfTab"
+import RoomTab from "@/components/ManageInventory/tabs/RoomTab"
+import BuildingTab from "@/components/ManageInventory/tabs/BuildingTab"
 
 
 function ManageInventory() {
@@ -39,18 +39,18 @@ function ManageInventory() {
             </TabsTrigger>
           </TabsList>
 
-          <AddItem
+          <ItemTab
             buildings={buildings ?? []}
             rooms={rooms ?? []}
             shelves={shelves ?? []}
             inventory={inventory ?? []}
           />
 
-          <AddShelf shelves={shelves ?? []} />
+          <ShelfTab shelves={shelves ?? []} />
 
-          <AddRoom buildings={buildings ?? []} rooms={rooms ?? []} />
+          <RoomTab buildings={buildings ?? []} rooms={rooms ?? []} />
 
-          <AddBuilding buildings={buildings ?? []} />
+          <BuildingTab buildings={buildings ?? []} />
         </Tabs>
       </div>
     </RegularPage>

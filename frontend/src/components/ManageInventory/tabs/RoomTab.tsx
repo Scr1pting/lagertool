@@ -5,17 +5,17 @@ import type { Room } from "@/types/room"
 import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
 import { TabsContent } from "@/components/shadcn/tabs"
-import ManageInventoryForm from "../ManageInventoryForm"
+import ManageInventoryForm from "../ManageInventoryCard"
 import DataTable from "@/components/DataTable/DataTable"
 import roomColumns from "@/components/DataTable/ManageInventory/RoomColumns"
 
 
-interface AddRoomProps {
+interface RoomTabProps {
   buildings: Building[]
   rooms: Room[]
 }
 
-function AddRoom({ buildings, rooms }: AddRoomProps) {
+function RoomTab({ buildings, rooms }: RoomTabProps) {
   const [name, setName] = useState<string>("")
   const [buildingId, setBuildingId] = useState<string | undefined>()
 
@@ -63,4 +63,4 @@ function AddRoom({ buildings, rooms }: AddRoomProps) {
   )
 }
 
-export default AddRoom
+export default RoomTab

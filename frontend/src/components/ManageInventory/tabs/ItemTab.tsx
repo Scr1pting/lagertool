@@ -7,19 +7,19 @@ import type { Shelf } from "@/types/shelf"
 import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
 import DataTable from "@/components/DataTable/DataTable"
-import ManageInventoryForm from "../ManageInventoryForm"
+import ManageInventoryForm from "../ManageInventoryCard"
 import { TabsContent } from "@/components/shadcn/tabs"
 import { inventoryColumns } from "@/components/DataTable/ManageInventory/InventoryColumns"
 
 
-interface AddItemProps {
+interface ItemTabProps {
   buildings: Building[]
   rooms: Room[]
   shelves: Shelf[]
   inventory: InventoryItem[]
 }
 
-function AddItem({ buildings, rooms, shelves, inventory }: AddItemProps) {
+function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
   const [name, setName] = useState("")
   const [amount, setAmount] = useState(1)
 
@@ -118,4 +118,4 @@ function AddItem({ buildings, rooms, shelves, inventory }: AddItemProps) {
   )
 }
 
-export default AddItem
+export default ItemTab

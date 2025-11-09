@@ -2,17 +2,17 @@ import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
 import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
-import ManageInventoryForm from "../ManageInventoryForm"
+import ManageInventoryForm from "../ManageInventoryCard"
 import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
 import buildingColumns from "@/components/DataTable/ManageInventory/BuildingColumns"
 
 
-interface AddBuildingProps {
+interface BuildingTabProps {
   buildings: Building[]
 }
 
-function AddBuilding({ buildings }: AddBuildingProps) {
+function BuildingTab({ buildings }: BuildingTabProps) {
   const [name, setName] = useState<string>("")
 
   const elements: ManageInventoryElement[] = [
@@ -48,4 +48,4 @@ function AddBuilding({ buildings }: AddBuildingProps) {
   )
 }
 
-export default AddBuilding
+export default BuildingTab
