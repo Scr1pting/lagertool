@@ -7,9 +7,9 @@ import type { Shelf } from "@/types/shelf"
 import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
 import DataTable from "@/components/DataTable/DataTable"
-import ManageInventoryForm from "../ManageInventoryCard"
 import { TabsContent } from "@/components/shadcn/tabs"
 import { inventoryColumns } from "@/components/DataTable/ManageInventory/InventoryColumns"
+import ManageInventoryCard from "../ManageInventoryCard"
 
 
 interface ItemTabProps {
@@ -100,9 +100,9 @@ function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
   ]
 
   return (
-    <TabsContent value="buildings">
+    <TabsContent value="items">
       <div className="space-y-10">
-        <ManageInventoryForm title="Add Building" elements={elements} />
+        <ManageInventoryCard title="Add Building" elements={elements} />
         
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">

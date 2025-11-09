@@ -23,19 +23,19 @@ function ManageInventory() {
   return (
     <RegularPage title="Manage Inventory">
       <div className="w-full max-w-3xl">
-        <Tabs defaultValue="item" className="space-y-2">
+        <Tabs defaultValue="items" className="space-y-2">
           <TabsList className="grid w-full grid-cols-4 gap-2 text-sm">
-            <TabsTrigger value="item">
-              Item
+            <TabsTrigger value="items">
+              Items
             </TabsTrigger>
-            <TabsTrigger value="shelf">
-              Shelf
+            <TabsTrigger value="shelves">
+              Shelves
             </TabsTrigger>
-            <TabsTrigger value="room">
-              Room
+            <TabsTrigger value="rooms">
+              Rooms
             </TabsTrigger>
-            <TabsTrigger value="building">
-              Building
+            <TabsTrigger value="buildings">
+              Buildings
             </TabsTrigger>
           </TabsList>
 

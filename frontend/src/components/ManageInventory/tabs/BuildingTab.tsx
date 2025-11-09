@@ -2,10 +2,10 @@ import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
 import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
-import ManageInventoryForm from "../ManageInventoryCard"
 import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
 import buildingColumns from "@/components/DataTable/ManageInventory/BuildingColumns"
+import ManageInventoryCard from "../ManageInventoryCard"
 
 
 interface BuildingTabProps {
@@ -19,7 +19,7 @@ function BuildingTab({ buildings }: BuildingTabProps) {
     {
       size: "full",
       id: "building-name",
-      label: "Room Name",
+      label: "Building Name",
       input: <Input
         id="building-name"
         placeholder="CAB"
@@ -32,7 +32,7 @@ function BuildingTab({ buildings }: BuildingTabProps) {
   return (
     <TabsContent value="buildings">
       <div className="space-y-10">
-        <ManageInventoryForm title="Add Building" elements={elements} />
+        <ManageInventoryCard title="Add Building" elements={elements} />
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">

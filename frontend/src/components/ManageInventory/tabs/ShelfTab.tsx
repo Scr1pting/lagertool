@@ -14,7 +14,7 @@ interface ShelfTabProps {
 
 function ShelfTab({ shelves }: ShelfTabProps) {
   return (
-    <TabsContent value="buildings">
+    <TabsContent value="shelves">
       <div className="space-y-10">
         <Card>
           <CardHeader>

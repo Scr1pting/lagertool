@@ -5,9 +5,9 @@ import type { Room } from "@/types/room"
 import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
 import { TabsContent } from "@/components/shadcn/tabs"
-import ManageInventoryForm from "../ManageInventoryCard"
 import DataTable from "@/components/DataTable/DataTable"
 import roomColumns from "@/components/DataTable/ManageInventory/RoomColumns"
+import ManageInventoryCard from "../ManageInventoryCard"
 
 
 interface RoomTabProps {
@@ -45,9 +45,9 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
   ]
 
   return (
-    <TabsContent value="buildings">
+    <TabsContent value="rooms">
       <div className="space-y-10">
-        <ManageInventoryForm title="Add Building" elements={elements} />
+        <ManageInventoryCard title="Add Building" elements={elements} />
         
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">
