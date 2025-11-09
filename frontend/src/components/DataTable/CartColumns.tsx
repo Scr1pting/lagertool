@@ -3,7 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "../shadcn/button";
 import type { InventoryItem } from "@/types/inventory";
 import type { ColumnDef } from "@tanstack/react-table";
-import DataTableColumnHeader from "./DataTableSortedHeader";
+import DataTableColumnHeader from "./SortableHeader";
 
 
 const cartColumns: ColumnDef<InventoryItem>[] = [

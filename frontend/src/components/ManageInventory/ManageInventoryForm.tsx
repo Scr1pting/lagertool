@@ -1,29 +1,22 @@
 import { Button } from "../shadcn/button"
-import { CardContent, CardFooter } from "../shadcn/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../shadcn/card"
 import { Label } from "../shadcn/label"
-import ManageInventoryWrapper from "./ManageInventoryWrapper"
-import type { ColumnDef } from "@tanstack/react-table"
 import type { ManageInventoryElement } from "./types/ManageInventoryElement"
 
 
-interface ManageInventoryElementsProps<T> {
-  type: "item" | "shelf" | "room" | "building"
+
+interface ManageInventoryCardProps1 {
+  title: string
   elements: ManageInventoryElement[]
-  tableItems: T[] | undefined
-  columnDef: ColumnDef<T>[]
 }
 
-
-/**
- * 
- */
-function ManageInventoryElements<T>({ type, elements, tableItems, columnDef }: ManageInventoryElementsProps<T>) {
+function ManageInventoryForm({ title, elements }: ManageInventoryCardProps1) {
   return (
-    <ManageInventoryWrapper
-      type={type}
-      tableItems={tableItems}
-      columnDef={columnDef}
-    >
+    <Card>
+      <CardHeader>
+        <CardTitle className="capitalize">{title}</CardTitle>
+      </CardHeader>
+
       <CardContent className={`grid gap-4 sm:grid-cols-2`}>
         {elements.map((element) =>
           <div key={element.id} className={`grid gap-2 ${element.size === 'full' ? 'sm:col-span-2' : ''}`}>
@@ -35,8 +28,8 @@ function ManageInventoryElements<T>({ type, elements, tableItems, columnDef }: M
       <CardFooter className="flex justify-end">
         <Button type="button">Save</Button>
       </CardFooter>
-    </ManageInventoryWrapper>
+    </Card>
   )
 }
 
-export default ManageInventoryElements
+export default ManageInventoryForm

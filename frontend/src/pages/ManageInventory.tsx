@@ -8,10 +8,10 @@ import useBuilding from "@/hooks/useFetchBuildings"
 import useFetchRooms from "@/hooks/useFetchRooms"
 import useInventory from "@/hooks/useFetchInventory"
 import useFetchShelvesMeta from "@/hooks/useFetchShelvesMeta"
-import AddItem from "@/components/ManageInventory/forms/AddItemForm"
-import AddBuilding from "@/components/ManageInventory/forms/AddBuildingForm"
-import AddRoom from "@/components/ManageInventory/forms/AddRoomForm"
-import AddShelf from "@/components/ManageInventory/forms/AddShelfForm"
+import AddItem from "@/components/ManageInventory/tabs/AddItemForm"
+import AddBuilding from "@/components/ManageInventory/tabs/AddBuildingForm"
+import AddRoom from "@/components/ManageInventory/tabs/AddRoomForm"
+import AddShelf from "@/components/ManageInventory/tabs/AddShelfForm"
 
 
 function ManageInventory() {

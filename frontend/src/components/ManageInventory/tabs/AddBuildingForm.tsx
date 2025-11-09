@@ -1,9 +1,11 @@
 import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
 import { Input } from "@/components/shadcn/input"
-import ManageInventoryElements from "../ManageInventoryElements"
-import buildingColumns from "@/components/DataTable/BuildingColumns"
 import type { Building } from "@/types/building"
+import ManageInventoryForm from "../ManageInventoryForm"
+import DataTable from "@/components/DataTable/DataTable"
+import { TabsContent } from "@/components/shadcn/tabs"
+import buildingColumns from "@/components/DataTable/ManageInventory/BuildingColumns"
 
 
 interface AddBuildingProps {
@@ -28,12 +30,21 @@ function AddBuilding({ buildings }: AddBuildingProps) {
   ]
 
   return (
-    <ManageInventoryElements 
-      type={"building"}
-      elements={elements}
-      tableItems={buildings}
-      columnDef={buildingColumns}
-    />
+    <TabsContent value="buildings">
+      <div className="space-y-10">
+        <ManageInventoryForm title="Add Building" elements={elements} />
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">
+            Recently Added
+          </h2>
+          <DataTable
+            data={buildings}
+            columns={buildingColumns}
+          />
+        </section>
+      </div>
+    </TabsContent>
   )
 }
 

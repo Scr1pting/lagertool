@@ -6,8 +6,10 @@ import type { Room } from "@/types/room"
 import type { Shelf } from "@/types/shelf"
 import { useState } from "react"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
-import ManageInventoryElements from "../ManageInventoryElements"
-import { inventoryColumnsNoCart } from "@/components/DataTable/InventoryTable/InventoryColumns"
+import DataTable from "@/components/DataTable/DataTable"
+import ManageInventoryForm from "../ManageInventoryForm"
+import { TabsContent } from "@/components/shadcn/tabs"
+import { inventoryColumns } from "@/components/DataTable/ManageInventory/InventoryColumns"
 
 
 interface AddItemProps {
@@ -98,12 +100,21 @@ function AddItem({ buildings, rooms, shelves, inventory }: AddItemProps) {
   ]
 
   return (
-    <ManageInventoryElements 
-      type={"item"}
-      elements={elements}
-      tableItems={inventory}
-      columnDef={inventoryColumnsNoCart}
-    />
+    <TabsContent value="buildings">
+      <div className="space-y-10">
+        <ManageInventoryForm title="Add Building" elements={elements} />
+        
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">
+            Recently Added
+          </h2>
+          <DataTable
+            data={inventory}
+            columns={inventoryColumns}
+          />
+        </section>
+      </div>
+    </TabsContent>
   )
 }
 

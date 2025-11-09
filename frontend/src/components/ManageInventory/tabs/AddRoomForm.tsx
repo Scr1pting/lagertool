@@ -3,9 +3,11 @@ import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
 import type { Room } from "@/types/room"
 import { useState } from "react"
-import ManageInventoryElements from "../ManageInventoryElements"
-import roomColumns from "@/components/DataTable/RoomColumns"
 import type { ManageInventoryElement } from "../types/ManageInventoryElement"
+import { TabsContent } from "@/components/shadcn/tabs"
+import ManageInventoryForm from "../ManageInventoryForm"
+import DataTable from "@/components/DataTable/DataTable"
+import roomColumns from "@/components/DataTable/ManageInventory/RoomColumns"
 
 
 interface AddRoomProps {
@@ -43,12 +45,21 @@ function AddRoom({ buildings, rooms }: AddRoomProps) {
   ]
 
   return (
-    <ManageInventoryElements 
-      type={"room"}
-      elements={elements}
-      tableItems={rooms}
-      columnDef={roomColumns}
-    />
+    <TabsContent value="buildings">
+      <div className="space-y-10">
+        <ManageInventoryForm title="Add Building" elements={elements} />
+        
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">
+            Recently Added
+          </h2>
+          <DataTable
+            data={rooms}
+            columns={roomColumns}
+          />
+        </section>
+      </div>
+    </TabsContent>
   )
 }
 

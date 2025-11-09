@@ -1,12 +1,13 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import DataTableColumnHeader from "./DataTableSortedHeader"
-import type { Shelf } from "@/types/shelf"
+import DataTableColumnHeader from "../SortableHeader"
+import type { InventoryItem } from "@/types/inventory"
 
-const shelfColumns: ColumnDef<Shelf>[] = [
+
+export const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Building" />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
@@ -27,6 +28,18 @@ const shelfColumns: ColumnDef<Shelf>[] = [
       return <div>{building + "/" + room}</div>
     },
   },
+  {
+    accessorKey: "amount",
+    header: () => <div className="text-right">Amount</div>,
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue("amount")}</div>
+    ),
+  },
+  {
+    accessorKey: "available",
+    header: () => <div className="text-right">Available</div>,
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue("available")}</div>
+    ),
+  }
 ]
-
-export default shelfColumns

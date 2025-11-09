@@ -1,5 +1,5 @@
 import DataTable from "@/components/DataTable/DataTable";
-import { inventoryColumnsFull } from "@/components/DataTable/InventoryTable/InventoryColumns";
+import { searchColumns } from "@/components/DataTable/InventoryTable/SearchColumns";
 import RegularPage from "@/components/RegularPage";
 import SelectedRangeDesc from "@/components/SelectedRangeDesc";
 import useInventory from "@/hooks/useFetchInventory";
@@ -17,7 +17,7 @@ function Search() {
     >
       <DataTable
         data={inventory ?? []}
-        columns={inventoryColumnsFull}
+        columns={searchColumns}
         rowLink={(row) => `/item?id=${row.id}`}
       />
     </RegularPage>

@@ -1,4 +1,4 @@
-import cartColumns from "@/components/DataTable/CartColumns";
+import cartColumns from "@/components/DataTable/cartColumns";
 import DataTable from "@/components/DataTable/DataTable";
 import RegularPage from "@/components/RegularPage";
 import SelectedRangeDesc from "@/components/SelectedRangeDesc";
