@@ -1,5 +1,8 @@
 fastapi
 pydantic>=2
 uvicorn[standard]
-llama-cpp-python
+sentence_transformers
+torch
 nltk
+numpy
+inflect
