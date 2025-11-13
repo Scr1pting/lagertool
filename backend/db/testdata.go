@@ -61,7 +61,7 @@ func GetDummyData() (
 		Name:       "Science Building",
 		GPS:        "37.7749,-122.4194",
 		Campus:     "Main Campus",
-		UpdateDate: now.Format(time.RFC3339),
+		UpdateDate: now,
 	}
 
 	room := &Room{
@@ -70,7 +70,7 @@ func GetDummyData() (
 		Floor:      "1",
 		Name:       "Chemistry Lab",
 		BuildingID: building.ID,
-		UpdateDate: now.Format(time.RFC3339),
+		UpdateDate: now,
 		Building:   building,
 	}
 
@@ -80,7 +80,7 @@ func GetDummyData() (
 		Name:         "Chemical Storage Shelf",
 		OwnedBy:      org.ID,
 		RoomID:       room.ID,
-		UpdateDate:   now.Format(time.RFC3339),
+		UpdateDate:   now,
 		Room:         room,
 		Organisation: org,
 	}
@@ -113,7 +113,7 @@ func GetDummyData() (
 		ItemID:      item.ID,
 		ShelfUnitID: shelfUnits[0].ID,
 		Amount:      12,
-		UpdateDate:  now.Format(time.RFC3339),
+		UpdateDate:  now,
 		Item:        item,
 		ShelfUnit:   &shelfUnits[0],
 	}
