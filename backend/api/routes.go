@@ -28,4 +28,5 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 
 	//post
 	r.POST("/create_building", h.CreateBuilding)
+	r.POST("/create_room", h.CreateRoom)
 }
