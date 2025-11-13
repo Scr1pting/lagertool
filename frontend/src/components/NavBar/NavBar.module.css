@@ -34,8 +34,6 @@
   display: flex;
   align-items: center;
 
-  padding-left: 0.5rem;
-  padding-right: 1rem;
   height: 100%;
   border: 1px solid #525252;
   border-radius: 25px;
@@ -70,10 +68,43 @@ button {
   padding: 0;
 }
 
+.buttonCapsule {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.8rem;
+  gap: 0.2rem;
+}
+
 .logo {
   width: 30px;
   margin-right: 20px;
   cursor: pointer;
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.3rem;
+  border-radius: 99999px;
+  background-color: rgba(26, 26, 26, 0.85);
+  border: 1px solid #303030;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.actionButton {
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.actionButton:hover,
+.actionButton:focus-visible {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: transparent;
 }
 
 
@@ -104,21 +135,24 @@ button {
 .rangeSelectorBtn {
   display: flex;
   align-items: center;
-  padding: 0.4rem 0.35rem 0.4rem 0.5rem;
-  border-radius: 99999px;
+  justify-content: center;
+  padding: 0;
 }
 
 .rangeSelectorBtn:hover,
 .rangeSelectorBtn[data-state="open"] {
-  background-color: #161616;
+  background-color: #282828;
+  border-color: #6d6d6d;
 }
 
-.rangeSelectorBtnActive,
-.rangeSelectorBtnActive[data-state="open"] {
-  background-color: #d0d0d0;
-  color: black;
+.rangeSelectorBtn[data-active="true"],
+.rangeSelectorBtn[data-active="true"][data-state="open"] {
+  background-color: #FDD62F;
+  color: #000000;
+  border-color: #f9c700;
 }
 
-.rangeSelectorBtnActive:hover {
-  background-color: #b5b5b5;
+.rangeSelectorBtn[data-active="true"]:hover {
+  background-color: #FDD62F;
+  border-color: #f9c700;
 }

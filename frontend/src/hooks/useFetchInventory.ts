@@ -1,8 +1,8 @@
 import useApi from "./useApi";
 import { type InventoryItem } from "@/types/inventory";
 
-function useInventory() {
+function useFetchInventory() {
   return useApi<InventoryItem[]>('/inventory.sample.json')
 }
 
-export default useInventory;
+export default useFetchInventory;

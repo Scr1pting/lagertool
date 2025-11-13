@@ -1,0 +1,35 @@
+{
+  "id": "1",
+  "name": "Wireless Mouse",
+  "amount": 150,
+  "available": 120,
+  "category": "Electronics",
+  "buildingName": "CAB",
+  "roomName": "Office",
+  "shelfElementId": "36S2P",
+  "shelf": {
+    "id": "29EWG",
+    "name": "Library Shelf",
+    "buildingName": "CAB",
+    "roomName": "Office",
+    "numItems": 0,
+    "columns": [
+      {
+        "id": "column-J19BL",
+        "numItems": 0,
+        "elements": [
+          {
+            "id": "36S2P",
+            "type": "slim",
+            "numItems": 0
+          },
+          {
+            "id": "T1LKF",
+            "type": "high",
+            "numItems": 0
+          }
+        ]
+      }
+    ]
+  }
+}
