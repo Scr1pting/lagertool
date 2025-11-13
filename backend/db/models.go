@@ -46,33 +46,33 @@ type HasSpecialRightsFor struct {
 }
 
 type Building struct {
-	tableName  struct{} `pg:"building"`
-	ID         int      `json:"id" pg:"id,pk"`
-	Name       string   `json:"name" pg:"name"`
-	GPS        string   `json:"gps" pg:"gps"`
-	Campus     string   `json:"campus" pg:"campus"`
-	UpdateDate string   `json:"update_date" pg:"update_date"`
+	tableName  struct{}  `pg:"building"`
+	ID         int       `json:"id" pg:"id,pk"`
+	Name       string    `json:"name" pg:"name"`
+	GPS        string    `json:"gps" pg:"gps"`
+	Campus     string    `json:"campus" pg:"campus"`
+	UpdateDate time.Time `json:"update_date" pg:"update_date"`
 }
 
 type Room struct {
-	tableName  struct{} `pg:"room"`
-	ID         int      `json:"id" pg:"id,pk"`
-	Number     string   `json:"number" pg:"number"`
-	Floor      string   `json:"floor" pg:"floor"`
-	Name       string   `json:"name" pg:"name"`
-	BuildingID int      `json:"building_id" pg:"building_id"`
-	UpdateDate string   `json:"update_date" pg:"update_date"`
+	tableName  struct{}  `pg:"room"`
+	ID         int       `json:"id" pg:"id,pk"`
+	Number     string    `json:"number" pg:"number"`
+	Floor      string    `json:"floor" pg:"floor"`
+	Name       string    `json:"name" pg:"name"`
+	BuildingID int       `json:"building_id" pg:"building_id"`
+	UpdateDate time.Time `json:"update_date" pg:"update_date"`
 
 	Building *Building `json:"building" pg:"rel:has-one,fk:building_id"`
 }
 
 type Shelf struct {
-	tableName  struct{} `pg:"shelf"`
-	ID         string   `json:"id" pg:"id,pk"`
-	Name       string   `json:"name" pg:"name"`
-	OwnedBy    int      `json:"owned_by" pg:"owned_by"`
-	RoomID     int      `json:"room_id" pg:"room_id"`
-	UpdateDate string   `json:"update_date" pg:"update_date"`
+	tableName  struct{}  `pg:"shelf"`
+	ID         string    `json:"id" pg:"id,pk"`
+	Name       string    `json:"name" pg:"name"`
+	OwnedBy    int       `json:"owned_by" pg:"owned_by"`
+	RoomID     int       `json:"room_id" pg:"room_id"`
+	UpdateDate time.Time `json:"update_date" pg:"update_date"`
 
 	Room         *Room         `json:"room" pg:"rel:has-one,fk:room_id"`
 	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:owned_by"`
@@ -142,12 +142,12 @@ type ShoppingCartItem struct {
 }
 
 type Inventory struct {
-	tableName   struct{} `pg:"Inventory"`
-	ID          int      `json:"id" pg:"id,pk"`
-	ItemID      int      `json:"item_id" pg:"item_id"`
-	ShelfUnitID string   `json:"shelf_unit_id" pg:"shelf_unit_id"`
-	Amount      int      `json:"amount" pg:"amount"`
-	UpdateDate  string   `json:"update_date" pg:"update_date"`
+	tableName   struct{}  `pg:"Inventory"`
+	ID          int       `json:"id" pg:"id,pk"`
+	ItemID      int       `json:"item_id" pg:"item_id"`
+	ShelfUnitID string    `json:"shelf_unit_id" pg:"shelf_unit_id"`
+	Amount      int       `json:"amount" pg:"amount"`
+	UpdateDate  time.Time `json:"update_date" pg:"update_date"`
 
 	Item         *Item          `json:"item" pg:"rel:has-one,fk:item_id"`
 	ShelfUnit    *ShelfUnit     `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`

@@ -17,7 +17,7 @@ func (h *Handler) GetRoomsS(c *gin.Context) {
 	var res []Room
 	for _, item := range dbRes {
 		res = append(res, Room{
-			item.ID, item.Number, item.Floor, item.Name, item.Building.Name, item.UpdateDate,
+			item.ID, item.Number, item.Floor, item.Name, item.Building.Name, item.UpdateDate.Format(time.RFC3339),
 		})
 	}
 	c.JSON(http.StatusOK, res)
@@ -32,7 +32,7 @@ func (h *Handler) GetBuildingsS(c *gin.Context) {
 	var res []Building
 	for _, item := range dbRes {
 		res = append(res, Building{
-			item.ID, item.Name, item.Campus, item.UpdateDate,
+			item.ID, item.Name, item.Campus, item.UpdateDate.Format(time.RFC3339),
 		})
 	}
 	c.JSON(http.StatusOK, res)
