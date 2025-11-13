@@ -14,7 +14,7 @@ export default function MoreDropdown() {
   return (
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
-        <button className={clsx(styles.input, styles.buttonRnd, styles.actionButton)}>
+        <button className={clsx(styles.input, styles.buttonNavGroup)}>
           <Ellipsis className={styles.navIcon} />
         </button>
       </DropdownMenuTrigger>

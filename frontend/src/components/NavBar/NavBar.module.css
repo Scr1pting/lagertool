@@ -18,19 +18,36 @@
   z-index: 1;
 }
 
+.logo {
+  width: 30px;
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+
+/* Icons  */
+.navIcon, .navIconSecondary, .searchIcon {
+  aspect-ratio: 1 / 1;
+}
+
 .navIcon {
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
   stroke-width: 1.8;
 }
 
 .navIconSecondary {
-  width: 15px;
-  height: 15px;
-  stroke-width: 1.8;
+  width: 1rem;
+  stroke-width: 2.25;
 }
 
-.input {
+.searchIcon {
+  width: 1.2rem;
+  stroke-width: 2;
+  color: #7A7A7A;
+}
+
+/* */
+.input, .navGroup {
   display: flex;
   align-items: center;
 
@@ -59,6 +76,10 @@ button {
   cursor: pointer;
 }
 
+button[data-active="true"] {
+  color: #FDD62F;
+}
+
 .buttonRnd {
   display: flex;
   justify-content: center;
@@ -76,33 +97,25 @@ button {
   gap: 0.2rem;
 }
 
-.logo {
-  width: 30px;
-  margin-right: 20px;
-  cursor: pointer;
-}
-
-.actionGroup {
+.navGroup {
+  height: 100%;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.1rem;
   padding: 0.3rem;
-  border-radius: 99999px;
-  background-color: rgba(26, 26, 26, 0.85);
-  border: 1px solid #303030;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-.actionButton {
-  height: 40px;
-  min-width: 40px;
-  padding: 0;
+.buttonNavGroup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1 / 1;
   border-color: transparent;
   background-color: transparent;
 }
 
-.actionButton:hover,
-.actionButton:focus-visible {
+.buttonNavGroup:hover,
+.buttonNavGroup:focus-visible {
   background-color: rgba(255, 255, 255, 0.08);
   border-color: transparent;
 }
@@ -115,6 +128,7 @@ button {
   height: 100%;
   width: 350px;
   gap: 0.4rem;
+  padding: 0 0.8rem;
 }
 
 .searchForm {
@@ -128,31 +142,4 @@ button {
   font-size: 1rem;
   border: none;
   outline: none;
-}
-
-
-/* Range Selector */
-.rangeSelectorBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.rangeSelectorBtn:hover,
-.rangeSelectorBtn[data-state="open"] {
-  background-color: #282828;
-  border-color: #6d6d6d;
-}
-
-.rangeSelectorBtn[data-active="true"],
-.rangeSelectorBtn[data-active="true"][data-state="open"] {
-  background-color: #FDD62F;
-  color: #000000;
-  border-color: #f9c700;
-}
-
-.rangeSelectorBtn[data-active="true"]:hover {
-  background-color: #FDD62F;
-  border-color: #f9c700;
 }

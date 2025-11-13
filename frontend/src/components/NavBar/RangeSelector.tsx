@@ -36,14 +36,13 @@ function RangeSelector() {
         <PopoverTrigger asChild>
           <button
             type="button"
-            aria-label="Open calendar search filters"
             data-state={isCalendarOpen ? "open" : undefined}
             data-active={isRangeActive ? "true" : undefined}
+            aria-label="Open calendar"
             aria-pressed={isRangeActive}
             className={clsx(
               styles.input,
-              styles.buttonRnd,
-              styles.rangeSelectorBtn
+              styles.buttonRnd
             )}
           >
             <CalendarDays className={styles.navIcon} aria-hidden="true" />

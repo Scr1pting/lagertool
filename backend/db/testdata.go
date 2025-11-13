@@ -1,694 +1,185 @@
 package db
 
 import (
-	"context"
-	"fmt"
-	"log"
+	"net"
 	"time"
-
-	"github.com/go-pg/pg/v10"
 )
 
-func InsertBasicData(db *pg.DB) error {
-	log.Println("Loading testdata...")
-	ctx := context.Background()
-
-	// ETH Zürich shelves - Main storage across campus
-	// Define shelves with IDs
-	shelves := []Shelf{
-		{ID: "SHF01", Name: "Electronics Lab Storage", Building: "CAB", Room: "H53"},
-		{ID: "SHF02", Name: "Workshop Tools", Building: "ETZ", Room: "J91"},
-		{ID: "SHF03", Name: "Robotics Components", Building: "HCI", Room: "J4"},
-		{ID: "SHF04", Name: "Sensors & Modules", Building: "CAB", Room: "H55"},
-		{ID: "SHF05", Name: "Consumables Storage", Building: "ETZ", Room: "J93"},
-	}
-
-	// Define shelf units for each shelf
-	// Multiple units can be stacked vertically in the same column
-	shelfUnits := []struct {
-		ShelfIndex int
-		Units      []ShelfUnit
-	}{
-		// SHF01: CAB H53 - Electronics Lab Storage (4 columns, 12 units total)
-		{
-			ShelfIndex: 0,
-			Units: []ShelfUnit{
-				// Column A - Development boards (3 units stacked)
-				{ID: "A1H2E", ColumnID: "COL01", Type: "high"},
-				{ID: "A2H1W", ColumnID: "COL01", Type: "high"},
-				{ID: "A3S1X", ColumnID: "COL01", Type: "slim"},
-				// Column B - Measurement equipment (3 units stacked)
-				{ID: "B1H3K", ColumnID: "COL02", Type: "high"},
-				{ID: "B2H2M", ColumnID: "COL02", Type: "high"},
-				{ID: "B3S1N", ColumnID: "COL02", Type: "slim"},
-				// Column C - Power & cables (3 units stacked)
-				{ID: "C1H1Q", ColumnID: "COL03", Type: "high"},
-				{ID: "C2H2R", ColumnID: "COL03", Type: "high"},
-				{ID: "C3S1P", ColumnID: "COL03", Type: "slim"},
-				// Column D - Breadboards & accessories (3 units stacked)
-				{ID: "D1H1T", ColumnID: "COL04", Type: "high"},
-				{ID: "D2S2U", ColumnID: "COL04", Type: "slim"},
-				{ID: "D3H1V", ColumnID: "COL04", Type: "high"},
-			},
-		},
-		// SHF02: ETZ J91 - Workshop Tools (3 columns, 9 units total)
-		{
-			ShelfIndex: 1,
-			Units: []ShelfUnit{
-				// Column A - Hand tools (3 units stacked)
-				{ID: "E1H2A", ColumnID: "COL05", Type: "high"},
-				{ID: "E2H1B", ColumnID: "COL05", Type: "high"},
-				{ID: "E3S1C", ColumnID: "COL05", Type: "slim"},
-				// Column B - Soldering & precision (3 units stacked)
-				{ID: "F1H3D", ColumnID: "COL06", Type: "high"},
-				{ID: "F2H2E", ColumnID: "COL06", Type: "high"},
-				{ID: "F3S1F", ColumnID: "COL06", Type: "slim"},
-				// Column C - Heavy tools & measuring (3 units stacked)
-				{ID: "G1H2G", ColumnID: "COL07", Type: "high"},
-				{ID: "G2H1H", ColumnID: "COL07", Type: "high"},
-				{ID: "G3S1I", ColumnID: "COL07", Type: "slim"},
-			},
-		},
-		// SHF03: HCI J4 - Robotics Components (3 columns, 9 units total)
-		{
-			ShelfIndex: 2,
-			Units: []ShelfUnit{
-				// Column A - Motors (3 units stacked)
-				{ID: "H1H1J", ColumnID: "COL08", Type: "high"},
-				{ID: "H2H2K", ColumnID: "COL08", Type: "high"},
-				{ID: "H3S1L", ColumnID: "COL08", Type: "slim"},
-				// Column B - Motor drivers & controllers (3 units stacked)
-				{ID: "I1H2M", ColumnID: "COL09", Type: "high"},
-				{ID: "I2H1N", ColumnID: "COL09", Type: "high"},
-				{ID: "I3S1O", ColumnID: "COL09", Type: "slim"},
-				// Column C - Mechanical parts & materials (3 units stacked)
-				{ID: "J1H2P", ColumnID: "COL10", Type: "high"},
-				{ID: "J2H1Q", ColumnID: "COL10", Type: "high"},
-				{ID: "J3S1R", ColumnID: "COL10", Type: "slim"},
-			},
-		},
-		// SHF04: CAB H55 - Sensors & Modules (2 columns, 6 units total)
-		{
-			ShelfIndex: 3,
-			Units: []ShelfUnit{
-				// Column A - Distance & environment sensors (3 units stacked)
-				{ID: "K1H2S", ColumnID: "COL11", Type: "high"},
-				{ID: "K2H1T", ColumnID: "COL11", Type: "high"},
-				{ID: "K3S1U", ColumnID: "COL11", Type: "slim"},
-				// Column B - Motion & camera sensors (3 units stacked)
-				{ID: "L1H2V", ColumnID: "COL12", Type: "high"},
-				{ID: "L2H1W", ColumnID: "COL12", Type: "high"},
-				{ID: "L3S1X", ColumnID: "COL12", Type: "slim"},
-			},
-		},
-		// SHF05: ETZ J93 - Consumables Storage (4 columns, 12 units total)
-		{
-			ShelfIndex: 4,
-			Units: []ShelfUnit{
-				// Column A - Resistors & capacitors (3 units stacked)
-				{ID: "M1H1Y", ColumnID: "COL13", Type: "high"},
-				{ID: "M2H2Z", ColumnID: "COL13", Type: "high"},
-				{ID: "M3S1A", ColumnID: "COL13", Type: "slim"},
-				// Column B - LEDs & wires (3 units stacked)
-				{ID: "N1H2B", ColumnID: "COL14", Type: "high"},
-				{ID: "N2H1C", ColumnID: "COL14", Type: "high"},
-				{ID: "N3S1D", ColumnID: "COL14", Type: "slim"},
-				// Column C - ICs & transistors (3 units stacked)
-				{ID: "O1H2E", ColumnID: "COL15", Type: "high"},
-				{ID: "O2H1F", ColumnID: "COL15", Type: "high"},
-				{ID: "O3S1G", ColumnID: "COL15", Type: "slim"},
-				// Column D - Solder & PCBs (3 units stacked)
-				{ID: "P1H2H", ColumnID: "COL16", Type: "high"},
-				{ID: "P2H1I", ColumnID: "COL16", Type: "high"},
-				{ID: "P3S1J", ColumnID: "COL16", Type: "slim"},
-			},
-		},
-	}
-
-	var locations []Location
-
-	// Realistic items for engineering/CS students
-	items := []Item{
-		// Electronics
-		{Name: "Arduino Uno R3", Category: "Electronics"},
-		{Name: "Raspberry Pi 4 (4GB)", Category: "Electronics"},
-		{Name: "ESP32 Development Board", Category: "Electronics"},
-		{Name: "Breadboard (830 points)", Category: "Electronics"},
-		{Name: "Multimeter", Category: "Electronics"},
-		{Name: "Oscilloscope Rigol DS1054Z", Category: "Electronics"},
-		{Name: "Function Generator", Category: "Electronics"},
-		{Name: "Soldering Station", Category: "Electronics"},
-		{Name: "Logic Analyzer", Category: "Electronics"},
-		{Name: "Power Supply (0-30V)", Category: "Electronics"},
-
-		// Components (Consumables)
-		{Name: "Resistor Kit (E12 series)", Category: "Consumables"},
-		{Name: "Capacitor Kit", Category: "Consumables"},
-		{Name: "LED Kit (5mm, assorted)", Category: "Consumables"},
-		{Name: "Jumper Wires (M-M)", Category: "Consumables"},
-		{Name: "Jumper Wires (M-F)", Category: "Consumables"},
-		{Name: "Transistor Kit (NPN/PNP)", Category: "Consumables"},
-		{Name: "IC Kit (555, OpAmps)", Category: "Consumables"},
-		{Name: "Solder Wire (lead-free)", Category: "Consumables"},
-		{Name: "Heat Shrink Tubing Kit", Category: "Consumables"},
-		{Name: "PCB Prototyping Boards", Category: "Consumables"},
-
-		// Tools
-		{Name: "Screwdriver Set (Precision)", Category: "Tools"},
-		{Name: "Wire Stripper", Category: "Tools"},
-		{Name: "Pliers Set", Category: "Tools"},
-		{Name: "Desoldering Pump", Category: "Tools"},
-		{Name: "Tweezers (ESD Safe)", Category: "Tools"},
-		{Name: "Cutting Mat A3", Category: "Tools"},
-		{Name: "Caliper (Digital)", Category: "Tools"},
-		{Name: "Hot Glue Gun", Category: "Tools"},
-		{Name: "Drill Set", Category: "Tools"},
-
-		// Mechanical/Robotics
-		{Name: "Servo Motor SG90", Category: "Mechanics"},
-		{Name: "Stepper Motor NEMA17", Category: "Mechanics"},
-		{Name: "DC Motor with Gearbox", Category: "Mechanics"},
-		{Name: "Motor Driver L298N", Category: "Mechanics"},
-		{Name: "3D Printer Filament PLA", Category: "Mechanics"},
-		{Name: "Laser Cut Acrylic Sheets", Category: "Mechanics"},
-
-		// Sensors
-		{Name: "Ultrasonic Sensor HC-SR04", Category: "Sensors"},
-		{Name: "Temperature Sensor DHT22", Category: "Sensors"},
-		{Name: "IMU MPU6050", Category: "Sensors"},
-		{Name: "GPS Module", Category: "Sensors"},
-		{Name: "Camera Module OV7670", Category: "Sensors"},
-
-		// Misc
-		{Name: "USB Cable Micro-B (1m)", Category: "Cables"},
-		{Name: "USB Cable Type-C (1m)", Category: "Cables"},
-		{Name: "HDMI Cable (2m)", Category: "Cables"},
-		{Name: "Ethernet Cable Cat6 (5m)", Category: "Cables"},
-		{Name: "Laptop (Loaner Lenovo)", Category: "Equipment"},
-		{Name: "FPGA Board (Xilinx)", Category: "Equipment"},
-		{Name: "VR Headset Meta Quest 2", Category: "Equipment"},
-	}
-
-	// ETH Zürich students and staff
-	persons := []Person{
-		{Firstname: "Max", Lastname: "Müller", SlackID: "U01ABC123"},
-		{Firstname: "Anna", Lastname: "Schmidt", SlackID: "U02DEF456"},
-		{Firstname: "Lukas", Lastname: "Fischer", SlackID: "U03GHI789"},
-		{Firstname: "Sarah", Lastname: "Weber", SlackID: "U04JKL012"},
-		{Firstname: "Jonas", Lastname: "Meyer", SlackID: "U05MNO345"},
-		{Firstname: "Laura", Lastname: "Schneider", SlackID: "U06PQR678"},
-		{Firstname: "David", Lastname: "Wagner", SlackID: "U07STU901"},
-		{Firstname: "Julia", Lastname: "Becker", SlackID: "U08VWX234"},
-		{Firstname: "Felix", Lastname: "Hoffmann", SlackID: "U09YZA567"},
-		{Firstname: "Sophie", Lastname: "Koch", SlackID: "U10BCD890"},
-	}
-
-	// Begin transaction
-	tx, err := db.BeginContext(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
-	}
-	defer tx.Close()
-
-	// Insert Shelves
-	for i := range shelves {
-		exists, err := tx.Model(&Shelf{}).
-			Where("id = ?", shelves[i].ID).
-			Exists()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to check shelf existence: %w", err)
-		}
-		if exists {
-			err = tx.Model(&shelves[i]).
-				Where("id = ?", shelves[i].ID).
-				Select()
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to fetch existing shelf: %w", err)
-			}
-			log.Printf("Shelf already exists: %s in %s %s (ID: %s)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
-			continue
-		}
-
-		_, err = tx.Model(&shelves[i]).Insert()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to insert shelf: %w", err)
-		}
-		log.Printf("Inserted shelf: %s in %s %s (ID: %s)", shelves[i].Name, shelves[i].Building, shelves[i].Room, shelves[i].ID)
-	}
-
-	// Insert Columns and Shelf Units and Locations
-	// First, collect unique column IDs and create Column records
-	columnMap := make(map[string]string) // columnID -> shelfID
-	for _, shelfUnitGroup := range shelfUnits {
-		shelfID := shelves[shelfUnitGroup.ShelfIndex].ID
-		for _, unit := range shelfUnitGroup.Units {
-			columnMap[unit.ColumnID] = shelfID
-		}
-	}
-
-	// Create Column records
-	for columnID, shelfID := range columnMap {
-		exists, err := tx.Model(&Column{}).Where("id = ?", columnID).Exists()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to check column existence: %w", err)
-		}
-		if !exists {
-			col := &Column{
-				ID:      columnID,
-				ShelfID: shelfID,
-			}
-			_, err = tx.Model(col).Insert()
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to insert column: %w", err)
-			}
-			log.Printf("Inserted column: %s (Shelf: %s)", columnID, shelfID)
-		} else {
-			log.Printf("Column already exists: %s (skipping)", columnID)
-		}
-	}
-
-	// Now insert shelf units
-	for _, shelfUnitGroup := range shelfUnits {
-		for _, unit := range shelfUnitGroup.Units {
-			// Check if shelf unit exists
-			exists, err := tx.Model(&ShelfUnit{}).Where("id = ?", unit.ID).Exists()
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to check shelf unit existence: %w", err)
-			}
-			if exists {
-				log.Printf("Shelf unit already exists: %s (skipping)", unit.ID)
-				// Fetch existing location for this shelf unit
-				var existingLocation Location
-				err = tx.Model(&existingLocation).Where("shelf_unit_id = ?", unit.ID).Select()
-				if err != nil {
-					tx.Rollback()
-					return fmt.Errorf("failed to fetch existing location for shelf unit %s: %w", unit.ID, err)
-				}
-				locations = append(locations, existingLocation)
-				continue
-			}
-
-			// Insert shelf unit
-			_, err = tx.Model(&unit).Insert()
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to insert shelf unit: %w", err)
-			}
-			log.Printf("Inserted shelf unit: %s (Type: %s, Column: %s)", unit.ID, unit.Type, unit.ColumnID)
-
-			// Create corresponding Location
-			location := Location{ShelfUnitID: unit.ID}
-			_, err = tx.Model(&location).Insert()
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to insert location for shelf unit %s: %w", unit.ID, err)
-			}
-			locations = append(locations, location)
-			log.Printf("Created location for shelf unit %s (Location ID: %d)", unit.ID, location.ID)
-		}
-	}
-
-	// Insert Items (only if they don't exist)
-	for i := range items {
-		exists, err := tx.Model(&Item{}).Where("name = ?", items[i].Name).Exists()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to check item existence: %w", err)
-		}
-		if exists {
-			err = tx.Model(&items[i]).Where("name = ?", items[i].Name).Select()
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to fetch existing item: %w", err)
-			}
-			log.Printf("Item already exists: %s (ID: %d)", items[i].Name, items[i].ID)
-			continue
-		}
-
-		_, err = tx.Model(&items[i]).Insert()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to insert item: %w", err)
-		}
-		log.Printf("Inserted item: %s (ID: %d)", items[i].Name, items[i].ID)
-	}
-
-	// Insert Persons (only if they don't exist)
-	for i := range persons {
-		exists, err := tx.Model(&Person{}).
-			Where("firstname = ? AND lastname = ?", persons[i].Firstname, persons[i].Lastname).
-			Exists()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to check person existence: %w", err)
-		}
-		if exists {
-			err = tx.Model(&persons[i]).
-				Where("firstname = ? AND lastname = ?", persons[i].Firstname, persons[i].Lastname).
-				Select()
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to fetch existing person: %w", err)
-			}
-			log.Printf("Person already exists: %s %s (ID: %d)", persons[i].Firstname, persons[i].Lastname, persons[i].ID)
-			continue
-		}
-
-		_, err = tx.Model(&persons[i]).Insert()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to insert person: %w", err)
-		}
-		log.Printf("Inserted person: %s %s (ID: %d)", persons[i].Firstname, persons[i].Lastname, persons[i].ID)
-	}
-
-	// Insert Inventory relations - distribute items across storage locations
-	isInRecords := []Inventory{
-		// SHF01: CAB H53 - Electronics Lab Storage (4 columns, 12 units)
-		// Column COL01 - Development boards
-		{LocationId: locations[0].ID, ItemId: items[0].ID, Amount: 15, Note: "Arduino Uno - main stock"},
-		{LocationId: locations[0].ID, ItemId: items[1].ID, Amount: 8, Note: "Raspberry Pi 4"},
-		{LocationId: locations[1].ID, ItemId: items[2].ID, Amount: 12, Note: "ESP32 boards"},
-		{LocationId: locations[2].ID, ItemId: items[0].ID, Amount: 10, Note: "Arduino Uno - backup stock"},
-
-		// Column COL02 - Measurement equipment
-		{LocationId: locations[3].ID, ItemId: items[4].ID, Amount: 5, Note: "Multimeters"},
-		{LocationId: locations[3].ID, ItemId: items[5].ID, Amount: 2, Note: "Oscilloscopes"},
-		{LocationId: locations[4].ID, ItemId: items[8].ID, Amount: 3, Note: "Logic analyzers"},
-		{LocationId: locations[4].ID, ItemId: items[6].ID, Amount: 1, Note: "Function generator"},
-		{LocationId: locations[5].ID, ItemId: items[9].ID, Amount: 4, Note: "Power supplies"},
-
-		// Column COL03 - Cables & power
-		{LocationId: locations[6].ID, ItemId: items[41].ID, Amount: 50, Note: "USB Micro-B cables"},
-		{LocationId: locations[6].ID, ItemId: items[42].ID, Amount: 40, Note: "USB Type-C cables"},
-		{LocationId: locations[7].ID, ItemId: items[43].ID, Amount: 15, Note: "HDMI cables"},
-		{LocationId: locations[7].ID, ItemId: items[44].ID, Amount: 20, Note: "Ethernet Cat6 cables"},
-		{LocationId: locations[8].ID, ItemId: items[9].ID, Amount: 3, Note: "Extra power supplies"},
-
-		// Column COL04 - Breadboards & accessories
-		{LocationId: locations[9].ID, ItemId: items[3].ID, Amount: 25, Note: "Breadboards 830 points"},
-		{LocationId: locations[10].ID, ItemId: items[3].ID, Amount: 15, Note: "Extra breadboards"},
-		{LocationId: locations[11].ID, ItemId: items[2].ID, Amount: 8, Note: "ESP32 backup"},
-
-		// SHF02: ETZ J91 - Workshop Tools (3 columns, 9 units)
-		// Column COL05 - Hand tools
-		{LocationId: locations[12].ID, ItemId: items[20].ID, Amount: 8, Note: "Precision screwdriver sets"},
-		{LocationId: locations[12].ID, ItemId: items[21].ID, Amount: 6, Note: "Wire strippers"},
-		{LocationId: locations[13].ID, ItemId: items[22].ID, Amount: 5, Note: "Pliers sets"},
-		{LocationId: locations[13].ID, ItemId: items[24].ID, Amount: 6, Note: "ESD tweezers"},
-		{LocationId: locations[14].ID, ItemId: items[20].ID, Amount: 5, Note: "Extra screwdriver sets"},
-
-		// Column COL06 - Soldering & precision
-		{LocationId: locations[15].ID, ItemId: items[7].ID, Amount: 3, Note: "Soldering stations"},
-		{LocationId: locations[16].ID, ItemId: items[23].ID, Amount: 4, Note: "Desoldering pumps"},
-		{LocationId: locations[16].ID, ItemId: items[17].ID, Amount: 10, Note: "Solder wire"},
-		{LocationId: locations[17].ID, ItemId: items[24].ID, Amount: 4, Note: "More tweezers"},
-
-		// Column COL07 - Heavy tools & measuring
-		{LocationId: locations[18].ID, ItemId: items[28].ID, Amount: 2, Note: "Drill sets"},
-		{LocationId: locations[18].ID, ItemId: items[27].ID, Amount: 3, Note: "Hot glue guns"},
-		{LocationId: locations[19].ID, ItemId: items[26].ID, Amount: 4, Note: "Digital calipers"},
-		{LocationId: locations[20].ID, ItemId: items[25].ID, Amount: 10, Note: "A3 cutting mats"},
-
-		// SHF03: HCI J4 - Robotics Components (3 columns, 9 units)
-		// Column COL08 - Motors
-		{LocationId: locations[21].ID, ItemId: items[29].ID, Amount: 30, Note: "SG90 servo motors"},
-		{LocationId: locations[22].ID, ItemId: items[30].ID, Amount: 10, Note: "NEMA17 stepper motors"},
-		{LocationId: locations[23].ID, ItemId: items[31].ID, Amount: 15, Note: "DC geared motors"},
-
-		// Column COL09 - Motor drivers & controllers
-		{LocationId: locations[24].ID, ItemId: items[32].ID, Amount: 12, Note: "L298N motor drivers"},
-		{LocationId: locations[25].ID, ItemId: items[32].ID, Amount: 8, Note: "Extra motor drivers"},
-		{LocationId: locations[26].ID, ItemId: items[29].ID, Amount: 20, Note: "Extra servo motors"},
-
-		// Column COL10 - Mechanical parts & materials
-		{LocationId: locations[27].ID, ItemId: items[33].ID, Amount: 20, Note: "PLA filament spools"},
-		{LocationId: locations[28].ID, ItemId: items[34].ID, Amount: 15, Note: "Laser cut acrylic"},
-		{LocationId: locations[29].ID, ItemId: items[30].ID, Amount: 5, Note: "Extra steppers"},
-
-		// SHF04: CAB H55 - Sensors & Modules (2 columns, 6 units)
-		// Column COL11 - Distance & environment sensors
-		{LocationId: locations[30].ID, ItemId: items[36].ID, Amount: 20, Note: "Ultrasonic HC-SR04"},
-		{LocationId: locations[31].ID, ItemId: items[37].ID, Amount: 15, Note: "DHT22 temp sensors"},
-		{LocationId: locations[32].ID, ItemId: items[36].ID, Amount: 10, Note: "Extra ultrasonic sensors"},
-
-		// Column COL12 - Motion & camera sensors
-		{LocationId: locations[33].ID, ItemId: items[38].ID, Amount: 10, Note: "IMU MPU6050"},
-		{LocationId: locations[34].ID, ItemId: items[39].ID, Amount: 5, Note: "GPS modules"},
-		{LocationId: locations[35].ID, ItemId: items[40].ID, Amount: 8, Note: "OV7670 cameras"},
-
-		// SHF05: ETZ J93 - Consumables Storage (4 columns, 12 units)
-		// Column COL13 - Resistors & capacitors
-		{LocationId: locations[36].ID, ItemId: items[10].ID, Amount: 50, Note: "Resistor kits E12"},
-		{LocationId: locations[37].ID, ItemId: items[11].ID, Amount: 30, Note: "Capacitor kits"},
-		{LocationId: locations[38].ID, ItemId: items[10].ID, Amount: 30, Note: "Extra resistor kits"},
-
-		// Column COL14 - LEDs & wires
-		{LocationId: locations[39].ID, ItemId: items[12].ID, Amount: 100, Note: "LED assortment 5mm"},
-		{LocationId: locations[40].ID, ItemId: items[13].ID, Amount: 200, Note: "M-M jumper wires"},
-		{LocationId: locations[41].ID, ItemId: items[14].ID, Amount: 150, Note: "M-F jumper wires"},
-
-		// Column COL15 - ICs & transistors
-		{LocationId: locations[42].ID, ItemId: items[15].ID, Amount: 40, Note: "Transistor kits"},
-		{LocationId: locations[43].ID, ItemId: items[16].ID, Amount: 35, Note: "IC kits (555, OpAmps)"},
-		{LocationId: locations[44].ID, ItemId: items[15].ID, Amount: 20, Note: "Extra transistors"},
-
-		// Column COL16 - Solder & PCBs
-		{LocationId: locations[45].ID, ItemId: items[17].ID, Amount: 10, Note: "Lead-free solder"},
-		{LocationId: locations[46].ID, ItemId: items[18].ID, Amount: 25, Note: "Heat shrink tubing"},
-		{LocationId: locations[47].ID, ItemId: items[19].ID, Amount: 60, Note: "PCB prototyping boards"},
-	}
-
-	log.Printf("Inserting inventory records...")
-
-	for i := range isInRecords {
-		// Check if inventory record exists
-		exists, err := tx.Model(&Inventory{}).
-			Where("location_id = ? AND item_id = ?", isInRecords[i].LocationId, isInRecords[i].ItemId).
-			Exists()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to check inventory existence: %w", err)
-		}
-		if exists {
-			log.Printf("Inventory record already exists for location %d, item %d - skipping", isInRecords[i].LocationId, isInRecords[i].ItemId)
-			continue
-		}
-
-		_, err = tx.Model(&isInRecords[i]).Insert()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to insert Inventory: %w", err)
-		}
-		log.Printf("Inserted inventory: %s (ID: %d)", isInRecords[i].Note, isInRecords[i].ID)
-	}
-
-	// Insert sample loans - mix of active, returned, and overdue
+func GetDummyData() (
+	*Organisation,
+	*User,
+	*Session,
+	*Building,
+	*Room,
+	*Shelf,
+	[]Column,
+	[]ShelfUnit,
+	*Item,
+	*Inventory,
+	*ShoppingCart,
+	[]ShoppingCartItem,
+	*Request,
+	[]RequestItems,
+	*RequestReview,
+	*Loans,
+	*Consumed,
+) {
 	now := time.Now()
-	returnedTime1 := now.AddDate(0, 0, -2)  // Returned 2 days ago
-	returnedTime2 := now.AddDate(0, -1, 5)  // Returned 1 month ago, 5 days later
-	returnedTime3 := now.AddDate(0, -2, 0)  // Returned 2 months ago
-	returnedTime4 := now.AddDate(0, 0, -14) // Returned 14 days ago
-	returnedTime5 := now.AddDate(0, 0, -30) // Returned 30 days ago
 
-	loans := []Loans{
-		// Active loans (not returned)
-		{
-			PersonID: persons[0].ID, // Max Müller
-			ItemID:   items[0].ID,   // Arduino Uno
-			Amount:   2,
-			Begin:    now.AddDate(0, 0, -7),
-			Until:    now.AddDate(0, 0, 7), // Due in 1 week
-			Returned: false,
-		},
-		{
-			PersonID: persons[1].ID, // Anna Schmidt
-			ItemID:   items[5].ID,   // Oscilloscope
-			Amount:   1,
-			Begin:    now.AddDate(0, 0, -3),
-			Until:    now.AddDate(0, 0, 11), // Due in 2 weeks
-			Returned: false,
-		},
-		{
-			PersonID: persons[2].ID, // Lukas Fischer
-			ItemID:   items[4].ID,   // Multimeter
-			Amount:   1,
-			Begin:    now.AddDate(0, 0, -10),
-			Until:    now.AddDate(0, 0, -3), // OVERDUE by 3 days!
-			Returned: false,
-		},
-		{
-			PersonID: persons[3].ID, // Sarah Weber
-			ItemID:   items[1].ID,   // Raspberry Pi
-			Amount:   1,
-			Begin:    now.AddDate(0, 0, -5),
-			Until:    now.AddDate(0, 0, 9), // Due in 9 days
-			Returned: false,
-		},
-		{
-			PersonID: persons[4].ID, // Jonas Meyer
-			ItemID:   items[45].ID,  // Loaner Laptop
-			Amount:   1,
-			Begin:    now.AddDate(0, 0, -14),
-			Until:    now.AddDate(0, 0, -1), // OVERDUE by 1 day!
-			Returned: false,
-		},
+	// 1️⃣ Organisation
+	org := &Organisation{
+		ID:   1,
+		Name: "OpenAI Research Labs",
+	}
 
-		// Returned loans - good history
-		{
-			PersonID:   persons[0].ID, // Max Müller (has active + history)
-			ItemID:     items[4].ID,   // Multimeter
-			Amount:     1,
-			Begin:      now.AddDate(0, 0, -30),
-			Until:      now.AddDate(0, 0, -16),
-			Returned:   true,
-			ReturnedAt: returnedTime1, // Returned on time
-		},
-		{
-			PersonID:   persons[0].ID, // Max Müller (frequent borrower)
-			ItemID:     items[7].ID,   // Soldering Station
-			Amount:     1,
-			Begin:      now.AddDate(0, -2, -10),
-			Until:      now.AddDate(0, -2, 4),
-			Returned:   true,
-			ReturnedAt: returnedTime3, // Returned on time 2 months ago
-		},
-		{
-			PersonID:   persons[1].ID, // Anna Schmidt
-			ItemID:     items[1].ID,   // Raspberry Pi
-			Amount:     2,
-			Begin:      now.AddDate(0, -1, -5),
-			Until:      now.AddDate(0, -1, 9),
-			Returned:   true,
-			ReturnedAt: returnedTime2, // Returned on time
-		},
-		{
-			PersonID:   persons[2].ID, // Lukas Fischer (currently has overdue)
-			ItemID:     items[2].ID,   // ESP32 board
-			Amount:     3,
-			Begin:      now.AddDate(0, 0, -45),
-			Until:      now.AddDate(0, 0, -31),
-			Returned:   true,
-			ReturnedAt: returnedTime5, // Returned on time
-		},
-		{
-			PersonID:   persons[5].ID, // Laura Schneider
-			ItemID:     items[30].ID,  // Stepper Motor
-			Amount:     5,
-			Begin:      now.AddDate(0, 0, -20),
-			Until:      now.AddDate(0, 0, -6),
-			Returned:   true,
-			ReturnedAt: returnedTime4, // Returned on time
-		},
-		{
-			PersonID:   persons[6].ID, // David Wagner
-			ItemID:     items[46].ID,  // FPGA Board
-			Amount:     1,
-			Begin:      now.AddDate(0, -1, -10),
-			Until:      now.AddDate(0, -1, 4),
-			Returned:   true,
-			ReturnedAt: returnedTime2, // Returned on time
-		},
-		{
-			PersonID:   persons[7].ID, // Julia Becker
-			ItemID:     items[8].ID,   // Logic Analyzer
-			Amount:     1,
-			Begin:      now.AddDate(0, 0, -40),
-			Until:      now.AddDate(0, 0, -26),
-			Returned:   true,
-			ReturnedAt: returnedTime5, // Returned on time
-		},
+	// 2️⃣ User
+	user := &User{
+		ID:           1,
+		Subject:      "sub-123",
+		Issuer:       "auth0",
+		Email:        "user@example.com",
+		Name:         "John Doe",
+		AccessToken:  "access_token_123",
+		RefreshToken: "refresh_token_456",
+		CreatedAt:    now.Add(-48 * time.Hour),
+		LastLogin:    now.Add(-2 * time.Hour),
+	}
 
-		// Returned loans - some were late
-		{
-			PersonID:   persons[3].ID, // Sarah Weber
-			ItemID:     items[0].ID,   // Arduino Uno
-			Amount:     3,
-			Begin:      now.AddDate(0, 0, -25),
-			Until:      now.AddDate(0, 0, -11),
-			Returned:   true,
-			ReturnedAt: returnedTime1, // Returned LATE (was due 11 days ago, returned 2 days ago)
-		},
-		{
-			PersonID:   persons[4].ID, // Jonas Meyer
-			ItemID:     items[36].ID,  // Ultrasonic Sensor
-			Amount:     10,
-			Begin:      now.AddDate(0, 0, -50),
-			Until:      now.AddDate(0, 0, -36),
-			Returned:   true,
-			ReturnedAt: returnedTime4, // Returned LATE (was due 36 days ago, returned 14 days ago)
-		},
+	// 3️⃣ Session
+	session := &Session{
+		ID:        1,
+		UserID:    user.ID,
+		CreatedAt: now.Add(-2 * time.Hour),
+		ExpiresAt: now.Add(24 * time.Hour),
+		UserIP:    net.ParseIP("192.168.1.10"),
+		User:      user,
+	}
 
-		// More history for popular items
+	// 4️⃣ Building + Room
+	building := &Building{
+		ID:         1,
+		Name:       "Science Building",
+		GPS:        "37.7749,-122.4194",
+		Campus:     "Main Campus",
+		UpdateDate: now.Format(time.RFC3339),
+	}
+
+	room := &Room{
+		ID:         1,
+		Number:     "B101",
+		Floor:      "1",
+		Name:       "Chemistry Lab",
+		BuildingID: building.ID,
+		UpdateDate: now.Format(time.RFC3339),
+		Building:   building,
+	}
+
+	// 5️⃣ Shelf + Columns + ShelfUnits
+	shelf := &Shelf{
+		ID:           "S-001",
+		Name:         "Chemical Storage Shelf",
+		OwnedBy:      org.ID,
+		RoomID:       room.ID,
+		UpdateDate:   now.Format(time.RFC3339),
+		Room:         room,
+		Organisation: org,
+	}
+
+	columns := []Column{
+		{ID: "C-001", ShelfID: shelf.ID, Shelf: shelf},
+		{ID: "C-002", ShelfID: shelf.ID, Shelf: shelf},
+	}
+
+	shelfUnits := []ShelfUnit{
+		{ID: "U-001", Type: 0, PositionInColumn: 1, ColumnID: columns[0].ID, Column: &columns[0], Description: "Small bin for beakers"},
+		{ID: "U-002", Type: 1, PositionInColumn: 2, ColumnID: columns[0].ID, Column: &columns[0], Description: "Large bin for glassware"},
+	}
+
+	// Link ShelfUnits to Columns
+	columns[0].ShelfUnits = []ShelfUnit{shelfUnits[0], shelfUnits[1]}
+	columns[1].ShelfUnits = []ShelfUnit{} // empty column
+	shelf.Columns = columns
+
+	// 6️⃣ Item
+	item := &Item{
+		ID:           1,
+		Name:         "Beaker Set 500ml",
+		IsConsumable: false,
+	}
+
+	// 7️⃣ Inventory
+	inventory := &Inventory{
+		ID:          1,
+		ItemID:      item.ID,
+		ShelfUnitID: shelfUnits[0].ID,
+		Amount:      12,
+		UpdateDate:  now.Format(time.RFC3339),
+		Item:        item,
+		ShelfUnit:   &shelfUnits[0],
+	}
+
+	// 8️⃣ ShoppingCart + Items
+	shoppingCart := ShoppingCart{
+		ID:     1,
+		UserID: user.ID,
+	}
+
+	shoppingCartItems := []ShoppingCartItem{
 		{
-			PersonID:   persons[8].ID, // Felix Hoffmann
-			ItemID:     items[0].ID,   // Arduino Uno (popular item with history)
-			Amount:     1,
-			Begin:      now.AddDate(0, -2, -5),
-			Until:      now.AddDate(0, -2, 9),
-			Returned:   true,
-			ReturnedAt: returnedTime3,
+			ID:             1,
+			Amount:         2,
+			InventoryID:    inventory.ID,
+			ShoppingCartID: shoppingCart.ID,
+			Inventory:      inventory,
+			ShoppingCart:   shoppingCart,
 		},
+	}
+	shoppingCart.ShoppingCartItems = shoppingCartItems
+
+	// 9️⃣ Request + RequestItems + Review
+	request := &Request{
+		ID:        1,
+		UserID:    user.ID,
+		StartDate: now,
+		EndDate:   now.Add(48 * time.Hour),
+		Note:      "Need lab glassware for experiment",
+		Status:    "pending",
+		User:      user,
+	}
+
+	requestItems := []RequestItems{
 		{
-			PersonID:   persons[9].ID, // Sophie Koch
-			ItemID:     items[0].ID,   // Arduino Uno
-			Amount:     2,
-			Begin:      now.AddDate(0, -1, -7),
-			Until:      now.AddDate(0, -1, 7),
-			Returned:   true,
-			ReturnedAt: returnedTime2,
+			ID:          1,
+			RequestID:   request.ID,
+			InventoryID: inventory.ID,
+			Amount:      2,
+			Request:     request,
+			Inventory:   inventory,
 		},
 	}
 
-	for i := range loans {
-		// Check if loan exists
-		exists, err := tx.Model(&Loans{}).
-			Where("person_id = ? AND item_id = ? AND begin = ?",
-				loans[i].PersonID, loans[i].ItemID, loans[i].Begin).
-			Exists()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to check loan existence: %w", err)
-		}
-		if exists {
-			log.Printf("Loan already exists for person %d, item %d - skipping", loans[i].PersonID, loans[i].ItemID)
-			continue
-		}
-
-		_, err = tx.Model(&loans[i]).Insert()
-		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to insert loan: %w", err)
-		}
-		log.Printf("Inserted loan: Person %d borrowed %d item(s) from inventory %d (Loan ID: %d)", loans[i].PersonID, loans[i].Amount, loans[i].ItemID, loans[i].ID)
+	requestReview := &RequestReview{
+		UserID:    user.ID,
+		RequestID: request.ID,
+		Outcome:   "approved",
+		Note:      "Approved by lab manager",
+		User:      user,
+		Request:   request,
 	}
 
-	// Commit transaction
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+	// 🔟 Loans + Consumed
+	loan := &Loans{
+		ID:            1,
+		RequestItemID: requestItems[0].ID,
+		IsReturned:    false,
+		RequestItems:  &requestItems[0],
 	}
 
-	log.Println("✅ ETH Zürich test data loaded successfully.")
-	log.Printf("   🏗️  Shelves: %d (across CAB, ETZ, HCI buildings)", len(shelves))
-
-	// Count total shelf units and columns
-	totalUnits := 0
-	totalColumns := len(columnMap)
-	for _, group := range shelfUnits {
-		totalUnits += len(group.Units)
+	consumed := &Consumed{
+		ID:            1,
+		RequestItemID: requestItems[0].ID,
+		RequestItems:  &requestItems[0],
 	}
-	log.Printf("   🏛️  Columns: %d", totalColumns)
-	log.Printf("   📦 Shelf Units: %d", totalUnits)
-	log.Printf("   📍 Locations: %d", len(locations))
-	log.Printf("   🔧 Items: %d", len(items))
-	log.Printf("   👥 Persons: %d", len(persons))
-	log.Printf("   📊 Inventory records: %d", len(isInRecords))
-	log.Printf("   📋 Loans: %d (5 active, 11 returned - includes 2 overdue active, 2 late returns)", len(loans))
-	return nil
+
+	return org, user, session, building, room, shelf, columns, shelfUnits, item, inventory, &shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed
 }

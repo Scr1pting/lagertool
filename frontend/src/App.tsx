@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 import Account from './pages/Account';
-import AddShelf from './pages/AddShelf';
+import AddShelf from './pages/AddShelfPage';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import WithNavLayout from './components/WithNavBar';

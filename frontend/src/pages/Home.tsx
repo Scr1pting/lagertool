@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import StaticShelf from "@/features/shelves/components/StaticShelf";
+import StaticShelf from "@/components/Shelves/viewer/StaticShelf";
 
 import styles from './Home.module.css';
 import Carousel from "@/components/Carousel/Carousel";
@@ -15,7 +15,7 @@ function Home() {
   const shelfParam = searchParams.get("shelf");
 
   const resolvedIndex = useMemo(() => {
-    if (!shelves || shelves.length === 0) return 0;
+    if (!Array.isArray(shelves) || shelves.length === 0) return 0;
     if (!shelfParam) return 0
 
     const foundIndex = shelves.findIndex((shelf) => shelf.id === shelfParam);
@@ -24,7 +24,7 @@ function Home() {
   }, [shelfParam, shelves]);
 
   useEffect(() => {
-    if (!shelves || shelves.length === 0) return;
+    if (!Array.isArray(shelves) || shelves.length === 0) return;
 
     const fallbackShelfId = shelves[resolvedIndex]?.id;
 
@@ -51,9 +51,12 @@ function Home() {
     [searchParams, setSearchParams, shelves],
   );
 
-  if (status === "error") return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
-  if (status === "success" && (!shelves || shelves.length === 0)) return <p>No shelves yet.</p>;
-  else if (!shelves || shelves.length === 0) return <></>;
+  if (status === "error")
+    return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
+  if (status === "success" && (!shelves || shelves.length === 0)) 
+    return <p>No shelves yet.</p>;
+  if (!Array.isArray(shelves) || shelves.length === 0)
+    return <></>;
 
   const shelvesContent = shelves.map((shelf) => (
     <div key={shelf.id} className={styles.content}>

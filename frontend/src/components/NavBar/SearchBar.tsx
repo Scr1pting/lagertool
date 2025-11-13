@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type MouseEvent, type FormEvent, type Keyb
 import { useNavigate, useLocation } from "react-router-dom"
 import styles from "./NavBar.module.css"
 import { Search } from "lucide-react";
+import clsx from "clsx";
 
 
 interface SearchBarProps {
@@ -94,10 +95,10 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
 
   return (
     <div
-      className={styles.searchWrapper}
+      className={clsx(styles.input, styles.searchWrapper)}
       onMouseDown={handleWrapperMouseDown}
     >
-      <Search/>
+      <Search className={styles.searchIcon} />
       <form className={styles.searchForm} onSubmit={handleSubmit}>
         <input
           ref={inputRef}
