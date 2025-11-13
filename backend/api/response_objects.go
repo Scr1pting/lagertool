@@ -40,7 +40,7 @@ type ShoppingCart struct {
 
 type CartItem struct {
 	InventoryItem
-	AmountSelected int `json:"amount_selected"`
+	AmountSelected int `json:"amountSelected"`
 }
 
 type Room struct {
@@ -48,8 +48,8 @@ type Room struct {
 	Number       string `json:"number"`
 	Floor        string `json:"floor"`
 	Name         string `json:"name"`
-	BuildingName string `json:"building_name"`
-	UpdateDate   string `json:"update_date"`
+	BuildingName string `json:"buildingName"`
+	UpdateDate   string `json:"updateDate"`
 }
 
 type Building struct {
@@ -57,7 +57,7 @@ type Building struct {
 	Name string `json:"name"`
 	//GPS        string   `json:"gps"`
 	Campus     string `json:"campus"`
-	UpdateDate string `json:"update_date"`
+	UpdateDate string `json:"updateDate"`
 }
 
 type ShelfSorted struct {
@@ -72,6 +72,6 @@ type InventorySorted struct {
 	Name         string `json:"name"`
 	Amount       int    `json:"amount"`
 	Available    int    `json:"available"`
-	RoomName     string `json:"room_name"`
-	BuildingName string `json:"building_name"`
+	RoomName     string `json:"roomName"`
+	BuildingName string `json:"buildingName"`
 }
