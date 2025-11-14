@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"github.com/go-redis/redis/v8"
 	"golang.org/x/oauth2"
 )
 
@@ -16,12 +19,28 @@ var (
 	clientID     = os.Getenv("VSETH_CLIENT_ID")
 	clientSecret = os.Getenv("VSETH_CLIENT_SECRET")
 	redirectURL  = "https://lagertool.ch/auth/callback"
-	issuerURL    = "ISSUER_URL_HERE"
+	issuerURL    = "https://keycloak-fake.vis.ethz.ch/realms/VSETH"
+	rdb          = initRedis()
 
 	oauth2Config *oauth2.Config
 	oidcProvider *oidc.Provider
 	verifier     *oidc.IDTokenVerifier
 )
+
+func initRedis() *redis.Client {
+	fmt.Println("Initializing Redis...")
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+	if rdb == nil {
+		panic("❌ Error: Redis Could Not Intialize!")
+	}
+	fmt.Println("✅ Redis Initialized Successfully!")
+	return rdb
+}
 
 func init() {
 	oidcProvider, err := oidc.NewProvider(context.Background(), issuerURL)
@@ -44,8 +63,9 @@ func init() {
 
 // connects to /auth/login
 func LoginHandler(c *gin.Context) {
+	ctx := context.Background()
 	state := uuid.New().String()
-	// state store here (Redis or something)
+	rdb.Set(ctx, state, state, 100)
 
 	url := oauth2Config.AuthCodeURL(state)
 	c.Redirect(http.StatusTemporaryRedirect, url)
@@ -53,9 +73,11 @@ func LoginHandler(c *gin.Context) {
 
 // connects to /auth/callback
 func CallbackHandler(c *gin.Context) {
+	ctx := context.Background()
+
 	state := c.Query("state")
-	// check in state store
-	// delete state from statestore
+	rdb.Get(ctx, state)
+	rdb.Del(ctx, state)
 
 	code := c.Query("code")
 	if code == "" {
@@ -89,13 +111,13 @@ func CallbackHandler(c *gin.Context) {
 	}
 
 	secure := true
-	http := true
-	lifetime := 3600 // example
-	c.SetCookie("user_session", UserData.Sub, lifetime, "/", "localhost", secure, http)
+	http_only := true
+	path := "/"           // path for which cookie is valid
+	domain := "localhost" // domain for which cookie is valid
+	lifetime := 3600      // example
+	c.SetCookie("user_session", UserData.Sub, lifetime, path, domain, secure, http_only)
 
 	// TODO: STORE USER DATA IN DB
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Authentication successful!",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Authentication successful!"})
 }

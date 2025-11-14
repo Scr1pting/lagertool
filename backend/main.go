@@ -63,7 +63,6 @@ func main() {
 	} */
 
 	api.SetupRoutes(router, dbConnection, cfg)
-	// auth.Init()
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
