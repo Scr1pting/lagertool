@@ -1,11 +1,11 @@
 import RegularPage from "@/components/RegularPage";
 
-function Persons() {
+function Account() {
   return (
-    <RegularPage title="Persons">
+    <RegularPage title="Account">
       <p>Content goes here</p>
     </RegularPage>
   )
 }
 
-export default Persons;
+export default Account;

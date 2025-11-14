@@ -35,79 +35,116 @@ func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
 }
 
 func InitDB(con *pg.DB) {
-	// Create tables using the provided connection
 	models := []interface{}{
+		(*Organisation)(nil),
+    (*Session)(nil),
+		(*User)(nil),
+    (*HasSpecialRightsFor)(nil),
+		(*Building)(nil),
+		(*Room)(nil),
 		(*Shelf)(nil),
 		(*Column)(nil),
 		(*ShelfUnit)(nil),
-		(*Location)(nil),
 		(*Item)(nil),
 		(*Inventory)(nil),
-		(*Person)(nil),
+		(*ShoppingCart)(nil),
+		(*ShoppingCartItem)(nil),
+		(*Request)(nil),
+		(*RequestItems)(nil),
+		(*RequestReview)(nil),
 		(*Loans)(nil),
 		(*Event)(nil),
 		(*EventHelper)(nil),
 		(*EventLoan)(nil),
-		(*Session)(nil),
-		(*Account)(nil),
+		(*Consumed)(nil),
 	}
+
+	log.Println("🚀 Initializing database tables...")
 
 	for _, model := range models {
 		err := con.Model(model).CreateTable(&orm.CreateTableOptions{
-			IfNotExists: true,
+			IfNotExists:   true,
+			FKConstraints: true,
 		})
 		if err != nil {
-			log.Fatalf("Error creating table for %T: %v", model, err)
+			log.Fatalf("❌ Error creating table for %T: %v", model, err)
+		} else {
+			log.Printf("✅ Created/verified table for %T", model)
 		}
 	}
 
-	// Run migrations
-	runMigrations(con)
-
-	log.Println("✅ Database tables initialized successfully.")
+	log.Println("✅ Database tables initialized and migrations completed successfully.")
 }
 
-func runMigrations(con *pg.DB) {
-	// Add returned column to loans table
-	_, err := con.Exec("ALTER TABLE loans ADD COLUMN IF NOT EXISTS returned BOOLEAN DEFAULT false")
-	if err != nil {
-		log.Printf("Warning: Failed to add 'returned' column: %v", err)
+func InsertDummyData(con *pg.DB) {
+	org, user, session, building, room, shelf, columns, units, item, inventory, shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed := GetDummyData()
+
+	log.Println("🚀 Inserting dummy data...")
+
+	// 1️⃣ Insert parent tables first
+	if _, err := con.Model(org).Insert(); err != nil {
+		log.Fatalf("Insert Organisation failed: %v", err)
+	}
+	if _, err := con.Model(user).Insert(); err != nil {
+		log.Fatalf("Insert User failed: %v", err)
+	}
+	if _, err := con.Model(session).Insert(); err != nil {
+		log.Fatalf("Insert Session failed: %v", err)
+	}
+	if _, err := con.Model(building).Insert(); err != nil {
+		log.Fatalf("Insert Building failed: %v", err)
+	}
+	if _, err := con.Model(room).Insert(); err != nil {
+		log.Fatalf("Insert Room failed: %v", err)
+	}
+	if _, err := con.Model(shelf).Insert(); err != nil {
+		log.Fatalf("Insert Shelf failed: %v", err)
 	}
 
-	// Add returned_at column to loans table
-	_, err = con.Exec("ALTER TABLE loans ADD COLUMN IF NOT EXISTS returned_at TIMESTAMP")
-	if err != nil {
-		log.Printf("Warning: Failed to add 'returned_at' column: %v", err)
+	// 2️⃣ Insert slices with pointers
+	if _, err := con.Model(&columns).Insert(); err != nil {
+		log.Fatalf("Insert Columns failed: %v", err)
+	}
+	if _, err := con.Model(&units).Insert(); err != nil {
+		log.Fatalf("Insert ShelfUnits failed: %v", err)
 	}
 
-	// Migrate location table to new schema
-	// Drop old columns that are no longer needed
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS campus")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'campus' column: %v", err)
+	// 3️⃣ Insert Item and Inventory
+	if _, err := con.Model(item).Insert(); err != nil {
+		log.Fatalf("Insert Item failed: %v", err)
 	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS building")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'building' column: %v", err)
-	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS room")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'room' column: %v", err)
-	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS shelf")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'shelf' column: %v", err)
-	}
-	_, err = con.Exec("ALTER TABLE location DROP COLUMN IF EXISTS shelfunit")
-	if err != nil {
-		log.Printf("Warning: Failed to drop 'shelfunit' column: %v", err)
+	if _, err := con.Model(inventory).Insert(); err != nil {
+		log.Fatalf("Insert Inventory failed: %v", err)
 	}
 
-	// Add new shelf_unit_id column
-	_, err = con.Exec("ALTER TABLE location ADD COLUMN IF NOT EXISTS shelf_unit_id TEXT")
-	if err != nil {
-		log.Printf("Warning: Failed to add 'shelf_unit_id' column: %v", err)
+	// 4️⃣ Insert ShoppingCart and Items
+	if _, err := con.Model(shoppingCart).Insert(); err != nil {
+		log.Fatalf("Insert ShoppingCart failed: %v", err)
 	}
+	if _, err := con.Model(&shoppingCartItems).Insert(); err != nil {
+		log.Fatalf("Insert ShoppingCartItems failed: %v", err)
+	}
+
+	// 5️⃣ Insert Request, RequestItems, RequestReview
+	if _, err := con.Model(request).Insert(); err != nil {
+		log.Fatalf("Insert Request failed: %v", err)
+	}
+	if _, err := con.Model(&requestItems).Insert(); err != nil {
+		log.Fatalf("Insert RequestItems failed: %v", err)
+	}
+	if _, err := con.Model(requestReview).Insert(); err != nil {
+		log.Fatalf("Insert RequestReview failed: %v", err)
+	}
+
+	// 6️⃣ Insert Loans and Consumed
+	if _, err := con.Model(loan).Insert(); err != nil {
+		log.Fatalf("Insert Loans failed: %v", err)
+	}
+	if _, err := con.Model(consumed).Insert(); err != nil {
+		log.Fatalf("Insert Consumed failed: %v", err)
+	}
+
+	log.Println("✅ Dummy data inserted successfully")
 }
 
 func Close(con *pg.DB) {

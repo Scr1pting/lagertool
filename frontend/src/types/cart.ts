@@ -1,5 +1,5 @@
 import { type InventoryItem } from "./inventory";
 
-export type CartItem = InventoryItem & {
+export interface CartItem extends InventoryItem {
   numSelected: number;
 }

@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type MouseEvent, type FormEvent, type KeyboardEvent, type ChangeEvent } from "react"
-
 import { useNavigate, useLocation } from "react-router-dom"
 import styles from "./NavBar.module.css"
-import RangeSelector from "./RangeSelector"
+import { Search } from "lucide-react";
 
 
 interface SearchBarProps {
@@ -98,7 +97,7 @@ export default function SearchBar({ initial = "" }: SearchBarProps) {
       className={styles.searchWrapper}
       onMouseDown={handleWrapperMouseDown}
     >
-      <RangeSelector />
+      <Search/>
       <form className={styles.searchForm} onSubmit={handleSubmit}>
         <input
           ref={inputRef}

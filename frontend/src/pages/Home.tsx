@@ -13,35 +13,22 @@ function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
   const shelfParam = searchParams.get("shelf");
-  const elementParam = searchParams.get("element");
 
   const resolvedIndex = useMemo(() => {
-    if (!shelves || shelves.length === 0) {
-      return 0;
-    }
-
-    if (!shelfParam) {
-      return 0;
-    }
+    if (!shelves || shelves.length === 0) return 0;
+    if (!shelfParam) return 0
 
     const foundIndex = shelves.findIndex((shelf) => shelf.id === shelfParam);
-    if (foundIndex === -1) {
-      return 0;
-    }
-
-    return foundIndex;
+    
+    return foundIndex === -1 ? 0 : foundIndex;
   }, [shelfParam, shelves]);
 
   useEffect(() => {
-    if (!shelves || shelves.length === 0) {
-      return;
-    }
+    if (!shelves || shelves.length === 0) return;
 
     const fallbackShelfId = shelves[resolvedIndex]?.id;
 
-    if (!fallbackShelfId) {
-      return;
-    }
+    if (!fallbackShelfId) return;
 
     if (!shelfParam || !shelves.some((shelf) => shelf.id === shelfParam)) {
       const nextParams = new URLSearchParams(searchParams);
@@ -73,7 +60,6 @@ function Home() {
       <StaticShelf
           shelf={shelf}
           onElementSelect={setSelectedElement}
-          highlightedElement={shelf.id === shelfParam ? (elementParam ?? undefined) : undefined}
         />
       <label className={styles.homeLabel}>{shelf.buildingName + " - " + shelf.roomName + " - " + shelf.name}</label>
     </div>

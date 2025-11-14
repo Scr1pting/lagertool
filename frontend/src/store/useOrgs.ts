@@ -13,8 +13,7 @@ const useOrgs = create<OrgState>()(
             setSelectedOrgId: (id?: string) => set({ selectedOrgId: id }),
         }),
         {
-            name: "lagertool.orgs", // localStorage key
-            // simple partial serialization is fine for this small shape
+            name: "lagertool.orgs",
         }
     )
 )
