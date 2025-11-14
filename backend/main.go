@@ -11,7 +11,6 @@ import (
 	"lagertool.com/main/api"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
-	"lagertool.com/main/docs"
 )
 
 // @title Lagertool Inventory API
