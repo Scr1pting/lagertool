@@ -6,7 +6,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=example
@@ -18,5 +18,26 @@ services:
       retries: 5
     restart: unless-stopped
 
+  redis:
+    image: redis:8.2-alpine
+    command: >
+      redis-server 
+      --save 60 1 
+      --loglevel warning 
+      --requirepass example
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    environment:
+      - REDIS_PASSWORD=example
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
-  db-data:
+  postgres-data:
+  redis-data:

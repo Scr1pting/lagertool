@@ -11,7 +11,7 @@ import (
 	"lagertool.com/main/api"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
-	_ "lagertool.com/main/docs"
+	"lagertool.com/main/docs"
 )
 
 // @title Lagertool Inventory API
@@ -63,7 +63,6 @@ func main() {
 	//}
 
 	api.SetupRoutes(router, dbConnection, cfg)
-	//auth.Init()
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
