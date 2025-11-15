@@ -33,6 +33,7 @@ func (h *Handler) GetShelves(c *gin.Context) {
 		shelfObj, err2 := h.GetShelfHelper(shelf.ID)
 		if err2 != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err2.Error()})
+			return
 		}
 		res = append(res, shelfObj)
 	}
@@ -43,18 +44,22 @@ func (h *Handler) GetItem(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id")) //the id should be the id of the inventory entry
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	start, err := time.Parse("2006-01-02", c.Param("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	end, err := time.Parse("2006-01-02", c.Param("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	invItem, err := h.GetInventoryItemHelper(id, start, end)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	shelf, err := h.GetShelfHelper(invItem.ShelfID)
 
@@ -69,6 +74,7 @@ func (h *Handler) GetOrganisations(c *gin.Context) {
 	err := h.DB.Model(&organisations).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, organisations)
 }
@@ -77,18 +83,19 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id")) //the id should be the id of the inventory entry
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	start, err := time.Parse("2006-01-02", c.Param("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	end, err := time.Parse("2006-01-02", c.Param("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+
 	var shoppingCart db.ShoppingCart
 	err = h.DB.Model(&shoppingCart).
 		Relation("ShoppingCartItems.Inventory.Item").
@@ -123,6 +130,7 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 		ci.Available, err = h.GetAvailable(item.Inventory.ItemID, start, end)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 		if item.Inventory.ShelfUnit.Column.Shelf.Room.Name != "" {
 			ci.RoomName = item.Inventory.ShelfUnit.Column.Shelf.Room.Name

@@ -37,8 +37,8 @@ func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
 func InitDB(con *pg.DB) {
 	models := []interface{}{
 		(*Organisation)(nil),
-		(*Session)(nil),
 		(*User)(nil),
+		(*Session)(nil),
 		(*HasSpecialRightsFor)(nil),
 		(*Building)(nil),
 		(*Room)(nil),

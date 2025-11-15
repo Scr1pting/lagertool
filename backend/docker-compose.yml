@@ -8,9 +8,26 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=example
-      - POSTGRES_DB=appdb
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-example}
+      - POSTGRES_DB=${DB_NAME:-appdb}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  test-db:
+    image: postgres:15-alpine
+    ports:
+      - "5435:5432" # Expose test db on a different port
+    volumes:
+      - test-postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-example}
+      - POSTGRES_DB=${DB_NAME:-appdb}_test # Use a separate test database
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -40,4 +57,5 @@ services:
 
 volumes:
   postgres-data:
+  test-postgres-data: # Volume for the test database
   redis-data:
