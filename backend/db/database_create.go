@@ -102,7 +102,7 @@ func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*Shop
 
 func CreateInventoryItem(con *pg.DB, request api_objects.InventoryItemRequest) (*Inventory, error) {
 	item := &Item{}
-	err := con.Model(item).Where("name = ?", request.Name).Where("isConsumable = ?", request.IsConsumable).Select()
+	err := con.Model(item).Where("name = ?", request.Name).Where("is_consumable = ?", request.IsConsumable).Select()
 	if errors.Is(err, pg.ErrNoRows) {
 		item.Name = request.Name
 		item.IsConsumable = request.IsConsumable

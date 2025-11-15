@@ -562,3 +562,63 @@ func TestCreateShelf(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateItem(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/create_item", h.CreateItem)
+
+	hier := createTestHierarchy(t, dbCon)
+	defer cleanupTestHierarchy(t, dbCon, hier)
+
+	testCases := []struct {
+		name           string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Creation",
+			payload: `{
+				"name": "New Test Item",
+				"amount": 100,
+				"shelfUnitId": "` + hier.ShelfUnit.ID + `",
+				"isConsumable": true,
+				"note": "A note"
+			}`,
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Invalid JSON - Missing Name",
+			payload:        `{"amount": 100}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", "/create_item", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedStatus, w.Code)
+
+			if tc.expectedStatus == http.StatusCreated {
+				var createdItem db.Inventory
+				err := json.Unmarshal(w.Body.Bytes(), &createdItem)
+				assert.NoError(t, err)
+				assert.Equal(t, 100, createdItem.Amount)
+				assert.Equal(t, hier.ShelfUnit.ID, createdItem.ShelfUnitID)
+
+				// Clean up the created records
+				_, err = dbCon.Model(&db.Inventory{}).Where("id = ?", createdItem.ID).Delete()
+				assert.NoError(t, err)
+				_, err = dbCon.Model(&db.Item{}).Where("name = 'New Test Item'").Delete()
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
