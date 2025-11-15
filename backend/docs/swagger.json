@@ -20,94 +20,9 @@
     "host": "localhost:8000",
     "basePath": "/",
     "paths": {
-        "/calendar/all": {
-            "get": {
-                "description": "Downloads an iCalendar (.ics) file containing all loan records with reminders to return items",
-                "produces": [
-                    "text/calendar"
-                ],
-                "tags": [
-                    "calendar"
-                ],
-                "summary": "Download calendar file for all loans",
-                "responses": {
-                    "200": {
-                        "description": "ICS file content with all loan events",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/calendar/{id}": {
-            "get": {
-                "description": "Downloads an iCalendar (.ics) file for a specific loan containing a reminder to return the item",
-                "produces": [
-                    "text/calendar"
-                ],
-                "tags": [
-                    "calendar"
-                ],
-                "summary": "Download calendar file for a specific loan",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Loan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ICS file content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid loan ID",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/events": {
-            "get": {
-                "description": "Retrieve all events from the database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Get all events",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Event"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
+        "/add_item_to_cart": {
             "post": {
-                "description": "Create a new event with the provided details. The ID is auto-generated and should not be included in the request body.",
+                "description": "Add an item to the shopping cart",
                 "consumes": [
                     "application/json"
                 ],
@@ -115,17 +30,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "events"
+                    "shopping_cart"
                 ],
-                "summary": "Create a new event",
+                "summary": "Add an item to the shopping cart",
                 "parameters": [
                     {
-                        "description": "Event object",
-                        "name": "event",
+                        "description": "Cart item object",
+                        "name": "cart_item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Event"
+                            "$ref": "#/definitions/api_objects.CartRequest"
                         }
                     }
                 ],
@@ -133,233 +48,38 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.Event"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/db.ShoppingCartItem"
                         }
                     }
                 }
             }
         },
-        "/events/{id}": {
+        "/buildings_sorted": {
             "get": {
-                "description": "Retrieve a specific event by its ID",
+                "description": "Get all buildings sorted by update date",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "events"
+                    "buildings"
                 ],
-                "summary": "Get event by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Event"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing event by ID. The ID in the request body is ignored; use the path parameter.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Update an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Event object",
-                        "name": "event",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Event"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Event"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete an event by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Delete an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/events/{id}/helpers": {
-            "get": {
-                "description": "Retrieve all persons who are helpers for a specific event",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Get all helpers for an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get all buildings sorted by update date",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.EventHelper"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                                "$ref": "#/definitions/api_objects.Building"
                             }
                         }
                     }
                 }
-            },
+            }
+        },
+        "/create_building": {
             "post": {
-                "description": "Add a person as a helper to an event, allowing them to borrow items for the event",
+                "description": "Create a new building",
                 "consumes": [
                     "application/json"
                 ],
@@ -367,29 +87,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "events"
+                    "buildings"
                 ],
-                "summary": "Add a helper to an event",
+                "summary": "Create a new building",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Helper object with person_id",
-                        "name": "helper",
+                        "description": "Building object",
+                        "name": "building",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "person_id": {
-                                    "type": "integer"
-                                }
-                            }
+                            "$ref": "#/definitions/api_objects.BuildingRequest"
                         }
                     }
                 ],
@@ -397,793 +105,15 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.EventHelper"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/db.Building"
                         }
                     }
                 }
             }
         },
-        "/events/{id}/helpers/{person_id}": {
-            "delete": {
-                "description": "Remove a person from being a helper for an event",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Remove a helper from an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Person ID",
-                        "name": "person_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/events/{id}/loans": {
-            "get": {
-                "description": "Retrieve all item loans (both active and returned) for a specific event",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Get all loans for an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.EventLoan"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
+        "/create_item": {
             "post": {
-                "description": "Create a new loan record for an item borrowed for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Borrow an item for an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Loan object",
-                        "name": "loan",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "amount": {
-                                    "type": "integer"
-                                },
-                                "item_id": {
-                                    "type": "integer"
-                                },
-                                "person_id": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/db.EventLoan"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/events/{id}/loans/active": {
-            "get": {
-                "description": "Retrieve all unreturned item loans for a specific event",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Get active loans for an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.EventLoan"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/events/{id}/loans/return-all": {
-            "post": {
-                "description": "Mark all unreturned loans for an event as returned at once",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Return all items for an event",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/events/{id}/loans/{loan_id}/return": {
-            "post": {
-                "description": "Mark a specific event loan as returned",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Return a specific event loan",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Event ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Event Loan ID",
-                        "name": "loan_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/inventory": {
-            "get": {
-                "description": "Retrieve all item-location inventory records from the database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Get all inventory records",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Inventory"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new inventory record (link an item to a location with an amount). The ID is auto-generated and should not be included in the request body.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Create a new inventory record",
-                "parameters": [
-                    {
-                        "description": "Inventory record object",
-                        "name": "inventory",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Inventory"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/db.Inventory"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/inventory/item/{item_id}": {
-            "get": {
-                "description": "Retrieve all inventory records for a specific item",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Get inventory records by item ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Item ID",
-                        "name": "item_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Inventory"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/inventory/location/{location_id}": {
-            "get": {
-                "description": "Retrieve all inventory records for a specific location",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Get inventory records by location ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Location ID",
-                        "name": "location_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Inventory"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/inventory/{id}": {
-            "get": {
-                "description": "Retrieve a specific inventory record by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Get inventory record by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Inventory Record ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Inventory"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing inventory record by ID. The ID in the request body is ignored; use the path parameter.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Update an inventory record",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Inventory Record ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Inventory record object",
-                        "name": "inventory",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Inventory"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Inventory"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete an inventory record by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Delete an inventory record",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Inventory Record ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/inventory/{id}/amount": {
-            "patch": {
-                "description": "Partially update the amount of an inventory record by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Update inventory amount",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Inventory Record ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "New amount value",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "amount": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Inventory"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/items": {
-            "get": {
-                "description": "Retrieve all items from the database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "items"
-                ],
-                "summary": "Get all items",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Item"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new item with the provided details. The ID is auto-generated and should not be included in the request body.",
+                "description": "Create a new inventory item",
                 "consumes": [
                     "application/json"
                 ],
@@ -1193,15 +123,15 @@
                 "tags": [
                     "items"
                 ],
-                "summary": "Create a new item",
+                "summary": "Create a new inventory item",
                 "parameters": [
                     {
-                        "description": "Item object",
+                        "description": "Inventory item object",
                         "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Item"
+                            "$ref": "#/definitions/api_objects.InventoryItemRequest"
                         }
                     }
                 ],
@@ -1209,264 +139,15 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.Item"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/db.Inventory"
                         }
                     }
                 }
             }
         },
-        "/items/search": {
-            "get": {
-                "description": "Search for items with a case-insensitive name query",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "items"
-                ],
-                "summary": "Search items by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Item name to search for",
-                        "name": "name",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Item"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/items/{id}": {
-            "get": {
-                "description": "Retrieve a specific item by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "items"
-                ],
-                "summary": "Get item by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Item ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Item"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing item by ID. The ID in the request body is ignored; use the path parameter.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "items"
-                ],
-                "summary": "Update an item",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Item ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Item object",
-                        "name": "item",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Item"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Item"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete an item by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "items"
-                ],
-                "summary": "Delete an item",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Item ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/loans": {
-            "get": {
-                "description": "Retrieve all loan records from the database. Optionally filter by returned status using the 'returned' query parameter (true/false).",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Get all loans",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Filter by returned status (true/false)",
-                        "name": "returned",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Loans"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
+        "/create_room": {
             "post": {
-                "description": "Create a new loan record. The ID is auto-generated and should not be included in the request body. Date fields must be in RFC3339 format (e.g., \"2025-10-10T14:30:00Z\").",
+                "description": "Create a new room",
                 "consumes": [
                     "application/json"
                 ],
@@ -1474,17 +155,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "loans"
+                    "rooms"
                 ],
-                "summary": "Create a new loan record",
+                "summary": "Create a new room",
                 "parameters": [
                     {
-                        "description": "Loan record object",
-                        "name": "loan",
+                        "description": "Room object",
+                        "name": "room",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Loans"
+                            "$ref": "#/definitions/api_objects.RoomRequest"
                         }
                     }
                 ],
@@ -1492,503 +173,15 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.Loans"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/db.Room"
                         }
                     }
                 }
             }
         },
-        "/loans/item/{item_id}/history": {
-            "get": {
-                "description": "Retrieve all loan records (both active and returned) for a specific item",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Get borrow history for an item",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Item ID",
-                        "name": "item_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Loans"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/loans/overdue": {
-            "get": {
-                "description": "Retrieve all non-returned loan records where the return date (`until`) is in the past",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Get all overdue loans",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Loans"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/loans/permanent/{perm_id}": {
-            "get": {
-                "description": "Retrieve all loan records associated with a specific permanent item",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Get loans by permanent item ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Permanent Item ID",
-                        "name": "perm_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Loans"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/loans/person/{person_id}": {
-            "get": {
-                "description": "Retrieve all loan records associated with a specific person",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Get loans by person ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Person ID",
-                        "name": "person_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Loans"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/loans/person/{person_id}/history": {
-            "get": {
-                "description": "Retrieve all loan records (both active and returned) for a specific person",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Get borrow history for a person",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Person ID",
-                        "name": "person_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Loans"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/loans/{id}": {
-            "get": {
-                "description": "Retrieve a specific loan record by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Get loan by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Loan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Loans"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing loan record by ID. The ID in the request body is ignored; use the path parameter. Date fields must be in RFC3339 format (e.g., \"2025-10-10T14:30:00Z\").",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Update a loan record",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Loan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Loan record object",
-                        "name": "loan",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Loans"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Loans"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a loan record by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Delete a loan record",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Loan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/loans/{id}/return": {
-            "patch": {
-                "description": "Mark a loan as returned by setting the returned flag to true and recording the return timestamp",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "loans"
-                ],
-                "summary": "Mark a loan as returned",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Loan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Loans"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/locations": {
-            "get": {
-                "description": "Retrieve all locations from the database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "Get all locations",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Location"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
+        "/create_shelf": {
             "post": {
-                "description": "Create a new location with the provided details. The ID is auto-generated and should not be included in the request body.",
+                "description": "Create a new shelf",
                 "consumes": [
                     "application/json"
                 ],
@@ -1996,17 +189,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "locations"
+                    "shelves"
                 ],
-                "summary": "Create a new location",
+                "summary": "Create a new shelf",
                 "parameters": [
                     {
-                        "description": "Location object",
-                        "name": "location",
+                        "description": "Shelf object",
+                        "name": "shelf",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/db.Location"
+                            "$ref": "#/definitions/api_objects.ShelfRequest"
                         }
                     }
                 ],
@@ -2014,477 +207,34 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.Location"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/db.Shelf"
                         }
                     }
                 }
             }
         },
-        "/locations/{id}": {
+        "/inventory_sorted/{start}/{end}": {
             "get": {
-                "description": "Retrieve a specific location by its ID",
+                "description": "Get all inventory items sorted by update date",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "locations"
+                    "items"
                 ],
-                "summary": "Get location by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Location ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Location"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing location by ID. The ID in the request body is ignored; use the path parameter.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "Update a location",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Location ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Location object",
-                        "name": "location",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Location"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Location"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a location by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "Delete a location",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Location ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/persons": {
-            "get": {
-                "description": "Retrieve all persons from the database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "persons"
-                ],
-                "summary": "Get all persons",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Person"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new person with the provided details. The ID is auto-generated and should not be included in the request body.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "persons"
-                ],
-                "summary": "Create a new person",
-                "parameters": [
-                    {
-                        "description": "Person object",
-                        "name": "person",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Person"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/db.Person"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/persons/search": {
-            "get": {
-                "description": "Search for persons by firstname or lastname (case-insensitive partial match)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "persons"
-                ],
-                "summary": "Search persons",
+                "summary": "Get all inventory items sorted by update date",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "First name query for search",
-                        "name": "firstname",
-                        "in": "query"
+                        "description": "Start date in format 2006-01-02",
+                        "name": "start",
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Last name query for search",
-                        "name": "lastname",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Person"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/persons/{id}": {
-            "get": {
-                "description": "Retrieve a specific person by their ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "persons"
-                ],
-                "summary": "Get person by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Person"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing person by ID. The ID in the request body is ignored; use the path parameter.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "persons"
-                ],
-                "summary": "Update a person",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Person object",
-                        "name": "person",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/db.Person"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Person"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a person by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "persons"
-                ],
-                "summary": "Delete a person",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Person ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/persons/{id}/event-loans": {
-            "get": {
-                "description": "Retrieve all event loans for a specific person across all events",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Get event loans by person",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Person ID",
-                        "name": "id",
+                        "description": "End date in format 2006-01-02",
+                        "name": "end",
                         "in": "path",
                         "required": true
                     }
@@ -2495,25 +245,96 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.EventLoan"
+                                "$ref": "#/definitions/api_objects.InventorySorted"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/item/{id}/{start}/{end}": {
+            "get": {
+                "description": "Get a specific item",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "Get a specific item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Inventory Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    {
+                        "type": "string",
+                        "description": "Start date in format 2006-01-02",
+                        "name": "start",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date in format 2006-01-02",
+                        "name": "end",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                            "$ref": "#/definitions/api_objects.InventoryItemWithShelf"
+                        }
+                    }
+                }
+            }
+        },
+        "/organisations": {
+            "get": {
+                "description": "Get all organisations",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Get all organisations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/db.Organisation"
                             }
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
+                    }
+                }
+            }
+        },
+        "/rooms_sorted": {
+            "get": {
+                "description": "Get all rooms sorted by update date",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rooms"
+                ],
+                "summary": "Get all rooms sorted by update date",
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api_objects.Room"
                             }
                         }
                     }
@@ -2522,7 +343,7 @@
         },
         "/shelves": {
             "get": {
-                "description": "Retrieve all shelves from the database with their layouts",
+                "description": "Get all shelves",
                 "produces": [
                     "application/json"
                 ],
@@ -2536,391 +357,65 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/api.ShelfResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Parse the JSON shelf definition and create the corresponding Shelf and ShelfUnit entries in the database",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "shelves"
-                ],
-                "summary": "Create a new shelf layout",
-                "parameters": [
-                    {
-                        "description": "Shelf layout object",
-                        "name": "shelf",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/api.ShelfRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                                "$ref": "#/definitions/api_objects.Shelves"
                             }
                         }
                     }
                 }
             }
         },
-        "/shelves/building/{building}": {
+        "/shelves_sorted": {
             "get": {
-                "description": "Retrieve all shelves for a specific building with their layout",
+                "description": "Get all shelves sorted by update date",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "shelves"
                 ],
-                "summary": "Get all shelves in a building",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Building name",
-                        "name": "building",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get all shelves sorted by update date",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/api.ShelfResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                                "$ref": "#/definitions/api_objects.ShelfSorted"
                             }
                         }
                     }
                 }
             }
         },
-        "/shelves/building/{building}/room/{room}": {
+        "/shopping_cart/{id}/{start}/{end}": {
             "get": {
-                "description": "Retrieve all shelves for a specific building and room with their layout",
+                "description": "Get a user's shopping cart",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "shelves"
+                    "shopping_cart"
                 ],
-                "summary": "Get all shelves in a room",
+                "summary": "Get a user's shopping cart",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Building name",
-                        "name": "building",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Room name",
-                        "name": "room",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/api.ShelfResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/shelves/unit/{id}": {
-            "get": {
-                "description": "Find a shelf unit by its unique 5-letter ID (case-insensitive) and return its location details",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "shelves"
-                ],
-                "summary": "Search for a shelf unit by its ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Shelf Unit ID (5-letter code, case-insensitive)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/shelves/unit/{id}/inventory": {
-            "get": {
-                "description": "Retrieve all inventory items in a specific shelf unit by its 5-letter ID (case-insensitive), including borrow status and active loans",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "shelves"
-                ],
-                "summary": "Get inventory in a shelf unit",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Shelf Unit ID (5-letter code, case-insensitive)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/api.ShelfUnitInventoryItem"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/shelves/{id}": {
-            "get": {
-                "description": "Retrieve a specific shelf by its ID with full layout",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "shelves"
-                ],
-                "summary": "Get shelf by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Shelf ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/api.ShelfResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update a shelf by completely replacing its structure. All existing columns and shelf units will be deleted and replaced with the new structure.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "shelves"
-                ],
-                "summary": "Update an existing shelf layout",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Shelf ID",
+                        "type": "integer",
+                        "description": "User ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Shelf layout object",
-                        "name": "shelf",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/api.ShelfRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                        "type": "string",
+                        "description": "Start date in format 2006-01-02",
+                        "name": "start",
+                        "in": "path",
+                        "required": true
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a shelf and all its associated columns, shelf units, and locations",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "shelves"
-                ],
-                "summary": "Delete a shelf",
-                "parameters": [
                     {
                         "type": "string",
-                        "description": "Shelf ID",
-                        "name": "id",
+                        "description": "End date in format 2006-01-02",
+                        "name": "end",
                         "in": "path",
                         "required": true
                     }
@@ -2931,25 +426,10 @@
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/api_objects.CartItem"
+                                }
                             }
                         }
                     }
@@ -2958,188 +438,162 @@
         }
     },
     "definitions": {
-        "api.LoanInfo": {
+        "api_objects.Building": {
             "type": "object",
             "properties": {
-                "amount": {
-                    "type": "integer"
-                },
-                "begin": {
+                "campus": {
+                    "description": "GPS        string   `json:\"gps\"`",
                     "type": "string"
                 },
-                "is_overdue": {
-                    "type": "boolean"
-                },
-                "loan_id": {
+                "id": {
                     "type": "integer"
                 },
-                "person_id": {
-                    "type": "integer"
-                },
-                "person_name": {
+                "name": {
                     "type": "string"
                 },
-                "until": {
+                "updateDate": {
                     "type": "string"
                 }
             }
         },
-        "api.ShelfRequest": {
+        "api_objects.BuildingRequest": {
             "type": "object",
             "required": [
-                "building",
-                "columns",
-                "id",
-                "name",
-                "room"
+                "name"
             ],
             "properties": {
-                "building": {
-                    "type": "string"
-                },
-                "columns": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": [
-                            "elements",
-                            "id"
-                        ],
-                        "properties": {
-                            "elements": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "required": [
-                                        "id",
-                                        "type"
-                                    ],
-                                    "properties": {
-                                        "id": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "id": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
-                "id": {
+                "campus": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "room": {
                     "type": "string"
                 }
             }
         },
-        "api.ShelfResponse": {
+        "api_objects.CartItem": {
             "type": "object",
             "properties": {
-                "building": {
-                    "type": "string"
-                },
-                "columns": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "elements": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "string"
-                                        },
-                                        "numItems": {
-                                            "type": "integer"
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "id": {
-                                "type": "string"
-                            },
-                            "numItems": {
-                                "type": "integer"
-                            }
-                        }
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "numItems": {
+                "amount": {
                     "type": "integer"
                 },
-                "room": {
-                    "type": "string"
-                }
-            }
-        },
-        "api.ShelfUnitInventoryItem": {
-            "type": "object",
-            "properties": {
-                "active_loans": {
-                    "description": "Active loans for this item",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/api.LoanInfo"
-                    }
-                },
-                "amount": {
+                "amountSelected": {
                     "type": "integer"
                 },
                 "available": {
-                    "description": "Amount available (not borrowed)",
                     "type": "integer"
                 },
-                "borrowed": {
-                    "description": "Amount currently borrowed",
-                    "type": "integer"
-                },
-                "category": {
+                "buildingName": {
                     "type": "string"
                 },
-                "inventory_id": {
+                "id": {
                     "type": "integer"
                 },
-                "item_id": {
+                "name": {
+                    "type": "string"
+                },
+                "roomName": {
+                    "type": "string"
+                },
+                "shelfId": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.CartRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "numSelected"
+            ],
+            "properties": {
+                "id": {
                     "type": "integer"
                 },
-                "item_name": {
+                "numSelected": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api_objects.ColumnElementRequest": {
+            "type": "object",
+            "required": [
+                "elements",
+                "id"
+            ],
+            "properties": {
+                "elements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.ShelfElementRequest"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.Columns": {
+            "type": "object",
+            "properties": {
+                "elements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.Element"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.Element": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.InventoryItemRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "isConsumable",
+                "name",
+                "note",
+                "shelfUnitId"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "isConsumable": {
+                    "type": "boolean"
+                },
+                "name": {
                     "type": "string"
                 },
                 "note": {
                     "type": "string"
+                },
+                "shelfUnitId": {
+                    "type": "string"
                 }
             }
         },
-        "db.Event": {
+        "api_objects.InventoryItemWithShelf": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
+                "amount": {
+                    "type": "integer"
                 },
-                "description": {
-                    "type": "string"
+                "available": {
+                    "type": "integer"
                 },
-                "end_date": {
+                "buildingName": {
                     "type": "string"
                 },
                 "id": {
@@ -3148,50 +602,211 @@
                 "name": {
                     "type": "string"
                 },
-                "start_date": {
+                "roomName": {
+                    "type": "string"
+                },
+                "shelf": {
+                    "$ref": "#/definitions/api_objects.Shelves"
+                },
+                "shelfId": {
                     "type": "string"
                 }
             }
         },
-        "db.EventHelper": {
-            "type": "object",
-            "properties": {
-                "event_id": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "person_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "db.EventLoan": {
+        "api_objects.InventorySorted": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "integer"
                 },
-                "borrowed_at": {
-                    "type": "string"
-                },
-                "event_id": {
+                "available": {
                     "type": "integer"
+                },
+                "buildingName": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "item_id": {
-                    "type": "integer"
-                },
-                "person_id": {
-                    "description": "Who borrowed it",
-                    "type": "integer"
-                },
-                "returned_at": {
-                    "description": "NULL if not yet returned",
+                "name": {
                     "type": "string"
+                },
+                "roomName": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.Room": {
+            "type": "object",
+            "properties": {
+                "buildingName": {
+                    "type": "string"
+                },
+                "floor": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "updateDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.RoomRequest": {
+            "type": "object",
+            "required": [
+                "building",
+                "floor",
+                "number"
+            ],
+            "properties": {
+                "building": {
+                    "type": "integer"
+                },
+                "floor": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.ShelfElementRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.ShelfRequest": {
+            "type": "object",
+            "required": [
+                "buildingId",
+                "columns",
+                "id",
+                "name",
+                "ownedBy",
+                "roomId"
+            ],
+            "properties": {
+                "buildingId": {
+                    "type": "integer"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.ColumnElementRequest"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownedBy": {
+                    "type": "integer"
+                },
+                "roomId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api_objects.ShelfSorted": {
+            "type": "object",
+            "properties": {
+                "buildingName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "roomName": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.Shelves": {
+            "type": "object",
+            "properties": {
+                "buildingName": {
+                    "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.Columns"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "roomName": {
+                    "type": "string"
+                }
+            }
+        },
+        "db.Building": {
+            "type": "object",
+            "properties": {
+                "campus": {
+                    "type": "string"
+                },
+                "gps": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "update_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "db.Column": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "shelf": {
+                    "$ref": "#/definitions/db.Shelf"
+                },
+                "shelf_id": {
+                    "type": "string"
+                },
+                "shelf_units": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db.ShelfUnit"
+                    }
                 }
             }
         },
@@ -3204,13 +819,28 @@
                 "id": {
                     "type": "integer"
                 },
+                "item": {
+                    "$ref": "#/definitions/db.Item"
+                },
                 "item_id": {
                     "type": "integer"
                 },
-                "location_id": {
-                    "type": "integer"
-                },
                 "note": {
+                    "type": "string"
+                },
+                "request_item": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db.RequestItems"
+                    }
+                },
+                "shelf_unit": {
+                    "$ref": "#/definitions/db.ShelfUnit"
+                },
+                "shelf_unit_id": {
+                    "type": "string"
+                },
+                "update_date": {
                     "type": "string"
                 }
             }
@@ -3218,9 +848,21 @@
         "db.Item": {
             "type": "object",
             "properties": {
-                "category": {
-                    "type": "string"
+                "id": {
+                    "type": "integer"
                 },
+                "is_consumable": {
+                    "description": "Description  string   `json:\"description\" pg:\"description\"`\nCategory     string   `json:\"category\" pg:\"category\"`",
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "db.Organisation": {
+            "type": "object",
+            "properties": {
                 "id": {
                     "type": "integer"
                 },
@@ -3229,60 +871,206 @@
                 }
             }
         },
-        "db.Loans": {
+        "db.Request": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/db.User"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "db.RequestItems": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "integer"
                 },
-                "begin": {
+                "id": {
+                    "type": "integer"
+                },
+                "inventory": {
+                    "$ref": "#/definitions/db.Inventory"
+                },
+                "inventory_id": {
+                    "type": "integer"
+                },
+                "request": {
+                    "$ref": "#/definitions/db.Request"
+                },
+                "request_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "db.Room": {
+            "type": "object",
+            "properties": {
+                "building": {
+                    "$ref": "#/definitions/db.Building"
+                },
+                "building_id": {
+                    "type": "integer"
+                },
+                "floor": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "item_id": {
-                    "type": "integer"
-                },
-                "person_id": {
-                    "type": "integer"
-                },
-                "returned": {
-                    "type": "boolean"
-                },
-                "returned_at": {
+                "name": {
                     "type": "string"
                 },
-                "until": {
+                "number": {
+                    "type": "string"
+                },
+                "update_date": {
                     "type": "string"
                 }
             }
         },
-        "db.Location": {
+        "db.Shelf": {
+            "type": "object",
+            "properties": {
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db.Column"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organisation": {
+                    "$ref": "#/definitions/db.Organisation"
+                },
+                "owned_by": {
+                    "type": "integer"
+                },
+                "room": {
+                    "$ref": "#/definitions/db.Room"
+                },
+                "room_id": {
+                    "type": "integer"
+                },
+                "update_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "db.ShelfUnit": {
+            "type": "object",
+            "properties": {
+                "column": {
+                    "$ref": "#/definitions/db.Column"
+                },
+                "column_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "position_in_column": {
+                    "description": "to change the order of the units in the column later",
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "0 is small, 1 is big",
+                    "type": "integer"
+                }
+            }
+        },
+        "db.ShoppingCart": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "integer"
                 },
-                "shelf_unit_id": {
-                    "description": "Reference to ShelfUnit.ID",
-                    "type": "string"
+                "shopping_cart_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db.ShoppingCartItem"
+                    }
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
-        "db.Person": {
+        "db.ShoppingCartItem": {
             "type": "object",
             "properties": {
-                "firstname": {
+                "amount": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "inventory": {
+                    "$ref": "#/definitions/db.Inventory"
+                },
+                "inventory_id": {
+                    "type": "integer"
+                },
+                "shopping_cart": {
+                    "$ref": "#/definitions/db.ShoppingCart"
+                },
+                "shopping_cart_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "db.User": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "lastname": {
+                "issuer": {
                     "type": "string"
                 },
-                "slack_id": {
+                "last_login": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "subject": {
                     "type": "string"
                 }
             }

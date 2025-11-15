@@ -21,6 +21,12 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 	return &Handler{DB: db, Cfg: cfg}
 }
 
+// @Summary Get all shelves
+// @Description Get all shelves
+// @Tags shelves
+// @Produce  json
+// @Success 200 {array} api_objects.Shelves
+// @Router /shelves [get]
 func (h *Handler) GetShelves(c *gin.Context) {
 	var res []api_objects.Shelves
 	var dbRes []db.Shelf
@@ -41,6 +47,15 @@ func (h *Handler) GetShelves(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Get a specific item
+// @Description Get a specific item
+// @Tags items
+// @Produce  json
+// @Param id path int true "Inventory Item ID"
+// @Param start path string true "Start date in format 2006-01-02"
+// @Param end path string true "End date in format 2006-01-02"
+// @Success 200 {object} api_objects.InventoryItemWithShelf
+// @Router /item/{id}/{start}/{end} [get]
 func (h *Handler) GetItem(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id")) //the id should be the id of the inventory entry
 	if err != nil {
@@ -70,6 +85,12 @@ func (h *Handler) GetItem(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Get all organisations
+// @Description Get all organisations
+// @Tags organisations
+// @Produce  json
+// @Success 200 {array} db.Organisation
+// @Router /organisations [get]
 func (h *Handler) GetOrganisations(c *gin.Context) {
 	var organisations []db.Organisation
 	err := h.DB.Model(&organisations).Select()
@@ -80,6 +101,15 @@ func (h *Handler) GetOrganisations(c *gin.Context) {
 	c.JSON(http.StatusOK, organisations)
 }
 
+// @Summary Get a user's shopping cart
+// @Description Get a user's shopping cart
+// @Tags shopping_cart
+// @Produce  json
+// @Param id path int true "User ID"
+// @Param start path string true "Start date in format 2006-01-02"
+// @Param end path string true "End date in format 2006-01-02"
+// @Success 200 {object} map[string][]api_objects.CartItem
+// @Router /shopping_cart/{id}/{start}/{end} [get]
 func (h *Handler) GetShoppingCart(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id")) //the id should be the id of the inventory entry
 	if err != nil {

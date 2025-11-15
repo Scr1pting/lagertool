@@ -8,6 +8,14 @@ import (
 	"lagertool.com/main/db"
 )
 
+// @Summary Create a new building
+// @Description Create a new building
+// @Tags buildings
+// @Accept  json
+// @Produce  json
+// @Param building body api_objects.BuildingRequest true "Building object"
+// @Success 201 {object} db.Building
+// @Router /create_building [post]
 func (h *Handler) CreateBuilding(c *gin.Context) {
 	var req api_objects.BuildingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -23,6 +31,14 @@ func (h *Handler) CreateBuilding(c *gin.Context) {
 	c.JSON(http.StatusCreated, newBuilding)
 }
 
+// @Summary Create a new room
+// @Description Create a new room
+// @Tags rooms
+// @Accept  json
+// @Produce  json
+// @Param room body api_objects.RoomRequest true "Room object"
+// @Success 201 {object} db.Room
+// @Router /create_room [post]
 func (h *Handler) CreateRoom(c *gin.Context) {
 	var req api_objects.RoomRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -38,6 +54,14 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 	c.JSON(http.StatusCreated, newRoom)
 }
 
+// @Summary Create a new shelf
+// @Description Create a new shelf
+// @Tags shelves
+// @Accept  json
+// @Produce  json
+// @Param shelf body api_objects.ShelfRequest true "Shelf object"
+// @Success 201 {object} db.Shelf
+// @Router /create_shelf [post]
 func (h *Handler) CreateShelf(c *gin.Context) {
 	var req api_objects.ShelfRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -52,6 +76,14 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 	c.JSON(http.StatusCreated, newShelf)
 }
 
+// @Summary Add an item to the shopping cart
+// @Description Add an item to the shopping cart
+// @Tags shopping_cart
+// @Accept  json
+// @Produce  json
+// @Param cart_item body api_objects.CartRequest true "Cart item object"
+// @Success 201 {object} db.ShoppingCartItem
+// @Router /add_item_to_cart [post]
 func (h *Handler) CreateCartItem(c *gin.Context) {
 	var req api_objects.CartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -66,6 +98,14 @@ func (h *Handler) CreateCartItem(c *gin.Context) {
 	c.JSON(http.StatusCreated, newCart)
 }
 
+// @Summary Create a new inventory item
+// @Description Create a new inventory item
+// @Tags items
+// @Accept  json
+// @Produce  json
+// @Param item body api_objects.InventoryItemRequest true "Inventory item object"
+// @Success 201 {object} db.Inventory
+// @Router /create_item [post]
 func (h *Handler) CreateItem(c *gin.Context) {
 	var req api_objects.InventoryItemRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

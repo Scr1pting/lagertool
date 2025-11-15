@@ -9,6 +9,12 @@ import (
 	"lagertool.com/main/db"
 )
 
+// @Summary Get all rooms sorted by update date
+// @Description Get all rooms sorted by update date
+// @Tags rooms
+// @Produce  json
+// @Success 200 {array} api_objects.Room
+// @Router /rooms_sorted [get]
 func (h *Handler) GetRoomsS(c *gin.Context) {
 	var dbRes []db.Room
 	err := h.DB.Model(&dbRes).Column("room.*").Relation("Building").Order("update_date desc").Select()
@@ -25,6 +31,12 @@ func (h *Handler) GetRoomsS(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Get all buildings sorted by update date
+// @Description Get all buildings sorted by update date
+// @Tags buildings
+// @Produce  json
+// @Success 200 {array} api_objects.Building
+// @Router /buildings_sorted [get]
 func (h *Handler) GetBuildingsS(c *gin.Context) {
 	var dbRes []db.Building
 	err := h.DB.Model(&dbRes).Order("update_date desc").Select()
@@ -41,6 +53,12 @@ func (h *Handler) GetBuildingsS(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Get all shelves sorted by update date
+// @Description Get all shelves sorted by update date
+// @Tags shelves
+// @Produce  json
+// @Success 200 {array} api_objects.ShelfSorted
+// @Router /shelves_sorted [get]
 func (h *Handler) GetShelvesS(c *gin.Context) {
 	var dbRes []db.Shelf
 	err := h.DB.Model(&dbRes).Relation("Room.Building").Order("update_date desc").Select()
@@ -57,6 +75,14 @@ func (h *Handler) GetShelvesS(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Get all inventory items sorted by update date
+// @Description Get all inventory items sorted by update date
+// @Tags items
+// @Produce  json
+// @Param start path string true "Start date in format 2006-01-02"
+// @Param end path string true "End date in format 2006-01-02"
+// @Success 200 {array} api_objects.InventorySorted
+// @Router /inventory_sorted/{start}/{end} [get]
 func (h *Handler) GetInventoryS(c *gin.Context) {
 	start, err := time.Parse("2006-01-02", c.Param("start"))
 	if err != nil {

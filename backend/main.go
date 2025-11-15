@@ -11,6 +11,7 @@ import (
 	"lagertool.com/main/api"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
+	_ "lagertool.com/main/docs"
 )
 
 // @title Lagertool Inventory API
@@ -33,7 +34,6 @@ func main() {
 	cfg := config.Load()
 
 	router := gin.Default()
-
 	// Configure CORS middleware
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // Allow all origins, or specify your frontend URL
