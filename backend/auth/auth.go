@@ -1,163 +1,123 @@
 package auth
 
 import (
-	"encoding/json"
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/sessions"
-	"github.com/joho/godotenv"
+	"github.com/google/uuid"
+
+	"github.com/go-redis/redis/v8"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/idtoken"
 )
 
-// OAuth configuration
 var (
-	googleOauthConfig *oauth2.Config
-	store             *sessions.CookieStore
-	backend_domain    string
-	frontend_domain   string
+	clientID     = os.Getenv("VSETH_CLIENT_ID")
+	clientSecret = os.Getenv("VSETH_CLIENT_SECRET")
+	redirectURL  = "https://lagertool.ch/auth/callback"
+	issuerURL    = "https://keycloak-fake.vis.ethz.ch/realms/VSETH"
+	rdb          = initRedis()
+
+	oauth2Config *oauth2.Config
+	oidcProvider *oidc.Provider
+	verifier     *oidc.IDTokenVerifier
 )
 
-func Init() {
-	// Load .env file
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, relying on system environment variables\nERROR: " + err.Error())
-	}
+func initRedis() *redis.Client {
+	fmt.Println("Initializing Redis...")
 
-	// Get environment variables
-	projectID := os.Getenv("GCP_PROJECT_ID")
-	if projectID == "" {
-		log.Fatal("GCP_PROJECT_ID environment variable not set")
-	} else {
-		log.Println("GCP_PROJECT_ID: " + projectID)
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+	if rdb == nil {
+		panic("❌ Error: Redis Could Not Intialize!")
 	}
-	clientID := os.Getenv("GOOGLE_CLIENT_ID")
-	if clientID == "" {
-		log.Fatal("GOOGLE_CLIENT_ID environment variable not set")
-	} else {
-		log.Println("GOOGLE_CLIENT_ID: " + clientID)
-	}
-	sessionSecret := os.Getenv("SESSION_SECRET_KEY")
-	if sessionSecret == "" {
-		log.Fatal("SESSION_SECRET_KEY environment variable not set")
-	} else {
-		log.Println("SESSION_SECRET_KEY: " + sessionSecret)
-	}
-	production := os.Getenv("PRODUCTION")
-	if production == "1" {
-		backend_domain = "http://localhost:8000/api"
-		frontend_domain = "https://05.hackathon.ethz.ch"
-		log.Println("Using hackathon domain.")
-	} else if production == "0" {
-		log.Println("Using localhost.")
-		backend_domain = "http://localhost:8000"
-		frontend_domain = "http://localhost:5173"
-	} else {
-		log.Fatal("PRODUCTION envrionment variable not set")
-		return
-	}
-
-	// Initialize session store
-	store = sessions.NewCookieStore([]byte(sessionSecret))
-	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
-	if clientSecret == "" {
-		log.Fatal("GOOGLE_CLIENT_SECRET environment variable not set")
-	}
-
-	// Configure OAuth
-
-	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  backend_domain + "/auth/google/callback",
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
-		Endpoint:     google.Endpoint,
-	}
+	fmt.Println("✅ Redis Initialized Successfully!")
+	return rdb
 }
 
-func GoogleLoginHandler(c *gin.Context) {
-	url := googleOauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+func init() {
+	oidcProvider, err := oidc.NewProvider(context.Background(), issuerURL)
+	if err != nil {
+		log.Fatalf("Failed to initalize OIDC provider %v", err)
+	}
+
+	oauth2Config = &oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
+		Scopes:       []string{oidc.ScopeOpenID, "profile"},
+		Endpoint:     oidcProvider.Endpoint(),
+	}
+
+	verifier = oidcProvider.Verifier(&oidc.Config{
+		ClientID: clientID,
+	})
+}
+
+// connects to /auth/login
+func LoginHandler(c *gin.Context) {
+	ctx := context.Background()
+	state := uuid.New().String()
+	rdb.Set(ctx, state, state, 100)
+
+	url := oauth2Config.AuthCodeURL(state)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-func GoogleCallbackHandler(c *gin.Context) {
+// connects to /auth/callback
+func CallbackHandler(c *gin.Context) {
+	ctx := context.Background()
+
+	state := c.Query("state")
+	rdb.Get(ctx, state)
+	rdb.Del(ctx, state)
+
 	code := c.Query("code")
 	if code == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Code not found"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Authorization code missing"})
 		return
 	}
 
-	token, err := googleOauthConfig.Exchange(c, code)
+	oauth2Token, err := oauth2Config.Exchange(c.Request.Context(), code)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange token: " + err.Error()})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Token exchange failed", "details": err.Error()})
 		return
 	}
-
-	client := googleOauthConfig.Client(c, token)
-	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "No ID token found in response."})
+		return
+	}
+	idToken, err := verifier.Verify(c.Request.Context(), rawIDToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info: " + err.Error()})
-		return
-	}
-	defer resp.Body.Close()
-
-	var userInfo map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user info: " + err.Error()})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "ID token validation failed", "details": err.Error()})
 		return
 	}
 
-	session, err := store.Get(c.Request, "auth-session")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session: " + err.Error()})
-		return
+	var UserData struct {
+		Name string `json:"name"`
+		Sub  string `json:"sub"`
+		// expansions and shit if we need it
 	}
-	session.Values["user"] = userInfo
-	if err := session.Save(c.Request, c.Writer); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session: " + err.Error()})
-		return
-	}
-	c.Redirect(http.StatusTemporaryRedirect, frontend_domain)
-}
-
-func VerifyGoogleToken(c *gin.Context) {
-	var requestBody struct {
-		Credential string `json:"credential"`
-	}
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
+	if err := idToken.Claims(&UserData); err != nil {
+		log.Printf("Failed to extract claims: %v", err)
 	}
 
-	clientID := os.Getenv("GOOGLE_CLIENT_ID")
-	if clientID == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "GOOGLE_CLIENT_ID not set"})
-		return
-	}
+	secure := true
+	http_only := true
+	path := "/"           // path for which cookie is valid
+	domain := "localhost" // domain for which cookie is valid
+	lifetime := 3600      // example
+	c.SetCookie("user_session", UserData.Sub, lifetime, path, domain, secure, http_only)
 
-	token, err := idtoken.Validate(c, requestBody.Credential, clientID)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token: " + err.Error()})
-		return
-	}
+	// TODO: STORE USER DATA IN DB
 
-	session, err := store.Get(c.Request, "auth-session")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session: " + err.Error()})
-		return
-	}
-	session.Values["user"] = map[string]interface{}{
-		"name":  token.Claims["name"],
-		"email": token.Claims["email"],
-	}
-	if err := session.Save(c.Request, c.Writer); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session: " + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"user": session.Values["user"]})
+	c.JSON(http.StatusOK, gin.H{"message": "Authentication successful!"})
 }

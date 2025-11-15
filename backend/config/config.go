@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -43,13 +44,28 @@ func Load() *Config {
 		log.Println("No .env file found, using environment variables")
 	}
 
+	// If we are in test mode, load test-specific variables, overriding existing ones
+	if gin.Mode() == gin.TestMode {
+		// Look for the file in the parent directory, as tests are often run from subdirectories
+		if err := godotenv.Overload("../.env.test"); err != nil {
+			log.Printf("No .env.test file found, using defaults for testing: %v", err)
+		}
+	}
+
+	dbName := getEnv("DB_NAME", "appdb")
+
+	// If we are in test mode, append _test to the database name
+	if gin.Mode() == gin.TestMode {
+		dbName += "_test"
+	}
+
 	App = &Config{
 		DB: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnv("DB_PORT", "5432"),
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "example"),
-			Name:     getEnv("DB_NAME", "appdb"),
+			Name:     dbName,
 		},
 		Slack: SlackConfig{
 			BotToken: getEnv("SLACK_BOT_TOKEN", ""),

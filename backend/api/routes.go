@@ -15,10 +15,9 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/organisations", h.GetOrganisations)
 	r.GET("/shopping_cart/:id/:start/:end", h.GetShoppingCart) //userID
 
-	// Google OAuth2
-	r.GET("/auth/google/login", auth.GoogleLoginHandler)
-	r.GET("/auth/google/callback", auth.GoogleCallbackHandler)
-	r.POST("/auth/google/callback", auth.VerifyGoogleToken)
+	// Edu-ID endpoints
+	r.GET("/auth/eduid/login", auth.LoginHandler)
+	r.GET("/auth/eduid/callback", auth.CallbackHandler)
 
 	//sorted by date
 	r.GET("/rooms_sorted", h.GetRoomsS)
