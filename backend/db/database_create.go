@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-pg/pg/v10"
@@ -75,16 +76,22 @@ func CreateShelf(con *pg.DB, request api_objects.ShelfRequest) (*Shelf, error) {
 }
 
 func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*ShoppingCartItem, error) {
-	user := &ShoppingCartItem{}
-	err := con.Model(user).Where("id = ?", userID).Select()
-	if err != nil {
+	cart := &ShoppingCart{}
+	err := con.Model(cart).Where("user_id = ?", userID).Select()
+	if errors.Is(err, pg.ErrNoRows) {
+		cart.UserID = userID
+		_, err = con.Model(cart).Insert()
+		if err != nil {
+			return nil, err
+		}
+	} else if err != nil {
 		return nil, err
 	}
 
 	shoppingCartItem := &ShoppingCartItem{
 		Amount:         num_selected,
 		InventoryID:    itemID,
-		ShoppingCartID: user.ShoppingCartID,
+		ShoppingCartID: cart.ID,
 	}
 	_, err = con.Model(shoppingCartItem).Insert()
 	if err != nil {

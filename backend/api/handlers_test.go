@@ -391,6 +391,85 @@ func TestGetItem(t *testing.T) {
 	cleanupTestHierarchy(t, dbCon, hier)
 }
 
+func TestCreateCartItem(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/add_item_to_cart", h.CreateCartItem)
+
+	// The user ID is hardcoded to 1 in the handler, so we create a user with ID 1.
+	user := &db.User{ID: 1, Email: "test@example.com", Name: "Test User"}
+	_, err := dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(user).Where("id = ?", user.ID).Delete()
+		assert.NoError(t, err)
+	}()
+
+	item := &db.Item{Name: "Test Item", IsConsumable: true}
+	_, err = dbCon.Model(item).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(item).Where("id = ?", item.ID).Delete()
+		assert.NoError(t, err)
+	}()
+
+	inventory := &db.Inventory{ItemID: item.ID, Amount: 10}
+	_, err = dbCon.Model(inventory).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(inventory).Where("id = ?", inventory.ID).Delete()
+		assert.NoError(t, err)
+	}()
+
+	testCases := []struct {
+		name           string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Creation",
+			payload: `{
+				"id": ` + strconv.Itoa(inventory.ID) + `,
+				"numSelected": 5
+			}`,
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Invalid JSON - Missing ID",
+			payload:        `{"numSelected": 5}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", "/add_item_to_cart", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedStatus, w.Code)
+
+			if tc.expectedStatus == http.StatusCreated {
+				var createdCartItem db.ShoppingCartItem
+				err := json.Unmarshal(w.Body.Bytes(), &createdCartItem)
+				assert.NoError(t, err)
+				assert.Equal(t, 5, createdCartItem.Amount)
+				assert.Equal(t, inventory.ID, createdCartItem.InventoryID)
+
+				// Clean up the created records
+				_, err = dbCon.Model(&db.ShoppingCartItem{}).Where("id = ?", createdCartItem.ID).Delete()
+				assert.NoError(t, err)
+				_, err = dbCon.Model(&db.ShoppingCart{}).Where("user_id = ?", user.ID).Delete()
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestCreateShelf(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
