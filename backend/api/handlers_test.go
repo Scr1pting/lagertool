@@ -192,7 +192,7 @@ func TestCreateRoom(t *testing.T) {
 	router.POST("/create_room", h.CreateRoom)
 
 	// Pre-insert a building for the foreign key constraint
-	building := &db.Building{Name: "Test Building", Campus: "Test Campus"}
+	building := &db.Building{ID: 1, Name: "Test Building", Campus: "Test Campus"}
 	_, err := dbCon.Model(building).Insert()
 	assert.NoError(t, err)
 	// Defer cleanup to ensure it runs even if the test fails
@@ -202,7 +202,7 @@ func TestCreateRoom(t *testing.T) {
 	}()
 
 	// Define test case
-	payload := `{"name": "Room 101", "floor": "1", "number": "101", "building": "Test Building"}`
+	payload := `{"name": "Room 101", "floor": "1", "number": "101", "building": 1}`
 	req, _ := http.NewRequest("POST", "/create_room", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
 

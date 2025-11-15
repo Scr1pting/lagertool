@@ -29,7 +29,7 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 		return
 	}
 
-	newRoom, err := db.CreateRoom(h.DB, req.Name, req.Floor, req.Number, req.Building)
+	newRoom, err := db.CreateRoom(h.DB, req.Name, req.Floor, req.Number, req.BuildingID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
