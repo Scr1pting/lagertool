@@ -34,6 +34,7 @@ func setupTestRouter() (*gin.Engine, *pg.DB) {
 	if err != nil {
 		panic("Failed to connect to test database: " + err.Error())
 	}
+	db.InitDB(dbConnection)
 
 	return router, dbConnection
 }
