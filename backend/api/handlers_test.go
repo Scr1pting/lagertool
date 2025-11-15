@@ -390,3 +390,96 @@ func TestGetItem(t *testing.T) {
 
 	cleanupTestHierarchy(t, dbCon, hier)
 }
+
+func TestCreateShelf(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/create_shelf", h.CreateShelf)
+
+	// Pre-insert an organisation, a building and a room for the foreign key constraint
+	org := &db.Organisation{Name: "Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(org).Where("id = ?", org.ID).Delete()
+		assert.NoError(t, err)
+	}()
+
+	building := &db.Building{Name: "Test Building", Campus: "Test Campus"}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		assert.NoError(t, err)
+	}()
+
+	room := &db.Room{Name: "Test Room", BuildingID: building.ID}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(room).Where("id = ?", room.ID).Delete()
+		assert.NoError(t, err)
+	}()
+
+	testCases := []struct {
+		name           string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Creation",
+			payload: `{
+                "id": "S-1",
+                "name": "Test Shelf",
+                "buildingId": ` + strconv.Itoa(building.ID) + `,
+                "roomId": ` + strconv.Itoa(room.ID) + `,
+                "ownedBy": ` + strconv.Itoa(org.ID) + `,
+                "columns": [
+                    {
+                        "id": "C-1",
+                        "elements": [
+                            {"id": "SU-1", "type": "slim"},
+                            {"id": "SU-2", "type": "large"}
+                        ]
+                    }
+                ]
+            }`,
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Invalid JSON - Missing ID",
+			payload:        `{"name": "Test Shelf"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", "/create_shelf", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedStatus, w.Code)
+
+			if tc.expectedStatus == http.StatusCreated {
+				var createdShelf db.Shelf
+				err := json.Unmarshal(w.Body.Bytes(), &createdShelf)
+				assert.NoError(t, err)
+				assert.Equal(t, "Test Shelf", createdShelf.Name)
+				assert.Equal(t, "S-1", createdShelf.ID)
+
+				// Clean up the created records
+				_, err = dbCon.Model(&db.ShelfUnit{}).Where("id = 'SU-1' OR id = 'SU-2'").Delete()
+				assert.NoError(t, err)
+				_, err = dbCon.Model(&db.Column{}).Where("id = 'C-1'").Delete()
+				assert.NoError(t, err)
+				_, err = dbCon.Model(&db.Shelf{}).Where("id = 'S-1'").Delete()
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
