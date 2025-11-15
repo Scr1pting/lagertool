@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"lagertool.com/main/api_objects"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 
@@ -249,7 +250,7 @@ func TestGetBuildingsS(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var buildings []Building
+	var buildings []api_objects.Building
 	err = json.Unmarshal(w.Body.Bytes(), &buildings)
 	assert.NoError(t, err)
 
@@ -287,7 +288,7 @@ func TestGetRoomsS(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var rooms []Room
+	var rooms []api_objects.Room
 	err = json.Unmarshal(w.Body.Bytes(), &rooms)
 	assert.NoError(t, err)
 
@@ -315,7 +316,7 @@ func TestGetShelvesS(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var shelves []ShelfSorted
+	var shelves []api_objects.ShelfSorted
 	err := json.Unmarshal(w.Body.Bytes(), &shelves)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, shelves)
@@ -337,7 +338,7 @@ func TestGetShelves(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var shelves []Shelves
+	var shelves []api_objects.Shelves
 	err := json.Unmarshal(w.Body.Bytes(), &shelves)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, shelves)
@@ -359,7 +360,7 @@ func TestGetInventoryS(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var inventory []InventorySorted
+	var inventory []api_objects.InventorySorted
 	err := json.Unmarshal(w.Body.Bytes(), &inventory)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, inventory)
@@ -381,7 +382,7 @@ func TestGetItem(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var itemWithShelf InventoryItemWithShelf
+	var itemWithShelf api_objects.InventoryItemWithShelf
 	err := json.Unmarshal(w.Body.Bytes(), &itemWithShelf)
 	assert.NoError(t, err)
 	assert.Equal(t, "Hierarchy Item", itemWithShelf.InventoryItem.Name)

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db"
 )
 
@@ -15,9 +16,9 @@ func (h *Handler) GetRoomsS(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	var res []Room
+	var res []api_objects.Room
 	for _, item := range dbRes {
-		res = append(res, Room{
+		res = append(res, api_objects.Room{
 			item.ID, item.Number, item.Floor, item.Name, item.Building.Name, item.UpdateDate.Format(time.RFC3339),
 		})
 	}
@@ -31,9 +32,9 @@ func (h *Handler) GetBuildingsS(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	var res []Building
+	var res []api_objects.Building
 	for _, item := range dbRes {
-		res = append(res, Building{
+		res = append(res, api_objects.Building{
 			item.ID, item.Name, item.Campus, item.UpdateDate.Format(time.RFC3339),
 		})
 	}
@@ -47,9 +48,9 @@ func (h *Handler) GetShelvesS(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	var res []ShelfSorted
+	var res []api_objects.ShelfSorted
 	for _, item := range dbRes {
-		res = append(res, ShelfSorted{
+		res = append(res, api_objects.ShelfSorted{
 			item.ID, item.Name, item.Room.Name, item.Room.Building.Name,
 		})
 	}
@@ -73,14 +74,14 @@ func (h *Handler) GetInventoryS(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	var res []InventorySorted
+	var res []api_objects.InventorySorted
 	for _, item := range dbRes {
 		available, err := h.GetAvailable(item.ID, start, end)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		res = append(res, InventorySorted{
+		res = append(res, api_objects.InventorySorted{
 			item.ItemID, item.Item.Name, item.Amount, available, item.ShelfUnit.Column.Shelf.Room.Name, item.ShelfUnit.Column.Shelf.Room.Building.Name,
 		})
 	}

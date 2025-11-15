@@ -3,19 +3,20 @@ package api
 import (
 	"time"
 
+	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db"
 )
 
-func (h *Handler) GetShelfHelper(id string) (Shelves, error) {
+func (h *Handler) GetShelfHelper(id string) (api_objects.Shelves, error) {
 	var shelf db.Shelf
 	err := h.DB.Model(&shelf).
 		Relation("Room.Building").
 		Relation("Columns.ShelfUnits").Where("shelf.id = ?", id).Select()
 	if err != nil {
-		return Shelves{}, err
+		return api_objects.Shelves{}, err
 	}
 
-	var shelfObj Shelves
+	var shelfObj api_objects.Shelves
 	shelfObj.ID = shelf.ID
 	shelfObj.Name = shelf.Name
 	if shelf.Room.Name != "" {
@@ -24,10 +25,10 @@ func (h *Handler) GetShelfHelper(id string) (Shelves, error) {
 		shelfObj.RoomName = shelf.Room.Floor + shelf.Room.Number
 	}
 	shelfObj.BuildingName = shelf.Room.Building.Name
-	var col Columns
+	var col api_objects.Columns
 	for _, c := range shelf.Columns {
 		col.ID = c.ID
-		var el Element
+		var el api_objects.Element
 		for _, e := range c.ShelfUnits {
 			el.ID = e.ID
 			if e.Type == 0 {
@@ -62,14 +63,14 @@ func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, 
 	return dbInv.Amount - count, nil
 }
 
-func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time) (InventoryItem, error) {
+func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time) (api_objects.InventoryItem, error) {
 	var dbInv db.Inventory
-	var res InventoryItem
+	var res api_objects.InventoryItem
 	err := h.DB.Model(&dbInv).
 		Relation("Item").
 		Relation("ShelfUnit.Column.Shelf.Room.Building").Where("inventory.id = ?", id).Select()
 	if err != nil {
-		return InventoryItem{}, err
+		return api_objects.InventoryItem{}, err
 	}
 	res.ID = id
 	res.Name = dbInv.Item.Name

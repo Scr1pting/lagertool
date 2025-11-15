@@ -1,4 +1,4 @@
-package api
+package api_objects
 
 type Shelves struct {
 	ID           string    `json:"id"`

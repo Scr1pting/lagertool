@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
+	"lagertool.com/main/api_objects"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 )
@@ -21,7 +22,7 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 }
 
 func (h *Handler) GetShelves(c *gin.Context) {
-	var res []Shelves
+	var res []api_objects.Shelves
 	var dbRes []db.Shelf
 	err := h.DB.Model(&dbRes).Select()
 	if err != nil {
@@ -63,7 +64,7 @@ func (h *Handler) GetItem(c *gin.Context) {
 	}
 	shelf, err := h.GetShelfHelper(invItem.ShelfID)
 
-	res := InventoryItemWithShelf{
+	res := api_objects.InventoryItemWithShelf{
 		invItem, shelf,
 	}
 	c.JSON(http.StatusOK, res)
@@ -109,7 +110,7 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 		return
 	}
 
-	m := make(map[string][]CartItem)
+	m := make(map[string][]api_objects.CartItem)
 	for _, item := range shoppingCart.ShoppingCartItems {
 		if item.Inventory.ShelfUnit.Column.Shelf.Room.Building == nil {
 			var building db.Building
@@ -123,7 +124,7 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 			item.Inventory.ShelfUnit.Column.Shelf.Room.Building = &building
 		}
 
-		var ci CartItem
+		var ci api_objects.CartItem
 		ci.ID = item.Inventory.ItemID
 		ci.Name = item.Inventory.Item.Name
 		ci.Amount = item.Inventory.Amount
