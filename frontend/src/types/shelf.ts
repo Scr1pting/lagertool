@@ -7,7 +7,7 @@ export interface ShelfElementDefinition {
 }
 
 export interface ShelfElement {
-  id: string;
+  id: string;  // string for simpler element labels
   type: ShelfElementType;
   numItems?: number;
 }

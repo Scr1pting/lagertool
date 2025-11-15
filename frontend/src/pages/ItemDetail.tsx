@@ -1,6 +1,7 @@
 import AddCartDialog from "@/components/AddCartDialog"
 import RegularPage from "@/components/RegularPage"
 import { Button } from "@/components/shadcn/button"
+import { Card, CardContent } from "@/components/shadcn/card"
 import { Separator } from "@/components/shadcn/separator"
 import StaticShelf from "@/components/Shelves/viewer/StaticShelf"
 import useFetchItem from "@/hooks/useFetchItem"
@@ -67,9 +68,13 @@ function ItemDetail() {
             Location in Shelf
           </h2>
 
-          { item?.shelf &&
-            <StaticShelf shelf={item.shelf} highlightedElement={item.shelfElementId} />
-          }
+          <Card>
+            <CardContent className="flex justify-center pt-8">
+              { item?.shelf &&
+                <StaticShelf shelf={item.shelf} highlightedElement={item.shelfElementId} />
+              }
+            </CardContent>
+          </Card>
       </>
     )}
     </RegularPage>

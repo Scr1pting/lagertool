@@ -11,7 +11,7 @@ from itertools import batched
 from wordnet import noun_meanings
 
 
-MODEL_PATH = "BAAI/bge-large-en-v1.5"
+MODEL_PATH = "mixedbread-ai/mxbai-embed-large-v1"
 EMB_PATH = Path(".cache/wordnet_embeddings.pt")
 
 
@@ -23,10 +23,11 @@ def _detect_device() -> str:
     return "cpu"
 
 model = SentenceTransformer(MODEL_PATH, device=_detect_device())
+p = inflect.engine()
 
 
 @lru_cache(maxsize=1)
-def get_wordnet_embeddings(batch_size: int = 32) -> tuple[tuple[str, ...], np.ndarray]:
+def get_wordnet_embeddings(batch_size: int = 32) -> np.ndarray:
     """Return cached WordNet noun embeddings, generating them if needed."""
     if EMB_PATH.exists():
         cached = torch.load(EMB_PATH, map_location="cpu")
@@ -57,32 +58,63 @@ def get_wordnet_embeddings(batch_size: int = 32) -> tuple[tuple[str, ...], np.nd
     return stacked.numpy()
 
 
-# TODO: embed both just the word and the word plus some context
-def find_closest_lemma(term: str, top_k: int = 1) -> list[tuple[str, float]]:
-    """Return the closest WordNet lemmas to the provided term."""
-    lemmas = noun_meanings()
+def get_item_names_embeddings(item_names: list[str]):  
+    queries: list[str] = []
 
-    # Singularize and lowercase term
-    p = inflect.engine()
-    term = p.singular_noun(term) or term  # TODO: do on each word separately
-    term
+    def _convert_words(name: str, fn) -> str:
+        """Apply `fn` to each whitespace-separated token in `name`, falling back to
+        the original token when `fn` returns falsy (e.g. None)."""
+        parts = name.split()
+        if not parts:
+            return name
+        return " ".join((fn(w) or w) for w in parts)
 
-    # Generate embeddings for term and WordNet
-    embeddings = get_wordnet_embeddings()
-    query = model.encode(
-        term,
+    for name in item_names:
+        term_singular = _convert_words(name, p.singular_noun)
+        term_plural = _convert_words(name, p.plural_noun)
+
+        print(term_singular)
+        print(term_plural)
+
+        queries.append(name)
+        queries.append(f"The university supplied us with {term_singular} for the event.")
+        queries.append(f"We took {p.a(term_singular)} {term_singular} from the shelf.")
+        queries.append(f"The {p.a(term_singular)} {term_singular} from the shelf.")
+        queries.append(
+            f"I bought {p.a(term_singular)} {term_singular}."
+        )
+
+    return model.encode(
+        queries,
         normalize_embeddings=True,
         convert_to_numpy=True,
     )
 
-    # Find closest WordNet match
-    scores = embeddings @ query  # = cos similarity (both are normalized)
-    k = min(top_k, len(scores))
-    top_indices = np.argpartition(scores, -k)[-k:]
-    sorted_indices = top_indices[np.argsort(scores[top_indices])[::-1]]
 
-    return [(lemmas[idx], float(scores[idx])) for idx in sorted_indices]
+def find_closest_lemma(item_names: list[str], top_k: int = 10) -> list[tuple[str, float]]:
+    """Return the closest WordNet lemmas to the provided term."""
+    lemmas = noun_meanings()
+    
+    # Generate embeddings for term and WordNet
+    wordnet_embeddings = get_wordnet_embeddings()
+    item_embeddings = get_item_names_embeddings(item_names)
+
+    # Find closest WordNet match
+    # = cos similarity (both are normalized)
+    # Compute cosine similarity matrix: (N x M)
+    cos_sim_matrix = wordnet_embeddings @ item_embeddings.T
+
+    # Average similarity for each WordNet vector across all inventory items
+    mean_similarities = cos_sim_matrix.mean(axis=1)
+
+    # Get the index of the most similar WordNet word
+    best_idx = np.argmax(mean_similarities)
+
+    k = min(top_k, len(mean_similarities))
+    top_indices = np.argpartition(mean_similarities, -k)[-k:]
+
+    return [(lemmas[idx], float(mean_similarities[idx])) for idx in top_indices]
 
 
 if __name__ == "__main__":
-    print(find_closest_lemma("Coke"))
+    print(find_closest_lemma(["Sprite", "El Tony Mate"]))

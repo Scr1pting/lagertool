@@ -12,7 +12,7 @@ function RegularPage({ title, description = undefined, children }: RegularPagePr
     <main className={cn("mx-auto w-full max-w-[850px] px-5 py-15")}>
       <header className="flex flex-col pb-4 gap-2">
         <h1 className="text-3xl font-semibold">{title}</h1>
-        {description !== undefined && <p className="pb-2 text-neutral-400">{description}</p>}
+        {description !== undefined && description}
       </header>
 
       {children}

@@ -6,3 +6,5 @@ torch
 nltk
 numpy
 inflect
+requests
+beautifulsoup4
