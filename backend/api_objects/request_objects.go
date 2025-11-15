@@ -35,3 +35,11 @@ type CartRequest struct {
 	InvItemID   int `json:"id" binding:"required"`
 	NumSelected int `json:"numSelected" binding:"required"`
 }
+
+type InventoryItemRequest struct {
+	Name         string `json:"name" binding:"required"`
+	Amount       int    `json:"amount" binding:"required"`
+	ShelfUnitID  string `json:"shelfUnitId" binding:"required"`
+	IsConsumable bool   `json:"isConsumable" binding:"required"`
+	Note         string `json:"note" binding:"required"`
+}

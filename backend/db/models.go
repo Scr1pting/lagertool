@@ -148,6 +148,7 @@ type Inventory struct {
 	ShelfUnitID string    `json:"shelf_unit_id" pg:"shelf_unit_id"`
 	Amount      int       `json:"amount" pg:"amount"`
 	UpdateDate  time.Time `json:"update_date" pg:"update_date"`
+	Note        string    `json:"note" pg:"note"`
 
 	Item         *Item          `json:"item" pg:"rel:has-one,fk:item_id"`
 	ShelfUnit    *ShelfUnit     `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`

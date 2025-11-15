@@ -99,3 +99,30 @@ func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*Shop
 	}
 	return shoppingCartItem, nil
 }
+
+func CreateInventoryItem(con *pg.DB, request api_objects.InventoryItemRequest) (*Inventory, error) {
+	item := &Item{}
+	err := con.Model(item).Where("name = ?", request.Name).Where("isConsumable = ?", request.IsConsumable).Select()
+	if errors.Is(err, pg.ErrNoRows) {
+		item.Name = request.Name
+		item.IsConsumable = request.IsConsumable
+		_, err = con.Model(item).Insert()
+		if err != nil {
+			return nil, err
+		}
+	} else if err != nil {
+		return nil, err
+	}
+	inv := &Inventory{
+		ItemID:      item.ID,
+		Amount:      request.Amount,
+		ShelfUnitID: request.ShelfUnitID,
+		UpdateDate:  time.Now(),
+		Note:        request.Note,
+	}
+	_, err = con.Model(inv).Insert()
+	if err != nil {
+		return nil, err
+	}
+	return inv, nil
+}
