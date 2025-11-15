@@ -29,4 +29,5 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.POST("/create_building", h.CreateBuilding)
 	r.POST("/create_room", h.CreateRoom)
 	r.POST("/create_shelf", h.CreateShelf)
+	r.POST("/add_item_to_cart", h.CreateCartItem)
 }

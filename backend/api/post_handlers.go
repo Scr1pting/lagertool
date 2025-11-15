@@ -51,3 +51,17 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, newShelf)
 }
+
+func (h *Handler) CreateCartItem(c *gin.Context) {
+	var req api_objects.CartRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	newCart, err := db.CreateCartItem(h.DB, req.InvItemID, req.NumSelected, 1) //TODO: user id is currently a dummy
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, newCart)
+}

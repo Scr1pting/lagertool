@@ -30,3 +30,8 @@ type ShelfRequest struct {
 	Columns    []ColumnElementRequest `json:"columns" binding:"required"`
 	OwnedBy    int                    `json:"ownedBy" binding:"required"`
 }
+
+type CartRequest struct {
+	InvItemID   int `json:"id" binding:"required"`
+	NumSelected int `json:"numSelected" binding:"required"`
+}

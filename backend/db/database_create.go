@@ -73,3 +73,22 @@ func CreateShelf(con *pg.DB, request api_objects.ShelfRequest) (*Shelf, error) {
 	}
 	return shelf, nil
 }
+
+func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*ShoppingCartItem, error) {
+	user := &ShoppingCartItem{}
+	err := con.Model(user).Where("id = ?", userID).Select()
+	if err != nil {
+		return nil, err
+	}
+
+	shoppingCartItem := &ShoppingCartItem{
+		Amount:         num_selected,
+		InventoryID:    itemID,
+		ShoppingCartID: user.ShoppingCartID,
+	}
+	_, err = con.Model(shoppingCartItem).Insert()
+	if err != nil {
+		return nil, err
+	}
+	return shoppingCartItem, nil
+}
