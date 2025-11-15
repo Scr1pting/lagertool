@@ -1,8 +1,8 @@
 import type { InventoryItemFull } from "@/types/inventory";
-import useApi from "./useApi";
+import useFetch from "./useFetch";
 
 function useFetchItem() {
-  return useApi<InventoryItemFull>('/itemFull.sample.json')
+  return useFetch<InventoryItemFull>('/itemFull.sample.json')
 }
 
 export default useFetchItem;

@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
 import get from '@/api/get';
+import type { ApiState } from '@/types/apiState';
 
-type ApiState<T> =
-  | { status: "idle"; data: T | null; error: null }
-  | { status: "loading"; data: T | null; error: null }
-  | { status: "success"; data: T; error: null }
-  | { status: "error"; data: T | null; error: Error };
 
-function useApi<T>(url: string) {
+function useFetch<T>(url: string) {
   const [state, setState] = useState<ApiState<T>>({
     status: "idle",
     data: null,
@@ -32,4 +28,4 @@ function useApi<T>(url: string) {
   return state;
 }
 
-export default useApi;
+export default useFetch;

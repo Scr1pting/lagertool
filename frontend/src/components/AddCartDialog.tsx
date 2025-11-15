@@ -18,7 +18,7 @@ import { Separator } from "@/components/shadcn/separator"
 import { useDate } from "@/store/useDate"
 import { format } from "date-fns"
 import { Textarea } from "@/components/shadcn/textarea"
-import { Field, FieldDescription } from "@/components/shadcn/field"
+import { Field, FieldDescription, FieldError } from "@/components/shadcn/field"
 import { useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
@@ -165,9 +165,7 @@ function CheckoutAddInfo({ title, setTitle, description, setDescription, onBack,
             name="title"
             type="text"
             value={title}
-            onChange={(event) => {
-              setTitle(event.target.value);
-            }}
+            onChange={(e) => { setTitle(e.target.value) }}
           />
         </Field>
 
@@ -177,9 +175,7 @@ function CheckoutAddInfo({ title, setTitle, description, setDescription, onBack,
             id="description"
             name="description"
             value={description}
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
+            onChange={(e) => { setDescription(e.target.value) }}
           />
         </Field>
 
@@ -242,13 +238,13 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
 
   return(
     <>
-      <DialogHeader>
-        <DialogTitle>{item.name}</DialogTitle>
-        <DialogDescription>
-          {item.available} Available.
-        </DialogDescription>
-      </DialogHeader>
       <form onSubmit={handleSubmit} className="grid gap-5">
+        <DialogHeader>
+          <DialogTitle>{item.name}</DialogTitle>
+          <DialogDescription>
+            {item.available} Available.
+          </DialogDescription>
+        </DialogHeader>
         <Field>
           <Label htmlFor="num-selected">Amount</Label>
           <Input
@@ -259,32 +255,32 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
             max={item.available}
             aria-invalid={exceedsAvailable}
             value={numSelected}
-            onChange={(event) => {
-              setNumSelected(Number.parseInt(event.target.value, 10));
-            }}
+            onChange={(e) => { setNumSelected(Number.parseInt(e.target.value, 10)) }}
           />
           {exceedsAvailable && (
-            <FieldDescription className="text-destructive" role="alert">
+            <FieldError className="text-destructive" role="alert">
               Only {item.available} available.
-            </FieldDescription>
+            </FieldError>
           )}
         </Field>
         <DialogFooter>
-          <Button
-            disabled={isInvalidQuantity}
-            type="button"
-            onClick={onProceed}
-            variant="outline"
-          >
-            Instant Checkout
-          </Button>
+          <Field orientation="horizontal" className="justify-end">
+            <Button
+              disabled={isInvalidQuantity}
+              type="button"
+              onClick={onProceed}
+              variant="outline"
+            >
+              Instant Checkout
+            </Button>
 
-          <Button
-            disabled={isInvalidQuantity}
-            type="submit"
-          >
-            Add to Cart
-          </Button>
+            <Button
+              disabled={isInvalidQuantity}
+              type="submit"
+            >
+              Add to Cart
+            </Button>
+          </Field>
         </DialogFooter>
       </form>
     </>

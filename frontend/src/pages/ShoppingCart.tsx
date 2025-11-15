@@ -1,7 +1,7 @@
 import cartColumns from "@/components/DataTable/cartColumns";
 import DataTable from "@/components/DataTable/DataTable";
 import RegularPage from "@/components/RegularPage";
-import SelectedRangeDesc from "@/components/SelectedRangeDesc";
+import AvailabilityDescription from "@/components/AvailabilityDescription";
 import { Button } from "@/components/shadcn/button";
 import { ButtonGroup } from "@/components/shadcn/button-group";
 import { useCart } from "@/store/useCart";
@@ -14,7 +14,7 @@ function ShoppingCart() {
   return (
     <RegularPage
       title="Cart"
-      description={<SelectedRangeDesc range={selectedRange} />}
+      description={<AvailabilityDescription range={selectedRange} />}
     >
       <DataTable data={cart ?? []} columns={cartColumns} />
 

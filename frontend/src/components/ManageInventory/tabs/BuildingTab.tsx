@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { ManageInventoryElement } from "../types/ManageInventoryElement"
+import type { ManageInventoryElement } from "../../primitives/types/FormElement"
 import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
 import DataTable from "@/components/DataTable/DataTable"

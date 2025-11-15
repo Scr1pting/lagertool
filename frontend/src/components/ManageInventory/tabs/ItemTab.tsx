@@ -5,11 +5,12 @@ import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
 import type { Shelf } from "@/types/shelf"
 import { useState } from "react"
-import type { ManageInventoryElement } from "../types/ManageInventoryElement"
+import type { ManageInventoryElement } from "../../primitives/types/FormElement"
 import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
 import { inventoryColumns } from "@/components/DataTable/ManageInventory/InventoryColumns"
 import ManageInventoryCard from "../ManageInventoryCard"
+import AvailabilityDescription from "@/components/AvailabilityDescription"
 
 
 interface ItemTabProps {
@@ -102,12 +103,15 @@ function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
   return (
     <TabsContent value="items">
       <div className="space-y-10">
-        <ManageInventoryCard title="Add Building" elements={elements} />
+        <ManageInventoryCard title="Add Item" elements={elements} />
         
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">
             Recently Added
           </h2>
+
+          <AvailabilityDescription />
+
           <DataTable
             data={inventory}
             columns={inventoryColumns}

@@ -1,13 +1,13 @@
 import { Button } from "../shadcn/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../shadcn/card"
-import { Label } from "../shadcn/label"
-import type { ManageInventoryElement } from "./types/ManageInventoryElement"
+import type { FormElement } from "../primitives/types/FormElement"
+import FormLayout from "../primitives/FormLayout"
 
 
 
 interface ManageInventoryCardProps {
   title: string
-  elements: ManageInventoryElement[]
+  elements: FormElement[]
 }
 
 function ManageInventoryCard({ title, elements }: ManageInventoryCardProps) {
@@ -17,13 +17,8 @@ function ManageInventoryCard({ title, elements }: ManageInventoryCardProps) {
         <CardTitle className="capitalize">{title}</CardTitle>
       </CardHeader>
 
-      <CardContent className={`grid gap-4 sm:grid-cols-2`}>
-        {elements.map((element) =>
-          <div key={element.id} className={`grid gap-2 ${element.size === 'full' ? 'sm:col-span-2' : ''}`}>
-            <Label htmlFor={element.id}>{element.label}</Label>
-            {element.input}
-          </div>
-        )}
+      <CardContent>
+        <FormLayout elements={elements} />
       </CardContent>
       <CardFooter className="flex justify-end">
         <Button type="button">Save</Button>

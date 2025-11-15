@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-export interface ManageInventoryElement {
+export interface FormElement {
   size: "full" | "half"
   label: string
   id: string

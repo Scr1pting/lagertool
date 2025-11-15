@@ -2,9 +2,8 @@
   {
     "id": "29EWG",
     "name": "Library Shelf",
-    "buildingName": "CAB",
-    "roomName": "Office",
-    "numItems": 0,
+    "buildingId": 10,
+    "roomId": 15,
     "columns": [
       {
         "id": "column-J19BL",
@@ -12,13 +11,11 @@
         "elements": [
           {
             "id": "36S2P",
-            "type": "slim",
-            "numItems": 0
+            "type": "slim"
           },
           {
             "id": "T1LKF",
-            "type": "high",
-            "numItems": 0
+            "type": "high"
           }
         ]
       }
@@ -27,40 +24,33 @@
   {
     "id": "28L6H",
     "name": "jlökjasf",
-    "buildingName": "CAB",
-    "roomName": "kajlökj",
-    "numItems": 0,
+    "buildingId": 5,
+    "roomId": 3,
     "columns": [
       {
         "id": "column-3DFDN",
-        "numItems": 0,
         "elements": [
           {
             "id": "TXLO6",
-            "type": "high",
-            "numItems": 0
+            "type": "high"
           }
         ]
       },
       {
         "id": "column-QAXLL",
-        "numItems": 0,
         "elements": [
           {
             "id": "0064C",
-            "type": "high",
-            "numItems": 0
+            "type": "high"
           }
         ]
       },
       {
         "id": "column-N7WGB",
-        "numItems": 0,
         "elements": [
           {
             "id": "BWY8S",
-            "type": "slim",
-            "numItems": 0
+            "type": "slim"
           }
         ]
       }

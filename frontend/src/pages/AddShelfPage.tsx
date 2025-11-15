@@ -1,4 +1,4 @@
-import AddShelfActionBar from "@/components/Shelves/builder/AddShelfActionBar";
+import AddShelfActionBar from "@/components/Shelves/builder/AddShelfButtons";
 import ShelfBuilder from "@/components/Shelves/builder/ShelfBuilder";
 import type { ShelfColumn } from "@/types/shelf";
 import { useState } from "react";

@@ -4,7 +4,7 @@ import { Button } from "@/components/shadcn/button"
 import { Card, CardContent } from "@/components/shadcn/card"
 import { Separator } from "@/components/shadcn/separator"
 import StaticShelf from "@/components/Shelves/viewer/StaticShelf"
-import useFetchItem from "@/hooks/useFetchItem"
+import useFetchItem from "@/hooks/fetch/useFetchItem"
 import { PencilIcon, ShoppingCartIcon } from "lucide-react"
 
 

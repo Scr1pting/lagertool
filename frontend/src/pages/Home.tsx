@@ -5,7 +5,7 @@ import StaticShelf from "@/components/Shelves/viewer/StaticShelf";
 
 import styles from './Home.module.css';
 import Carousel from "@/components/Carousel/Carousel";
-import useFetchShelves from "@/hooks/useFetchShelves";
+import useFetchShelves from "@/hooks/fetch/useFetchShelves";
 
 
 function Home() {

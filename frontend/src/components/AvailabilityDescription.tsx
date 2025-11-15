@@ -1,7 +1,7 @@
 import { format } from "date-fns/format";
 import type { DateRange } from "react-day-picker";
 
-function SelectedRangeDesc({ range }: {range: DateRange | undefined}) {
+function AvailabilityDescription({ range }: {range: DateRange | undefined}) {
   let formattedDate = "";
 
   if (!range?.from) {
@@ -23,4 +23,4 @@ function SelectedRangeDesc({ range }: {range: DateRange | undefined}) {
   );
 };
 
-export default SelectedRangeDesc;
+export default AvailabilityDescription;

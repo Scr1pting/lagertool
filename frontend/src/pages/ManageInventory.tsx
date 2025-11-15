@@ -4,10 +4,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/shadcn/tabs"
-import useBuilding from "@/hooks/useFetchBuildings"
-import useFetchRooms from "@/hooks/useFetchRooms"
-import useInventory from "@/hooks/useFetchInventory"
-import useFetchShelvesMeta from "@/hooks/useFetchShelvesMeta"
+import useBuilding from "@/hooks/fetch/useFetchBuildings"
+import useFetchRooms from "@/hooks/fetch/useFetchRooms"
+import useInventory from "@/hooks/fetch/useFetchInventory"
+import useFetchShelvesMeta from "@/hooks/fetch/useFetchShelvesMeta"
 import ItemTab from "@/components/ManageInventory/tabs/ItemTab"
 import ShelfTab from "@/components/ManageInventory/tabs/ShelfTab"
 import RoomTab from "@/components/ManageInventory/tabs/RoomTab"

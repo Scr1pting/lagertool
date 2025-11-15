@@ -1,8 +1,8 @@
-import useApi from "./useApi";
+import useFetch from "./useFetch";
 import { type Org } from "@/types/org";
 
 function useFetchOrgs() {
-  return useApi<Org[]>('/orgs.sample.json')
+  return useFetch<Org[]>('/orgs.sample.json')
 }
 
 export default useFetchOrgs;
