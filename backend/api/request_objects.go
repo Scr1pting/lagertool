@@ -1,7 +1,7 @@
 package api
 
 type BuildingRequest struct {
-	Name   string `json:"name"`
+	Name   string `json:"name" binding:"required"`
 	Campus string `json:"campus"`
 }
 

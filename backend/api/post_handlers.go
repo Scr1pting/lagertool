@@ -14,20 +14,25 @@ func (h *Handler) CreateBuilding(c *gin.Context) {
 		return
 	}
 
-	if err := db.CreateBuilding(h.DB, req.Name, req.Campus); err != nil {
+	newBuilding, err := db.CreateBuilding(h.DB, req.Name, req.Campus)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"building": req})
+	c.JSON(http.StatusCreated, newBuilding)
 }
 
 func (h *Handler) CreateRoom(c *gin.Context) {
 	var req RoomRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	if err := db.CreateRoom(h.DB, req.Name, req.Floor, req.Number, req.Building); err != nil {
+	newRoom, err := db.CreateRoom(h.DB, req.Name, req.Floor, req.Number, req.Building)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"building": req})
+	c.JSON(http.StatusCreated, newRoom)
 }
