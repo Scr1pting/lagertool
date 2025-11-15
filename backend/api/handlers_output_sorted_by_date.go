@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) GetRoomsS(c *gin.Context) {
 	var dbRes []db.Room
-	err := h.DB.Model(&dbRes).Relation("Building").Order("update_date desc").Select()
+	err := h.DB.Model(&dbRes).Column("room.*").Relation("Building").Order("update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

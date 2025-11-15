@@ -17,9 +17,9 @@ func CreateBuilding(con *pg.DB, name string, campus string) (*Building, error) {
 	return building, err
 }
 
-func CreateRoom(con *pg.DB, name string, floor string, number string, building string) (*Room, error) {
-	buildingStruct := &Building{}
-	err := con.Model(buildingStruct).Where("name = ?", building).Select()
+func CreateRoom(con *pg.DB, name string, floor string, number string, buildingName string) (*Room, error) {
+	building := &Building{}
+	err := con.Model(building).Where("name = ?", buildingName).Select()
 	if err != nil {
 		return nil, err
 	}
@@ -27,9 +27,9 @@ func CreateRoom(con *pg.DB, name string, floor string, number string, building s
 		Name:       name,
 		Floor:      floor,
 		Number:     number,
-		BuildingID: buildingStruct.ID,
+		BuildingID: building.ID,
 		UpdateDate: time.Now(),
 	}
-	_, err = con.Model(&Room{}).Insert(room)
+	_, err = con.Model(room).Insert()
 	return room, err
 }
