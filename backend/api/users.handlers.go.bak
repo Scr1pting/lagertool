@@ -1,0 +1,41 @@
+
+import (
+	"log"
+	"time"
+
+	"lagertool.com/main/db"
+)
+
+// ---------------------------------------
+//				  HANDLERS
+// ---------------------------------------
+
+func (h *Handler) attemptLogin(claims Claims) error {
+	err := h.checkUser(claims.Subject)
+	if err == nil {
+		return err
+	}
+	err = h.addUser(claims)
+	return err
+}
+
+func (h *Handler) checkUser(subject string) error {
+	var user db.User
+	err := h.DB.Model(&user).Where("subject = ?", subject).Select()
+	return err
+}
+
+func (h *Handler) addUser(claims Claims) error {
+	user := &db.User{
+		Name:      claims.Name,
+		Email:     claims.Email,
+		Subject:   claims.Subject,
+		CreatedAt: time.Now(),
+		LastLogin: time.Now(),
+	}
+	_, err := h.DB.Model(user).Insert(user)
+	if err != nil {
+		log.Printf("ERROR: Failed to insert user: %v", err)
+	}
+	return err
+}
