@@ -18,7 +18,7 @@ import { Separator } from "@/components/shadcn/separator"
 import { useDate } from "@/store/useDate"
 import { format } from "date-fns"
 import { Textarea } from "@/components/shadcn/textarea"
-import { Field, FieldDescription, FieldError } from "@/components/shadcn/field"
+import { Field, FieldError } from "@/components/shadcn/field"
 import { useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 

@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 
 import StaticShelf from "@/components/Shelves/viewer/StaticShelf";
 
-import styles from './Home.module.css';
 import Carousel from "@/components/Carousel/Carousel";
 import useFetchShelves from "@/hooks/fetch/useFetchShelves";
 
@@ -59,17 +58,22 @@ function Home() {
     return <></>;
 
   const shelvesContent = shelves.map((shelf) => (
-    <div key={shelf.id} className={styles.content}>
+    <div
+      key={shelf.id}
+      className="flex flex-col items-center gap-[30px]"
+    >
       <StaticShelf
-          shelf={shelf}
-          onElementSelect={setSelectedElement}
-        />
-      <label className={styles.homeLabel}>{shelf.buildingName + " - " + shelf.roomName + " - " + shelf.name}</label>
+        shelf={shelf}
+        onElementSelect={setSelectedElement}
+      />
+      <label className="text-[#BBB] font-mono">
+        {shelf.buildingName + " - " + shelf.roomName + " - " + shelf.name}
+      </label>
     </div>
   ));
 
   return (
-    <main className={styles.home}>
+    <main className="flex justify-center items-center min-h-[calc(100vh-180px)] my-[100px] mx-0 mb-[80px]">
       <Carousel
         items={shelvesContent}
         ariaLabel="Shelf overview"

@@ -8,7 +8,7 @@ import type { ShelfColumn } from "@/types/shelf"
 import { useState } from "react"
 import type { FormElement } from "@/components/primitives/types/FormElement"
 import FormLayout from "@/components/primitives/FormLayout"
-import { Field, FieldGroup } from "@/components/shadcn/field"
+import { Field } from "@/components/shadcn/field"
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/shadcn/dialog"
 
 
