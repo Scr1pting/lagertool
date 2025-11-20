@@ -42,8 +42,8 @@ type User struct {
 	Email string `json:"email,omitempty"`
 }
 
-// Config holds authentication configuration
-type Config struct {
+// AuthConfig holds authentication configuration
+type AuthConfig struct {
 	ClientID      string
 	ClientSecret  string
 	RedirectURL   string
@@ -52,8 +52,9 @@ type Config struct {
 	RedisPassword string
 }
 
-// Init initializes the authentication package
-func Init(config Config) error {
+// InitAuth initializes the authentication package
+func InitAuth(config AuthConfig) error {
+	log.Println("Initializing authentication package...")
 	if config.ClientID == "" || config.ClientSecret == "" {
 		return fmt.Errorf("client ID and secret are required")
 	}
@@ -85,9 +86,9 @@ func Init(config Config) error {
 	return nil
 }
 
-// InitFromEnv initializes authentication from environment variables
-func InitFromEnv() error {
-	config := Config{
+// InitAuthFromEnv initializes authentication from environment variables
+func InitAuthFromEnv() error {
+	config := AuthConfig{
 		ClientID:      os.Getenv(clientIDEnv),
 		ClientSecret:  os.Getenv(clientSecretEnv),
 		RedirectURL:   "https://lagertool.ch/auth/callback",
@@ -96,7 +97,7 @@ func InitFromEnv() error {
 		RedisPassword: os.Getenv(redisPasswordEnv),
 	}
 
-	return Init(config)
+	return InitAuth(config)
 }
 
 func initRedis(addr, password string) error {
@@ -267,7 +268,7 @@ func storeUserData(user *User) error {
 	return nil
 }
 
-// Middleware to protect routes that require authentication
+// AuthMiddleware to protect routes that require authentication
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, err := c.Cookie(cookieName)

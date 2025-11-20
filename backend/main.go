@@ -61,6 +61,10 @@ func main() {
 	//	log.Printf("⚠️  Failed to insert test data: %v", err)
 	//}
 
+	err = api.InitAuthFromEnv()
+	if err != nil {
+		panic("Error during OAuth initialization : " + err.Error())
+	}
 	api.SetupRoutes(router, dbConnection, cfg)
 
 	// Swagger endpoint
