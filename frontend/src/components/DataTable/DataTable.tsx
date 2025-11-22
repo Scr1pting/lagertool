@@ -1,4 +1,5 @@
 import * as React from "react"
+import { cn } from "@/lib/utils"
 import { flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
 import type { ColumnDef, ColumnFiltersState, Row, SortingState } from "@tanstack/react-table"
 
@@ -11,16 +12,19 @@ import {
   TableRow,
 } from "@/components/shadcn/table"
 import { useNavigate } from "react-router-dom"
+import { ScrollArea } from "../shadcn/scroll-area"
 
 
-interface DataTableProps<TData>
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivElement> {
   data: TData[]
   columns: ColumnDef<TData>[]
   rowLink?: (row: Row<TData>) => string
+  className?: string
 }
 
-function DataTable<TData>({ data, columns, rowLink } : DataTableProps<TData>) {
+function DataTable<TData>({
+  data, columns, rowLink, className = ""
+} : DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -40,6 +44,7 @@ function DataTable<TData>({ data, columns, rowLink } : DataTableProps<TData>) {
       columnFilters,
     },
   })
+
 
   const rowElement = (row: Row<TData>) => {
     const destination = rowLink?.(row)
@@ -67,14 +72,14 @@ function DataTable<TData>({ data, columns, rowLink } : DataTableProps<TData>) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className={cn("rounded-lg border", className)}>
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 z-10 bg-neutral-900">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="bg-neutral-900 px-4">
+                  <TableHead key={header.id} className="px-4">
                     {header.isPlaceholder
                       ? null
                       : flexRender(

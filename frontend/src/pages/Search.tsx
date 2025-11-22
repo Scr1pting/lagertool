@@ -1,19 +1,18 @@
 import DataTable from "@/components/DataTable/DataTable";
-import { searchColumns } from "@/components/DataTable/InventoryTable/SearchColumns";
+import { searchColumns } from "@/components/DataTable/InventoryTable/searchColumns";
 import RegularPage from "@/components/RegularPage";
 import AvailabilityDescription from "@/components/AvailabilityDescription";
-import useInventory from "@/hooks/fetch/useFetchInventory";
 import { useDate } from "@/store/useDate";
+import useFetchInventory from "@/hooks/fetch/useFetchInventory";
 
 
 function Search() {
-  const { data: inventory } = useInventory();
-  const selectedRange = useDate((state) => state.selectedRange)
+  const { data: inventory } = useFetchInventory();
 
   return (
     <RegularPage
       title="Search Results"
-      description={<AvailabilityDescription range={selectedRange} />}
+      description={<AvailabilityDescription />}
     >
       <DataTable
         data={inventory ?? []}

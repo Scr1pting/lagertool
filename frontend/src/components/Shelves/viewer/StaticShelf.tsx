@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import { ELEMENT_CATALOG, type Shelf, type ShelfColumn } from "../../../types/shelf";
+import { ELEMENT_CATALOG, type SelectedShelfElement, type Shelf, type ShelfColumn } from "../../../types/shelf";
 import { ShelfElementViewInner } from "../shared/ShelfElementView";
 
 import styles from './StaticShelf.module.css';
@@ -9,7 +9,7 @@ import styles from './StaticShelf.module.css';
 interface StaticShelfColumnParams {
   column: ShelfColumn;
   shelf : Shelf;
-  onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void;
+  onElementSelect?: (params: SelectedShelfElement) => void;
   highlightedElement?: string;
 }
 
@@ -24,10 +24,10 @@ function StaticShelfColumn({ column, shelf, onElementSelect, highlightedElement 
             type="button"
             className={clsx(styles.elementTrigger, highlightedElement === element.id ? styles.highlightedElement : "")}
             onClick={() => onElementSelect?.({
-              elementId: element.id,
-              building: shelf.buildingName,
-              room: shelf.roomName,
-              shelf: shelf.name,
+              id: element.id,
+              buildingName: shelf.buildingName,
+              roomName: shelf.roomName,
+              shelfName: shelf.name,
             })}
           >
             <ShelfElementViewInner
@@ -39,7 +39,6 @@ function StaticShelfColumn({ column, shelf, onElementSelect, highlightedElement 
                 && (
                   <div className={styles.numItem}>{ element.numItems }</div>
               )}
-
               <div className={styles.idElement}>{ element.id }</div>
             </ShelfElementViewInner>
           </button>

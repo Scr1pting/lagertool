@@ -1,13 +1,13 @@
-import LabeledSelect from "@/components/LabeledSelect"
+import LabeledSelect from "@/components/primitives/LabeledSelect"
 import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
 import type { Room } from "@/types/room"
 import { useState } from "react"
-import type { ManageInventoryElement } from "../../primitives/types/FormElement"
+import type { FormElement } from "@/components/primitives/types/FormElement"
 import { TabsContent } from "@/components/shadcn/tabs"
 import DataTable from "@/components/DataTable/DataTable"
-import roomColumns from "@/components/DataTable/ManageInventory/RoomColumns"
 import ManageInventoryCard from "../ManageInventoryCard"
+import roomColumns from "@/components/DataTable/ManageInventory/roomColumns"
 
 
 interface RoomTabProps {
@@ -19,7 +19,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
   const [name, setName] = useState<string>("")
   const [buildingId, setBuildingId] = useState<string | undefined>()
 
-  const elements: ManageInventoryElement[] = [
+  const elements: FormElement[] = [
     {
       size: "half",
       id: "room-floor",

@@ -23,10 +23,11 @@ interface ComboboxProps<T, D> {
   selectedId: T | null
   setSelectedId: Dispatch<SetStateAction<T | null>>
   placeholder: string
+  disabled?: boolean
 }
 
 export function Combobox<T extends string | number, D extends { id: T, name: string }>(
-  { options, selectedId, setSelectedId, placeholder }: ComboboxProps<T, D>
+  { options, selectedId, setSelectedId, placeholder, disabled = false }: ComboboxProps<T, D>
 ) {
   const [open, setOpen] = useState(false)
 
@@ -38,6 +39,7 @@ export function Combobox<T extends string | number, D extends { id: T, name: str
           role="combobox"
           aria-expanded={open}
           className="w-[200px] justify-between"
+          disabled={disabled}
         >
           {selectedId && options
             ? options.find((option) => option.id === selectedId)?.name

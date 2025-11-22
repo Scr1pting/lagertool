@@ -12,6 +12,13 @@ export interface ShelfElement {
   numItems?: number;
 }
 
+export interface SelectedShelfElement {
+  id: string
+  buildingName: string
+  roomName: string
+  shelfName: string
+}
+
 export interface ShelfColumn {
   id: string;
   elements: ShelfElement[];

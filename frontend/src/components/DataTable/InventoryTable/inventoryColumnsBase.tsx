@@ -1,20 +1,20 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import DataTableColumnHeader from "../SortableHeader"
 import type { InventoryItem } from "@/types/inventory"
+import SortableHeader from "../SortableHeader"
 
 
 export const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+      <SortableHeader column={column} title="Name" />
     ),
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
     accessorKey: "location",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Location" />
+      <SortableHeader column={column} title="Location" />
     ),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {

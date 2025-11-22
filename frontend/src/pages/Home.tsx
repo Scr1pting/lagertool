@@ -5,12 +5,17 @@ import StaticShelf from "@/components/Shelves/viewer/StaticShelf";
 
 import Carousel from "@/components/Carousel/Carousel";
 import useFetchShelves from "@/hooks/fetch/useFetchShelves";
+import { Dialog } from "@/components/shadcn/dialog";
+import ShelfElementDialog from "@/components/ShelfElementDialog";
+import type { SelectedShelfElement, ShelfElement } from "@/types/shelf";
 
 
 function Home() {
   const { status, data: shelves, error } = useFetchShelves();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
+  const [selectedElement, setSelectedElement] = useState<SelectedShelfElement | null>(null);
+
+
   const shelfParam = searchParams.get("shelf");
 
   const resolvedIndex = useMemo(() => {
@@ -80,6 +85,12 @@ function Home() {
         initialIndex={resolvedIndex}
         onIndexChange={handleIndexChange}
       />
+
+      <Dialog open={selectedElement != null} onOpenChange={() => setSelectedElement(null)}>
+        {selectedElement &&
+          <ShelfElementDialog shelfElement={selectedElement} />
+        }
+      </Dialog>
     </main>
   );
 }

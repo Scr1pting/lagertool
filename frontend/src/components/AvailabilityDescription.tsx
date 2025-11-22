@@ -1,7 +1,9 @@
+import { useDate } from "@/store/useDate";
 import { format } from "date-fns/format";
-import type { DateRange } from "react-day-picker";
 
-function AvailabilityDescription({ range }: {range: DateRange | undefined}) {
+function AvailabilityDescription() {
+  const range = useDate((state) => state.selectedRange)
+
   let formattedDate = "";
 
   if (!range?.from) {
@@ -17,7 +19,7 @@ function AvailabilityDescription({ range }: {range: DateRange | undefined}) {
   }
 
   return (
-    <div className="text-base text-gray-300">
+    <div className="text-base text-[#BBB]">
       Availability for <b>{formattedDate}</b>.
     </div>
   );

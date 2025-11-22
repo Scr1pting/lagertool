@@ -50,20 +50,17 @@ function MiniCart({ trigger }: MiniCartProps) {
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle className="text-lg font-semibold">Cart</SheetTitle>
-          <SheetDescription>
-            Review your selected items or continue to the cart for checkout.
-          </SheetDescription>
+          <SheetTitle className="text-2xl font-semibold mt-1.5">Cart</SheetTitle>
         </SheetHeader>
-        <div className="flex-1 px-4">
+        <div className="px-4">
           {cartItems.length ? (
-            <div className="max-h-64 overflow-y-auto text-sm">
-              <DataTable data={cartItems} columns={columns} />
-            </div>
+            <DataTable data={cartItems} columns={columns} />
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Your cart is empty. Add items from the inventory to see them here.
-            </p>
+            <div className="flex justify-center">
+              <p className="text-sm text-[#BBB]">
+                Your cart is empty.
+              </p>
+            </div>
           )}
         </div>
         <SheetFooter>

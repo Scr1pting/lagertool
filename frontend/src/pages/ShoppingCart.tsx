@@ -5,16 +5,15 @@ import AvailabilityDescription from "@/components/AvailabilityDescription";
 import { Button } from "@/components/shadcn/button";
 import { ButtonGroup } from "@/components/shadcn/button-group";
 import { useCart } from "@/store/useCart";
-import { useDate } from "@/store/useDate";
+
 
 function ShoppingCart() {
   const cart = useCart((state) => state.cartItems);
-  const selectedRange = useDate((state) => state.selectedRange)
 
   return (
     <RegularPage
       title="Cart"
-      description={<AvailabilityDescription range={selectedRange} />}
+      description={<AvailabilityDescription />}
     >
       <DataTable data={cart ?? []} columns={cartColumns} />
 

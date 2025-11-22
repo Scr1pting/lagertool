@@ -1,16 +1,16 @@
-import LabeledSelect from "@/components/LabeledSelect"
 import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
 import type { Shelf } from "@/types/shelf"
 import { useState } from "react"
-import type { ManageInventoryElement } from "../../primitives/types/FormElement"
+import type { FormElement } from "../../primitives/types/FormElement"
 import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
-import { inventoryColumns } from "@/components/DataTable/ManageInventory/InventoryColumns"
 import ManageInventoryCard from "../ManageInventoryCard"
 import AvailabilityDescription from "@/components/AvailabilityDescription"
+import LabeledSelect from "@/components/primitives/LabeledSelect"
+import { inventoryColumns } from "@/components/DataTable/ManageInventory/inventoryColumns"
 
 
 interface ItemTabProps {
@@ -29,7 +29,7 @@ function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
   const [shelfId, setShelfId] = useState<string | undefined>()
   const [shelfElementId, setShelfElementId] = useState<string | undefined>()
 
-  const elements: ManageInventoryElement[] = [
+  const elements: FormElement[] = [
     {
       size: "full",
       id: "item-name",
@@ -106,11 +106,13 @@ function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
         <ManageInventoryCard title="Add Item" elements={elements} />
         
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">
-            Recently Added
-          </h2>
+          <header>
+            <h2 className="text-xl font-semibold">
+              Recently Added
+            </h2>
 
-          <AvailabilityDescription />
+            <AvailabilityDescription />
+          </header>
 
           <DataTable
             data={inventory}

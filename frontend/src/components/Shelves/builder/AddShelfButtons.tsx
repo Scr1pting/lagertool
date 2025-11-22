@@ -3,9 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/shadcn/button";
 import { type ShelfColumn } from '../../../types/shelf';
 import { X } from 'lucide-react';
-import AddShelfDialog from './AddShelfForm';
-import { Dialog, DialogContent, DialogHeader } from '@/components/shadcn/dialog';
-import { DialogTitle, DialogTrigger } from '@radix-ui/react-dialog';
+import { Dialog } from '@/components/shadcn/dialog';
+import { DialogTrigger } from '@radix-ui/react-dialog';
 import AddShelfForm from './AddShelfForm';
 
 

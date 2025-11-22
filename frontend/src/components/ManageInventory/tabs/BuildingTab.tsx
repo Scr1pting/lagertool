@@ -1,11 +1,11 @@
 import { useState } from "react"
-import type { ManageInventoryElement } from "../../primitives/types/FormElement"
+import type { FormElement } from "../../primitives/types/FormElement"
 import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
 import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
-import buildingColumns from "@/components/DataTable/ManageInventory/BuildingColumns"
 import ManageInventoryCard from "../ManageInventoryCard"
+import buildingColumns from "@/components/DataTable/ManageInventory/buildingColumns"
 
 
 interface BuildingTabProps {
@@ -15,7 +15,7 @@ interface BuildingTabProps {
 function BuildingTab({ buildings }: BuildingTabProps) {
   const [name, setName] = useState<string>("")
 
-  const elements: ManageInventoryElement[] = [
+  const elements: FormElement[] = [
     {
       size: "full",
       id: "building-name",
