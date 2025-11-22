@@ -74,12 +74,16 @@ function DataTable<TData>({
   return (
     <div className={cn("rounded-lg border", className)}>
       <Table>
-        <TableHeader className="sticky top-0 z-10 bg-neutral-900">
+        { /*
+        For the sticky header to work, you have to remove the div that
+        wraps the Table component in components/shadcn/table.tsx.
+        */ }
+        <TableHeader className="sticky top-0 z-10">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="px-4">
+                  <TableHead key={header.id} className="px-4 bg-neutral-900">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
