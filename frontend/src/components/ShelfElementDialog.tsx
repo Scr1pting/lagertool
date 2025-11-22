@@ -29,7 +29,7 @@ function ShelfElementDialog({
         data={inventory ?? []}
         columns={inventoryShelfColumns}
         rowLink={(row) => `/item?id=${row.id}`}
-        className="max-h-[60vh] overflow-y-auto"
+        className="h-[60vh] max-h-[850px] overflow-y-auto"
       />
     </section>
   </DialogContent>
