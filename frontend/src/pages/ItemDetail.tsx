@@ -1,4 +1,4 @@
-import AddCartDialog from "@/components/AddCartDialog"
+import AddCartDialog from "@/components/AddCartDialog/AddCartDialog"
 import RegularPage from "@/components/RegularPage"
 import { Button } from "@/components/shadcn/button"
 import { Card, CardContent } from "@/components/shadcn/card"

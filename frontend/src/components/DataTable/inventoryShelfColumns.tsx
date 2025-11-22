@@ -1,9 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import type { InventoryItem } from "@/types/inventory"
 import SortableHeader from "./SortableHeader"
-import AddCartDialog from "../AddCartDialog"
 import { Button } from "../shadcn/button"
 import { ShoppingCartIcon } from "lucide-react"
+import AddCartDialog from "../AddCartDialog/AddCartDialog"
 
 
 export const inventoryShelfColumns: ColumnDef<InventoryItem>[] = [
