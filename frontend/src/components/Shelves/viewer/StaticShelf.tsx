@@ -51,7 +51,7 @@ function StaticShelfColumn({ column, shelf, onElementSelect, highlightedElement 
 
 interface StaticShelfParams {
   shelf : Shelf;
-  onElementSelect?: (params: { elementId: string; building: string; room: string; shelf: string }) => void;
+  onElementSelect?: (element: SelectedShelfElement) => void;
   highlightedElement?: string;
 }
 
