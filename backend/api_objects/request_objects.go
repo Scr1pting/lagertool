@@ -28,7 +28,7 @@ type ShelfRequest struct {
 	BuildingID int                    `json:"buildingId" binding:"required"`
 	RoomID     int                    `json:"roomId" binding:"required"`
 	Columns    []ColumnElementRequest `json:"columns" binding:"required"`
-	OwnedBy    int                    `json:"ownedBy" binding:"required"`
+	OwnedBy    string                 `json:"ownedBy" binding:"required"`
 }
 
 type CartRequest struct {
@@ -42,4 +42,5 @@ type InventoryItemRequest struct {
 	ShelfUnitID  string `json:"shelfUnitId" binding:"required"`
 	IsConsumable bool   `json:"isConsumable" binding:"required"`
 	Note         string `json:"note" binding:"required"`
+	Organisation string `json:"organisation"`
 }

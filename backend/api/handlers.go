@@ -28,6 +28,11 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 // @Success 200 {array} api_objects.Shelves
 // @Router /shelves [get]
 func (h *Handler) GetShelves(c *gin.Context) {
+	organisation := c.Query("organisation")
+	if organisation == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No organisation"})
+		return
+	}
 	var res []api_objects.Shelves
 	var dbRes []db.Shelf
 	err := h.DB.Model(&dbRes).Select()
@@ -37,7 +42,7 @@ func (h *Handler) GetShelves(c *gin.Context) {
 	}
 
 	for _, shelf := range dbRes {
-		shelfObj, err2 := h.GetShelfHelper(shelf.ID)
+		shelfObj, err2 := h.GetShelfHelper(shelf.ID, organisation)
 		if err2 != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err2.Error()})
 			return
@@ -57,17 +62,22 @@ func (h *Handler) GetShelves(c *gin.Context) {
 // @Success 200 {object} api_objects.InventoryItemWithShelf
 // @Router /item/{id}/{start}/{end} [get]
 func (h *Handler) GetItem(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id")) //the id should be the id of the inventory entry
+	organisation := c.Query("organisation")
+	if organisation == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No organisation"})
+		return
+	}
+	id, err := strconv.Atoi(c.Query("id")) //the id should be the id of the inventory entry
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	start, err := time.Parse("2006-01-02", c.Param("start"))
+	start, err := time.Parse("2006-01-02", c.Query("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	end, err := time.Parse("2006-01-02", c.Param("end"))
+	end, err := time.Parse("2006-01-02", c.Query("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -77,7 +87,7 @@ func (h *Handler) GetItem(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	shelf, err := h.GetShelfHelper(invItem.ShelfID)
+	shelf, err := h.GetShelfHelper(invItem.ShelfID, organisation)
 
 	res := api_objects.InventoryItemWithShelf{
 		invItem, shelf,
@@ -111,17 +121,17 @@ func (h *Handler) GetOrganisations(c *gin.Context) {
 // @Success 200 {object} map[string][]api_objects.CartItem
 // @Router /shopping_cart/{id}/{start}/{end} [get]
 func (h *Handler) GetShoppingCart(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id")) //the id should be the id of the inventory entry
+	id, err := strconv.Atoi(c.Query("userID")) //the id should be the id of the inventory entry
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	start, err := time.Parse("2006-01-02", c.Param("start"))
+	start, err := time.Parse("2006-01-02", c.Query("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	end, err := time.Parse("2006-01-02", c.Param("end"))
+	end, err := time.Parse("2006-01-02", c.Query("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

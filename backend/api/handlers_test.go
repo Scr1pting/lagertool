@@ -482,7 +482,7 @@ func TestCreateShelf(t *testing.T) {
 	_, err := dbCon.Model(org).Insert()
 	assert.NoError(t, err)
 	defer func() {
-		_, err := dbCon.Model(org).Where("id = ?", org.ID).Delete()
+		_, err := dbCon.Model(org).Where("name = ?", org.Name).Delete()
 		assert.NoError(t, err)
 	}()
 
@@ -514,7 +514,7 @@ func TestCreateShelf(t *testing.T) {
                 "name": "Test Shelf",
                 "buildingId": ` + strconv.Itoa(building.ID) + `,
                 "roomId": ` + strconv.Itoa(room.ID) + `,
-                "ownedBy": ` + strconv.Itoa(org.ID) + `,
+                "ownedBy": "` + org.Name + `",
                 "columns": [
                     {
                         "id": "C-1",

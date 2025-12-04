@@ -7,11 +7,11 @@ import (
 	"lagertool.com/main/db"
 )
 
-func (h *Handler) GetShelfHelper(id string) (api_objects.Shelves, error) {
+func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, error) {
 	var shelf db.Shelf
 	err := h.DB.Model(&shelf).
 		Relation("Room.Building").
-		Relation("Columns.ShelfUnits").Where("shelf.id = ?", id).Select()
+		Relation("Columns.ShelfUnits").Where("shelf.id = ?", id).Where("shelf.owned_by = ?", orga).Select()
 	if err != nil {
 		return api_objects.Shelves{}, err
 	}

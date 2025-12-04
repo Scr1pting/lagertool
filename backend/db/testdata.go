@@ -28,7 +28,6 @@ func GetDummyData() (
 
 	// 1️⃣ Organisation
 	org := &Organisation{
-		ID:   1,
 		Name: "OpenAI Research Labs",
 	}
 
@@ -78,7 +77,7 @@ func GetDummyData() (
 	shelf := &Shelf{
 		ID:           "S-001",
 		Name:         "Chemical Storage Shelf",
-		OwnedBy:      org.ID,
+		OwnedBy:      org.Name,
 		RoomID:       room.ID,
 		UpdateDate:   now,
 		Room:         room,

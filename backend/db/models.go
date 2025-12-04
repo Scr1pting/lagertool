@@ -6,8 +6,7 @@ import (
 )
 
 type Organisation struct {
-	ID   int    `json:"id" pg:"id,pk"`
-	Name string `json:"name" pg:"name"`
+	Name string `json:"name" pg:"name,pk"`
 }
 
 type User struct {
@@ -37,11 +36,11 @@ type Session struct {
 }
 
 type HasSpecialRightsFor struct {
-	tableName      struct{} `pg:"has_special_rights_for"`
-	OrganisationID int      `json:"organisation-id" pg:"organisation_id, pk"`
-	UserID         int      `json:"user_id" pg:"user_id, pk"`
+	tableName        struct{} `pg:"has_special_rights_for"`
+	OrganisationName string   `json:"organisation-name" pg:"organisation_name, pk"`
+	UserID           int      `json:"user_id" pg:"user_id, pk"`
 
-	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:organisation_id"`
+	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
 	User         *User         `json:"user" pg:"rel:has-one,fk:user_id"`
 }
 
@@ -70,7 +69,7 @@ type Shelf struct {
 	tableName  struct{}  `pg:"shelf"`
 	ID         string    `json:"id" pg:"id,pk"`
 	Name       string    `json:"name" pg:"name"`
-	OwnedBy    int       `json:"owned_by" pg:"owned_by"`
+	OwnedBy    string    `json:"owned_by" pg:"owned_by"`
 	RoomID     int       `json:"room_id" pg:"room_id"`
 	UpdateDate time.Time `json:"update_date" pg:"update_date"`
 

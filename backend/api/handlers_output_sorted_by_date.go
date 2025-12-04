@@ -84,12 +84,12 @@ func (h *Handler) GetShelvesS(c *gin.Context) {
 // @Success 200 {array} api_objects.InventorySorted
 // @Router /inventory_sorted/{start}/{end} [get]
 func (h *Handler) GetInventoryS(c *gin.Context) {
-	start, err := time.Parse("2006-01-02", c.Param("start"))
+	start, err := time.Parse("2006-01-02", c.Query("start"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	end, err := time.Parse("2006-01-02", c.Param("end"))
+	end, err := time.Parse("2006-01-02", c.Query("end"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

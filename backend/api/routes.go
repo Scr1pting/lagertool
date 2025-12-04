@@ -10,10 +10,10 @@ import (
 func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	h := NewHandler(dbCon, cfg)
 
-	r.GET("/shelves", h.GetShelves)
-	r.GET("/item/:id/:start/:end", h.GetItem) //inventory Item ID, DateRange
+	r.GET("/shelves", h.GetShelves) // ?organisation=
+	r.GET("/item", h.GetItem)       // ?organisation=X&id=X&start=X&end=X
 	r.GET("/organisations", h.GetOrganisations)
-	r.GET("/shopping_cart/:id/:start/:end", h.GetShoppingCart) //userID
+	r.GET("/shopping_cart", h.GetShoppingCart) // ?userID=X&start=X&end=X
 
 	// Edu-ID endpoints
 	r.GET("/auth/eduid/login", auth.LoginHandler)
@@ -23,7 +23,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/rooms_sorted", h.GetRoomsS)
 	r.GET("/buildings_sorted", h.GetBuildingsS)
 	r.GET("/shelves_sorted", h.GetShelvesS)
-	r.GET("/inventory_sorted/:start/:end", h.GetInventoryS)
+	r.GET("/inventory_sorted", h.GetInventoryS) //?start=X&end=X
 
 	//post
 	r.POST("/create_building", h.CreateBuilding)
