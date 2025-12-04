@@ -216,7 +216,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/inventory_sorted/{start}/{end}": {
+        "/inventory_sorted": {
             "get": {
                 "description": "Get all inventory items sorted by update date",
                 "produces": [
@@ -231,14 +231,14 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Start date in format 2006-01-02",
                         "name": "start",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "End date in format 2006-01-02",
                         "name": "end",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -255,7 +255,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/item/{id}/{start}/{end}": {
+        "/item": {
             "get": {
                 "description": "Get a specific item",
                 "produces": [
@@ -267,24 +267,31 @@ const docTemplate = `{
                 "summary": "Get a specific item",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "organisation",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "Inventory Item ID",
                         "name": "id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Start date in format 2006-01-02",
                         "name": "start",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "End date in format 2006-01-02",
                         "name": "end",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -354,6 +361,15 @@ const docTemplate = `{
                     "shelves"
                 ],
                 "summary": "Get all shelves",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "organisation",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -390,7 +406,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/shopping_cart/{id}/{start}/{end}": {
+        "/shopping_cart": {
             "get": {
                 "description": "Get a user's shopping cart",
                 "produces": [
@@ -404,22 +420,22 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "User ID",
-                        "name": "id",
-                        "in": "path",
+                        "name": "userID",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Start date in format 2006-01-02",
                         "name": "start",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "End date in format 2006-01-02",
                         "name": "end",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -582,6 +598,9 @@ const docTemplate = `{
                 "note": {
                     "type": "string"
                 },
+                "organisation": {
+                    "type": "string"
+                },
                 "shelfUnitId": {
                     "type": "string"
                 }
@@ -726,7 +745,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "ownedBy": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "roomId": {
                     "type": "integer"
@@ -866,9 +885,6 @@ const docTemplate = `{
         "db.Organisation": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "name": {
                     "type": "string"
                 }
@@ -968,7 +984,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/db.Organisation"
                 },
                 "owned_by": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "room": {
                     "$ref": "#/definitions/db.Room"

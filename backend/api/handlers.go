@@ -25,6 +25,7 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 // @Description Get all shelves
 // @Tags shelves
 // @Produce  json
+// @Param organisation query string true "Organisation name"
 // @Success 200 {array} api_objects.Shelves
 // @Router /shelves [get]
 func (h *Handler) GetShelves(c *gin.Context) {
@@ -56,11 +57,12 @@ func (h *Handler) GetShelves(c *gin.Context) {
 // @Description Get a specific item
 // @Tags items
 // @Produce  json
-// @Param id path int true "Inventory Item ID"
-// @Param start path string true "Start date in format 2006-01-02"
-// @Param end path string true "End date in format 2006-01-02"
+// @Param organisation query string true "Organisation name"
+// @Param id query int true "Inventory Item ID"
+// @Param start query string true "Start date in format 2006-01-02"
+// @Param end query string true "End date in format 2006-01-02"
 // @Success 200 {object} api_objects.InventoryItemWithShelf
-// @Router /item/{id}/{start}/{end} [get]
+// @Router /item [get]
 func (h *Handler) GetItem(c *gin.Context) {
 	organisation := c.Query("organisation")
 	if organisation == "" {
@@ -115,11 +117,11 @@ func (h *Handler) GetOrganisations(c *gin.Context) {
 // @Description Get a user's shopping cart
 // @Tags shopping_cart
 // @Produce  json
-// @Param id path int true "User ID"
-// @Param start path string true "Start date in format 2006-01-02"
-// @Param end path string true "End date in format 2006-01-02"
+// @Param userID query int true "User ID"
+// @Param start query string true "Start date in format 2006-01-02"
+// @Param end query string true "End date in format 2006-01-02"
 // @Success 200 {object} map[string][]api_objects.CartItem
-// @Router /shopping_cart/{id}/{start}/{end} [get]
+// @Router /shopping_cart [get]
 func (h *Handler) GetShoppingCart(c *gin.Context) {
 	id, err := strconv.Atoi(c.Query("userID")) //the id should be the id of the inventory entry
 	if err != nil {

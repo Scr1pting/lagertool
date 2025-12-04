@@ -88,6 +88,8 @@ definitions:
         type: string
       note:
         type: string
+      organisation:
+        type: string
       shelfUnitId:
         type: string
     required:
@@ -184,7 +186,7 @@ definitions:
       name:
         type: string
       ownedBy:
-        type: integer
+        type: string
       roomId:
         type: integer
     required:
@@ -284,8 +286,6 @@ definitions:
     type: object
   db.Organisation:
     properties:
-      id:
-        type: integer
       name:
         type: string
     type: object
@@ -351,7 +351,7 @@ definitions:
       organisation:
         $ref: '#/definitions/db.Organisation'
       owned_by:
-        type: integer
+        type: string
       room:
         $ref: '#/definitions/db.Room'
       room_id:
@@ -562,17 +562,17 @@ paths:
       summary: Create a new shelf
       tags:
       - shelves
-  /inventory_sorted/{start}/{end}:
+  /inventory_sorted:
     get:
       description: Get all inventory items sorted by update date
       parameters:
       - description: Start date in format 2006-01-02
-        in: path
+        in: query
         name: start
         required: true
         type: string
       - description: End date in format 2006-01-02
-        in: path
+        in: query
         name: end
         required: true
         type: string
@@ -588,22 +588,27 @@ paths:
       summary: Get all inventory items sorted by update date
       tags:
       - items
-  /item/{id}/{start}/{end}:
+  /item:
     get:
       description: Get a specific item
       parameters:
+      - description: Organisation name
+        in: query
+        name: organisation
+        required: true
+        type: string
       - description: Inventory Item ID
-        in: path
+        in: query
         name: id
         required: true
         type: integer
       - description: Start date in format 2006-01-02
-        in: path
+        in: query
         name: start
         required: true
         type: string
       - description: End date in format 2006-01-02
-        in: path
+        in: query
         name: end
         required: true
         type: string
@@ -650,6 +655,12 @@ paths:
   /shelves:
     get:
       description: Get all shelves
+      parameters:
+      - description: Organisation name
+        in: query
+        name: organisation
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -677,22 +688,22 @@ paths:
       summary: Get all shelves sorted by update date
       tags:
       - shelves
-  /shopping_cart/{id}/{start}/{end}:
+  /shopping_cart:
     get:
       description: Get a user's shopping cart
       parameters:
       - description: User ID
-        in: path
-        name: id
+        in: query
+        name: userID
         required: true
         type: integer
       - description: Start date in format 2006-01-02
-        in: path
+        in: query
         name: start
         required: true
         type: string
       - description: End date in format 2006-01-02
-        in: path
+        in: query
         name: end
         required: true
         type: string
