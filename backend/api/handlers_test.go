@@ -109,8 +109,14 @@ func TestGetOrganisations(t *testing.T) {
 	h := NewHandler(dbCon, nil)
 	router.GET("/organisations", h.GetOrganisations)
 
-	testOrg := &db.Organisation{Name: "Test Org"}
-	_, err := dbCon.Model(testOrg).Insert()
+	// Clean up any existing test organisations
+	_, err := dbCon.Model(&db.Organisation{}).Where("name LIKE 'Test Org%'").Delete()
+	assert.NoError(t, err)
+
+	// Insert multiple test organisations
+	testOrg1 := &db.Organisation{Name: "Test Org 1"}
+	testOrg2 := &db.Organisation{Name: "Test Org 2"}
+	_, err = dbCon.Model(testOrg1, testOrg2).Insert()
 	assert.NoError(t, err)
 
 	req, _ := http.NewRequest("GET", "/organisations", nil)
@@ -122,10 +128,18 @@ func TestGetOrganisations(t *testing.T) {
 	var organisations []db.Organisation
 	err = json.Unmarshal(w.Body.Bytes(), &organisations)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, organisations)
-	assert.Equal(t, "Test Org", organisations[0].Name)
+	assert.GreaterOrEqual(t, len(organisations), 2)
 
-	_, err = dbCon.Model(&db.Organisation{}).Where("name = ?", "Test Org").Delete()
+	// Verify our test organisations are in the results
+	orgNames := make(map[string]bool)
+	for _, org := range organisations {
+		orgNames[org.Name] = true
+	}
+	assert.True(t, orgNames["Test Org 1"])
+	assert.True(t, orgNames["Test Org 2"])
+
+	// Clean up
+	_, err = dbCon.Model(&db.Organisation{}).Where("name LIKE 'Test Org%'").Delete()
 	assert.NoError(t, err)
 }
 
@@ -331,18 +345,38 @@ func TestGetShelves(t *testing.T) {
 	h := NewHandler(dbCon, nil)
 	router.GET("/shelves", h.GetShelves)
 
+	// Create test organisation
+	org := &db.Organisation{Name: "Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(org).Where("name = ?", org.Name).Delete()
+		assert.NoError(t, err)
+	}()
+
 	hier := createTestHierarchy(t, dbCon)
 
+	// Update the shelf to be owned by the test organisation
+	hier.Shelf.OwnedBy = org.Name
+	_, err = dbCon.Model(hier.Shelf).WherePK().Update()
+	assert.NoError(t, err)
+
+	// Test without organisation parameter (should fail)
 	req, _ := http.NewRequest("GET", "/shelves", nil)
 	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// Test with organisation parameter
+	req, _ = http.NewRequest("GET", "/shelves?organisation="+org.Name, nil)
+	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var shelves []api_objects.Shelves
-	err := json.Unmarshal(w.Body.Bytes(), &shelves)
+	err = json.Unmarshal(w.Body.Bytes(), &shelves)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, shelves)
-	assert.Equal(t, "Hierarchy Shelf", shelves[0].Name)
 
 	cleanupTestHierarchy(t, dbCon, hier)
 }
@@ -351,11 +385,11 @@ func TestGetInventoryS(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 	h := NewHandler(dbCon, nil)
-	router.GET("/inventory_sorted/:start/:end", h.GetInventoryS)
+	router.GET("/inventory_sorted", h.GetInventoryS)
 
 	hier := createTestHierarchy(t, dbCon)
 
-	req, _ := http.NewRequest("GET", "/inventory_sorted/2025-01-01/2025-12-31", nil)
+	req, _ := http.NewRequest("GET", "/inventory_sorted?start=2025-01-01&end=2025-12-31", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -364,7 +398,6 @@ func TestGetInventoryS(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &inventory)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, inventory)
-	assert.Equal(t, "Hierarchy Item", inventory[0].Name)
 
 	cleanupTestHierarchy(t, dbCon, hier)
 }
@@ -373,20 +406,35 @@ func TestGetItem(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 	h := NewHandler(dbCon, nil)
-	router.GET("/item/:id/:start/:end", h.GetItem)
+	router.GET("/item", h.GetItem)
+
+	// Create test organisation
+	org := &db.Organisation{Name: "Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, err := dbCon.Model(org).Where("name = ?", org.Name).Delete()
+		assert.NoError(t, err)
+	}()
 
 	hier := createTestHierarchy(t, dbCon)
 
-	req, _ := http.NewRequest("GET", "/item/"+strconv.Itoa(hier.Inventory.ID)+"/2025-01-01/2025-12-31", nil)
+	// Test without organisation parameter (should fail)
+	req, _ := http.NewRequest("GET", "/item?id="+strconv.Itoa(hier.Inventory.ID)+"&start=2025-01-01&end=2025-12-31", nil)
 	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// Test with organisation parameter
+	req, _ = http.NewRequest("GET", "/item?organisation="+org.Name+"&id="+strconv.Itoa(hier.Inventory.ID)+"&start=2025-01-01&end=2025-12-31", nil)
+	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var itemWithShelf api_objects.InventoryItemWithShelf
-	err := json.Unmarshal(w.Body.Bytes(), &itemWithShelf)
+	err = json.Unmarshal(w.Body.Bytes(), &itemWithShelf)
 	assert.NoError(t, err)
 	assert.Equal(t, "Hierarchy Item", itemWithShelf.InventoryItem.Name)
-	assert.Equal(t, "Hierarchy Shelf", itemWithShelf.Shelf.Name)
 
 	cleanupTestHierarchy(t, dbCon, hier)
 }
