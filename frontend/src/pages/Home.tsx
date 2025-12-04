@@ -7,7 +7,7 @@ import Carousel from "@/components/Carousel/Carousel";
 import useFetchShelves from "@/hooks/fetch/useFetchShelves";
 import { Dialog } from "@/components/shadcn/dialog";
 import ShelfElementDialog from "@/components/ShelfElementDialog";
-import type { SelectedShelfElement, ShelfElement } from "@/types/shelf";
+import type { SelectedShelfElement } from "@/types/shelf";
 
 
 function Home() {
@@ -86,11 +86,11 @@ function Home() {
         onIndexChange={handleIndexChange}
       />
 
-      <Dialog open={selectedElement != null} onOpenChange={() => setSelectedElement(null)}>
-        {selectedElement &&
-          <ShelfElementDialog shelfElement={selectedElement} />
-        }
-      </Dialog>
+      <ShelfElementDialog 
+        open={selectedElement != null}
+        onOpenChange={() => setSelectedElement(null)}
+        shelfElement={selectedElement}
+      />
     </main>
   );
 }

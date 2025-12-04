@@ -1,4 +1,4 @@
-import LabeledSelect from "@/components/primitives/LabeledSelect"
+import StandardSelect from "@/components/primitives/StandardSelect"
 import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
 import type { Room } from "@/types/room"
@@ -57,7 +57,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
       size: "full",
       id: "room-building-id",
       label: "Building",
-      input: <LabeledSelect
+      input: <StandardSelect
         id="room-building-id"
         value={buildingId}
         options={buildings}

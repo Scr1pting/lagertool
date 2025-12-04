@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shadcn/select"
 
 
-interface LabeledSelect<T extends { id: string, name: string}> {
+interface StandardSelect<T extends { id: string | number, name: string}> {
   id: string
   value: string | undefined
   options: T[]
@@ -9,7 +9,7 @@ interface LabeledSelect<T extends { id: string, name: string}> {
   disabled?: boolean
 }
 
-function LabeledSelect<T extends { id: string, name: string}>({ id, value, options, onValueChange, disabled = false }: LabeledSelect<T>) {
+function StandardSelect<T extends { id: string | number, name: string}>({ id, value, options, onValueChange, disabled = false }: StandardSelect<T>) {
   return(
     <Select
       value={value}
@@ -21,7 +21,7 @@ function LabeledSelect<T extends { id: string, name: string}>({ id, value, optio
       </SelectTrigger>
       <SelectContent>
         {Array.isArray(options) && options.map((option) => (
-          <SelectItem key={option.id} value={option.id}>
+          <SelectItem key={option.id} value={option.id.toString()}>
             {option.name}
           </SelectItem>
         ))}
@@ -30,4 +30,4 @@ function LabeledSelect<T extends { id: string, name: string}>({ id, value, optio
   )
 }
 
-export default LabeledSelect;
+export default StandardSelect;

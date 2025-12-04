@@ -12,18 +12,18 @@ import {
   TableRow,
 } from "@/components/shadcn/table"
 import { useNavigate } from "react-router-dom"
-import { ScrollArea } from "../shadcn/scroll-area"
 
 
 interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivElement> {
   data: TData[]
   columns: ColumnDef<TData>[]
   rowLink?: (row: Row<TData>) => string
+  sticky?: boolean
   className?: string
 }
 
 function DataTable<TData>({
-  data, columns, rowLink, className = ""
+  data, columns, rowLink, sticky = false, className=""
 } : DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -78,7 +78,7 @@ function DataTable<TData>({
         For the sticky header to work, you have to remove the div that
         wraps the Table component in components/shadcn/table.tsx.
         */ }
-        <TableHeader className="sticky top-0 z-10">
+        <TableHeader className={cn("z-10", sticky ? "sticky top-0" : "")}>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {

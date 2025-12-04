@@ -3,15 +3,24 @@ import type { Building } from "@/types/building"
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
 import type { Shelf } from "@/types/shelf"
-import { useState } from "react"
+import { useState, type SetStateAction } from "react"
 import type { FormElement } from "../../primitives/types/FormElement"
 import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
 import ManageInventoryCard from "../ManageInventoryCard"
 import AvailabilityDescription from "@/components/AvailabilityDescription"
-import LabeledSelect from "@/components/primitives/LabeledSelect"
 import { inventoryColumns } from "@/components/DataTable/ManageInventory/inventoryColumns"
+import { Combobox } from "@/components/primitives/Combobox"
+import { Button } from "@/components/shadcn/button"
+import ShelfElementSelect from "@/components/ShelfElementSelect"
 
+
+interface Option {
+  name: string
+  buildingId: string
+  roomId: string
+  shelfId: string
+}
 
 interface ItemTabProps {
   buildings: Building[]
@@ -28,6 +37,22 @@ function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
   const [roomId, setRoomId] = useState<string | undefined>()
   const [shelfId, setShelfId] = useState<string | undefined>()
   const [shelfElementId, setShelfElementId] = useState<string | undefined>()
+
+  const [showElementSelect, setShowElementSelect] = useState(false)
+
+  const selectedShelf = shelves.find(shelf => shelf.id == shelfId)
+
+  const options = () => {
+    shelves.map(shelf => {
+      const bId = 
+
+      new Option(text )
+    })
+  }
+  
+  const setOption = (option: Option) => {
+
+  }
 
   const elements: FormElement[] = [
     {
@@ -56,47 +81,39 @@ function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
     },
     {
       size: "half",
-      id: "item-building-id",
-      label: "Building",
-      input: <LabeledSelect
-        id="item-building-id"
-        value={buildingId}
-        options={buildings}
-        onValueChange={(value) => setBuildingId(value) }
-      />
-    },
-    {
-      size: "half",
-      id: "item-room-id",
-      label: "Room",
-      input: <LabeledSelect
-        id="item-room-id"
-        value={roomId}
-        options={rooms}
-        onValueChange={(value) => setRoomId(value) }
-      />
-    },
-    {
-      size: "half",
       id: "item-shelf-id",
       label: "Shelf",
-      input: <LabeledSelect
-        id="item-shelf-id"
-        value={shelfId}
-        options={shelves}
-        onValueChange={(value) => setShelfId(value) }
-      />
+      // input: <Combobox
+      //   options={[]}
+      //   selectedId={false}
+      //   setSelectedId={}
+      //   placeholder="Select Shelf"
+      // />
+      input: <Combobox
+        options={null}
+        selectedId={null}
+        setSelectedId={}
+        placeholder="Select Shelf" />
     },
     {
       size: "half",
       id: "item-shelf-element-id",
       label: "Shelf Element",
-      input: <LabeledSelect
-        id="item-shelf-element-id"
-        value={shelfElementId}
-        options={buildings}
-        onValueChange={(value) => setShelfElementId(value) }
-      />
+      input: <ShelfElementSelect
+          open={showElementSelect}
+          onOpenChange={() => setShowElementSelect(false)}
+          shelf={selectedShelf}
+          selectedElementId={shelfElementId}
+          setSelectedElementId={setShelfElementId}
+        >
+        <Button
+          variant="outline"
+          className="justify-between"
+          disabled={selectedShelf == null}
+        >
+          Select Shelf Element
+        </Button>
+      </ShelfElementSelect>
     }
   ]
 

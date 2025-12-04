@@ -5,7 +5,7 @@ import { Link } from "react-router-dom"
 import type { Shelf } from "@/types/shelf"
 import { TabsContent } from "@/components/shadcn/tabs"
 import DataTable from "@/components/DataTable/DataTable"
-import shelfColumns from "@/components/DataTable/ManageInventory/ShelfColumns"
+import shelfColumns from "@/components/DataTable/ManageInventory/shelfColumns"
 
 
 interface ShelfTabProps {
