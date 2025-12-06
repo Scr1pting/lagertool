@@ -72,15 +72,15 @@ function DataTable<TData>({
   }
 
   return (
-    <div className={cn("rounded-lg border", className)}>
+    <div className={cn("rounded-lg border overflow-hidden", className)}>
       <Table>
         { /*
         For the sticky header to work, you have to remove the div that
         wraps the Table component in components/shadcn/table.tsx.
         */ }
-        <TableHeader className={cn("z-10", sticky ? "sticky top-0" : "")}>
+        <TableHeader className={sticky ? "z-10 sticky top-0" : ""}>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="">
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead key={header.id} className="px-4 bg-neutral-900">

@@ -39,14 +39,14 @@ function ItemDetail() {
 
             <div className="flex justify-between">
               <span className="text-muted-foreground">Building</span>
-              <span className="font-medium">{item.buildingName}</span>
+              <span className="font-medium">{item.building.name}</span>
             </div>
 
             <Separator />
 
             <div className="flex justify-between">
               <span className="text-muted-foreground">Room</span>
-              <span className="font-medium">{item.roomName}</span>
+              <span className="font-medium">{item.room.name}</span>
             </div>
 
             <Separator />

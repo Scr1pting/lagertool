@@ -18,13 +18,13 @@ export const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
     ),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
-      const a = (rowA.original.buildingName || "") + "/" + (rowA.original.roomName || "")
-      const b = (rowB.original.buildingName || "") + "/" + (rowB.original.roomName || "")
+      const a = (rowA.original.building.name || "") + "/" + (rowA.original.room.name || "")
+      const b = (rowB.original.building.name || "") + "/" + (rowB.original.room.name || "")
       return a.localeCompare(b)
     },
     cell: ({ row }) => {
-      const building = row.original.buildingName || "unknown"
-      const room = row.original.roomName || "unknown"
+      const building = row.original.building.name || "unknown"
+      const room = row.original.room.name || "unknown"
       return <div>{building + "/" + room}</div>
     },
   },

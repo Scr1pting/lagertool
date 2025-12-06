@@ -3,23 +3,23 @@ import type { Building } from "@/types/building"
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
 import type { Shelf } from "@/types/shelf"
-import { useState, type SetStateAction } from "react"
+import { useState } from "react"
 import type { FormElement } from "../../primitives/types/FormElement"
 import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
 import ManageInventoryCard from "../ManageInventoryCard"
 import AvailabilityDescription from "@/components/AvailabilityDescription"
 import { inventoryColumns } from "@/components/DataTable/ManageInventory/inventoryColumns"
-import { Combobox } from "@/components/primitives/Combobox"
+import Combobox from "@/components/primitives/Combobox"
 import { Button } from "@/components/shadcn/button"
 import ShelfElementSelect from "@/components/ShelfElementSelect"
 
 
-interface Option {
+interface ShelfOption {
   name: string
-  buildingId: string
-  roomId: string
-  shelfId: string
+  id: string
+  buildingId: number
+  roomId: number
 }
 
 interface ItemTabProps {
@@ -29,30 +29,26 @@ interface ItemTabProps {
   inventory: InventoryItem[]
 }
 
-function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
+function ItemTab({ shelves, inventory }: ItemTabProps) {
   const [name, setName] = useState("")
   const [amount, setAmount] = useState(1)
 
-  const [buildingId, setBuildingId] = useState<string | undefined>()
-  const [roomId, setRoomId] = useState<string | undefined>()
-  const [shelfId, setShelfId] = useState<string | undefined>()
+  const [selectedOption, setSelectedOption] = useState<ShelfOption | undefined>()
   const [shelfElementId, setShelfElementId] = useState<string | undefined>()
 
   const [showElementSelect, setShowElementSelect] = useState(false)
 
-  const selectedShelf = shelves.find(shelf => shelf.id == shelfId)
+  const selectedShelf = shelves.find(shelf => shelf.id == selectedOption?.id)
 
-  const options = () => {
-    shelves.map(shelf => {
-      const bId = 
-
-      new Option(text )
-    })
-  }
-  
-  const setOption = (option: Option) => {
-
-  }
+  const options: ShelfOption[] = shelves.map(shelf => {
+    const text = `${shelf.building.name} - ${shelf.room.name} - ${shelf.name}`
+    return {
+      name: text,
+      id: shelf.id,
+      buildingId: shelf.building.id,
+      roomId: shelf.room.id,
+    }
+  })
 
   const elements: FormElement[] = [
     {
@@ -83,16 +79,10 @@ function ItemTab({ buildings, rooms, shelves, inventory }: ItemTabProps) {
       size: "half",
       id: "item-shelf-id",
       label: "Shelf",
-      // input: <Combobox
-      //   options={[]}
-      //   selectedId={false}
-      //   setSelectedId={}
-      //   placeholder="Select Shelf"
-      // />
       input: <Combobox
-        options={null}
-        selectedId={null}
-        setSelectedId={}
+        options={options}
+        selectedOption={selectedOption}
+        setSelectedOption={setSelectedOption}
         placeholder="Select Shelf" />
     },
     {

@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "../shadcn/dialog";
 
 
-const MotionDialogContent = motion(DialogContent)
+const MotionDialogContent = motion.create(DialogContent)
 
 
 interface AddCartDialogProps {

@@ -5,7 +5,6 @@ import StaticShelf from "@/components/Shelves/viewer/StaticShelf";
 
 import Carousel from "@/components/Carousel/Carousel";
 import useFetchShelves from "@/hooks/fetch/useFetchShelves";
-import { Dialog } from "@/components/shadcn/dialog";
 import ShelfElementDialog from "@/components/ShelfElementDialog";
 import type { SelectedShelfElement } from "@/types/shelf";
 
@@ -72,7 +71,7 @@ function Home() {
         onElementSelect={setSelectedElement}
       />
       <label className="text-[#BBB] font-mono">
-        {shelf.buildingName + " - " + shelf.roomName + " - " + shelf.name}
+        {shelf.building.name + " - " + shelf.room.name + " - " + shelf.name}
       </label>
     </div>
   ));

@@ -18,22 +18,22 @@ import {
 import { useState, type Dispatch, type SetStateAction } from "react"
 
 
-interface ComboboxProps<T, D> {
-  options: D[] | null
-  selectedId: T | null
-  setSelectedId: Dispatch<SetStateAction<T | null>>
+interface ComboboxProps<D> {
+  options: D[] | null | undefined
+  selectedOption: D | undefined
+  setSelectedOption: Dispatch<SetStateAction<D | undefined>>
   placeholder: string
   disabled?: boolean
 }
 
-export function Combobox<T extends string | number, D extends { id: T, name: string }>(
-  { options, selectedId, setSelectedId, placeholder, disabled = false }: ComboboxProps<T, D>
+function Combobox<D extends { id: string | number, name: string }>(
+  { options, selectedOption, setSelectedOption, placeholder, disabled = false }: ComboboxProps<D>
 ) {
   const [open, setOpen] = useState(false)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild disabled={options == null || options.length == 0}>
+      <PopoverTrigger asChild disabled={options == undefined || options.length == 0}>
         <Button
           variant="outline"
           role="combobox"
@@ -41,8 +41,8 @@ export function Combobox<T extends string | number, D extends { id: T, name: str
           className="w-[200px] justify-between"
           disabled={disabled}
         >
-          {selectedId && options
-            ? options.find((option) => option.id === selectedId)?.name
+          {selectedOption && options
+            ? options.find((option) => option === selectedOption)?.name
             : placeholder}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -62,10 +62,11 @@ export function Combobox<T extends string | number, D extends { id: T, name: str
                     key={option.id}
                     value={option.name}
                     onSelect={(currentValue) => {
-                      setSelectedId(
-                        currentValue === options.find(option => option.id === selectedId)?.name
-                          ? null
-                          : options?.find(option => option.name === currentValue)?.id ?? null)
+                      setSelectedOption(
+                          selectedOption && currentValue === selectedOption.name
+                            ? undefined
+                            : options.find(option => option.name == currentValue)
+                        )
                       setOpen(false)
                     }}
                   >
@@ -73,7 +74,7 @@ export function Combobox<T extends string | number, D extends { id: T, name: str
                     <Check
                       className={cn(
                         "ml-auto",
-                        selectedId === option.id ? "opacity-100" : "opacity-0"
+                        selectedOption === option ? "opacity-100" : "opacity-0"
                       )}
                     />
                   </CommandItem>
@@ -86,3 +87,5 @@ export function Combobox<T extends string | number, D extends { id: T, name: str
     </Popover>
   )
 }
+
+export default Combobox

@@ -1,3 +1,5 @@
+import type { Building } from "./building"
+import type { Room } from "./room"
 import { type Shelf } from "./shelf"
 
 export interface InventoryItem {
@@ -6,8 +8,8 @@ export interface InventoryItem {
   tags: [string]
   amount: number
   available: number
-  buildingName: string
-  roomName: string
+  building: Building
+  room: Room
 }
 
 export interface InventoryItemFull extends InventoryItem {

@@ -1,4 +1,4 @@
-import { Combobox } from "@/components/primitives/Combobox"
+import Combobox from "@/components/primitives/Combobox"
 import { Button } from "@/components/shadcn/button"
 import { Input } from "@/components/shadcn/input"
 import useFetchBuildings from "@/hooks/fetch/useFetchBuildings"
@@ -10,6 +10,8 @@ import type { FormElement } from "@/components/primitives/types/FormElement"
 import FormLayout from "@/components/primitives/FormLayout"
 import { Field } from "@/components/shadcn/field"
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/shadcn/dialog"
+import type { Building } from "@/types/building"
+import type { Room } from "@/types/room"
 
 
 function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
@@ -17,15 +19,15 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
   const { status: statusBuildings, data: buildings, error: errorBuildings } = useFetchBuildings()
 
   const [name, setName] = useState("")
-  const [buildingId, setBuildingId] = useState<number | null>(null)
-  const [roomId, setRoomId] = useState<number | null>(null)
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | undefined>()
+  const [selectedRoom, setSelectedRoom] = useState<Room | undefined>()
 
-  const { status: statusPost, errorPost, send } = usePostShelf()
+  const { status: statusPost, error: errorPost, send } = usePostShelf()
 
-  const submit = (e) => {
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (roomId == null) return
-    send(columns, name, roomId)
+    if (selectedRoom == undefined) return
+    send(columns, name, selectedRoom.id)
   }
 
   const elements: FormElement[] = [
@@ -48,8 +50,8 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       label: "Building",
       input: <Combobox
         options={buildings}
-        selectedId={buildingId}
-        setSelectedId={setBuildingId}
+        selectedOption={selectedBuilding}
+        setSelectedOption={setSelectedBuilding}
         placeholder="Select Building"
       />
     },
@@ -58,11 +60,11 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       id: "shelf-room",
       label: "Room",
       input: <Combobox
-        options={rooms?.filter((room) => room.buildingId === buildingId) ?? null}
-        selectedId={roomId}
-        setSelectedId={setRoomId}
+        options={rooms?.filter((room) => room === selectedRoom) ?? undefined}
+        selectedOption={selectedRoom}
+        setSelectedOption={setSelectedRoom}
         placeholder="Select Room"
-        disabled={rooms?.filter((room) => room.buildingId === buildingId).length == 0}    
+        disabled={rooms?.filter((room) => room.building === selectedBuilding).length == 0}    
       />
     }
   ]
@@ -82,7 +84,7 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
             {statusPost === "loading" ? "Submitting..." : "Submit"}
             </Button>
             {statusPost === "error" && errorPost ? (
-              <p className="text-sm text-destructive">{errorPost}</p>
+              <p className="text-sm text-destructive">{errorPost.message}</p>
             ) : null}
             {statusPost === "success" ? (
               <p className="text-sm text-muted-foreground">Shelf saved successfully.</p>
