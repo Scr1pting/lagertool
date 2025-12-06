@@ -68,7 +68,18 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	newShelf, err := db.CreateShelf(h.DB, req)
+
+	// Convert api_objects columns to db.ColumnInput
+	columns := make([]db.ColumnInput, len(req.Columns))
+	for i, col := range req.Columns {
+		elements := make([]db.ShelfElementInput, len(col.Elements))
+		for j, el := range col.Elements {
+			elements[j] = db.ShelfElementInput{ID: el.ID, Type: el.Type}
+		}
+		columns[i] = db.ColumnInput{ID: col.ID, Elements: elements}
+	}
+
+	newShelf, err := db.CreateShelf(h.DB, req.ID, req.Name, req.OwnedBy, req.RoomID, columns)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -112,7 +123,7 @@ func (h *Handler) CreateItem(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	newItem, err := db.CreateInventoryItem(h.DB, req)
+	newItem, err := db.CreateInventoryItem(h.DB, req.Name, req.Amount, req.ShelfUnitID, req.IsConsumable, req.Note)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

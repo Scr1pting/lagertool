@@ -5,8 +5,19 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
-	"lagertool.com/main/api_objects"
 )
+
+// ShelfElementInput represents a shelf element for creating a shelf
+type ShelfElementInput struct {
+	ID   string
+	Type string
+}
+
+// ColumnInput represents a column with elements for creating a shelf
+type ColumnInput struct {
+	ID       string
+	Elements []ShelfElementInput
+}
 
 func CreateBuilding(con *pg.DB, name string, campus string) (*Building, error) {
 	building := &Building{
@@ -31,20 +42,20 @@ func CreateRoom(con *pg.DB, name string, floor string, number string, buildingID
 	return room, err
 }
 
-func CreateShelf(con *pg.DB, request api_objects.ShelfRequest) (*Shelf, error) {
+func CreateShelf(con *pg.DB, id string, name string, ownedBy string, roomID int, columns []ColumnInput) (*Shelf, error) {
 	shelf := &Shelf{
-		ID:         request.ID,
-		Name:       request.Name,
-		OwnedBy:    request.OwnedBy,
+		ID:         id,
+		Name:       name,
+		OwnedBy:    ownedBy,
 		UpdateDate: time.Now(),
-		RoomID:     request.RoomID,
+		RoomID:     roomID,
 	}
 	_, err := con.Model(shelf).Insert()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, column := range request.Columns {
+	for _, column := range columns {
 		col := &Column{
 			ID:      column.ID,
 			ShelfID: shelf.ID,
@@ -64,6 +75,7 @@ func CreateShelf(con *pg.DB, request api_objects.ShelfRequest) (*Shelf, error) {
 				ID:               element.ID,
 				Type:             suType,
 				PositionInColumn: pos,
+				ColumnID:         col.ID,
 			}
 			_, err := con.Model(el).Insert()
 			if err != nil {
@@ -100,12 +112,12 @@ func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*Shop
 	return shoppingCartItem, nil
 }
 
-func CreateInventoryItem(con *pg.DB, request api_objects.InventoryItemRequest) (*Inventory, error) {
+func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string, isConsumable bool, note string) (*Inventory, error) {
 	item := &Item{}
-	err := con.Model(item).Where("name = ?", request.Name).Where("is_consumable = ?", request.IsConsumable).Select()
+	err := con.Model(item).Where("name = ?", name).Where("is_consumable = ?", isConsumable).Select()
 	if errors.Is(err, pg.ErrNoRows) {
-		item.Name = request.Name
-		item.IsConsumable = request.IsConsumable
+		item.Name = name
+		item.IsConsumable = isConsumable
 		_, err = con.Model(item).Insert()
 		if err != nil {
 			return nil, err
@@ -115,10 +127,10 @@ func CreateInventoryItem(con *pg.DB, request api_objects.InventoryItemRequest) (
 	}
 	inv := &Inventory{
 		ItemID:      item.ID,
-		Amount:      request.Amount,
-		ShelfUnitID: request.ShelfUnitID,
+		Amount:      amount,
+		ShelfUnitID: shelfUnitID,
 		UpdateDate:  time.Now(),
-		Note:        request.Note,
+		Note:        note,
 	}
 	_, err = con.Model(inv).Insert()
 	if err != nil {
