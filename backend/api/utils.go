@@ -19,12 +19,8 @@ func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, e
 	var shelfObj api_objects.Shelves
 	shelfObj.ID = shelf.ID
 	shelfObj.Name = shelf.Name
-	if shelf.Room.Name != "" {
-		shelfObj.RoomName = shelf.Room.Name
-	} else {
-		shelfObj.RoomName = shelf.Room.Floor + shelf.Room.Number
-	}
-	shelfObj.BuildingName = shelf.Room.Building.Name
+	shelfObj.Room = *shelf.Room
+	shelfObj.Building = *shelf.Room.Building
 	var col api_objects.Columns
 	for _, c := range shelf.Columns {
 		col.ID = c.ID
@@ -79,8 +75,8 @@ func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time)
 	if err != nil {
 		return res, err
 	}
-	res.RoomName = dbInv.ShelfUnit.Column.Shelf.Room.Name
-	res.BuildingName = dbInv.ShelfUnit.Column.Shelf.Room.Building.Name
+	res.Room = *dbInv.ShelfUnit.Column.Shelf.Room
+	res.Building = *dbInv.ShelfUnit.Column.Shelf.Room.Building
 	res.ShelfID = dbInv.ShelfUnit.Column.Shelf.ID
 	return res, nil
 }

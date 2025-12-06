@@ -25,7 +25,7 @@ func (h *Handler) GetRoomsS(c *gin.Context) {
 	var res []api_objects.Room
 	for _, item := range dbRes {
 		res = append(res, api_objects.Room{
-			item.ID, item.Number, item.Floor, item.Name, item.Building.Name, item.UpdateDate.Format(time.RFC3339),
+			item.ID, item.Number, item.Floor, item.Name, *item.Building, item.UpdateDate.Format(time.RFC3339),
 		})
 	}
 	c.JSON(http.StatusOK, res)
@@ -69,7 +69,7 @@ func (h *Handler) GetShelvesS(c *gin.Context) {
 	var res []api_objects.ShelfSorted
 	for _, item := range dbRes {
 		res = append(res, api_objects.ShelfSorted{
-			item.ID, item.Name, item.Room.Name, item.Room.Building.Name,
+			item.ID, item.Name, *item.Room, *item.Room.Building,
 		})
 	}
 	c.JSON(http.StatusOK, res)
@@ -108,7 +108,7 @@ func (h *Handler) GetInventoryS(c *gin.Context) {
 			return
 		}
 		res = append(res, api_objects.InventorySorted{
-			item.ItemID, item.Item.Name, item.Amount, available, item.ShelfUnit.Column.Shelf.Room.Name, item.ShelfUnit.Column.Shelf.Room.Building.Name,
+			item.ItemID, item.Item.Name, item.Amount, available, *item.ShelfUnit.Column.Shelf.Room, *item.ShelfUnit.Column.Shelf.Room.Building,
 		})
 	}
 	c.JSON(http.StatusOK, res)

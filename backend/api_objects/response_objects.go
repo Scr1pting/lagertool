@@ -1,11 +1,13 @@
 package api_objects
 
+import "lagertool.com/main/db"
+
 type Shelves struct {
-	ID           string    `json:"id"`
-	Name         string    `json:"name"`
-	BuildingName string    `json:"buildingName"`
-	RoomName     string    `json:"roomName"`
-	Columns      []Columns `json:"columns"`
+	ID       string      `json:"id"`
+	Name     string      `json:"name"`
+	Building db.Building `json:"building"`
+	Room     db.Room     `json:"room"`
+	Columns  []Columns   `json:"columns"`
 }
 
 type Columns struct {
@@ -19,13 +21,13 @@ type Element struct {
 }
 
 type InventoryItem struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	Amount       int    `json:"amount"`
-	Available    int    `json:"available"`
-	BuildingName string `json:"buildingName"`
-	RoomName     string `json:"roomName"`
-	ShelfID      string `json:"shelfId"`
+	ID        int         `json:"id"`
+	Name      string      `json:"name"`
+	Amount    int         `json:"amount"`
+	Available int         `json:"available"`
+	Building  db.Building `json:"building"`
+	Room      db.Room     `json:"room"`
+	ShelfID   string      `json:"shelfId"`
 }
 
 type InventoryItemWithShelf struct {
@@ -44,12 +46,12 @@ type CartItem struct {
 }
 
 type Room struct {
-	ID           int    `json:"id"`
-	Number       string `json:"number"`
-	Floor        string `json:"floor"`
-	Name         string `json:"name"`
-	BuildingName string `json:"buildingName"`
-	UpdateDate   string `json:"updateDate"`
+	ID         int         `json:"id"`
+	Number     string      `json:"number"`
+	Floor      string      `json:"floor"`
+	Name       string      `json:"name"`
+	Building   db.Building `json:"building"`
+	UpdateDate string      `json:"updateDate"`
 }
 
 type Building struct {
@@ -61,17 +63,17 @@ type Building struct {
 }
 
 type ShelfSorted struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	RoomName     string `json:"roomName"`
-	BuildingName string `json:"buildingName"`
+	ID       string      `json:"id"`
+	Name     string      `json:"name"`
+	Room     db.Room     `json:"room"`
+	Building db.Building `json:"building"`
 }
 
 type InventorySorted struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	Amount       int    `json:"amount"`
-	Available    int    `json:"available"`
-	RoomName     string `json:"roomName"`
-	BuildingName string `json:"buildingName"`
+	ID           int         `json:"id"`
+	Name         string      `json:"name"`
+	Amount       int         `json:"amount"`
+	Available    int         `json:"available"`
+	RoomName     db.Room     `json:"room"`
+	BuildingName db.Building `json:"building"`
 }

@@ -175,12 +175,8 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		if item.Inventory.ShelfUnit.Column.Shelf.Room.Name != "" {
-			ci.RoomName = item.Inventory.ShelfUnit.Column.Shelf.Room.Name
-		} else {
-			ci.RoomName = item.Inventory.ShelfUnit.Column.Shelf.Room.Floor + item.Inventory.ShelfUnit.Column.Shelf.Room.Number
-		}
-		ci.BuildingName = item.Inventory.ShelfUnit.Column.Shelf.Room.Building.Name
+		ci.Room = *item.Inventory.ShelfUnit.Column.Shelf.Room
+		ci.Building = *item.Inventory.ShelfUnit.Column.Shelf.Room.Building
 		ci.ShelfID = item.Inventory.ShelfUnit.Column.Shelf.ID
 		ci.AmountSelected = item.Amount
 		m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name] = append(m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name], ci)
