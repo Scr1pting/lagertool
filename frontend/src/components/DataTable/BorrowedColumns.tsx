@@ -2,6 +2,8 @@ import { format, differenceInCalendarDays, isAfter } from "date-fns";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { BorrowItem } from "@/types/borrow";
 import DataTableColumnHeader from "./DataTableSortedHeader";
+import MessageButton from "../MessageButton";
+
 
 const borrowedColumns: ColumnDef<BorrowItem>[] = [
   {
@@ -45,7 +47,9 @@ const borrowedColumns: ColumnDef<BorrowItem>[] = [
         : state === "approved" ? "Approved"
         : state === "returned" ? "Returned"
         : isOverdue ? "Overdue" : "On loan";
-      const daysLabel = days === null ? "" : isOverdue ? `${Math.abs(days)}d late` : `${days}d left`;
+      const daysLabel = state === "overdue" && days !== null
+        ? `${Math.abs(days)}d late`
+        : "";
       const badgeClass =
         state === "pending" ? "bg-yellow-100 text-yellow-700" :
         state === "approved" ? "bg-blue-100 text-blue-700" :
@@ -59,6 +63,16 @@ const borrowedColumns: ColumnDef<BorrowItem>[] = [
         </div>
       );
     },
+  },
+  {
+    id: "message",
+    header: () => <div className="text-right">Message</div>,
+    enableHiding: false,
+    cell: ({ row }) => (
+      <div className="text-right">
+        {row.original.state === "approved" ? <MessageButton /> : null}
+      </div>
+    ),
   },
 ];
 
