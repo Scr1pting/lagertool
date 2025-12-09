@@ -1,0 +1,38 @@
+[
+  {
+    "id": "loan-1",
+    "itemId": "item-1",
+    "itemName": "Projector",
+    "personId": "user-1",
+    "borrowDate": "2024-03-01T12:00:00Z",
+    "returnDate": null,
+    "state": "on_loan"
+  },
+  {
+    "id": "loan-2",
+    "itemId": "item-2",
+    "itemName": "Camera",
+    "personId": "user-1",
+    "borrowDate": "2024-03-01T12:00:00Z",
+    "returnDate": "2024-03-02T12:00:00Z",
+    "state": "overdue"
+  },
+  {
+    "id": "loan-3",
+    "itemId": "item-3",
+    "itemName": "Deez Nuts",
+    "personId": "user-1",
+    "borrowDate": "2024-03-01T12:00:00Z",
+    "returnDate": "2024-03-02T12:00:00Z",
+    "state": "pending"
+  },
+  {
+    "id": "loan-4",
+    "itemId": "item-4",
+    "itemName": "Ligma",
+    "personId": "user-1",
+    "borrowDate": "2024-03-01T12:00:00Z",
+    "returnDate": "2024-03-02T12:00:00Z",
+    "state": "approved"
+  }
+]
