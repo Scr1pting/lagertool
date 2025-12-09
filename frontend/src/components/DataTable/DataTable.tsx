@@ -1,6 +1,7 @@
 import * as React from "react"
+import { cn } from "@/lib/utils"
 import { flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
-import type { ColumnDef, ColumnFiltersState, SortingState } from "@tanstack/react-table"
+import type { ColumnDef, ColumnFiltersState, Row, SortingState } from "@tanstack/react-table"
 
 import {
   Table,
@@ -10,20 +11,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/shadcn/table"
+import { useNavigate } from "react-router-dom"
 
 
-interface DataTableProps<TData>
-  extends React.HTMLAttributes<HTMLDivElement> {
-  data: TData[],
-  columns: ColumnDef<TData>[],
+interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivElement> {
+  data: TData[]
+  columns: ColumnDef<TData>[]
+  rowLink?: (row: Row<TData>) => string
+  sticky?: boolean
+  className?: string
 }
 
-
-function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
+function DataTable<TData>({
+  data, columns, rowLink, sticky = false, className=""
+} : DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
+  const navigate = useNavigate()
 
   const table = useReactTable<TData>({
     data,
@@ -39,15 +45,45 @@ function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
     },
   })
 
+
+  const rowElement = (row: Row<TData>) => {
+    const destination = rowLink?.(row)
+    const isLink = Boolean(destination)
+
+    return (
+      <TableRow
+        key={row.id}
+        className={isLink ? "cursor-pointer hover:bg-muted/30" : "hover:bg-transparent"}
+        tabIndex={isLink ? 0 : undefined}
+        onClick={
+          destination ? () => navigate(destination) : undefined
+        }
+      >
+        {row.getVisibleCells().map((cell) => (
+          <TableCell key={cell.id} className="px-4">
+            {flexRender(
+              cell.column.columnDef.cell,
+              cell.getContext()
+            )}
+          </TableCell>
+        ))}
+      </TableRow>
+    )
+  }
+
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className={cn("rounded-lg border overflow-hidden", className)}>
       <Table>
-        <TableHeader>
+        { /*
+        For the sticky header to work, you have to remove the div that
+        wraps the Table component in components/shadcn/table.tsx.
+        */ }
+        <TableHeader className={sticky ? "z-10 sticky top-0" : ""}>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="">
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="bg-neutral-900 px-4">
+                  <TableHead key={header.id} className="px-4 bg-neutral-900">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -63,16 +99,7 @@ function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="hover:bg-transparent">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="px-4">
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext()
-                    )}
-                  </TableCell>
-                ))}
-              </TableRow>
+              rowElement(row)
             ))
           ) : (
             <TableRow className="hover:bg-transparent">
@@ -80,7 +107,7 @@ function DataTable<TData>({ data, columns } : DataTableProps<TData>) {
                 colSpan={columns.length}
                 className="h-24 text-center"
               >
-                No results.
+                Nothing to show here.
               </TableCell>
             </TableRow>
           )}

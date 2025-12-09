@@ -4,120 +4,31 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
 	"lagertool.com/main/auth"
-	"lagertool.com/main/chatbot"
 	"lagertool.com/main/config"
 )
 
 func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
-	client, sysprompt := chatbot.ConnectAI()
-	h := NewHandler(dbCon, cfg, chatbot.ChatBot{Client: client, SysPrompt: sysprompt})
+	h := NewHandler(dbCon, cfg)
 
-	// Shelf endpoints
-	r.POST("/shelves", h.CreateShelf)
-	r.GET("/shelves", h.GetAllShelves)
-	// More specific routes MUST come before generic :id route
-	r.GET("/shelves/building/:building", h.GetShelvesByBuilding)
-	r.GET("/shelves/building/:building/room/:room", h.GetShelvesByRoom)
-	r.GET("/shelves/unit/:id", h.SearchShelfUnit)
-	r.GET("/shelves/unit/:id/inventory", h.GetShelfUnitInventory)
-	r.GET("/shelves/:id", h.GetShelfByID)
-	r.PUT("/shelves/:id", h.UpdateShelf)
-	r.DELETE("/shelves/:id", h.DeleteShelf)
+	r.GET("/shelves", h.GetShelves) // ?organisation=
+	r.GET("/item", h.GetItem)       // ?organisation=X&id=X&start=X&end=X
+	r.GET("/organisations", h.GetOrganisations)
+	r.GET("/shopping_cart", h.GetShoppingCart) // ?userID=X&start=X&end=X
 
-	// Location endpoints
-	r.GET("/locations", h.GetAllLocations)
-	r.GET("/locations/:id", h.GetLocationByID)
-	r.POST("/locations", h.CreateLocation)
-	r.PUT("/locations/:id", h.UpdateLocation)
-	r.DELETE("/locations/:id", h.DeleteLocation)
+	// Edu-ID endpoints
+	r.GET("/auth/eduid/login", auth.LoginHandler)
+	r.GET("/auth/eduid/callback", auth.CallbackHandler)
 
-	// Item endpoints
-	r.GET("/items", h.GetAllItems)
-	r.GET("/items/search", h.SearchItems)
-	r.GET("/items/:id", h.GetItemByID)
-	r.POST("/items", h.CreateItem)
-	r.PUT("/items/:id", h.UpdateItem)
-	r.DELETE("/items/:id", h.DeleteItem)
+	//sorted by date
+	r.GET("/rooms_sorted", h.GetRoomsS)
+	r.GET("/buildings_sorted", h.GetBuildingsS)
+	r.GET("/shelves_sorted", h.GetShelvesS)
+	r.GET("/inventory_sorted", h.GetInventoryS) //?start=X&end=X
 
-	// Inventory (IsIn) endpoints
-	r.GET("/inventory", h.GetAllInventory)
-	r.GET("/inventory/location/:location_id", h.GetInventoryByLocation)
-	r.GET("/inventory/item/:item_id", h.GetInventoryByItem)
-	r.GET("/inventory/:id", h.GetInventoryByID)
-	r.POST("/inventory", h.CreateInventory)
-	r.PUT("/inventory/:id", h.UpdateInventory)
-	r.PATCH("/inventory/:id/amount", h.UpdateInventoryAmount)
-	r.DELETE("/inventory/:id", h.DeleteInventory)
-	r.POST("/inventory/new_item", h.InsertNewItem)
-
-	// Person endpoints
-	r.GET("/persons", h.GetAllPersons)
-	r.GET("/persons/search", h.SearchPersons)
-	r.GET("/persons/:id", h.GetPersonByID)
-	r.POST("/persons", h.CreatePerson)
-	r.PUT("/persons/:id", h.UpdatePerson)
-	r.DELETE("/persons/:id", h.DeletePerson)
-
-	// Loans endpoints
-	r.GET("/loans", h.GetAllLoans)
-	r.GET("/loans/person/:person_id", h.GetLoansByPerson)
-	r.GET("/loans/person/:person_id/history", h.GetLoanHistoryByPerson)
-	r.GET("/loans/permanent/:perm_id", h.GetLoansByPermanent)
-	r.GET("/loans/overdue", h.GetOverdueLoans)
-	r.GET("/loans/item/:item_id/history", h.GetLoanHistoryByItem)
-	r.GET("/loans/:id", h.GetLoanByID)
-	r.POST("/loans", h.CreateLoan)
-	r.PUT("/loans/:id", h.UpdateLoan)
-	r.PATCH("/loans/:id/return", h.ReturnLoan)
-	r.DELETE("/loans/:id", h.DeleteLoan)
-
-	// Searches
-	r.GET("/search", h.Search)
-	r.GET("/borrows", h.GetLoansWithPerson)
-	r.GET("/borrows_count", h.BorrowCounter)
-
-	// Slack Events endpoint
-	r.POST("/slack/events", h.Events)
-	r.POST("/slack/interactivity", h.Interactivity)
-	r.POST("/slack/borrow", h.BorrowHandler)
-	r.POST("/slack/return", h.ReturnHandler)
-
-	// Event endpoints
-	r.GET("/events", h.GetAllEvents)
-	r.POST("/events", h.CreateEvent)
-	r.GET("/events/:id", h.GetEventByID)
-	r.PUT("/events/:id", h.UpdateEvent)
-	r.DELETE("/events/:id", h.DeleteEvent)
-
-	// Event helpers endpoints
-	r.GET("/events/:id/helpers", h.GetEventHelpers)
-	r.POST("/events/:id/helpers", h.AddEventHelper)
-	r.DELETE("/events/:id/helpers/:person_id", h.RemoveEventHelper)
-
-	// Event loans endpoints
-	r.GET("/events/:id/loans/active", h.GetActiveEventLoans)
-	r.POST("/events/:id/loans/return-all", h.ReturnAllEventLoans)
-	r.GET("/events/:id/loans", h.GetEventLoans)
-	r.POST("/events/:id/loans", h.CreateEventLoan)
-	r.POST("/events/:id/loans/:loan_id/return", h.ReturnEventLoan)
-
-	// Person event loans endpoint
-	r.GET("/persons/:id/event-loans", h.GetEventLoansByPerson)
-
-	r.POST("/bulkadd", h.BulkAdd)
-	r.POST("/bulkborrow", h.BulkBorrow)
-	r.POST("/bulksearch", h.BulkSearch)
-	r.POST("/bulkadd/csv", h.BulkAddCSV)
-
-	// Calendar endpoints
-	r.GET("/calendar/all", h.GetDownloadICSALL)
-	r.GET("/calendar/:id", h.GetDownloadICS)
-
-	// Google OAuth2
-	r.GET("/auth/google/login", auth.GoogleLoginHandler)
-	r.GET("/auth/google/callback", auth.GoogleCallbackHandler)
-	r.POST("/auth/google/callback", auth.VerifyGoogleToken)
-
-	// AI Bot
-	r.POST("/chat", h.ChatHandler)
+	//post
+	r.POST("/create_building", h.CreateBuilding)
+	r.POST("/create_room", h.CreateRoom)
+	r.POST("/create_shelf", h.CreateShelf)
+	r.POST("/add_item_to_cart", h.CreateCartItem)
+	r.POST("/create_item", h.CreateItem)
 }

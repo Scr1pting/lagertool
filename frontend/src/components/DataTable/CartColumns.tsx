@@ -1,9 +1,6 @@
-import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../shadcn/dropdown-menu";
-import { Button } from "../shadcn/button";
 import type { InventoryItem } from "@/types/inventory";
 import type { ColumnDef } from "@tanstack/react-table";
-import DataTableColumnHeader from "./DataTableSortedHeader";
+import DataTableColumnHeader from "./SortableHeader";
 
 
 const cartColumns: ColumnDef<InventoryItem>[] = [
@@ -46,33 +43,7 @@ const cartColumns: ColumnDef<InventoryItem>[] = [
     cell: ({ row }) => (
       <div className="text-right">{row.getValue("numSelected")}</div>
     ),
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: () => {
-      return (
-        <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Pen className="mr-2 h-4 w-4" /> Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )
-    },
-  },
+  }
 ]
 
 export default cartColumns;

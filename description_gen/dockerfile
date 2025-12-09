@@ -1,10 +1,11 @@
 # Use a lightweight Python image
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    LLAMA_LOG_LEVEL=warn
+    LLAMA_LOG_LEVEL=warn \
+    NLTK_DATA=/root/nltk_data
 
 # Set working directory
 WORKDIR /app
@@ -20,10 +21,13 @@ RUN apt-get update && apt-get install -y \
         wget \
         curl \
         libopenblas-dev \
+    && mkdir -p "$NLTK_DATA" \
     && pip install --upgrade pip setuptools wheel \
     && pip install -r requirements.txt \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python -m nltk.downloader wordnet
 
 # Copy app code
 COPY ./app ./app
@@ -32,4 +36,5 @@ COPY ./app ./app
 EXPOSE 8080
 
 # Run the API
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["python", "app/main.py"]

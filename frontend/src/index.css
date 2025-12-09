@@ -118,3 +118,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Prevent selects from using Times New Roman */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-family: sans-serif;
+}

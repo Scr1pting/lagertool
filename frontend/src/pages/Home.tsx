@@ -1,21 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import StaticShelf from "@/features/shelves/components/StaticShelf";
+import StaticShelf from "@/components/Shelves/viewer/StaticShelf";
 
-import styles from './Home.module.css';
 import Carousel from "@/components/Carousel/Carousel";
-import useFetchShelves from "@/hooks/useFetchShelves";
+import useFetchShelves from "@/hooks/fetch/useFetchShelves";
+import ShelfElementDialog from "@/components/ShelfElementDialog";
+import type { SelectedShelfElement } from "@/types/shelf";
 
 
 function Home() {
   const { status, data: shelves, error } = useFetchShelves();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [, setSelectedElement] = useState<{ elementId: string; building: string; room: string; shelf: string } | null>(null);
+  const [selectedElement, setSelectedElement] = useState<SelectedShelfElement | null>(null);
+
+
   const shelfParam = searchParams.get("shelf");
 
   const resolvedIndex = useMemo(() => {
-    if (!shelves || shelves.length === 0) return 0;
+    if (!Array.isArray(shelves) || shelves.length === 0) return 0;
     if (!shelfParam) return 0
 
     const foundIndex = shelves.findIndex((shelf) => shelf.id === shelfParam);
@@ -24,7 +27,7 @@ function Home() {
   }, [shelfParam, shelves]);
 
   useEffect(() => {
-    if (!shelves || shelves.length === 0) return;
+    if (!Array.isArray(shelves) || shelves.length === 0) return;
 
     const fallbackShelfId = shelves[resolvedIndex]?.id;
 
@@ -51,27 +54,41 @@ function Home() {
     [searchParams, setSearchParams, shelves],
   );
 
-  if (status === "error") return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
-  if (status === "success" && (!shelves || shelves.length === 0)) return <p>No shelves yet.</p>;
-  else if (!shelves || shelves.length === 0) return <></>;
+  if (status === "error")
+    return <p role="alert">{error?.message ?? "Failed to load shelves"}</p>;
+  if (status === "success" && (!shelves || shelves.length === 0)) 
+    return <p>No shelves yet.</p>;
+  if (!Array.isArray(shelves) || shelves.length === 0)
+    return <></>;
 
   const shelvesContent = shelves.map((shelf) => (
-    <div key={shelf.id} className={styles.content}>
+    <div
+      key={shelf.id}
+      className="flex flex-col items-center gap-[30px]"
+    >
       <StaticShelf
-          shelf={shelf}
-          onElementSelect={setSelectedElement}
-        />
-      <label className={styles.homeLabel}>{shelf.buildingName + " - " + shelf.roomName + " - " + shelf.name}</label>
+        shelf={shelf}
+        onElementSelect={setSelectedElement}
+      />
+      <label className="text-[#BBB] font-mono">
+        {shelf.building.name + " - " + shelf.room.name + " - " + shelf.name}
+      </label>
     </div>
   ));
 
   return (
-    <main className={styles.home}>
+    <main className="flex justify-center items-center min-h-[calc(100vh-180px)] my-[100px] mx-0 mb-[80px]">
       <Carousel
         items={shelvesContent}
         ariaLabel="Shelf overview"
         initialIndex={resolvedIndex}
         onIndexChange={handleIndexChange}
+      />
+
+      <ShelfElementDialog 
+        open={selectedElement != null}
+        onOpenChange={() => setSelectedElement(null)}
+        shelfElement={selectedElement}
       />
     </main>
   );

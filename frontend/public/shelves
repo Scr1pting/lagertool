@@ -1,0 +1,59 @@
+[
+  {
+    "id": "29EWG",
+    "name": "Library Shelf",
+    "buildingId": 10,
+    "roomId": 15,
+    "columns": [
+      {
+        "id": "column-J19BL",
+        "numItems": 0,
+        "elements": [
+          {
+            "id": "36S2P",
+            "type": "slim"
+          },
+          {
+            "id": "T1LKF",
+            "type": "high"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "28L6H",
+    "name": "jlökjasf",
+    "buildingId": 5,
+    "roomId": 3,
+    "columns": [
+      {
+        "id": "column-3DFDN",
+        "elements": [
+          {
+            "id": "TXLO6",
+            "type": "high"
+          }
+        ]
+      },
+      {
+        "id": "column-QAXLL",
+        "elements": [
+          {
+            "id": "0064C",
+            "type": "high"
+          }
+        ]
+      },
+      {
+        "id": "column-N7WGB",
+        "elements": [
+          {
+            "id": "BWY8S",
+            "type": "slim"
+          }
+        ]
+      }
+    ]
+  }
+]

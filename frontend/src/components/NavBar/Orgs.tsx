@@ -9,7 +9,7 @@ import {
 import styles from "./NavBar.module.css"
 
 import useOrgs from "@/store/useOrgs"
-import useFetchOrgs from "@/hooks/useFetchOrgs"
+import useFetchOrgs from "@/hooks/fetch/useFetchOrgs"
 import { ChevronDown } from "lucide-react"
 
 function Orgs() {

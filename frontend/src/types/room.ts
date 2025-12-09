@@ -1,5 +1,7 @@
+import type { Building } from "./building"
+
 export interface Room {
-  id: string
+  id: number
   name: string
-  building_id: string
+  building: Building
 }

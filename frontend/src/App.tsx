@@ -11,6 +11,7 @@ import ShoppingCart from './pages/ShoppingCart';
 import { Toaster } from './components/shadcn/sonner';
 import ManageInventory from './pages/ManageInventory';
 import ItemDetail from './pages/ItemDetail';
+import Login from './pages/Login';
 
 function App() {
   useEffect(() => {
@@ -25,22 +26,30 @@ function App() {
     };
   }, []);
 
+  const isLoggedIn = import.meta.env.VITE_IS_LOGGED_IN === "true";
+
+  const protectedRoutes = <>
+    <Route element={<WithNavLayout />}>
+      <Route path="/" element={<Home />} />
+      <Route path="/search" element={<Search />}/>
+      <Route path="/manage-inventory" element={<ManageInventory />}/>
+      <Route path="/persons" element={<Persons />}/>
+      <Route path="/shopping-cart" element={<ShoppingCart />}/>
+      <Route path="/item" element={<ItemDetail />}/>
+      <Route path="/account" element={<Account />} />
+    </Route>
+    <Route path="/add-shelf" element={<AddShelf />} />
+  </>
+
   return (
     <>
-      <main>
-        <Routes>
+      <Routes>
+        { isLoggedIn ? protectedRoutes :
           <Route element={<WithNavLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/search" element={<Search />}/>
-            <Route path="/manage-inventory" element={<ManageInventory />}/>
-            <Route path="/persons" element={<Persons />}/>
-            <Route path="/shopping-cart" element={<ShoppingCart />}/>
-            <Route path="/item" element={<ItemDetail />}/>
-            <Route path="/account" element={<Account />} />
+            <Route path="*" element={<Login />} />
           </Route>
-          <Route path="/add-shelf" element={<AddShelf />} />
-        </Routes>
-      </main>
+        }
+      </Routes>
       <Toaster position="bottom-right" />
     </>
   );

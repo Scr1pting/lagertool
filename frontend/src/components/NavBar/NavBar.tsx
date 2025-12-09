@@ -1,20 +1,18 @@
 import clsx from 'clsx';
 import { Link } from "react-router-dom";
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, UserRoundIcon } from 'lucide-react';
 import styles from "./NavBar.module.css";
 import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
 import MiniCart from '../MiniCart';
 import Org from './Orgs';
 import RangeSelector from './RangeSelector';
-import AccountButton from './AccountButton';
 
 export default function NavBar() {
 
   return (
     <div className={styles.NavBar}>
       <div className={styles.content}>
-        
         <Link className={styles.logo} to="/" aria-label="Home">
           <img
             className="logo"
@@ -24,28 +22,32 @@ export default function NavBar() {
         </Link>
 
         <Org />
-
-        <div className={styles.input}><SearchBar /></div>
-
+        <SearchBar />
         <RangeSelector />
 
-        <div className={styles.actionGroup}>
-          
+        <div className={styles.navGroup}>
           <MiniCart
             trigger={
               <button
                 type="button"
-                className={clsx(styles.input, styles.buttonRnd, styles.actionButton)}
+                className={clsx(styles.input, styles.buttonNavGroup)}
                 aria-label="Open cart"
               >
                 <ShoppingCart className={styles.navIcon} />
               </button>
             }
           />
-          <AccountButton />
+
+          <Link
+            className={clsx(styles.input, styles.buttonNavGroup)}
+            to="/account"
+            aria-label="Account"
+          >
+            <UserRoundIcon className={styles.navIcon} />
+          </Link>
+
           <MoreDropdown />
         </div>
-        
       </div>
     </div>
   );

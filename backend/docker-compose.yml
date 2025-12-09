@@ -6,11 +6,11 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=example
-      - POSTGRES_DB=appdb
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-example}
+      - POSTGRES_DB=${DB_NAME:-appdb}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -18,5 +18,44 @@ services:
       retries: 5
     restart: unless-stopped
 
+  test-db:
+    image: postgres:15-alpine
+    ports:
+      - "5435:5432" # Expose test db on a different port
+    volumes:
+      - test-postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-example}
+      - POSTGRES_DB=${DB_NAME:-appdb}_test # Use a separate test database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.2-alpine
+    command: >
+      redis-server 
+      --save 60 1 
+      --loglevel warning 
+      --requirepass example
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    environment:
+      - REDIS_PASSWORD=example
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
-  db-data:
+  postgres-data:
+  test-postgres-data: # Volume for the test database
+  redis-data:

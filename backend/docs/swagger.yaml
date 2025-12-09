@@ -1,162 +1,253 @@
 basePath: /
 definitions:
-  api.LoanInfo:
+  api_objects.Building:
     properties:
-      amount:
-        type: integer
-      begin:
+      campus:
+        description: GPS        string   `json:"gps"`
         type: string
-      is_overdue:
-        type: boolean
-      loan_id:
-        type: integer
-      person_id:
-        type: integer
-      person_name:
-        type: string
-      until:
-        type: string
-    type: object
-  api.ShelfRequest:
-    properties:
-      building:
-        type: string
-      columns:
-        items:
-          properties:
-            elements:
-              items:
-                properties:
-                  id:
-                    type: string
-                  type:
-                    type: string
-                required:
-                - id
-                - type
-                type: object
-              type: array
-            id:
-              type: string
-          required:
-          - elements
-          - id
-          type: object
-        type: array
       id:
-        type: string
+        type: integer
       name:
         type: string
-      room:
+      updateDate:
+        type: string
+    type: object
+  api_objects.BuildingRequest:
+    properties:
+      campus:
+        type: string
+      name:
         type: string
     required:
-    - building
-    - columns
-    - id
     - name
-    - room
     type: object
-  api.ShelfResponse:
+  api_objects.CartItem:
     properties:
-      building:
+      amount:
+        type: integer
+      amountSelected:
+        type: integer
+      available:
+        type: integer
+      buildingName:
         type: string
-      columns:
+      id:
+        type: integer
+      name:
+        type: string
+      roomName:
+        type: string
+      shelfId:
+        type: string
+    type: object
+  api_objects.CartRequest:
+    properties:
+      id:
+        type: integer
+      numSelected:
+        type: integer
+    required:
+    - id
+    - numSelected
+    type: object
+  api_objects.ColumnElementRequest:
+    properties:
+      elements:
         items:
-          properties:
-            elements:
-              items:
-                properties:
-                  id:
-                    type: string
-                  numItems:
-                    type: integer
-                  type:
-                    type: string
-                type: object
-              type: array
-            id:
-              type: string
-            numItems:
-              type: integer
-          type: object
+          $ref: '#/definitions/api_objects.ShelfElementRequest'
         type: array
       id:
         type: string
-      name:
-        type: string
-      numItems:
-        type: integer
-      room:
+    required:
+    - elements
+    - id
+    type: object
+  api_objects.Columns:
+    properties:
+      elements:
+        items:
+          $ref: '#/definitions/api_objects.Element'
+        type: array
+      id:
         type: string
     type: object
-  api.ShelfUnitInventoryItem:
+  api_objects.Element:
     properties:
-      active_loans:
-        description: Active loans for this item
-        items:
-          $ref: '#/definitions/api.LoanInfo'
-        type: array
+      id:
+        type: string
+      type:
+        type: string
+    type: object
+  api_objects.InventoryItemRequest:
+    properties:
       amount:
         type: integer
-      available:
-        description: Amount available (not borrowed)
-        type: integer
-      borrowed:
-        description: Amount currently borrowed
-        type: integer
-      category:
-        type: string
-      inventory_id:
-        type: integer
-      item_id:
-        type: integer
-      item_name:
+      isConsumable:
+        type: boolean
+      name:
         type: string
       note:
         type: string
+      organisation:
+        type: string
+      shelfUnitId:
+        type: string
+    required:
+    - amount
+    - isConsumable
+    - name
+    - note
+    - shelfUnitId
     type: object
-  db.Event:
+  api_objects.InventoryItemWithShelf:
     properties:
-      created_at:
-        type: string
-      description:
-        type: string
-      end_date:
+      amount:
+        type: integer
+      available:
+        type: integer
+      buildingName:
         type: string
       id:
         type: integer
       name:
         type: string
-      start_date:
+      roomName:
+        type: string
+      shelf:
+        $ref: '#/definitions/api_objects.Shelves'
+      shelfId:
         type: string
     type: object
-  db.EventHelper:
-    properties:
-      event_id:
-        type: integer
-      id:
-        type: integer
-      person_id:
-        type: integer
-    type: object
-  db.EventLoan:
+  api_objects.InventorySorted:
     properties:
       amount:
         type: integer
-      borrowed_at:
-        type: string
-      event_id:
+      available:
         type: integer
+      buildingName:
+        type: string
       id:
         type: integer
-      item_id:
-        type: integer
-      person_id:
-        description: Who borrowed it
-        type: integer
-      returned_at:
-        description: NULL if not yet returned
+      name:
         type: string
+      roomName:
+        type: string
+    type: object
+  api_objects.Room:
+    properties:
+      buildingName:
+        type: string
+      floor:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      number:
+        type: string
+      updateDate:
+        type: string
+    type: object
+  api_objects.RoomRequest:
+    properties:
+      building:
+        type: integer
+      floor:
+        type: string
+      name:
+        type: string
+      number:
+        type: string
+    required:
+    - building
+    - floor
+    - number
+    type: object
+  api_objects.ShelfElementRequest:
+    properties:
+      id:
+        type: string
+      type:
+        type: string
+    required:
+    - id
+    - type
+    type: object
+  api_objects.ShelfRequest:
+    properties:
+      buildingId:
+        type: integer
+      columns:
+        items:
+          $ref: '#/definitions/api_objects.ColumnElementRequest'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      ownedBy:
+        type: string
+      roomId:
+        type: integer
+    required:
+    - buildingId
+    - columns
+    - id
+    - name
+    - ownedBy
+    - roomId
+    type: object
+  api_objects.ShelfSorted:
+    properties:
+      buildingName:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      roomName:
+        type: string
+    type: object
+  api_objects.Shelves:
+    properties:
+      buildingName:
+        type: string
+      columns:
+        items:
+          $ref: '#/definitions/api_objects.Columns'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      roomName:
+        type: string
+    type: object
+  db.Building:
+    properties:
+      campus:
+        type: string
+      gps:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      update_date:
+        type: string
+    type: object
+  db.Column:
+    properties:
+      id:
+        type: string
+      shelf:
+        $ref: '#/definitions/db.Shelf'
+      shelf_id:
+        type: string
+      shelf_units:
+        items:
+          $ref: '#/definitions/db.ShelfUnit'
+        type: array
     type: object
   db.Inventory:
     properties:
@@ -164,58 +255,172 @@ definitions:
         type: integer
       id:
         type: integer
+      item:
+        $ref: '#/definitions/db.Item'
       item_id:
         type: integer
-      location_id:
-        type: integer
       note:
+        type: string
+      request_item:
+        items:
+          $ref: '#/definitions/db.RequestItems'
+        type: array
+      shelf_unit:
+        $ref: '#/definitions/db.ShelfUnit'
+      shelf_unit_id:
+        type: string
+      update_date:
         type: string
     type: object
   db.Item:
     properties:
-      category:
+      id:
+        type: integer
+      is_consumable:
+        description: |-
+          Description  string   `json:"description" pg:"description"`
+          Category     string   `json:"category" pg:"category"`
+        type: boolean
+      name:
+        type: string
+    type: object
+  db.Organisation:
+    properties:
+      name:
+        type: string
+    type: object
+  db.Request:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: integer
+      note:
+        type: string
+      start_date:
+        type: string
+      status:
+        type: string
+      user:
+        $ref: '#/definitions/db.User'
+      user_id:
+        type: integer
+    type: object
+  db.RequestItems:
+    properties:
+      amount:
+        type: integer
+      id:
+        type: integer
+      inventory:
+        $ref: '#/definitions/db.Inventory'
+      inventory_id:
+        type: integer
+      request:
+        $ref: '#/definitions/db.Request'
+      request_id:
+        type: integer
+    type: object
+  db.Room:
+    properties:
+      building:
+        $ref: '#/definitions/db.Building'
+      building_id:
+        type: integer
+      floor:
         type: string
       id:
         type: integer
       name:
         type: string
+      number:
+        type: string
+      update_date:
+        type: string
     type: object
-  db.Loans:
+  db.Shelf:
+    properties:
+      columns:
+        items:
+          $ref: '#/definitions/db.Column'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      organisation:
+        $ref: '#/definitions/db.Organisation'
+      owned_by:
+        type: string
+      room:
+        $ref: '#/definitions/db.Room'
+      room_id:
+        type: integer
+      update_date:
+        type: string
+    type: object
+  db.ShelfUnit:
+    properties:
+      column:
+        $ref: '#/definitions/db.Column'
+      column_id:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      position_in_column:
+        description: to change the order of the units in the column later
+        type: integer
+      type:
+        description: 0 is small, 1 is big
+        type: integer
+    type: object
+  db.ShoppingCart:
+    properties:
+      id:
+        type: integer
+      shopping_cart_items:
+        items:
+          $ref: '#/definitions/db.ShoppingCartItem'
+        type: array
+      user_id:
+        type: integer
+    type: object
+  db.ShoppingCartItem:
     properties:
       amount:
         type: integer
-      begin:
-        type: string
       id:
         type: integer
-      item_id:
+      inventory:
+        $ref: '#/definitions/db.Inventory'
+      inventory_id:
         type: integer
-      person_id:
+      shopping_cart:
+        $ref: '#/definitions/db.ShoppingCart'
+      shopping_cart_id:
         type: integer
-      returned:
-        type: boolean
-      returned_at:
-        type: string
-      until:
-        type: string
     type: object
-  db.Location:
+  db.User:
     properties:
-      id:
-        type: integer
-      shelf_unit_id:
-        description: Reference to ShelfUnit.ID
+      access_token:
         type: string
-    type: object
-  db.Person:
-    properties:
-      firstname:
+      created_at:
+        type: string
+      email:
         type: string
       id:
         type: integer
-      lastname:
+      issuer:
         type: string
-      slack_id:
+      last_login:
+        type: string
+      name:
+        type: string
+      refresh_token:
+        type: string
+      subject:
         type: string
     type: object
 host: localhost:8000
@@ -232,210 +437,31 @@ info:
   title: Lagertool Inventory API
   version: "1.0"
 paths:
-  /calendar/{id}:
-    get:
-      description: Downloads an iCalendar (.ics) file for a specific loan containing
-        a reminder to return the item
-      parameters:
-      - description: Loan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - text/calendar
-      responses:
-        "200":
-          description: ICS file content
-          schema:
-            type: string
-        "400":
-          description: Invalid loan ID
-          schema:
-            type: string
-      summary: Download calendar file for a specific loan
-      tags:
-      - calendar
-  /calendar/all:
-    get:
-      description: Downloads an iCalendar (.ics) file containing all loan records
-        with reminders to return items
-      produces:
-      - text/calendar
-      responses:
-        "200":
-          description: ICS file content with all loan events
-          schema:
-            type: string
-      summary: Download calendar file for all loans
-      tags:
-      - calendar
-  /events:
-    get:
-      description: Retrieve all events from the database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Event'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all events
-      tags:
-      - events
+  /add_item_to_cart:
     post:
       consumes:
       - application/json
-      description: Create a new event with the provided details. The ID is auto-generated
-        and should not be included in the request body.
+      description: Add an item to the shopping cart
       parameters:
-      - description: Event object
+      - description: Cart item object
         in: body
-        name: event
+        name: cart_item
         required: true
         schema:
-          $ref: '#/definitions/db.Event'
+          $ref: '#/definitions/api_objects.CartRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.Event'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new event
+            $ref: '#/definitions/db.ShoppingCartItem'
+      summary: Add an item to the shopping cart
       tags:
-      - events
-  /events/{id}:
-    delete:
-      description: Delete an event by ID
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete an event
-      tags:
-      - events
+      - shopping_cart
+  /buildings_sorted:
     get:
-      description: Retrieve a specific event by its ID
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Event'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get event by ID
-      tags:
-      - events
-    put:
-      consumes:
-      - application/json
-      description: Update an existing event by ID. The ID in the request body is ignored;
-        use the path parameter.
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Event object
-        in: body
-        name: event
-        required: true
-        schema:
-          $ref: '#/definitions/db.Event'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Event'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update an event
-      tags:
-      - events
-  /events/{id}/helpers:
-    get:
-      description: Retrieve all persons who are helpers for a specific event
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
+      description: Get all buildings sorted by update date
       produces:
       - application/json
       responses:
@@ -443,1455 +469,112 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/db.EventHelper'
+              $ref: '#/definitions/api_objects.Building'
             type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all helpers for an event
+      summary: Get all buildings sorted by update date
       tags:
-      - events
+      - buildings
+  /create_building:
     post:
       consumes:
       - application/json
-      description: Add a person as a helper to an event, allowing them to borrow items
-        for the event
+      description: Create a new building
       parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Helper object with person_id
+      - description: Building object
         in: body
-        name: helper
+        name: building
         required: true
         schema:
-          properties:
-            person_id:
-              type: integer
-          type: object
+          $ref: '#/definitions/api_objects.BuildingRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.EventHelper'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Add a helper to an event
+            $ref: '#/definitions/db.Building'
+      summary: Create a new building
       tags:
-      - events
-  /events/{id}/helpers/{person_id}:
-    delete:
-      description: Remove a person from being a helper for an event
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Person ID
-        in: path
-        name: person_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Remove a helper from an event
-      tags:
-      - events
-  /events/{id}/loans:
-    get:
-      description: Retrieve all item loans (both active and returned) for a specific
-        event
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.EventLoan'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all loans for an event
-      tags:
-      - events
+      - buildings
+  /create_item:
     post:
       consumes:
       - application/json
-      description: Create a new loan record for an item borrowed for an event
+      description: Create a new inventory item
       parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Loan object
-        in: body
-        name: loan
-        required: true
-        schema:
-          properties:
-            amount:
-              type: integer
-            item_id:
-              type: integer
-            person_id:
-              type: integer
-          type: object
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/db.EventLoan'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Borrow an item for an event
-      tags:
-      - events
-  /events/{id}/loans/{loan_id}/return:
-    post:
-      description: Mark a specific event loan as returned
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Event Loan ID
-        in: path
-        name: loan_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Return a specific event loan
-      tags:
-      - events
-  /events/{id}/loans/active:
-    get:
-      description: Retrieve all unreturned item loans for a specific event
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.EventLoan'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get active loans for an event
-      tags:
-      - events
-  /events/{id}/loans/return-all:
-    post:
-      description: Mark all unreturned loans for an event as returned at once
-      parameters:
-      - description: Event ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Return all items for an event
-      tags:
-      - events
-  /inventory:
-    get:
-      description: Retrieve all item-location inventory records from the database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Inventory'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all inventory records
-      tags:
-      - inventory
-    post:
-      consumes:
-      - application/json
-      description: Create a new inventory record (link an item to a location with
-        an amount). The ID is auto-generated and should not be included in the request
-        body.
-      parameters:
-      - description: Inventory record object
-        in: body
-        name: inventory
-        required: true
-        schema:
-          $ref: '#/definitions/db.Inventory'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/db.Inventory'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new inventory record
-      tags:
-      - inventory
-  /inventory/{id}:
-    delete:
-      description: Delete an inventory record by ID
-      parameters:
-      - description: Inventory Record ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete an inventory record
-      tags:
-      - inventory
-    get:
-      description: Retrieve a specific inventory record by its ID
-      parameters:
-      - description: Inventory Record ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Inventory'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get inventory record by ID
-      tags:
-      - inventory
-    put:
-      consumes:
-      - application/json
-      description: Update an existing inventory record by ID. The ID in the request
-        body is ignored; use the path parameter.
-      parameters:
-      - description: Inventory Record ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Inventory record object
-        in: body
-        name: inventory
-        required: true
-        schema:
-          $ref: '#/definitions/db.Inventory'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Inventory'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update an inventory record
-      tags:
-      - inventory
-  /inventory/{id}/amount:
-    patch:
-      consumes:
-      - application/json
-      description: Partially update the amount of an inventory record by ID
-      parameters:
-      - description: Inventory Record ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: New amount value
-        in: body
-        name: request
-        required: true
-        schema:
-          properties:
-            amount:
-              type: integer
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Inventory'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update inventory amount
-      tags:
-      - inventory
-  /inventory/item/{item_id}:
-    get:
-      description: Retrieve all inventory records for a specific item
-      parameters:
-      - description: Item ID
-        in: path
-        name: item_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Inventory'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get inventory records by item ID
-      tags:
-      - inventory
-  /inventory/location/{location_id}:
-    get:
-      description: Retrieve all inventory records for a specific location
-      parameters:
-      - description: Location ID
-        in: path
-        name: location_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Inventory'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get inventory records by location ID
-      tags:
-      - inventory
-  /items:
-    get:
-      description: Retrieve all items from the database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Item'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all items
-      tags:
-      - items
-    post:
-      consumes:
-      - application/json
-      description: Create a new item with the provided details. The ID is auto-generated
-        and should not be included in the request body.
-      parameters:
-      - description: Item object
+      - description: Inventory item object
         in: body
         name: item
         required: true
         schema:
-          $ref: '#/definitions/db.Item'
+          $ref: '#/definitions/api_objects.InventoryItemRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.Item'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new item
+            $ref: '#/definitions/db.Inventory'
+      summary: Create a new inventory item
       tags:
       - items
-  /items/{id}:
-    delete:
-      description: Delete an item by ID
-      parameters:
-      - description: Item ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete an item
-      tags:
-      - items
-    get:
-      description: Retrieve a specific item by its ID
-      parameters:
-      - description: Item ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Item'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get item by ID
-      tags:
-      - items
-    put:
-      consumes:
-      - application/json
-      description: Update an existing item by ID. The ID in the request body is ignored;
-        use the path parameter.
-      parameters:
-      - description: Item ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Item object
-        in: body
-        name: item
-        required: true
-        schema:
-          $ref: '#/definitions/db.Item'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Item'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update an item
-      tags:
-      - items
-  /items/search:
-    get:
-      description: Search for items with a case-insensitive name query
-      parameters:
-      - description: Item name to search for
-        in: query
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Item'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Search items by name
-      tags:
-      - items
-  /loans:
-    get:
-      description: Retrieve all loan records from the database. Optionally filter
-        by returned status using the 'returned' query parameter (true/false).
-      parameters:
-      - description: Filter by returned status (true/false)
-        in: query
-        name: returned
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Loans'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all loans
-      tags:
-      - loans
+  /create_room:
     post:
       consumes:
       - application/json
-      description: Create a new loan record. The ID is auto-generated and should not
-        be included in the request body. Date fields must be in RFC3339 format (e.g.,
-        "2025-10-10T14:30:00Z").
+      description: Create a new room
       parameters:
-      - description: Loan record object
+      - description: Room object
         in: body
-        name: loan
+        name: room
         required: true
         schema:
-          $ref: '#/definitions/db.Loans'
+          $ref: '#/definitions/api_objects.RoomRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.Loans'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new loan record
+            $ref: '#/definitions/db.Room'
+      summary: Create a new room
       tags:
-      - loans
-  /loans/{id}:
-    delete:
-      description: Delete a loan record by ID
-      parameters:
-      - description: Loan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a loan record
-      tags:
-      - loans
-    get:
-      description: Retrieve a specific loan record by its ID
-      parameters:
-      - description: Loan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Loans'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get loan by ID
-      tags:
-      - loans
-    put:
-      consumes:
-      - application/json
-      description: Update an existing loan record by ID. The ID in the request body
-        is ignored; use the path parameter. Date fields must be in RFC3339 format
-        (e.g., "2025-10-10T14:30:00Z").
-      parameters:
-      - description: Loan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Loan record object
-        in: body
-        name: loan
-        required: true
-        schema:
-          $ref: '#/definitions/db.Loans'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Loans'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update a loan record
-      tags:
-      - loans
-  /loans/{id}/return:
-    patch:
-      description: Mark a loan as returned by setting the returned flag to true and
-        recording the return timestamp
-      parameters:
-      - description: Loan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Loans'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Mark a loan as returned
-      tags:
-      - loans
-  /loans/item/{item_id}/history:
-    get:
-      description: Retrieve all loan records (both active and returned) for a specific
-        item
-      parameters:
-      - description: Item ID
-        in: path
-        name: item_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Loans'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get borrow history for an item
-      tags:
-      - loans
-  /loans/overdue:
-    get:
-      description: Retrieve all non-returned loan records where the return date (`until`)
-        is in the past
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Loans'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all overdue loans
-      tags:
-      - loans
-  /loans/permanent/{perm_id}:
-    get:
-      description: Retrieve all loan records associated with a specific permanent
-        item
-      parameters:
-      - description: Permanent Item ID
-        in: path
-        name: perm_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Loans'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get loans by permanent item ID
-      tags:
-      - loans
-  /loans/person/{person_id}:
-    get:
-      description: Retrieve all loan records associated with a specific person
-      parameters:
-      - description: Person ID
-        in: path
-        name: person_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Loans'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get loans by person ID
-      tags:
-      - loans
-  /loans/person/{person_id}/history:
-    get:
-      description: Retrieve all loan records (both active and returned) for a specific
-        person
-      parameters:
-      - description: Person ID
-        in: path
-        name: person_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Loans'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get borrow history for a person
-      tags:
-      - loans
-  /locations:
-    get:
-      description: Retrieve all locations from the database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Location'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all locations
-      tags:
-      - locations
+      - rooms
+  /create_shelf:
     post:
       consumes:
       - application/json
-      description: Create a new location with the provided details. The ID is auto-generated
-        and should not be included in the request body.
+      description: Create a new shelf
       parameters:
-      - description: Location object
+      - description: Shelf object
         in: body
-        name: location
+        name: shelf
         required: true
         schema:
-          $ref: '#/definitions/db.Location'
+          $ref: '#/definitions/api_objects.ShelfRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.Location'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new location
+            $ref: '#/definitions/db.Shelf'
+      summary: Create a new shelf
       tags:
-      - locations
-  /locations/{id}:
-    delete:
-      description: Delete a location by ID
-      parameters:
-      - description: Location ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a location
-      tags:
-      - locations
+      - shelves
+  /inventory_sorted:
     get:
-      description: Retrieve a specific location by its ID
+      description: Get all inventory items sorted by update date
       parameters:
-      - description: Location ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Location'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get location by ID
-      tags:
-      - locations
-    put:
-      consumes:
-      - application/json
-      description: Update an existing location by ID. The ID in the request body is
-        ignored; use the path parameter.
-      parameters:
-      - description: Location ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Location object
-        in: body
-        name: location
-        required: true
-        schema:
-          $ref: '#/definitions/db.Location'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Location'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update a location
-      tags:
-      - locations
-  /persons:
-    get:
-      description: Retrieve all persons from the database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.Person'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all persons
-      tags:
-      - persons
-    post:
-      consumes:
-      - application/json
-      description: Create a new person with the provided details. The ID is auto-generated
-        and should not be included in the request body.
-      parameters:
-      - description: Person object
-        in: body
-        name: person
-        required: true
-        schema:
-          $ref: '#/definitions/db.Person'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/db.Person'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new person
-      tags:
-      - persons
-  /persons/{id}:
-    delete:
-      description: Delete a person by ID
-      parameters:
-      - description: Person ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a person
-      tags:
-      - persons
-    get:
-      description: Retrieve a specific person by their ID
-      parameters:
-      - description: Person ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Person'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get person by ID
-      tags:
-      - persons
-    put:
-      consumes:
-      - application/json
-      description: Update an existing person by ID. The ID in the request body is
-        ignored; use the path parameter.
-      parameters:
-      - description: Person ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Person object
-        in: body
-        name: person
-        required: true
-        schema:
-          $ref: '#/definitions/db.Person'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/db.Person'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update a person
-      tags:
-      - persons
-  /persons/{id}/event-loans:
-    get:
-      description: Retrieve all event loans for a specific person across all events
-      parameters:
-      - description: Person ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db.EventLoan'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get event loans by person
-      tags:
-      - events
-  /persons/search:
-    get:
-      description: Search for persons by firstname or lastname (case-insensitive partial
-        match)
-      parameters:
-      - description: First name query for search
+      - description: Start date in format 2006-01-02
         in: query
-        name: firstname
+        name: start
+        required: true
         type: string
-      - description: Last name query for search
+      - description: End date in format 2006-01-02
         in: query
-        name: lastname
+        name: end
+        required: true
         type: string
       produces:
       - application/json
@@ -1900,20 +583,84 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/db.Person'
+              $ref: '#/definitions/api_objects.InventorySorted'
             type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Search persons
+      summary: Get all inventory items sorted by update date
       tags:
-      - persons
+      - items
+  /item:
+    get:
+      description: Get a specific item
+      parameters:
+      - description: Organisation name
+        in: query
+        name: organisation
+        required: true
+        type: string
+      - description: Inventory Item ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: Start date in format 2006-01-02
+        in: query
+        name: start
+        required: true
+        type: string
+      - description: End date in format 2006-01-02
+        in: query
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_objects.InventoryItemWithShelf'
+      summary: Get a specific item
+      tags:
+      - items
+  /organisations:
+    get:
+      description: Get all organisations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Organisation'
+            type: array
+      summary: Get all organisations
+      tags:
+      - organisations
+  /rooms_sorted:
+    get:
+      description: Get all rooms sorted by update date
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api_objects.Room'
+            type: array
+      summary: Get all rooms sorted by update date
+      tags:
+      - rooms
   /shelves:
     get:
-      description: Retrieve all shelves from the database with their layouts
+      description: Get all shelves
+      parameters:
+      - description: Organisation name
+        in: query
+        name: organisation
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1921,173 +668,14 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/api.ShelfResponse'
+              $ref: '#/definitions/api_objects.Shelves'
             type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
       summary: Get all shelves
       tags:
       - shelves
-    post:
-      consumes:
-      - application/json
-      description: Parse the JSON shelf definition and create the corresponding Shelf
-        and ShelfUnit entries in the database
-      parameters:
-      - description: Shelf layout object
-        in: body
-        name: shelf
-        required: true
-        schema:
-          $ref: '#/definitions/api.ShelfRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new shelf layout
-      tags:
-      - shelves
-  /shelves/{id}:
-    delete:
-      description: Delete a shelf and all its associated columns, shelf units, and
-        locations
-      parameters:
-      - description: Shelf ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a shelf
-      tags:
-      - shelves
+  /shelves_sorted:
     get:
-      description: Retrieve a specific shelf by its ID with full layout
-      parameters:
-      - description: Shelf ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.ShelfResponse'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get shelf by ID
-      tags:
-      - shelves
-    put:
-      consumes:
-      - application/json
-      description: Update a shelf by completely replacing its structure. All existing
-        columns and shelf units will be deleted and replaced with the new structure.
-      parameters:
-      - description: Shelf ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Shelf layout object
-        in: body
-        name: shelf
-        required: true
-        schema:
-          $ref: '#/definitions/api.ShelfRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update an existing shelf layout
-      tags:
-      - shelves
-  /shelves/building/{building}:
-    get:
-      description: Retrieve all shelves for a specific building with their layout
-      parameters:
-      - description: Building name
-        in: path
-        name: building
-        required: true
-        type: string
+      description: Get all shelves sorted by update date
       produces:
       - application/json
       responses:
@@ -2095,30 +683,28 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/api.ShelfResponse'
+              $ref: '#/definitions/api_objects.ShelfSorted'
             type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all shelves in a building
+      summary: Get all shelves sorted by update date
       tags:
       - shelves
-  /shelves/building/{building}/room/{room}:
+  /shopping_cart:
     get:
-      description: Retrieve all shelves for a specific building and room with their
-        layout
+      description: Get a user's shopping cart
       parameters:
-      - description: Building name
-        in: path
-        name: building
+      - description: User ID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      - description: Start date in format 2006-01-02
+        in: query
+        name: start
         required: true
         type: string
-      - description: Room name
-        in: path
-        name: room
+      - description: End date in format 2006-01-02
+        in: query
+        name: end
         required: true
         type: string
       produces:
@@ -2127,85 +713,14 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/api.ShelfResponse'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
             additionalProperties:
-              type: string
+              items:
+                $ref: '#/definitions/api_objects.CartItem'
+              type: array
             type: object
-      summary: Get all shelves in a room
+      summary: Get a user's shopping cart
       tags:
-      - shelves
-  /shelves/unit/{id}:
-    get:
-      description: Find a shelf unit by its unique 5-letter ID (case-insensitive)
-        and return its location details
-      parameters:
-      - description: Shelf Unit ID (5-letter code, case-insensitive)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Search for a shelf unit by its ID
-      tags:
-      - shelves
-  /shelves/unit/{id}/inventory:
-    get:
-      description: Retrieve all inventory items in a specific shelf unit by its 5-letter
-        ID (case-insensitive), including borrow status and active loans
-      parameters:
-      - description: Shelf Unit ID (5-letter code, case-insensitive)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/api.ShelfUnitInventoryItem'
-            type: array
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get inventory in a shelf unit
-      tags:
-      - shelves
+      - shopping_cart
 schemes:
 - http
 swagger: "2.0"

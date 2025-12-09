@@ -1,3 +1,6 @@
+import type { Building } from "./building";
+import type { Room } from "./room";
+
 export type ShelfElementType = 'slim' | 'high';
 
 
@@ -7,9 +10,16 @@ export interface ShelfElementDefinition {
 }
 
 export interface ShelfElement {
-  id: string;
+  id: string;  // string for simpler element labels
   type: ShelfElementType;
   numItems?: number;
+}
+
+export interface SelectedShelfElement {
+  id: string
+  buildingName: string
+  roomName: string
+  shelfName: string
 }
 
 export interface ShelfColumn {
@@ -20,8 +30,8 @@ export interface ShelfColumn {
 export interface Shelf {
   id: string;
   name: string;
-  roomName: string;
-  buildingName: string;
+  room: Room;
+  building: Building;
   columns: ShelfColumn[];
 }
 

@@ -1,0 +1,63 @@
+.StaticShelf {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.leftElement, .rightElement {
+  width: 80px;
+  border-bottom: 1px solid #ccc;
+}
+
+.leftElement {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 90%);
+  mask-image: linear-gradient(to right, transparent, black 90%);
+}
+
+.rightElement {
+  -webkit-mask-image: linear-gradient(to left, transparent, black 90%);
+  mask-image: linear-gradient(to left, transparent, black 90%);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #ccc;
+}
+
+.numItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  margin-bottom: 5px;
+  font-size: 15px;
+  line-height: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px; /* pill shape */
+  font-weight: 500;
+  min-width: 1.6rem;
+  text-align: center;
+}
+
+.highlightedElement .numItem {
+  background: #FDD62F;
+  color: black;
+}
+
+.idElement {
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+  color: #ccc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.elementTrigger {
+  all: unset;
+  display: block;
+  cursor: pointer;
+}
