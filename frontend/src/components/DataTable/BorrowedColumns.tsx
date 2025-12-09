@@ -1,19 +1,19 @@
 import { format, differenceInCalendarDays, isAfter } from "date-fns";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { BorrowItem } from "@/types/borrow";
-import DataTableColumnHeader from "./DataTableSortedHeader";
+import SortableHeader from "./SortableHeader";
 import MessageButton from "../MessageButton";
 
 
 const borrowedColumns: ColumnDef<BorrowItem>[] = [
   {
     accessorKey: "itemName",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Item" />,
+    header: ({ column }) => <SortableHeader column={column} title="Item" />,
     cell: ({ row }) => row.original.itemName,
   },
   {
     accessorKey: "borrowDate",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Borrowed" />,
+    header: ({ column }) => <SortableHeader column={column} title="Borrowed" />,
     sortingFn: (a, b) =>
       new Date(a.original.borrowDate).getTime() - new Date(b.original.borrowDate).getTime(),
     cell: ({ row }) => {
@@ -23,7 +23,7 @@ const borrowedColumns: ColumnDef<BorrowItem>[] = [
   },
   {
     accessorKey: "returnDate",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Due/Return" />,
+    header: ({ column }) => <SortableHeader column={column} title="Due/Return" />,
     sortingFn: (a, b) =>
       new Date(a.original.returnDate ?? 0).getTime() - new Date(b.original.returnDate ?? 0).getTime(),
     cell: ({ row }) => {

@@ -1,8 +1,8 @@
-import useApi from "./useApi";
+import useFetch from "@/hooks/fetch/useFetch";
 import { type BorrowItem } from "@/types/borrow";
 
 function useFetchBorrowed() {
-  return useApi<BorrowItem[]>('/borrow.sample.json')
+  return useFetch<BorrowItem[]>('/borrow.sample.json')
 }
 
 export default useFetchBorrowed;

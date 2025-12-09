@@ -10,9 +10,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/shadcn/popover'
-import postShelf from '../features/shelves/api/postShelf';
+import usePostShelf from "@/hooks/post/usePostShelf";
 import { type ShelfColumn } from '../types/shelf';
-import { makeId } from '../features/shelves/util/ids';
 import { X } from 'lucide-react';
 
 
@@ -38,6 +37,7 @@ function Form({ columns }: FormProps) {
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+  const { status: postStatus, error: postError, send } = usePostShelf();
 
   const updateValue = useCallback(
     (field: keyof FormValues) =>
@@ -64,24 +64,22 @@ function Form({ columns }: FormProps) {
 
       setStatus("submitting");
 
+      const roomId = Number.parseInt(values.room, 10);
+      if (Number.isNaN(roomId)) {
+        setStatus("error");
+        setError("Enter a numeric room ID.");
+        return;
+      }
+
       try {
-        await postShelf({
-          id: makeId(),
-          name: values.name.trim(),
-          buildingName: values.building.trim(),
-          roomName: values.room.trim(),
-          columns: columns,
-        });
+        await send(columns, values.name.trim(), roomId);
 
         setStatus("success");
         setValues((prev) => ({ name: "", building: prev.building, room: "" }));
       } catch (submitError) {
         setStatus("error");
-        if (submitError instanceof Error) {
-          setError(submitError.message);
-        } else {
-          setError("Something went wrong while saving the shelf.");
-        }
+        const message = submitError instanceof Error ? submitError.message : "Something went wrong while saving the shelf.";
+        setError(message);
       }
     },
     [columns.length, columns, values.building, values.name, values.room]
@@ -131,12 +129,12 @@ function Form({ columns }: FormProps) {
           </div>
         </Field>
         <Button type="submit" className="bg-primary" disabled={isSubmitDisabled}>
-          {status === "submitting" ? "Submitting..." : "Submit"}
+          {postStatus === "loading" || status === "submitting" ? "Submitting..." : "Submit"}
         </Button>
-        {status === "error" && error ? (
-          <p className="text-sm text-destructive">{error}</p>
+        {(status === "error" && error) || postError ? (
+          <p className="text-sm text-destructive">{error ?? postError?.message}</p>
         ) : null}
-        {status === "success" ? (
+        {status === "success" || postStatus === "success" ? (
           <p className="text-sm text-muted-foreground">Shelf saved successfully.</p>
         ) : null}
       </FieldGroup>
