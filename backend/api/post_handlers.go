@@ -130,3 +130,17 @@ func (h *Handler) CreateItem(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, newItem)
 }
+
+func (h *Handler) CheckoutCart(c *gin.Context) {
+	var req api_objects.CheckoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	itemMap, err := h.GetCartItemHelper(req.CartID, req.StartDate, req.EndDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	//TODO: Generate request items
+}

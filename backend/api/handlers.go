@@ -138,48 +138,6 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	var shoppingCart db.ShoppingCart
-	err = h.DB.Model(&shoppingCart).
-		Relation("ShoppingCartItems.Inventory.Item").
-		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Room").
-		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Organisation").
-		Where("user_id = ?", id).
-		Select()
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	m := make(map[string][]api_objects.CartItem)
-	for _, item := range shoppingCart.ShoppingCartItems {
-		if item.Inventory.ShelfUnit.Column.Shelf.Room.Building == nil {
-			var building db.Building
-			err = h.DB.Model(&building).
-				Where("id = ?", item.Inventory.ShelfUnit.Column.Shelf.Room.BuildingID).
-				Select()
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			item.Inventory.ShelfUnit.Column.Shelf.Room.Building = &building
-		}
-
-		var ci api_objects.CartItem
-		ci.ID = item.Inventory.ItemID
-		ci.Name = item.Inventory.Item.Name
-		ci.Amount = item.Inventory.Amount
-		ci.Available, err = h.GetAvailable(item.Inventory.ItemID, start, end)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		ci.Room = *item.Inventory.ShelfUnit.Column.Shelf.Room
-		ci.Building = *item.Inventory.ShelfUnit.Column.Shelf.Room.Building
-		ci.ShelfID = item.Inventory.ShelfUnit.Column.Shelf.ID
-		ci.AmountSelected = item.Amount
-		m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name] = append(m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name], ci)
-	}
+	m, err := h.GetCartItemHelper(id, start, end)
 	c.JSON(http.StatusOK, m)
 }

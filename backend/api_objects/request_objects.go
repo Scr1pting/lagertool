@@ -1,5 +1,7 @@
 package api_objects
 
+import "time"
+
 type BuildingRequest struct {
 	Name   string `json:"name" binding:"required"`
 	Campus string `json:"campus"`
@@ -43,4 +45,10 @@ type InventoryItemRequest struct {
 	IsConsumable bool   `json:"isConsumable" binding:"required"`
 	Note         string `json:"note" binding:"required"`
 	Organisation string `json:"organisation"`
+}
+
+type CheckoutRequest struct {
+	CartID    int       `json:"cartId" binding:"required"`
+	StartDate time.Time `json:"startDate" binding:"required"`
+	EndDate   time.Time `json:"endDate" binding:"required"`
 }
