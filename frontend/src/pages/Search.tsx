@@ -2,7 +2,6 @@ import DataTable from "@/components/DataTable/DataTable";
 import { searchColumns } from "@/components/DataTable/InventoryTable/searchColumns";
 import RegularPage from "@/components/RegularPage";
 import AvailabilityDescription from "@/components/AvailabilityDescription";
-import { useDate } from "@/store/useDate";
 import useFetchInventory from "@/hooks/fetch/useFetchInventory";
 
 

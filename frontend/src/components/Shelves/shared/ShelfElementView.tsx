@@ -17,9 +17,9 @@ export function ShelfElementViewInner(
     <div
       className={styles.element}
       style={{
-          width: ELEMENT_WIDTH,
-          height: itemDef.heightUnits == 1 ? SHORT_HEIGHT : TALL_HEIGHT,
-          pointerEvents: 'none',
+        width: ELEMENT_WIDTH,
+        height: itemDef.heightUnits == 1 ? SHORT_HEIGHT : TALL_HEIGHT,
+        pointerEvents: 'none',
       }}
     >
       {children}
@@ -64,7 +64,6 @@ function ShelfElementView({
         {...listeners}
         {...attributes}
         {...restDivProps}
-        style={{ width: '100%', height: '100%' }}
       >
         <ShelfElementViewInner itemDef={itemDef} />
       </div>

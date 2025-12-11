@@ -4,10 +4,10 @@ import type { Shelf } from "@/types/shelf";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-function useFetchShelves() {
+function useFetchShelvesManage() {
   const selectedOrg = useOrgs(s => s.selectedOrg)
 
-  return useFetch<Shelf[]>(`${API_BASE_URL}/shelves?organisation=${selectedOrg?.name}`)
+  return useFetch<Shelf[]>(`${API_BASE_URL}/shelves_sorted?organisation=${selectedOrg?.name}`)
 }
 
-export default useFetchShelves;
+export default useFetchShelvesManage;

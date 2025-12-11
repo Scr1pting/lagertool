@@ -5,6 +5,7 @@ import { DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog";
 import { Separator } from "../../shadcn/separator";
 import { Button } from "../../shadcn/button";
 import { toast } from "sonner";
+import type { InventoryItem } from "@/types/inventory";
 
 
 interface InstantCheckoutVerifyProps {

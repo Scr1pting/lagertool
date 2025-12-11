@@ -12,13 +12,11 @@ import useOrgs from "@/store/useOrgs"
 import useFetchOrgs from "@/hooks/fetch/useFetchOrgs"
 import { ChevronDown } from "lucide-react"
 
-function Orgs() {
-  const selectedId = useOrgs((s) => s.selectedOrgId ?? "")
-  const setSelectedId = useOrgs((s) => s.setSelectedOrgId)
+function OrgSelector() {
+  const selectedOrg = useOrgs(s => s.selectedOrg)
+  const setSelectedOrg = useOrgs(s => s.setSelectedOrg)
   const { status, data: orgs } = useFetchOrgs();
   
-  const selectedOrg = orgs?.find((org) => org.id === selectedId)
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,13 +33,13 @@ function Orgs() {
       <DropdownMenuContent align="start">
         {orgs?.length ? (
           <DropdownMenuRadioGroup
-            value={selectedId}
-            onValueChange={(value) => setSelectedId(value)}
+            value={selectedOrg?.name}
+            onValueChange={value => setSelectedOrg({ name: value})}
           >
             {orgs.map((org) => (
               <DropdownMenuRadioItem
-                key={org.id}
-                value={org.id}
+                key={org.name}
+                value={org.name}
                 className="pl-10 pr-2"
               >
                 {org.name}
@@ -58,4 +56,4 @@ function Orgs() {
   )
 }
 
-export default Orgs
+export default OrgSelector

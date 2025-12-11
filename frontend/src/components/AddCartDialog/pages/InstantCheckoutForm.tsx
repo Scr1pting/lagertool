@@ -1,3 +1,4 @@
+import type { FormEvent } from "react"
 import { Button } from "../../shadcn/button"
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog"
 import { Field } from "../../shadcn/field"

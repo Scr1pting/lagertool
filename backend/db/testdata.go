@@ -28,7 +28,7 @@ func GetDummyData() (
 
 	// 1️⃣ Organisation
 	org := &Organisation{
-		Name: "OpenAI Research Labs",
+		Name: "VIS",
 	}
 
 	// 2️⃣ User

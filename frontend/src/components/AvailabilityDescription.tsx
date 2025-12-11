@@ -19,9 +19,9 @@ function AvailabilityDescription() {
   }
 
   return (
-    <div className="text-base text-[#BBB]">
+    <p className="text-base text-[#BBB]">
       Availability for <b>{formattedDate}</b>.
-    </div>
+    </p>
   );
 };
 

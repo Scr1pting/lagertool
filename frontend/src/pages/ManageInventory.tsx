@@ -7,7 +7,7 @@ import {
 import useBuilding from "@/hooks/fetch/useFetchBuildings"
 import useFetchRooms from "@/hooks/fetch/useFetchRooms"
 import useInventory from "@/hooks/fetch/useFetchInventory"
-import useFetchShelvesMeta from "@/hooks/fetch/useFetchShelvesMeta"
+import useFetchShelvesMeta from "@/hooks/fetch/useFetchShelvesManage"
 import ItemTab from "@/components/ManageInventory/tabs/ItemTab"
 import ShelfTab from "@/components/ManageInventory/tabs/ShelfTab"
 import RoomTab from "@/components/ManageInventory/tabs/RoomTab"

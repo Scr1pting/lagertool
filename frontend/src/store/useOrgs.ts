@@ -1,19 +1,20 @@
+import type { Org } from "@/types/org"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 interface OrgState {
-    selectedOrgId?: string
-    setSelectedOrgId: (id?: string) => void
+    selectedOrg?: Org
+    setSelectedOrg: (org?: Org) => void
 }
 
 const useOrgs = create<OrgState>()(
     persist(
-        (set) => ({
-            selectedOrgId: undefined,
-            setSelectedOrgId: (id?: string) => set({ selectedOrgId: id }),
+        set => ({
+            selectedOrg: undefined,
+            setSelectedOrg: (org?: Org) => set({ selectedOrg: org }),
         }),
         {
-            name: "lagertool.orgs",
+            name: "lagertool.org",
         }
     )
 )

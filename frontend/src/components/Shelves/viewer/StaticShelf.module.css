@@ -25,27 +25,6 @@
   border-bottom: 1px solid #ccc;
 }
 
-.numItem {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 8px;
-  margin-bottom: 5px;
-  font-size: 15px;
-  line-height: 1;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 9999px; /* pill shape */
-  font-weight: 500;
-  min-width: 1.6rem;
-  text-align: center;
-}
-
-.highlightedElement .numItem {
-  background: #FDD62F;
-  color: black;
-}
-
 .idElement {
   position: absolute;
   bottom: 2px;
@@ -54,6 +33,10 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
+}
+
+.highlightedElement .idElement {
+  color: #FDD62F;
 }
 
 .elementTrigger {

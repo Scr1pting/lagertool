@@ -5,7 +5,7 @@ import styles from "./NavBar.module.css";
 import MoreDropdown from "./MoreDropdown";
 import SearchBar from "./SearchBar";
 import MiniCart from '../MiniCart';
-import Org from './Orgs';
+import OrgSelector from './OrgSelector';
 import RangeSelector from './RangeSelector';
 
 export default function NavBar() {
@@ -21,7 +21,7 @@ export default function NavBar() {
           />
         </Link>
 
-        <Org />
+        <OrgSelector />
         <SearchBar />
         <RangeSelector />
 

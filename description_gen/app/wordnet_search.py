@@ -3,12 +3,13 @@ import numpy as np
 import torch
 import inflect
 
-from sentence_transformers import SentenceTransformer
-
 from functools import lru_cache
 from itertools import batched
 
+from sentence_transformers import SentenceTransformer
 from wordnet import noun_meanings
+
+from schemas import Item
 
 
 MODEL_PATH = "mixedbread-ai/mxbai-embed-large-v1"
@@ -58,7 +59,7 @@ def get_wordnet_embeddings(batch_size: int = 32) -> np.ndarray:
     return stacked.numpy()
 
 
-def get_item_names_embeddings(item_names: list[str]):  
+def get_item_embeddings(items: list[str]):  
     queries: list[str] = []
 
     def _convert_words(name: str, fn) -> str:
@@ -69,20 +70,18 @@ def get_item_names_embeddings(item_names: list[str]):
             return name
         return " ".join((fn(w) or w) for w in parts)
 
-    for name in item_names:
-        term_singular = _convert_words(name, p.singular_noun)
-        term_plural = _convert_words(name, p.plural_noun)
+    for item in items:
+        term_singular = _convert_words(item.name, p.singular_noun)
+        term_plural = _convert_words(item.name, p.plural_noun)
 
         print(term_singular)
         print(term_plural)
-
-        queries.append(name)
-        queries.append(f"The university supplied us with {term_singular} for the event.")
+        
+        queries.append(item.name)
+        queries.append(", ".join(item.tags))
+        queries.append(f"{item.name} ({", ".join(item.tags)})")
         queries.append(f"We took {p.a(term_singular)} {term_singular} from the shelf.")
-        queries.append(f"The {p.a(term_singular)} {term_singular} from the shelf.")
-        queries.append(
-            f"I bought {p.a(term_singular)} {term_singular}."
-        )
+        queries.append(f"I borrowed {term_plural} from the university for the event.")
 
     return model.encode(
         queries,
@@ -91,13 +90,13 @@ def get_item_names_embeddings(item_names: list[str]):
     )
 
 
-def find_closest_lemma(item_names: list[str], top_k: int = 10) -> list[tuple[str, float]]:
+def find_closest_lemma(items: list[Item], top_k: int = 10) -> list[tuple[str, float]]:
     """Return the closest WordNet lemmas to the provided term."""
     lemmas = noun_meanings()
     
     # Generate embeddings for term and WordNet
     wordnet_embeddings = get_wordnet_embeddings()
-    item_embeddings = get_item_names_embeddings(item_names)
+    item_embeddings = get_item_embeddings(items)
 
     # Find closest WordNet match
     # = cos similarity (both are normalized)
@@ -117,4 +116,8 @@ def find_closest_lemma(item_names: list[str], top_k: int = 10) -> list[tuple[str
 
 
 if __name__ == "__main__":
-    print(find_closest_lemma(["Sprite", "El Tony Mate"]))
+    print(find_closest_lemma([
+        Item(name="Sprite", tags=["drink", "tea"]),
+        # Item(name="El Tony Mate", tags=["drink", "softdrink"]),
+        # Item(name="El Tony Mate", tags=["drink", "softdrink"]),
+    ]))

@@ -1,7 +1,6 @@
 [
-  { "id": "21", "name": "HG" },
-  { "id": "22", "name": "LAB" },
-  { "id": "23", "name": "Warehouse" },
-  { "id": "24", "name": "HQ" },
-  { "id": "25", "name": "Annex" }
+  { "id": 21, "name": "HG" },
+  { "id": 22, "name": "CAB" },
+  { "id": 24, "name": "GLC" },
+  { "id": 25, "name": "HCL" }
 ]

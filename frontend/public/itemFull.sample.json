@@ -4,14 +4,38 @@
   "amount": 150,
   "available": 120,
   "category": "Electronics",
-  "buildingName": "CAB",
-  "roomName": "Office",
+  "building": {
+    "id": 22,
+    "name": "CAB"
+  },
+  "room": {
+    "id": 11,
+    "name": "Studio A",
+    "floor": "E",
+    "num": "33.3",
+    "building": {
+      "id": 22,
+      "name": "CAB"
+    }
+  },
   "shelfElementId": "36S2P",
   "shelf": {
     "id": "29EWG",
     "name": "Library Shelf",
-    "buildingName": "CAB",
-    "roomName": "Office",
+    "building": {
+      "id": 22,
+      "name": "CAB"
+    },
+    "room": {
+      "id": 11,
+      "name": "Studio A",
+      "floor": "E",
+      "num": "33.3",
+      "building": {
+        "id": 22,
+        "name": "CAB"
+      }
+    },
     "numItems": 0,
     "columns": [
       {
