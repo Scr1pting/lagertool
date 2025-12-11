@@ -34,7 +34,7 @@ const borrowedColumns: ColumnDef<BorrowItem>[] = [
   },
   {
     id: "status",
-    header: () => <div className="text-right">Status</div>,
+    header: () => <div className="text-center">Status</div>,
     cell: ({ row }) => {
       const { state, returnDate } = row.original;
       const now = new Date();
@@ -57,9 +57,13 @@ const borrowedColumns: ColumnDef<BorrowItem>[] = [
         isOverdue ? "bg-red-100 text-red-700" :
         "bg-slate-100 text-slate-700";
       return (
-        <div className="text-right">
+        <div className="text-center">
           <span className={`rounded-full px-2 py-1 text-xs font-medium ${badgeClass}`}>{label}</span>
-          {daysLabel && <div className="text-xs text-muted-foreground">{daysLabel}</div>}
+          {daysLabel && (
+            <div className="text-xs text-red-600 mt-1">
+              {daysLabel}
+            </div>
+          )}
         </div>
       );
     },

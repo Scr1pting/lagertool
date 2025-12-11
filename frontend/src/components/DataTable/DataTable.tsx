@@ -53,14 +53,14 @@ function DataTable<TData>({
     return (
       <TableRow
         key={row.id}
-        className={isLink ? "cursor-pointer hover:bg-muted/30" : "hover:bg-transparent"}
+        className={isLink ? "cursor-pointer hover:bg-muted/30 h-12 align-middle" : "hover:bg-transparent h-12 align-middle"}
         tabIndex={isLink ? 0 : undefined}
         onClick={
           destination ? () => navigate(destination) : undefined
         }
       >
         {row.getVisibleCells().map((cell) => (
-          <TableCell key={cell.id} className="px-4">
+          <TableCell key={cell.id} className="px-4 py-3">
             {flexRender(
               cell.column.columnDef.cell,
               cell.getContext()
