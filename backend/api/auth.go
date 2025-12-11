@@ -6,7 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
+
+	"lagertool.com/main/db"
 
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
@@ -140,7 +143,7 @@ func LoginHandler(c *gin.Context) {
 }
 
 // CallbackHandler handles the OAuth2 callback
-func CallbackHandler(c *gin.Context) {
+func (h *Handler) CallbackHandler(c *gin.Context) {
 	ctx := context.Background()
 
 	// Validate state parameter
@@ -183,7 +186,7 @@ func CallbackHandler(c *gin.Context) {
 	setSessionCookie(c, user.ID)
 
 	// Store user data (you can implement this)
-	if err := storeUserData(user); err != nil {
+	if err := h.storeUserData(user); err != nil {
 		log.Printf("⚠️ Failed to store user data: %v", err)
 	}
 
@@ -263,9 +266,35 @@ func setSessionCookie(c *gin.Context, userID string) {
 	)
 }
 
-func storeUserData(user *User) error {
-	log.Printf("📝 User authenticated: %s", user.ID)
-	return nil
+func (h *Handler) storeUserData(claims *User) error {
+	user := &db.User{
+		Name:      claims.Name,
+		Email:     claims.Email,
+		CreatedAt: time.Now(),
+		LastLogin: time.Now(),
+	}
+	_, err := h.DB.Model(user).Insert(user)
+	if err != nil {
+		log.Printf("ERROR: Failed to insert user: %v", err)
+		return err
+	}
+	log.Printf("📝 User authenticated: %d", user.ID)
+	return err
+}
+
+func (h *Handler) getUserByID(c *gin.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	var user db.User
+	err = h.DB.Model(&user).Where("user_id =?", id).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, user)
+	return err
 }
 
 // AuthMiddleware to protect routes that require authentication
@@ -278,8 +307,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Optional: Validate userID against database
-		// Optional: Refresh session if needed
+		// Validate userID against database
 
 		c.Set("userID", userID)
 		c.Next()

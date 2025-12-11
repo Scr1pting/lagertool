@@ -16,7 +16,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 
 	// Edu-ID endpoints
 	r.GET("/auth/eduid/login", LoginHandler)
-	r.GET("/auth/eduid/callback", CallbackHandler)
+	r.GET("/auth/eduid/callback", h.CallbackHandler)
 
 	// sorted by date
 	r.GET("/rooms_sorted", h.GetRoomsS)
