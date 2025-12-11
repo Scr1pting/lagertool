@@ -33,7 +33,7 @@ import (
 
 func main() {
 	testdata := flag.Bool("testdata", false, "insert testdata into db")
-	noserver := flag.Bool("no_server", false, "dont start sever")
+	noserver := flag.Bool("noserver", false, "dont start sever")
 	flag.Parse()
 	fmt.Println("word:", *testdata)
 	fmt.Println("word:", *noserver)
@@ -83,4 +83,5 @@ func main() {
 			return
 		}
 	}
+	return
 }
