@@ -22,8 +22,8 @@ services:
     image: postgres:15-alpine
     ports:
       - "5435:5432" # Expose test db on a different port
-    volumes:
-      - test-postgres-data:/var/lib/postgresql/data
+#    volumes:
+#      - test-postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-example}
