@@ -15,6 +15,5 @@ cd - > /dev/null
 # Start backend (Go server) to insert testdata
 echo "Starting backend..."
 cd "$(dirname "$0")/../backend" || exit 1
-go run main.go -testdata -noserver&
-BACKEND_PID=$!
+go run main.go -testdata -noserver
 cd - > /dev/null
