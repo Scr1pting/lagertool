@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 
 	"github.com/gin-contrib/cors"
@@ -35,8 +34,6 @@ func main() {
 	testdata := flag.Bool("testdata", false, "insert testdata into db")
 	noserver := flag.Bool("noserver", false, "dont start sever")
 	flag.Parse()
-	fmt.Println("word:", *testdata)
-	fmt.Println("word:", *noserver)
 
 	// Load configuration from .env file
 	cfg := config.Load()
