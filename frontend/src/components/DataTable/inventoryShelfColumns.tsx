@@ -34,7 +34,7 @@ export const inventoryShelfColumns: ColumnDef<InventoryItem>[] = [
     cell: ({ row }) => (
       <div
         className="flex w-full justify-end"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <AddCartDialog item={row.original}>
           <Button

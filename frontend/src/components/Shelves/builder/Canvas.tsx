@@ -1,19 +1,19 @@
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable } from '@dnd-kit/core'
 
-import { type DropTargetData } from '../types/drag';
-import { type ShelfColumn, ELEMENT_CATALOG } from '../../../types/shelf';
-import { ELEMENT_WIDTH } from '../util/shelfUnits';
+import { type DropTargetData } from '../types/drag'
+import { type ShelfColumn, ELEMENT_CATALOG } from '../../../types/shelf'
+import { ELEMENT_WIDTH } from '../util/shelfUnits'
 
-import ShelfPiece from '../shared/ShelfElementView';
+import ShelfPiece from '../shared/ShelfElementView'
 
-import styles from './Canvas.module.css';
+import styles from './Canvas.module.css'
 
 
 function CanvasColumn ({ column }: { column: ShelfColumn }) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
     data: { kind: 'column', columnId: column.id } satisfies DropTargetData,
-  });
+  })
 
   return (
     <div
@@ -21,8 +21,8 @@ function CanvasColumn ({ column }: { column: ShelfColumn }) {
       className={`${styles.column} ${isOver ? styles.columnActive : ''}`}
       style={{ width: ELEMENT_WIDTH }}
     >
-      {column.elements.map((element) => {
-        const definition = ELEMENT_CATALOG[element.type];
+      {column.elements.map(element => {
+        const definition = ELEMENT_CATALOG[element.type]
         return (
           <ShelfPiece
             key={element.id}
@@ -31,10 +31,10 @@ function CanvasColumn ({ column }: { column: ShelfColumn }) {
             dragData={{ source: 'board', columnId: column.id, pieceId: element.id }}
             data-type={element.type}
           />
-        );
+        )
       })}
     </div>
-  );
+  )
 };
 
 
@@ -42,10 +42,10 @@ const EdgeDropZone = ({ position }: { position: 'left' | 'right' }) => {
   const { setNodeRef } = useDroppable({
     id: `edge-${position}`,
     data: { kind: 'edge', position } satisfies DropTargetData,
-  });
+  })
 
-  return <div ref={setNodeRef} className={styles.edgeDropZone} />;
-};
+  return <div ref={setNodeRef} className={styles.edgeDropZone} />
+}
 
 
 const Canvas = ({ columns }: { columns : ShelfColumn[] }) => {
@@ -61,7 +61,7 @@ const Canvas = ({ columns }: { columns : ShelfColumn[] }) => {
         <EdgeDropZone position="left" />
 
         <div className={styles.columnsArea}>
-          {columns.map((column) => (
+          {columns.map(column => (
             <CanvasColumn key={column.id} column={column} />
           ))}
         </div>
@@ -69,8 +69,8 @@ const Canvas = ({ columns }: { columns : ShelfColumn[] }) => {
         <EdgeDropZone position="right" />
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default Canvas;
+export default Canvas
 

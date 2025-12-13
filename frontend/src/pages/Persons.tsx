@@ -1,4 +1,4 @@
-import RegularPage from "@/components/RegularPage";
+import RegularPage from "@/components/RegularPage"
 
 function Persons() {
   return (
@@ -8,4 +8,4 @@ function Persons() {
   )
 }
 
-export default Persons;
+export default Persons

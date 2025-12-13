@@ -1,27 +1,27 @@
-import { useDate } from "@/store/useDate";
-import clsx from "clsx";
-import { useEffect, useState } from "react";
-import { Button } from "../shadcn/button";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import { CalendarDays } from "lucide-react";
-import { Calendar } from "../shadcn/calendar";
+import { useDate } from "@/store/useDate"
+import clsx from "clsx"
+import { useEffect, useState } from "react"
+import { Button } from "../shadcn/button"
+import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover"
+import { CalendarDays } from "lucide-react"
+import { Calendar } from "../shadcn/calendar"
 
-import styles from "./NavBar.module.css";
-import { startOfToday } from "date-fns";
+import styles from "./NavBar.module.css"
+import { startOfToday } from "date-fns"
 
   
 function RangeSelector() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
-  const selectedRange = useDate((state) => state.selectedRange)
-  const setRange = useDate((state) => state.setRange)
-  const clearRange = useDate((state) => state.clearRange)
+  const selectedRange = useDate(state => state.selectedRange)
+  const setRange = useDate(state => state.setRange)
+  const clearRange = useDate(state => state.clearRange)
   const [visibleMonth, setVisibleMonth] = useState<Date>(
     selectedRange?.from ?? new Date()
   )
   
-  const today = startOfToday();
-  const startMonth = new Date(today.getFullYear(), today.getMonth());
-  const endMonth = new Date(today.getFullYear() + 1, 11);   // Dec of next year
+  const today = startOfToday()
+  const startMonth = new Date(today.getFullYear(), today.getMonth())
+  const endMonth = new Date(today.getFullYear() + 1, 11)   // Dec of next year
 
 
   useEffect(() => {
@@ -82,7 +82,7 @@ function RangeSelector() {
         </PopoverContent>
       </Popover>
     </>
-  );
+  )
 }
 
-export default RangeSelector;
+export default RangeSelector

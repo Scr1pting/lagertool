@@ -1,9 +1,9 @@
-import useFetchInventory from "@/hooks/fetch/useFetchInventory";
-import DataTable from "./DataTable/DataTable";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./shadcn/dialog";
-import AvailabilityDescription from "./AvailabilityDescription";
-import type { SelectedShelfElement, Shelf, ShelfElement } from "@/types/shelf";
-import { inventoryShelfColumns } from "./DataTable/inventoryShelfColumns";
+import useFetchInventory from "@/hooks/fetch/useFetchInventory"
+import DataTable from "./DataTable/DataTable"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./shadcn/dialog"
+import AvailabilityDescription from "./AvailabilityDescription"
+import type { SelectedShelfElement, Shelf, ShelfElement } from "@/types/shelf"
+import { inventoryShelfColumns } from "./DataTable/inventoryShelfColumns"
 
 
 interface ShelfElementDialogProps {
@@ -20,7 +20,7 @@ function ShelfElementDialog({
   shelfElement
 }: ShelfElementDialogProps) {
   // TODO: pass shelf
-  const { data: inventory } = useFetchInventory();
+  const { data: inventory } = useFetchInventory()
 
   return (
     <Dialog
@@ -51,4 +51,4 @@ function ShelfElementDialog({
   )
 }
 
-export default ShelfElementDialog;
+export default ShelfElementDialog

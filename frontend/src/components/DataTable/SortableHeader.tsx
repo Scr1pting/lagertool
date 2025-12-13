@@ -37,4 +37,4 @@ function SortableHeader<TData, TValue>({
   )
 }
 
-export default SortableHeader;
+export default SortableHeader

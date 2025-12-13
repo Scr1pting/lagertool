@@ -1,20 +1,20 @@
-import { useDate } from "@/store/useDate";
-import { format } from "date-fns/format";
+import { useDate } from "@/store/useDate"
+import { format } from "date-fns/format"
 
 function AvailabilityDescription() {
-  const range = useDate((state) => state.selectedRange)
+  const range = useDate(state => state.selectedRange)
 
-  let formattedDate = "";
+  let formattedDate = ""
 
   if (!range?.from) {
-    formattedDate = "today";
+    formattedDate = "today"
   } else {
-    const formattedStart = format(range.from, "MMM d, yyyy");
+    const formattedStart = format(range.from, "MMM d, yyyy")
     if (!range.to || range.from === range.to) {
-      formattedDate = formattedStart;
+      formattedDate = formattedStart
     } else {
-      const formattedEnd = format(range.to, "MMM d, yyyy");
-      formattedDate = `${formattedStart} – ${formattedEnd}`;
+      const formattedEnd = format(range.to, "MMM d, yyyy")
+      formattedDate = `${formattedStart} – ${formattedEnd}`
     }
   }
 
@@ -22,7 +22,7 @@ function AvailabilityDescription() {
     <p className="text-base text-[#BBB]">
       Availability for <b>{formattedDate}</b>.
     </p>
-  );
+  )
 };
 
-export default AvailabilityDescription;
+export default AvailabilityDescription

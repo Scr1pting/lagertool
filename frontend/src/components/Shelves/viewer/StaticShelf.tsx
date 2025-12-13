@@ -1,6 +1,6 @@
-import type { Shelf, ShelfElement } from '@/types/shelf';
-import styles from './StaticShelf.module.css';
-import StaticShelfColumn from './StaticShelfColumn';
+import type { Shelf, ShelfElement } from '@/types/shelf'
+import styles from './StaticShelf.module.css'
+import StaticShelfColumn from './StaticShelfColumn'
 
 
 interface StaticShelfParams {
@@ -13,7 +13,7 @@ function StaticShelf({ shelf, onElementSelect, highlightedElement }: StaticShelf
   return (
     <section className={styles.StaticShelf}>
       <div className={styles.leftElement} />
-      {shelf.columns.map((column) => (
+      {shelf.columns.map(column => (
         <StaticShelfColumn
           key={column.id}
           column={column}
@@ -24,7 +24,7 @@ function StaticShelf({ shelf, onElementSelect, highlightedElement }: StaticShelf
       ))}
       <div className={styles.rightElement} />
     </section>
-  );
+  )
 };
 
-export default StaticShelf;
+export default StaticShelf

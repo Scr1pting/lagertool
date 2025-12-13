@@ -1,7 +1,7 @@
-import AddShelfActionBar from "@/components/Shelves/builder/AddShelfButtons";
-import ShelfBuilder from "@/components/Shelves/builder/ShelfBuilder";
-import type { ShelfColumn } from "@/types/shelf";
-import { useState } from "react";
+import AddShelfActionBar from "@/components/Shelves/builder/AddShelfButtons"
+import ShelfBuilder from "@/components/Shelves/builder/ShelfBuilder"
+import type { ShelfColumn } from "@/types/shelf"
+import { useState } from "react"
 
 function AddShelf() {
   const [columns, setColumns] = useState<ShelfColumn[]>([])
@@ -14,4 +14,4 @@ function AddShelf() {
   )
 }
 
-export default AddShelf;
+export default AddShelf

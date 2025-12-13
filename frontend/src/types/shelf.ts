@@ -1,5 +1,5 @@
-import type { Building } from "./building";
-import type { Room } from "./room";
+import type { Building } from "./building"
+import type { Room } from "./room"
 
 export type ShelfElementType = 'slim' | 'high';
 
@@ -37,4 +37,4 @@ export const ELEMENT_CATALOG: Record<ShelfElementType, ShelfElementDefinition> =
     label: 'Tall Element',
     heightUnits: 2,
   },
-};
+}

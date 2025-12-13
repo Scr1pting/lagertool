@@ -20,7 +20,7 @@ interface MiniCartProps {
 }
 
 function MiniCart({ trigger }: MiniCartProps) {
-  const cartItems = useCart((state) => state.cartItems)
+  const cartItems = useCart(state => state.cartItems)
 
   const columns = useMemo<ColumnDef<CartItem>[]>(
     () => [
@@ -77,4 +77,4 @@ function MiniCart({ trigger }: MiniCartProps) {
   )
 }
 
-export default MiniCart;
+export default MiniCart

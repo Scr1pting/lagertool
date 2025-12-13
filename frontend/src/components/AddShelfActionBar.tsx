@@ -1,18 +1,18 @@
-import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/shadcn/button";
+import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Button } from "@/components/shadcn/button"
 import { ButtonGroup } from "@/components/shadcn/button-group"
-import { FieldGroup, Field } from "@/components/shadcn/field";
-import { Input } from "@/components/shadcn/input";
-import { Label } from "@/components/shadcn/label";
+import { FieldGroup, Field } from "@/components/shadcn/field"
+import { Input } from "@/components/shadcn/input"
+import { Label } from "@/components/shadcn/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/shadcn/popover'
-import usePostShelf from "@/hooks/post/usePostShelf";
-import { type ShelfColumn } from '../types/shelf';
-import { X } from 'lucide-react';
+import usePostShelf from "@/hooks/post/usePostShelf"
+import { type ShelfColumn } from '../types/shelf'
+import { X } from 'lucide-react'
 
 
 type FormProps = {
@@ -31,61 +31,61 @@ const INITIAL_VALUES: FormValues = {
   name: "",
   building: "CAB",
   room: "",
-};
+}
 
 function Form({ columns }: FormProps) {
-  const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
-  const [status, setStatus] = useState<FormStatus>("idle");
-  const [error, setError] = useState<string | null>(null);
-  const { status: postStatus, error: postError, send } = usePostShelf();
+  const [values, setValues] = useState<FormValues>(INITIAL_VALUES)
+  const [status, setStatus] = useState<FormStatus>("idle")
+  const [error, setError] = useState<string | null>(null)
+  const { status: postStatus, error: postError, send } = usePostShelf()
 
   const updateValue = useCallback(
     (field: keyof FormValues) =>
       (event: ChangeEvent<HTMLInputElement>) => {
-        const nextValue = event.target.value;
-        setValues((prev) => ({ ...prev, [field]: nextValue }));
+        const nextValue = event.target.value
+        setValues(prev => ({ ...prev, [field]: nextValue }))
         if (status === "success") {
-          setStatus("idle");
+          setStatus("idle")
         }
       },
     [status]
-  );
+  )
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      setError(null);
+      event.preventDefault()
+      setError(null)
 
       if (columns.length === 0) {
-        setStatus("error");
-        setError("Add at least one shelf before submitting.");
-        return;
+        setStatus("error")
+        setError("Add at least one shelf before submitting.")
+        return
       }
 
-      setStatus("submitting");
+      setStatus("submitting")
 
-      const roomId = Number.parseInt(values.room, 10);
+      const roomId = Number.parseInt(values.room, 10)
       if (Number.isNaN(roomId)) {
-        setStatus("error");
-        setError("Enter a numeric room ID.");
-        return;
+        setStatus("error")
+        setError("Enter a numeric room ID.")
+        return
       }
 
       try {
-        await send(columns, values.name.trim(), roomId);
+        await send(columns, values.name.trim(), roomId)
 
-        setStatus("success");
-        setValues((prev) => ({ name: "", building: prev.building, room: "" }));
+        setStatus("success")
+        setValues(prev => ({ name: "", building: prev.building, room: "" }))
       } catch (submitError) {
-        setStatus("error");
-        const message = submitError instanceof Error ? submitError.message : "Something went wrong while saving the shelf.";
-        setError(message);
+        setStatus("error")
+        const message = submitError instanceof Error ? submitError.message : "Something went wrong while saving the shelf."
+        setError(message)
       }
     },
     [columns.length, columns, values.building, values.name, values.room]
-  );
+  )
 
-  const isSubmitDisabled = status === "submitting" || columns.length === 0;
+  const isSubmitDisabled = status === "submitting" || columns.length === 0
 
   return (
     <form onSubmit={handleSubmit}>
@@ -139,7 +139,7 @@ function Form({ columns }: FormProps) {
         ) : null}
       </FieldGroup>
     </form>
-  );
+  )
 }
 
 
@@ -155,23 +155,23 @@ type LocationState = {
 };
 
 function ActionBar({ columns }: { columns: ShelfColumn[] }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const makePath = (from: FromLocation) => `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`;
+  const navigate = useNavigate()
+  const location = useLocation()
+  const makePath = (from: FromLocation) => `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`
 
   // Goes to the last page or home.
   // Enables using the browser back btn to return to ShelfBuilder.
   const goBack = () => {
-    const fromLocation = (location.state as LocationState | null)?.from;
+    const fromLocation = (location.state as LocationState | null)?.from
     if (fromLocation) {
       navigate(makePath(fromLocation), {
         replace: false,
         state: fromLocation.state,
-      });
-      return;
+      })
+      return
     }
-    navigate("/", { replace: false });
-  };
+    navigate("/", { replace: false })
+  }
 
   return(
     <Popover >
@@ -198,4 +198,4 @@ function ActionBar({ columns }: { columns: ShelfColumn[] }) {
   )
 }
 
-export default ActionBar;
+export default ActionBar

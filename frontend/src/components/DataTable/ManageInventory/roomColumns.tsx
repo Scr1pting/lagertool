@@ -12,7 +12,7 @@ const roomColumns: ColumnDef<Room>[] = [
   },
   {
     id: "building",
-    accessorFn: (row) => row.building?.name ?? "",
+    accessorFn: row => row.building?.name ?? "",
     header: ({ column }) => (
       <SortableHeader column={column} title="Building" />
     ),

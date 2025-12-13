@@ -1,12 +1,12 @@
-import clsx from 'clsx';
-import { Link } from "react-router-dom";
-import { ShoppingCart, UserRoundIcon } from 'lucide-react';
-import styles from "./NavBar.module.css";
-import MoreDropdown from "./MoreDropdown";
-import SearchBar from "./SearchBar";
-import MiniCart from '../MiniCart';
-import OrgSelector from './OrgSelector';
-import RangeSelector from './RangeSelector';
+import clsx from 'clsx'
+import { Link } from "react-router-dom"
+import { ShoppingCart, UserRoundIcon } from 'lucide-react'
+import styles from "./NavBar.module.css"
+import MoreDropdown from "./MoreDropdown"
+import SearchBar from "./SearchBar"
+import MiniCart from '../MiniCart'
+import OrgSelector from './OrgSelector'
+import RangeSelector from './RangeSelector'
 
 export default function NavBar() {
 
@@ -50,5 +50,5 @@ export default function NavBar() {
         </div>
       </div>
     </div>
-  );
+  )
 }
