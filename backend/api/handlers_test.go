@@ -671,3 +671,192 @@ func TestCreateItem(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckoutCart(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/checkout", h.CheckoutCart)
+
+	// Create test organisation (must exist before shelf references it)
+	org := &db_models.Organisation{Name: "Checkout Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user
+	user := &db_models.User{Email: "checkout@example.com", Name: "Checkout User"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+
+	// Create building
+	building := &db_models.Building{Name: "Checkout Building", UpdateDate: time.Now()}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+
+	// Create room
+	room := &db_models.Room{Name: "Checkout Room", BuildingID: building.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf owned by organisation
+	shelf := &db_models.Shelf{ID: "CHECKOUT-S-1", Name: "Checkout Shelf", RoomID: room.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(shelf).Insert()
+	assert.NoError(t, err)
+
+	// Create column
+	column := &db_models.Column{ID: "CHECKOUT-C-1", ShelfID: shelf.ID}
+	_, err = dbCon.Model(column).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf unit
+	shelfUnit := &db_models.ShelfUnit{ID: "CHECKOUT-SU-1", ColumnID: column.ID}
+	_, err = dbCon.Model(shelfUnit).Insert()
+	assert.NoError(t, err)
+
+	// Create item
+	item := &db_models.Item{Name: "Checkout Item", IsConsumable: true}
+	_, err = dbCon.Model(item).Insert()
+	assert.NoError(t, err)
+
+	// Create inventory
+	inventory := &db_models.Inventory{ItemID: item.ID, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	_, err = dbCon.Model(inventory).Insert()
+	assert.NoError(t, err)
+
+	// Create shopping cart for the user
+	cart := &db_models.ShoppingCart{UserID: user.ID}
+	_, err = dbCon.Model(cart).Insert()
+	assert.NoError(t, err)
+
+	// Add item to shopping cart
+	cartItem := &db_models.ShoppingCartItem{
+		ShoppingCartID: cart.ID,
+		InventoryID:    inventory.ID,
+		Amount:         2,
+	}
+	_, err = dbCon.Model(cartItem).Insert()
+	assert.NoError(t, err)
+
+	// Cleanup function
+	cleanup := func() {
+		// Delete request items first (foreign key constraint)
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("inventory_id = ?", item.ID).Delete()
+		// Delete requests
+		_, _ = dbCon.Model(&db_models.Request{}).Where("user_id = ?", user.ID).Delete()
+		// Delete shopping cart items
+		_, _ = dbCon.Model(&db_models.ShoppingCartItem{}).Where("id = ?", cartItem.ID).Delete()
+		// Delete shopping cart
+		_, _ = dbCon.Model(&db_models.ShoppingCart{}).Where("id = ?", cart.ID).Delete()
+		// Delete inventory
+		_, _ = dbCon.Model(inventory).Where("id = ?", inventory.ID).Delete()
+		// Delete item
+		_, _ = dbCon.Model(item).Where("id = ?", item.ID).Delete()
+		// Delete shelf unit
+		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
+		// Delete column
+		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
+		// Delete shelf
+		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
+		// Delete room
+		_, _ = dbCon.Model(room).Where("id = ?", room.ID).Delete()
+		// Delete building
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		// Delete user
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+		// Delete organisation
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	startDate := time.Now().Add(24 * time.Hour)
+	endDate := time.Now().Add(48 * time.Hour)
+
+	testCases := []struct {
+		name           string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Checkout",
+			payload: `{
+				"cartId": ` + strconv.Itoa(user.ID) + `,
+				"startDate": "` + startDate.Format(time.RFC3339) + `",
+				"endDate": "` + endDate.Format(time.RFC3339) + `",
+				"userId": ` + strconv.Itoa(user.ID) + `
+			}`,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "Invalid JSON - Missing CartID",
+			payload:        `{"startDate": "2025-01-01T00:00:00Z", "endDate": "2025-01-02T00:00:00Z", "userId": 1}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid JSON - Missing StartDate",
+			payload:        `{"cartId": 1, "endDate": "2025-01-02T00:00:00Z", "userId": 1}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid JSON - Missing EndDate",
+			payload:        `{"cartId": 1, "startDate": "2025-01-01T00:00:00Z", "userId": 1}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid JSON - Missing UserID",
+			payload:        `{"cartId": 1, "startDate": "2025-01-01T00:00:00Z", "endDate": "2025-01-02T00:00:00Z"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid JSON - Malformed",
+			payload:        `{"cartId": 1, "startDate": "2025-01-01T00:00:00Z"`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", "/checkout", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if !assert.Equal(t, tc.expectedStatus, w.Code) {
+				t.Log("Response body:", w.Body.String())
+			}
+
+			if tc.expectedStatus == http.StatusOK {
+				// Debug: Check if shopping cart was created and has items
+				var debugCart db_models.ShoppingCart
+				err := dbCon.Model(&debugCart).
+					Relation("ShoppingCartItems").
+					Where("user_id = ?", user.ID).
+					Select()
+				t.Logf("Debug - Cart lookup by user_id=%d: err=%v, cartID=%d, items=%d",
+					user.ID, err, debugCart.ID, len(debugCart.ShoppingCartItems))
+
+				// Verify a request was created
+				var requests []db_models.Request
+				err = dbCon.Model(&requests).Where("user_id = ?", user.ID).Select()
+				assert.NoError(t, err)
+				assert.NotEmpty(t, requests, "Expected at least one request to be created")
+
+				// Verify request has correct data
+				request := requests[0]
+				assert.Equal(t, user.ID, request.UserID)
+				assert.Equal(t, "requested", request.Status)
+				assert.Equal(t, org.Name, request.OrganisationName)
+
+				// Verify request items were created
+				var requestItems []db_models.RequestItems
+				err = dbCon.Model(&requestItems).Where("request_id = ?", request.ID).Select()
+				assert.NoError(t, err)
+				assert.NotEmpty(t, requestItems)
+				// Note: CheckoutCart uses item.ID (which is ItemID from CartItem) as InventoryID
+				assert.Equal(t, item.ID, requestItems[0].InventoryID)
+				assert.Equal(t, cartItem.Amount, requestItems[0].Amount)
+			}
+		})
+	}
+}

@@ -145,7 +145,7 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 	}
 
 	for k, v := range itemMap {
-		request := db_models.Request{
+		request := &db_models.Request{
 			UserID:           req.UserID,
 			StartDate:        req.StartDate,
 			EndDate:          req.EndDate,
@@ -155,7 +155,7 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 		}
 		err := db.Create_request(h.DB, request)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
 			return
 		}
 		for _, item := range v {
@@ -163,10 +163,11 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 				RequestID:   request.ID,
 				InventoryID: item.ID,
 				Amount:      item.AmountSelected,
+				Request:     request,
 			}
 			err := db.Create_request_item(h.DB, reqItem)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request item"})
 				return
 			}
 		}

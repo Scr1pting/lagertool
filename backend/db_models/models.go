@@ -162,7 +162,7 @@ type Request struct {
 	EndDate          time.Time `json:"end_date" pg:"end_date"`
 	Note             string    `json:"note" pg:"note"`
 	Status           string    `json:"status" pg:"status"`
-	OrganisationName string    `json:"organisationName" pg:"organisationName"`
+	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
 
 	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
 	User         *User         `json:"user" pg:"rel:has-one,fk:user_id"`

@@ -140,7 +140,7 @@ func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string
 	return inv, nil
 }
 
-func Create_request(con *pg.DB, request db_models.Request) error {
+func Create_request(con *pg.DB, request *db_models.Request) error {
 	_, err := con.Model(request).Insert()
 	if err != nil {
 		return err
@@ -149,7 +149,7 @@ func Create_request(con *pg.DB, request db_models.Request) error {
 }
 
 func Create_request_item(con *pg.DB, request db_models.RequestItems) error {
-	_, err := con.Model(request).Insert()
+	_, err := con.Model(&request).Insert()
 	if err != nil {
 		return err
 	}
