@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"lagertool.com/main/api_objects"
@@ -169,6 +170,40 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request item"})
 				return
+			}
+		}
+	}
+	c.JSON(http.StatusCreated, req)
+}
+
+func (h *Handler) RequestReview(c *gin.Context) {
+	var req api_objects.RequestReview
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	rev := &db_models.RequestReview{
+		UserID:    req.UserID,
+		RequestID: req.RequestID,
+		Outcome:   req.Outcome,
+		Note:      req.Note,
+	}
+	db.create_request_review(h.DB, rev)
+
+	if rev.Outcome == "success" {
+		for _, rItem := range rev.Request.RequestItems {
+			if rItem.Inventory.Item.IsConsumable {
+				cons := &db_models.Consumed{
+					RequestItemID: rItem.ID,
+				}
+				db.create_consumable(h.DB, cons)
+			} else {
+				l := &db_models.Loans{
+					RequestItemID: rItem.ID,
+					IsReturned:    false,
+					ReturnedAt:    time.Time{},
+				}
+				db.create_loan(h.DB, l)
 			}
 		}
 	}

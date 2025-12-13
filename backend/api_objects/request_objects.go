@@ -53,3 +53,20 @@ type CheckoutRequest struct {
 	EndDate   time.Time `json:"endDate" binding:"required"`
 	UserID    int       `json:"userId" binding:"required"`
 }
+
+type RequestReview struct {
+	UserID    int    `json:"user_id"` //editor
+	RequestID int    `json:"request_id"`
+	Outcome   string `json:"outcome"`
+	Note      string `json:"note"`
+}
+
+type UpdateRequest struct {
+	RequestID int    `json:"request_id"`
+	Outcome   string `json:"outcome"`
+}
+
+type UpdateLoan struct {
+	ReturnedAt time.Time `json:"returnedAt"`
+	LoanID     int       `json:"loanId"`
+}

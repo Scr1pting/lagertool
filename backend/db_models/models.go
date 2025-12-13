@@ -164,8 +164,9 @@ type Request struct {
 	Status           string    `json:"status" pg:"status"`
 	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
 
-	Organisation *Organisation `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
-	User         *User         `json:"user" pg:"rel:has-one,fk:user_id"`
+	Organisation *Organisation  `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
+	User         *User          `json:"user" pg:"rel:has-one,fk:user_id"`
+	RequestItems []RequestItems `json:"request_item" pg:"rel:has-many,fk:request_id"`
 }
 
 type RequestItems struct {
