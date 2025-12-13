@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react"
 
-import clsx from "clsx";
+import clsx from "clsx"
 
-import styles from "./Carousel.module.css";
-import { MoveLeft, MoveRight } from "lucide-react";
+import styles from "./Carousel.module.css"
+import { MoveLeft, MoveRight } from "lucide-react"
 
 interface CarouselProps {
   items: Array<React.ReactNode>;
@@ -22,62 +22,62 @@ function Carousel({
   className,
   onIndexChange,
 }: CarouselProps) {
-  const itemCount = items.length;
+  const itemCount = items.length
 
   const [activeIndex, setActiveIndex] = useState(() => {
-    if (itemCount === 0) return 0;
-    return Math.min(Math.max(initialIndex, 0), itemCount - 1);
-  });
+    if (itemCount === 0) return 0
+    return Math.min(Math.max(initialIndex, 0), itemCount - 1)
+  })
 
   useEffect(() => {
-    if (itemCount === 0) return;
+    if (itemCount === 0) return
 
-    const nextIndex = Math.min(Math.max(initialIndex, 0), itemCount - 1);
-    setActiveIndex((previous) => {
-      if (previous === nextIndex) return previous;
-      return nextIndex;
-    });
-  }, [initialIndex, itemCount]);
+    const nextIndex = Math.min(Math.max(initialIndex, 0), itemCount - 1)
+    setActiveIndex(previous => {
+      if (previous === nextIndex) return previous
+      return nextIndex
+    })
+  }, [initialIndex, itemCount])
 
   useEffect(() => {
-    if (itemCount === 0) return;
+    if (itemCount === 0) return
 
-    setActiveIndex((previous) => {
-      if (previous < itemCount) return previous;
-      return Math.max(itemCount - 1, 0);
-    });
-  }, [itemCount]);
+    setActiveIndex(previous => {
+      if (previous < itemCount) return previous
+      return Math.max(itemCount - 1, 0)
+    })
+  }, [itemCount])
 
   const updateIndex = useCallback(
     (nextIndex: number) => {
-      if (itemCount === 0) return;
+      if (itemCount === 0) return
 
-      let resolvedIndex = nextIndex;
+      let resolvedIndex = nextIndex
 
       if (loop) {
-        resolvedIndex = (nextIndex + itemCount) % itemCount;
+        resolvedIndex = (nextIndex + itemCount) % itemCount
       } else {
-        resolvedIndex = Math.min(Math.max(nextIndex, 0), itemCount - 1);
+        resolvedIndex = Math.min(Math.max(nextIndex, 0), itemCount - 1)
       }
 
-      setActiveIndex(resolvedIndex);
-      onIndexChange?.(resolvedIndex);
+      setActiveIndex(resolvedIndex)
+      onIndexChange?.(resolvedIndex)
     },
     [itemCount, loop, onIndexChange]
-  );
+  )
 
   const handlePrevious = useCallback(() => {
-    if (itemCount === 0 || activeIndex == 0) return;
-    updateIndex(activeIndex - 1);
-  }, [activeIndex, updateIndex]);
+    if (itemCount === 0 || activeIndex == 0) return
+    updateIndex(activeIndex - 1)
+  }, [activeIndex, updateIndex])
 
   const handleNext = useCallback(() => {
-    if (itemCount === 0 || activeIndex === itemCount - 1) return;
-    updateIndex(activeIndex + 1);
-  }, [activeIndex, itemCount, updateIndex]);
+    if (itemCount === 0 || activeIndex === itemCount - 1) return
+    updateIndex(activeIndex + 1)
+  }, [activeIndex, itemCount, updateIndex])
 
   if (itemCount === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -124,7 +124,7 @@ function Carousel({
         <MoveRight className={styles.arrowIcon} />
       </button>
     </section>
-  );
+  )
 }
 
-export default Carousel;
+export default Carousel

@@ -1,5 +1,5 @@
-import styles from "./NavBar.module.css";
-import { Ellipsis } from 'lucide-react';
+import styles from "./NavBar.module.css"
+import { Ellipsis } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu"
-import { Link } from "react-router-dom";
-import clsx from "clsx";
+import { Link } from "react-router-dom"
+import clsx from "clsx"
 
 export default function MoreDropdown() {
   return (

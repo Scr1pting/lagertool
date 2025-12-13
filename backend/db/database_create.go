@@ -155,3 +155,13 @@ func Create_request_item(con *pg.DB, request db_models.RequestItems) error {
 	}
 	return nil
 }
+
+func Create_loans(con *pg.DB, loan *db_models.Loans) error {
+	_, err := con.Model(loan).Insert()
+	return err
+}
+
+func Create_consumed(con *pg.DB, consumed *db_models.Consumed) error {
+	_, err := con.Model(consumed).Insert()
+	return err
+}

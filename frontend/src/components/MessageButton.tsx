@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Button } from "./shadcn/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./shadcn/popover";
-import { Mail } from 'lucide-react';
+import { useState } from "react"
+import { Button } from "./shadcn/button"
+import { Popover, PopoverContent, PopoverTrigger } from "./shadcn/popover"
+import { Mail } from 'lucide-react'
 
 interface MessageButtonProps {
   label?: string;
@@ -9,10 +9,10 @@ interface MessageButtonProps {
 }
 
 function MessageButton({ label = "Message", disabled = false }: MessageButtonProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
   return (
-    <Popover open={open} onOpenChange={(nextOpen) => setOpen(nextOpen)}>
+    <Popover open={open} onOpenChange={nextOpen => setOpen(nextOpen)}>
       <PopoverTrigger asChild>
         <Button
           size="sm"
@@ -38,7 +38,7 @@ function MessageButton({ label = "Message", disabled = false }: MessageButtonPro
         </div>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
-export default MessageButton;
+export default MessageButton

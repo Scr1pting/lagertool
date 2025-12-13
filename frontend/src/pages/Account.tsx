@@ -1,10 +1,10 @@
-import RegularPage from "@/components/RegularPage";
-import DataTable from "@/components/DataTable/DataTable";
-import borrowedColumns from "@/components/DataTable/BorrowedColumns";
-import useFetchBorrowed from "@/hooks/useFetchBorrowed";
+import RegularPage from "@/components/RegularPage"
+import DataTable from "@/components/DataTable/DataTable"
+import borrowedColumns from "@/components/DataTable/BorrowedColumns"
+import useFetchBorrowed from "@/hooks/useFetchBorrowed"
 
 function Account() {
-  const { data, status, error } = useFetchBorrowed();
+  const { data, status, error } = useFetchBorrowed()
 
   return (
     <RegularPage title="Account" description="Your borrowed items">
@@ -12,8 +12,8 @@ function Account() {
       {status === "error" && <p className="text-red-600">Failed to load: {error?.message}</p>}
       {status === "success" && <DataTable data={data ?? []} columns={borrowedColumns} />}
     </RegularPage>
-  );
+  )
 }
 
-export default Account;
+export default Account
 

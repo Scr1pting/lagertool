@@ -19,5 +19,13 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      semi: ['error', 'never'],
+      'arrow-parens': ['error', 'as-needed'],
+      'prefer-arrow-callback': ['error', {
+        allowNamedFunctions: false,
+        allowUnboundThis: false,
+      }],
+    },
   },
 ])

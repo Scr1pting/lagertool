@@ -1,6 +1,6 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useLayoutEffect, useRef, type ReactNode } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "../shadcn/dialog";
+import { AnimatePresence, motion } from "framer-motion"
+import { useLayoutEffect, useRef, type ReactNode } from "react"
+import { Dialog, DialogContent, DialogTrigger } from "../shadcn/dialog"
 
 
 const MotionDialogContent = motion.create(DialogContent)
@@ -143,4 +143,4 @@ function AnimatedDialog({
   )
 }
 
-export default AnimatedDialog;
+export default AnimatedDialog

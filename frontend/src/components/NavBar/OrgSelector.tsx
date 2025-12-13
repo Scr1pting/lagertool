@@ -15,7 +15,7 @@ import { ChevronDown } from "lucide-react"
 function OrgSelector() {
   const selectedOrg = useOrgs(s => s.selectedOrg)
   const setSelectedOrg = useOrgs(s => s.setSelectedOrg)
-  const { status, data: orgs } = useFetchOrgs();
+  const { status, data: orgs } = useFetchOrgs()
   
   return (
     <DropdownMenu>
@@ -36,7 +36,7 @@ function OrgSelector() {
             value={selectedOrg?.name}
             onValueChange={value => setSelectedOrg({ name: value})}
           >
-            {orgs.map((org) => (
+            {orgs.map(org => (
               <DropdownMenuRadioItem
                 key={org.name}
                 value={org.name}

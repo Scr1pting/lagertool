@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import get from '@/api/get';
-import type { ApiState } from '@/types/apiState';
+import { useEffect, useState } from 'react'
+import get from '@/api/get'
+import type { ApiState } from '@/types/apiState'
 
 
 function useFetch<T>(url: string, parser?: (res: unknown) => T) {
@@ -8,24 +8,24 @@ function useFetch<T>(url: string, parser?: (res: unknown) => T) {
     status: "idle",
     data: null,
     error: null,
-  });
+  })
 
   useEffect(() => {
-    let isMounted = true;
-    setState((prev) => ({ ...prev, status: "loading", error: null }));
+    let isMounted = true
+    setState(prev => ({ ...prev, status: "loading", error: null }))
     get(url)
-      .then((res) => {
-        if (isMounted) setState({ status: "success", data: parser ? parser(res) : res as T, error: null });
+      .then(res => {
+        if (isMounted) setState({ status: "success", data: parser ? parser(res) : res as T, error: null })
       })
-      .catch((err) => {
-        if (isMounted) setState({ status: "error", data: null, error: err instanceof Error ? err : new Error("Unknown error") });
-      });
+      .catch(err => {
+        if (isMounted) setState({ status: "error", data: null, error: err instanceof Error ? err : new Error("Unknown error") })
+      })
     return () => {
-      isMounted = false;
-    };
-  }, [url]);
+      isMounted = false
+    }
+  }, [url])
 
-  return state;
+  return state
 }
 
-export default useFetch;
+export default useFetch

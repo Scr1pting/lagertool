@@ -38,7 +38,7 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       input: <Input
         id="shelf-name"
         value={name}
-        onChange={(e) => { setName(e.target.value) }}
+        onChange={e => { setName(e.target.value) }}
         placeholder="Library Shelf"
         className="col-span-2 h-8"
         required
@@ -60,11 +60,11 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       id: "shelf-room",
       label: "Room",
       input: <Combobox
-        options={rooms?.filter((room) => room === selectedRoom) ?? undefined}
+        options={rooms?.filter(room => room === selectedRoom) ?? undefined}
         selectedOption={selectedRoom}
         onOptionChange={newOption => setSelectedRoom(newOption)}
         placeholder="Select Room"
-        disabled={rooms?.filter((room) => room.building === selectedBuilding).length == 0}    
+        disabled={rooms?.filter(room => room.building === selectedBuilding).length == 0}    
       />
     }
   ]
@@ -93,7 +93,7 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
         </DialogFooter>
       </form>
     </DialogContent>
-  );
+  )
 }
 
 export default AddShelfForm

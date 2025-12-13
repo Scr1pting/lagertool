@@ -7,8 +7,8 @@ interface DateFilterState {
   clearRange: () => void
 }
 
-export const useDate = create<DateFilterState>((set) => ({
+export const useDate = create<DateFilterState>(set => ({
   selectedRange: undefined,
-  setRange: (range) => set({ selectedRange: range }),
+  setRange: range => set({ selectedRange: range }),
   clearRange: () => set({ selectedRange: undefined }),
 }))

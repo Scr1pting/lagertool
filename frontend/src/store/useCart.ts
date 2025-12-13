@@ -8,12 +8,12 @@ interface CartState {
   update: (newItems: CartItem[]) => void;
 }
 
-export const useCart = create<CartState>((set) => ({
+export const useCart = create<CartState>(set => ({
   cartItems: [],
-  add: (newItem) =>
-    set((state) => ({
+  add: newItem =>
+    set(state => ({
       cartItems: [...state.cartItems, newItem],
     })),
   removeAll: () => set({ cartItems: [] }),
-  update: (newItems) => set({ cartItems: newItems }),
-}));
+  update: newItems => set({ cartItems: newItems }),
+}))

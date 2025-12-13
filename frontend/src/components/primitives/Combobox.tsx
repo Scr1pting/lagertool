@@ -61,7 +61,7 @@ function Combobox<
             <CommandEmpty>Nothing found.</CommandEmpty>
             <CommandGroup>
               {options && options
-                .map((option) => (
+                .map(option => (
                   <CommandItem
                     key={option.id}
                     value={String(option[fieldKey])}

@@ -1,12 +1,12 @@
-import { useDraggable } from '@dnd-kit/core';
-import { motion } from 'framer-motion';
-import { type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
+import { useDraggable } from '@dnd-kit/core'
+import { motion } from 'framer-motion'
+import { type CSSProperties, type HTMLAttributes, type ReactNode } from 'react'
 
-import { type ShelfElementDefinition } from '../../../types/shelf';
-import { type DragItemData } from '../types/drag';
+import { type ShelfElementDefinition } from '../../../types/shelf'
+import { type DragItemData } from '../types/drag'
 
-import styles from './ShelfElementView.module.css';
-import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT } from '../util/shelfUnits';
+import styles from './ShelfElementView.module.css'
+import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT } from '../util/shelfUnits'
 
 
 export function ShelfElementViewInner(
@@ -43,14 +43,14 @@ function ShelfElementView({
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: draggableId,
     data: dragData,
-  });
+  })
 
-  const { style, className: incomingClassName, ...restDivProps } = divProps;
-  const combinedStyle: CSSProperties = { ...(style ?? {}) };
+  const { style, className: incomingClassName, ...restDivProps } = divProps
+  const combinedStyle: CSSProperties = { ...(style ?? {}) }
 
   const combinedClassName = [incomingClassName, styles.pieceWrapper, isDragging ? styles.elementDragging : ""]
     .filter(Boolean)
-    .join(' ');
+    .join(' ')
 
   return (
     <motion.div
@@ -68,7 +68,7 @@ function ShelfElementView({
         <ShelfElementViewInner itemDef={itemDef} />
       </div>
     </motion.div>
-  );
+  )
 };
 
-export default ShelfElementView;
+export default ShelfElementView

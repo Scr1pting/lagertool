@@ -20,7 +20,7 @@ function StandardSelect<T extends { id: string | number, name: string}>({ id, va
         <SelectValue placeholder="Select building" />
       </SelectTrigger>
       <SelectContent>
-        {Array.isArray(options) && options.map((option) => (
+        {Array.isArray(options) && options.map(option => (
           <SelectItem key={option.id} value={option.id.toString()}>
             {option.name}
           </SelectItem>
@@ -30,4 +30,4 @@ function StandardSelect<T extends { id: string | number, name: string}>({ id, va
   )
 }
 
-export default StandardSelect;
+export default StandardSelect

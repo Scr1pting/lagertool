@@ -1,7 +1,7 @@
-import type { InventoryItem } from "@/types/inventory";
-import type { ColumnDef } from "@tanstack/react-table";
-import InventoryActions from "../InventoryTable/InventoryActions";
-import { inventoryColumnsBase } from "../InventoryTable/inventoryColumnsBase";
+import type { InventoryItem } from "@/types/inventory"
+import type { ColumnDef } from "@tanstack/react-table"
+import InventoryActions from "../InventoryTable/InventoryActions"
+import { inventoryColumnsBase } from "../InventoryTable/inventoryColumnsBase"
 
 
 export const inventoryColumns: ColumnDef<InventoryItem>[] = [

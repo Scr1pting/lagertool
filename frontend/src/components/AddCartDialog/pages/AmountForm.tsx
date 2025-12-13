@@ -19,17 +19,17 @@ interface MainProps {
 }
 
 function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: MainProps) {
-  const add = useCart((state) => state.add);
+  const add = useCart(state => state.add)
 
-  const exceedsAvailable = !Number.isNaN(numSelected) && numSelected > item.available;
-  const isInvalidQuantity = Number.isNaN(numSelected) || numSelected < 1 || exceedsAvailable;
+  const exceedsAvailable = !Number.isNaN(numSelected) && numSelected > item.available
+  const isInvalidQuantity = Number.isNaN(numSelected) || numSelected < 1 || exceedsAvailable
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault()
     
     if (!isInvalidQuantity) {
-      const cartItem: CartItem = { ...item, numSelected: numSelected };
-      add(cartItem);
+      const cartItem: CartItem = { ...item, numSelected: numSelected }
+      add(cartItem)
 
       toast("Added to cart", {
         description: `${cartItem.name} - ${cartItem.numSelected}`,
@@ -37,11 +37,11 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
           label: "Undo",
           onClick: () => console.log("Undo"),
         },
-      });
+      })
 
       resetValues()
     }
-  };
+  }
 
   return(
     <form onSubmit={handleSubmit} className="grid gap-5">
@@ -61,7 +61,7 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
           max={item.available}
           aria-invalid={exceedsAvailable}
           value={numSelected}
-          onChange={(e) => { setNumSelected(Number.parseInt(e.target.value, 10)) }}
+          onChange={e => { setNumSelected(Number.parseInt(e.target.value, 10)) }}
         />
         {exceedsAvailable && (
           <FieldError className="text-destructive" role="alert">

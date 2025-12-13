@@ -1,16 +1,16 @@
 import type { InventoryItem } from "@/types/inventory"
 import InstantCheckoutVerify from "./pages/InstantCheckoutVerify"
-import AnimatedDialog from "../primitives/AnimatedDialog";
-import { useState } from "react";
-import AmountForm from "./pages/AmountForm";
-import InstantCheckoutForm from "./pages/InstantCheckoutForm";
+import AnimatedDialog from "../primitives/AnimatedDialog"
+import { useState } from "react"
+import AmountForm from "./pages/AmountForm"
+import InstantCheckoutForm from "./pages/InstantCheckoutForm"
 
 
 function AddCartDialog({ item, children }: { item: InventoryItem, children?: ReactNode }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
 
-  const [numSelected, setNumSelected] = useState<number>(1);
+  const [numSelected, setNumSelected] = useState<number>(1)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
 
@@ -49,10 +49,10 @@ function AddCartDialog({ item, children }: { item: InventoryItem, children?: Rea
       pages={pages}
       currentPage={currentPage}
       open={open}
-      onOpenChange={(newOpen) => setOpen(newOpen)}>
+      onOpenChange={newOpen => setOpen(newOpen)}>
       {children}
     </AnimatedDialog>
   )
 }
 
-export default AddCartDialog;
+export default AddCartDialog

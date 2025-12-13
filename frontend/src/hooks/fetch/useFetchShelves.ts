@@ -1,8 +1,8 @@
-import useOrgs from "@/store/useOrgs";
-import useFetch from "./useFetch";
-import type { Shelf } from "@/types/shelf";
+import useOrgs from "@/store/useOrgs"
+import useFetch from "./useFetch"
+import type { Shelf } from "@/types/shelf"
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 function useFetchShelves() {
   const selectedOrg = useOrgs(s => s.selectedOrg)
@@ -17,4 +17,4 @@ function useFetchShelves() {
   return useFetch<Shelf[]>(`${API_BASE_URL}/shelves?organisation=${selectedOrg?.name}`, res => parse(res as Shelf[]))
 }
 
-export default useFetchShelves;
+export default useFetchShelves
