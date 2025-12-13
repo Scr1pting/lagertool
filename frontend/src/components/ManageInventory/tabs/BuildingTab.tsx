@@ -13,7 +13,7 @@ interface BuildingTabProps {
 }
 
 function BuildingTab({ buildings }: BuildingTabProps) {
-  const [name, setName] = useState<string>("")
+  const [name, setName] = useState("")
 
   const elements: FormElement[] = [
     {
@@ -24,7 +24,7 @@ function BuildingTab({ buildings }: BuildingTabProps) {
         id="building-name"
         placeholder="CAB"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={e => setName(e.target.value)}
       />
     }
   ]

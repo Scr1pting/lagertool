@@ -6,14 +6,13 @@ import StaticShelf from "@/components/Shelves/viewer/StaticShelf";
 import Carousel from "@/components/Carousel/Carousel";
 import useFetchShelves from "@/hooks/fetch/useFetchShelves";
 import ShelfElementDialog from "@/components/ShelfElementDialog";
-import type { SelectedShelfElement } from "@/types/shelf";
+import type { ShelfElement } from "@/types/shelf";
 
 
 function Home() {
   const { status, data: shelves, error } = useFetchShelves();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedElement, setSelectedElement] = useState<SelectedShelfElement | null>(null);
-
+  const [selectedElement, setSelectedElement] = useState<ShelfElement | null>(null);
 
   const shelfParam = searchParams.get("shelf");
 
@@ -71,7 +70,7 @@ function Home() {
         onElementSelect={setSelectedElement}
       />
       <label className="text-[#BBB] font-mono">
-        {shelf.building.name + " - " + shelf.room.name + " - " + shelf.name}
+        {shelf.displayName}
       </label>
     </div>
   ));
@@ -89,6 +88,7 @@ function Home() {
         open={selectedElement != null}
         onOpenChange={() => setSelectedElement(null)}
         shelfElement={selectedElement}
+        shelf={undefined}
       />
     </main>
   );

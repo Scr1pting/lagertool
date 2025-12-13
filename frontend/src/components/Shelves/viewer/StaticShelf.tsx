@@ -1,11 +1,11 @@
-import type { SelectedShelfElement, Shelf } from '@/types/shelf';
+import type { Shelf, ShelfElement } from '@/types/shelf';
 import styles from './StaticShelf.module.css';
 import StaticShelfColumn from './StaticShelfColumn';
 
 
 interface StaticShelfParams {
   shelf : Shelf;
-  onElementSelect?: (element: SelectedShelfElement) => void;
+  onElementSelect?: (newElement: ShelfElement) => void;
   highlightedElement?: string;
 }
 

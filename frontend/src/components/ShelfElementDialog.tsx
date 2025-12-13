@@ -1,23 +1,25 @@
 import useFetchInventory from "@/hooks/fetch/useFetchInventory";
 import DataTable from "./DataTable/DataTable";
-import { DialogContent, DialogDescription, DialogHeader } from "./shadcn/dialog";
-import { Dialog, DialogTitle } from "@radix-ui/react-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./shadcn/dialog";
 import AvailabilityDescription from "./AvailabilityDescription";
-import type { SelectedShelfElement } from "@/types/shelf";
+import type { SelectedShelfElement, Shelf, ShelfElement } from "@/types/shelf";
 import { inventoryShelfColumns } from "./DataTable/inventoryShelfColumns";
 
 
 interface ShelfElementDialogProps {
   open: boolean
   onOpenChange: () => void
-  shelfElement: SelectedShelfElement | null
+  shelf: Shelf | undefined
+  shelfElement: ShelfElement | null
 }
 
 function ShelfElementDialog({
   open,
   onOpenChange,
+  shelf,
   shelfElement
 }: ShelfElementDialogProps) {
+  // TODO: pass shelf
   const { data: inventory } = useFetchInventory();
 
   return (
@@ -38,7 +40,7 @@ function ShelfElementDialog({
             <DataTable
               data={inventory ?? []}
               columns={inventoryShelfColumns}
-              rowLink={(row) => `/item?id=${row.id}`}
+              rowLink={row => `/item?id=${row.id}`}
               className="h-[60vh] max-h-[850px] overflow-y-auto"
               sticky
             />

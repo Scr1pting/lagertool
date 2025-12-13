@@ -10,16 +10,8 @@ export interface ShelfElementDefinition {
 }
 
 export interface ShelfElement {
-  id: string;  // string for simpler element labels
-  type: ShelfElementType;
-  numItems?: number;
-}
-
-export interface SelectedShelfElement {
-  id: string
-  buildingName: string
-  roomName: string
-  shelfName: string
+  id: string  // string for simpler element labels
+  type: ShelfElementType
 }
 
 export interface ShelfColumn {
@@ -28,11 +20,12 @@ export interface ShelfColumn {
 }
 
 export interface Shelf {
-  id: string;
-  name: string;
-  room: Room;
-  building: Building;
-  columns: ShelfColumn[];
+  id: string
+  name: string
+  displayName: string
+  room: Room
+  building: Building
+  columns: ShelfColumn[]
 }
 
 export const ELEMENT_CATALOG: Record<ShelfElementType, ShelfElementDefinition> = {

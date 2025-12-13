@@ -3,7 +3,7 @@ import get from '@/api/get';
 import type { ApiState } from '@/types/apiState';
 
 
-function useFetch<T>(url: string) {
+function useFetch<T>(url: string, parser?: (res: unknown) => T) {
   const [state, setState] = useState<ApiState<T>>({
     status: "idle",
     data: null,
@@ -15,7 +15,7 @@ function useFetch<T>(url: string) {
     setState((prev) => ({ ...prev, status: "loading", error: null }));
     get(url)
       .then((res) => {
-        if (isMounted) setState({ status: "success", data: res as T, error: null });
+        if (isMounted) setState({ status: "success", data: parser ? parser(res) : res as T, error: null });
       })
       .catch((err) => {
         if (isMounted) setState({ status: "error", data: null, error: err instanceof Error ? err : new Error("Unknown error") });

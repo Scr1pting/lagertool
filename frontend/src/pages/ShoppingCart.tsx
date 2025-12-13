@@ -17,7 +17,7 @@ function ShoppingCart() {
     >
       <DataTable data={cart ?? []} columns={cartColumns} />
 
-      <div className="w-full gap-13 flex justify-center mt-6 flex-wrap sm:flex-nowrap flex-row">
+      <div className="w-full gap-4 flex justify-center mt-6 flex-wrap sm:flex-nowrap flex-row">
         <ButtonGroup>
           <Button variant="outline">Clear</Button>
         </ButtonGroup>
