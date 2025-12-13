@@ -12,6 +12,7 @@ import (
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
+	"lagertool.com/main/db_models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
@@ -41,44 +42,44 @@ func setupTestRouter() (*gin.Engine, *pg.DB) {
 }
 
 type TestHierarchy struct {
-	Building  *db.Building
-	Room      *db.Room
-	Shelf     *db.Shelf
-	Column    *db.Column
-	ShelfUnit *db.ShelfUnit
-	Item      *db.Item
-	Inventory *db.Inventory
+	Building  *db_models.Building
+	Room      *db_models.Room
+	Shelf     *db_models.Shelf
+	Column    *db_models.Column
+	ShelfUnit *db_models.ShelfUnit
+	Item      *db_models.Item
+	Inventory *db_models.Inventory
 }
 
 // createTestHierarchy creates a full data hierarchy for testing complex endpoints
 // and returns a struct containing all created objects.
 func createTestHierarchy(t *testing.T, dbCon *pg.DB) *TestHierarchy {
 	h := &TestHierarchy{}
-	h.Building = &db.Building{Name: "Hierarchy Building", UpdateDate: time.Now()}
+	h.Building = &db_models.Building{Name: "Hierarchy Building", UpdateDate: time.Now()}
 	_, err := dbCon.Model(h.Building).Insert()
 	assert.NoError(t, err)
 
-	h.Room = &db.Room{Name: "Hierarchy Room", BuildingID: h.Building.ID, UpdateDate: time.Now()}
+	h.Room = &db_models.Room{Name: "Hierarchy Room", BuildingID: h.Building.ID, UpdateDate: time.Now()}
 	_, err = dbCon.Model(h.Room).Insert()
 	assert.NoError(t, err)
 
-	h.Shelf = &db.Shelf{ID: "H-S-1", Name: "Hierarchy Shelf", RoomID: h.Room.ID, UpdateDate: time.Now()}
+	h.Shelf = &db_models.Shelf{ID: "H-S-1", Name: "Hierarchy Shelf", RoomID: h.Room.ID, UpdateDate: time.Now()}
 	_, err = dbCon.Model(h.Shelf).Insert()
 	assert.NoError(t, err)
 
-	h.Column = &db.Column{ID: "H-C-1", ShelfID: h.Shelf.ID}
+	h.Column = &db_models.Column{ID: "H-C-1", ShelfID: h.Shelf.ID}
 	_, err = dbCon.Model(h.Column).Insert()
 	assert.NoError(t, err)
 
-	h.ShelfUnit = &db.ShelfUnit{ID: "H-SU-1", ColumnID: h.Column.ID}
+	h.ShelfUnit = &db_models.ShelfUnit{ID: "H-SU-1", ColumnID: h.Column.ID}
 	_, err = dbCon.Model(h.ShelfUnit).Insert()
 	assert.NoError(t, err)
 
-	h.Item = &db.Item{Name: "Hierarchy Item", IsConsumable: true}
+	h.Item = &db_models.Item{Name: "Hierarchy Item", IsConsumable: true}
 	_, err = dbCon.Model(h.Item).Insert()
 	assert.NoError(t, err)
 
-	h.Inventory = &db.Inventory{ItemID: h.Item.ID, ShelfUnitID: h.ShelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	h.Inventory = &db_models.Inventory{ItemID: h.Item.ID, ShelfUnitID: h.ShelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
 	_, err = dbCon.Model(h.Inventory).Insert()
 	assert.NoError(t, err)
 
@@ -110,12 +111,12 @@ func TestGetOrganisations(t *testing.T) {
 	router.GET("/organisations", h.GetOrganisations)
 
 	// Clean up any existing test organisations
-	_, err := dbCon.Model(&db.Organisation{}).Where("name LIKE 'Test Org%'").Delete()
+	_, err := dbCon.Model(&db_models.Organisation{}).Where("name LIKE 'Test Org%'").Delete()
 	assert.NoError(t, err)
 
 	// Insert multiple test organisations
-	testOrg1 := &db.Organisation{Name: "Test Org 1"}
-	testOrg2 := &db.Organisation{Name: "Test Org 2"}
+	testOrg1 := &db_models.Organisation{Name: "Test Org 1"}
+	testOrg2 := &db_models.Organisation{Name: "Test Org 2"}
 	_, err = dbCon.Model(testOrg1, testOrg2).Insert()
 	assert.NoError(t, err)
 
@@ -125,7 +126,7 @@ func TestGetOrganisations(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var organisations []db.Organisation
+	var organisations []db_models.Organisation
 	err = json.Unmarshal(w.Body.Bytes(), &organisations)
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, len(organisations), 2)
@@ -139,7 +140,7 @@ func TestGetOrganisations(t *testing.T) {
 	assert.True(t, orgNames["Test Org 2"])
 
 	// Clean up
-	_, err = dbCon.Model(&db.Organisation{}).Where("name LIKE 'Test Org%'").Delete()
+	_, err = dbCon.Model(&db_models.Organisation{}).Where("name LIKE 'Test Org%'").Delete()
 	assert.NoError(t, err)
 }
 
@@ -185,7 +186,7 @@ func TestCreateBuilding(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, w.Code)
 
 			if tc.expectedStatus == http.StatusCreated {
-				var createdBuilding db.Building
+				var createdBuilding db_models.Building
 				err := json.Unmarshal(w.Body.Bytes(), &createdBuilding)
 				assert.NoError(t, err)
 				assert.Equal(t, tc.expectedName, createdBuilding.Name)
@@ -207,7 +208,7 @@ func TestCreateRoom(t *testing.T) {
 	router.POST("/create_room", h.CreateRoom)
 
 	// Pre-insert a building for the foreign key constraint
-	building := &db.Building{ID: 1, Name: "Test Building", Campus: "Test Campus"}
+	building := &db_models.Building{ID: 1, Name: "Test Building", Campus: "Test Campus"}
 	_, err := dbCon.Model(building).Insert()
 	assert.NoError(t, err)
 	// Defer cleanup to ensure it runs even if the test fails
@@ -230,7 +231,7 @@ func TestCreateRoom(t *testing.T) {
 	}
 
 	// Assert the response body
-	var createdRoom db.Room
+	var createdRoom db_models.Room
 	err = json.Unmarshal(w.Body.Bytes(), &createdRoom)
 	assert.NoError(t, err)
 	assert.Equal(t, "Room 101", createdRoom.Name)
@@ -249,12 +250,12 @@ func TestGetBuildingsS(t *testing.T) {
 	router.GET("/buildings_sorted", h.GetBuildingsS)
 
 	// Clean up any previous runs of this test
-	_, err := dbCon.Model(&db.Building{}).Where("name = ? OR name = ?", "Old Building", "New Building").Delete()
+	_, err := dbCon.Model(&db_models.Building{}).Where("name = ? OR name = ?", "Old Building", "New Building").Delete()
 	assert.NoError(t, err)
 
 	// Insert test data with different update dates
-	b1 := &db.Building{Name: "Old Building", Campus: "Main", UpdateDate: time.Now().Add(-time.Hour)}
-	b2 := &db.Building{Name: "New Building", Campus: "Main", UpdateDate: time.Now()}
+	b1 := &db_models.Building{Name: "Old Building", Campus: "Main", UpdateDate: time.Now().Add(-time.Hour)}
+	b2 := &db_models.Building{Name: "New Building", Campus: "Main", UpdateDate: time.Now()}
 	_, err = dbCon.Model(b1, b2).Insert()
 	assert.NoError(t, err)
 
@@ -274,7 +275,7 @@ func TestGetBuildingsS(t *testing.T) {
 	assert.Equal(t, "Old Building", buildings[1].Name)
 
 	// Cleanup
-	_, err = dbCon.Model(&db.Building{}).Where("name = ? OR name = ?", "Old Building", "New Building").Delete()
+	_, err = dbCon.Model(&db_models.Building{}).Where("name = ? OR name = ?", "Old Building", "New Building").Delete()
 	assert.NoError(t, err)
 }
 
@@ -286,13 +287,13 @@ func TestGetRoomsS(t *testing.T) {
 	router.GET("/rooms_sorted", h.GetRoomsS)
 
 	// Insert related building
-	building := &db.Building{Name: "Test Building", Campus: "Test Campus"}
+	building := &db_models.Building{Name: "Test Building", Campus: "Test Campus"}
 	_, err := dbCon.Model(building).Insert()
 	assert.NoError(t, err)
 
 	// Insert test data with different update dates
-	r1 := &db.Room{Name: "Old Room", BuildingID: building.ID, UpdateDate: time.Now().Add(-time.Hour)}
-	r2 := &db.Room{Name: "New Room", BuildingID: building.ID, UpdateDate: time.Now()}
+	r1 := &db_models.Room{Name: "Old Room", BuildingID: building.ID, UpdateDate: time.Now().Add(-time.Hour)}
+	r2 := &db_models.Room{Name: "New Room", BuildingID: building.ID, UpdateDate: time.Now()}
 	_, err = dbCon.Model(r1, r2).Insert()
 	assert.NoError(t, err)
 
@@ -311,7 +312,7 @@ func TestGetRoomsS(t *testing.T) {
 	assert.Equal(t, "Old Room", rooms[1].Name)
 
 	// Cleanup
-	_, err = dbCon.Model(&db.Room{}).Where("name = ? OR name = ?", "Old Room", "New Room").Delete()
+	_, err = dbCon.Model(&db_models.Room{}).Where("name = ? OR name = ?", "Old Room", "New Room").Delete()
 	assert.NoError(t, err)
 	_, err = dbCon.Model(building).Where("id = ?", building.ID).Delete()
 	assert.NoError(t, err)
@@ -346,7 +347,7 @@ func TestGetShelves(t *testing.T) {
 	router.GET("/shelves", h.GetShelves)
 
 	// Create test organisation
-	org := &db.Organisation{Name: "Test Org"}
+	org := &db_models.Organisation{Name: "Test Org"}
 	_, err := dbCon.Model(org).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -409,7 +410,7 @@ func TestGetItem(t *testing.T) {
 	router.GET("/item", h.GetItem)
 
 	// Create test organisation
-	org := &db.Organisation{Name: "Test Org"}
+	org := &db_models.Organisation{Name: "Test Org"}
 	_, err := dbCon.Model(org).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -447,7 +448,7 @@ func TestCreateCartItem(t *testing.T) {
 	router.POST("/add_item_to_cart", h.CreateCartItem)
 
 	// The user ID is hardcoded to 1 in the handler, so we create a user with ID 1.
-	user := &db.User{ID: 1, Email: "test@example.com", Name: "Test User"}
+	user := &db_models.User{ID: 1, Email: "test@example.com", Name: "Test User"}
 	_, err := dbCon.Model(user).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -455,7 +456,7 @@ func TestCreateCartItem(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	item := &db.Item{Name: "Test Item", IsConsumable: true}
+	item := &db_models.Item{Name: "Test Item", IsConsumable: true}
 	_, err = dbCon.Model(item).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -463,7 +464,7 @@ func TestCreateCartItem(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	inventory := &db.Inventory{ItemID: item.ID, Amount: 10}
+	inventory := &db_models.Inventory{ItemID: item.ID, Amount: 10}
 	_, err = dbCon.Model(inventory).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -502,16 +503,16 @@ func TestCreateCartItem(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, w.Code)
 
 			if tc.expectedStatus == http.StatusCreated {
-				var createdCartItem db.ShoppingCartItem
+				var createdCartItem db_models.ShoppingCartItem
 				err := json.Unmarshal(w.Body.Bytes(), &createdCartItem)
 				assert.NoError(t, err)
 				assert.Equal(t, 5, createdCartItem.Amount)
 				assert.Equal(t, inventory.ID, createdCartItem.InventoryID)
 
 				// Clean up the created records
-				_, err = dbCon.Model(&db.ShoppingCartItem{}).Where("id = ?", createdCartItem.ID).Delete()
+				_, err = dbCon.Model(&db_models.ShoppingCartItem{}).Where("id = ?", createdCartItem.ID).Delete()
 				assert.NoError(t, err)
-				_, err = dbCon.Model(&db.ShoppingCart{}).Where("user_id = ?", user.ID).Delete()
+				_, err = dbCon.Model(&db_models.ShoppingCart{}).Where("user_id = ?", user.ID).Delete()
 				assert.NoError(t, err)
 			}
 		})
@@ -526,7 +527,7 @@ func TestCreateShelf(t *testing.T) {
 	router.POST("/create_shelf", h.CreateShelf)
 
 	// Pre-insert an organisation, a building and a room for the foreign key constraint
-	org := &db.Organisation{Name: "Test Org"}
+	org := &db_models.Organisation{Name: "Test Org"}
 	_, err := dbCon.Model(org).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -534,7 +535,7 @@ func TestCreateShelf(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	building := &db.Building{Name: "Test Building", Campus: "Test Campus"}
+	building := &db_models.Building{Name: "Test Building", Campus: "Test Campus"}
 	_, err = dbCon.Model(building).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -542,7 +543,7 @@ func TestCreateShelf(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	room := &db.Room{Name: "Test Room", BuildingID: building.ID}
+	room := &db_models.Room{Name: "Test Room", BuildingID: building.ID}
 	_, err = dbCon.Model(room).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -593,18 +594,18 @@ func TestCreateShelf(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, w.Code)
 
 			if tc.expectedStatus == http.StatusCreated {
-				var createdShelf db.Shelf
+				var createdShelf db_models.Shelf
 				err := json.Unmarshal(w.Body.Bytes(), &createdShelf)
 				assert.NoError(t, err)
 				assert.Equal(t, "Test Shelf", createdShelf.Name)
 				assert.Equal(t, "S-1", createdShelf.ID)
 
 				// Clean up the created records
-				_, err = dbCon.Model(&db.ShelfUnit{}).Where("id = 'SU-1' OR id = 'SU-2'").Delete()
+				_, err = dbCon.Model(&db_models.ShelfUnit{}).Where("id = 'SU-1' OR id = 'SU-2'").Delete()
 				assert.NoError(t, err)
-				_, err = dbCon.Model(&db.Column{}).Where("id = 'C-1'").Delete()
+				_, err = dbCon.Model(&db_models.Column{}).Where("id = 'C-1'").Delete()
 				assert.NoError(t, err)
-				_, err = dbCon.Model(&db.Shelf{}).Where("id = 'S-1'").Delete()
+				_, err = dbCon.Model(&db_models.Shelf{}).Where("id = 'S-1'").Delete()
 				assert.NoError(t, err)
 			}
 		})
@@ -655,16 +656,16 @@ func TestCreateItem(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, w.Code)
 
 			if tc.expectedStatus == http.StatusCreated {
-				var createdItem db.Inventory
+				var createdItem db_models.Inventory
 				err := json.Unmarshal(w.Body.Bytes(), &createdItem)
 				assert.NoError(t, err)
 				assert.Equal(t, 100, createdItem.Amount)
 				assert.Equal(t, hier.ShelfUnit.ID, createdItem.ShelfUnitID)
 
 				// Clean up the created records
-				_, err = dbCon.Model(&db.Inventory{}).Where("id = ?", createdItem.ID).Delete()
+				_, err = dbCon.Model(&db_models.Inventory{}).Where("id = ?", createdItem.ID).Delete()
 				assert.NoError(t, err)
-				_, err = dbCon.Model(&db.Item{}).Where("name = 'New Test Item'").Delete()
+				_, err = dbCon.Model(&db_models.Item{}).Where("name = 'New Test Item'").Delete()
 				assert.NoError(t, err)
 			}
 		})

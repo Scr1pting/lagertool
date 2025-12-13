@@ -2,7 +2,7 @@ package util
 
 import (
 	"github.com/agnivade/levenshtein"
-	"lagertool.com/main/db"
+	"lagertool.com/main/db_models"
 )
 
 func SufficientlySimilar(s1 string, s2 string, degree int) bool {
@@ -13,14 +13,14 @@ func SufficientlySimilar(s1 string, s2 string, degree int) bool {
 	return false
 }
 
-func FindItemSearchTermsInDB(table []db.Item, s string) []db.Item {
-	result_prim := []db.Item{}
-	result_sec := []db.Item{}
-	result_tert := []db.Item{}
+func FindItemSearchTermsInDB(table []db_models.Item, s string) []db_models.Item {
+	result_prim := []db_models.Item{}
+	result_sec := []db_models.Item{}
+	result_tert := []db_models.Item{}
 	for _, v := range table {
 		name := v.Name
 		if name == s {
-			return []db.Item{v}
+			return []db_models.Item{v}
 		}
 		if SufficientlySimilar(s, name, 1) {
 			result_prim = append(result_prim, v)

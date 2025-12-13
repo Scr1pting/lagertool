@@ -3,36 +3,38 @@ package db
 import (
 	"net"
 	"time"
+
+	"lagertool.com/main/db_models"
 )
 
 func GetDummyData() (
-	*Organisation,
-	*User,
-	*Session,
-	*Building,
-	*Room,
-	*Shelf,
-	[]Column,
-	[]ShelfUnit,
-	*Item,
-	*Inventory,
-	*ShoppingCart,
-	[]ShoppingCartItem,
-	*Request,
-	[]RequestItems,
-	*RequestReview,
-	*Loans,
-	*Consumed,
+	*db_models.Organisation,
+	*db_models.User,
+	*db_models.Session,
+	*db_models.Building,
+	*db_models.Room,
+	*db_models.Shelf,
+	[]db_models.Column,
+	[]db_models.ShelfUnit,
+	*db_models.Item,
+	*db_models.Inventory,
+	*db_models.ShoppingCart,
+	[]db_models.ShoppingCartItem,
+	*db_models.Request,
+	[]db_models.RequestItems,
+	*db_models.RequestReview,
+	*db_models.Loans,
+	*db_models.Consumed,
 ) {
 	now := time.Now()
 
 	// 1️⃣ Organisation
-	org := &Organisation{
+	org := &db_models.Organisation{
 		Name: "VIS",
 	}
 
 	// 2️⃣ User
-	user := &User{
+	user := &db_models.User{
 		ID:           1,
 		Subject:      "sub-123",
 		Issuer:       "auth0",
@@ -45,7 +47,7 @@ func GetDummyData() (
 	}
 
 	// 3️⃣ Session
-	session := &Session{
+	session := &db_models.Session{
 		ID:        1,
 		UserID:    user.ID,
 		CreatedAt: now.Add(-2 * time.Hour),
@@ -55,7 +57,7 @@ func GetDummyData() (
 	}
 
 	// 4️⃣ Building + Room
-	building := &Building{
+	building := &db_models.Building{
 		ID:         1,
 		Name:       "Science Building",
 		GPS:        "37.7749,-122.4194",
@@ -63,7 +65,7 @@ func GetDummyData() (
 		UpdateDate: now,
 	}
 
-	room := &Room{
+	room := &db_models.Room{
 		ID:         1,
 		Number:     "B101",
 		Floor:      "1",
@@ -74,7 +76,7 @@ func GetDummyData() (
 	}
 
 	// 5️⃣ Shelf + Columns + ShelfUnits
-	shelf := &Shelf{
+	shelf := &db_models.Shelf{
 		ID:           "S-001",
 		Name:         "Chemical Storage Shelf",
 		OwnedBy:      org.Name,
@@ -84,30 +86,30 @@ func GetDummyData() (
 		Organisation: org,
 	}
 
-	columns := []Column{
+	columns := []db_models.Column{
 		{ID: "C-001", ShelfID: shelf.ID, Shelf: shelf},
 		{ID: "C-002", ShelfID: shelf.ID, Shelf: shelf},
 	}
 
-	shelfUnits := []ShelfUnit{
+	shelfUnits := []db_models.ShelfUnit{
 		{ID: "U-001", Type: 0, PositionInColumn: 1, ColumnID: columns[0].ID, Column: &columns[0], Description: "Small bin for beakers"},
 		{ID: "U-002", Type: 1, PositionInColumn: 2, ColumnID: columns[0].ID, Column: &columns[0], Description: "Large bin for glassware"},
 	}
 
 	// Link ShelfUnits to Columns
-	columns[0].ShelfUnits = []ShelfUnit{shelfUnits[0], shelfUnits[1]}
-	columns[1].ShelfUnits = []ShelfUnit{} // empty column
+	columns[0].ShelfUnits = []db_models.ShelfUnit{shelfUnits[0], shelfUnits[1]}
+	columns[1].ShelfUnits = []db_models.ShelfUnit{} // empty column
 	shelf.Columns = columns
 
 	// 6️⃣ Item
-	item := &Item{
+	item := &db_models.Item{
 		ID:           1,
 		Name:         "Beaker Set 500ml",
 		IsConsumable: false,
 	}
 
 	// 7️⃣ Inventory
-	inventory := &Inventory{
+	inventory := &db_models.Inventory{
 		ID:          1,
 		ItemID:      item.ID,
 		ShelfUnitID: shelfUnits[0].ID,
@@ -118,12 +120,12 @@ func GetDummyData() (
 	}
 
 	// 8️⃣ ShoppingCart + Items
-	shoppingCart := ShoppingCart{
+	shoppingCart := db_models.ShoppingCart{
 		ID:     1,
 		UserID: user.ID,
 	}
 
-	shoppingCartItems := []ShoppingCartItem{
+	shoppingCartItems := []db_models.ShoppingCartItem{
 		{
 			ID:             1,
 			Amount:         2,
@@ -136,7 +138,7 @@ func GetDummyData() (
 	shoppingCart.ShoppingCartItems = shoppingCartItems
 
 	// 9️⃣ Request + RequestItems + Review
-	request := &Request{
+	request := &db_models.Request{
 		ID:        1,
 		UserID:    user.ID,
 		StartDate: now,
@@ -146,7 +148,7 @@ func GetDummyData() (
 		User:      user,
 	}
 
-	requestItems := []RequestItems{
+	requestItems := []db_models.RequestItems{
 		{
 			ID:          1,
 			RequestID:   request.ID,
@@ -157,7 +159,7 @@ func GetDummyData() (
 		},
 	}
 
-	requestReview := &RequestReview{
+	requestReview := &db_models.RequestReview{
 		UserID:    user.ID,
 		RequestID: request.ID,
 		Outcome:   "approved",
@@ -167,14 +169,14 @@ func GetDummyData() (
 	}
 
 	// 🔟 Loans + Consumed
-	loan := &Loans{
+	loan := &db_models.Loans{
 		ID:            1,
 		RequestItemID: requestItems[0].ID,
 		IsReturned:    false,
 		RequestItems:  &requestItems[0],
 	}
 
-	consumed := &Consumed{
+	consumed := &db_models.Consumed{
 		ID:            1,
 		RequestItemID: requestItems[0].ID,
 		RequestItems:  &requestItems[0],

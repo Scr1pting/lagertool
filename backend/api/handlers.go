@@ -9,7 +9,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/config"
-	"lagertool.com/main/db"
+	"lagertool.com/main/db_models"
 )
 
 type Handler struct {
@@ -35,7 +35,7 @@ func (h *Handler) GetShelves(c *gin.Context) {
 		return
 	}
 	var res []api_objects.Shelves
-	var dbRes []db.Shelf
+	var dbRes []db_models.Shelf
 	err := h.DB.Model(&dbRes).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -104,7 +104,7 @@ func (h *Handler) GetItem(c *gin.Context) {
 // @Success 200 {array} db.Organisation
 // @Router /organisations [get]
 func (h *Handler) GetOrganisations(c *gin.Context) {
-	var organisations []db.Organisation
+	var organisations []db_models.Organisation
 	err := h.DB.Model(&organisations).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

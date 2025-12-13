@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"lagertool.com/main/db_models"
 )
 
 // ShelfElementInput represents a shelf element for creating a shelf
@@ -19,8 +20,8 @@ type ColumnInput struct {
 	Elements []ShelfElementInput
 }
 
-func CreateBuilding(con *pg.DB, name string, campus string) (*Building, error) {
-	building := &Building{
+func CreateBuilding(con *pg.DB, name string, campus string) (*db_models.Building, error) {
+	building := &db_models.Building{
 		Name:       name,
 		Campus:     campus,
 		UpdateDate: time.Now(),
@@ -30,8 +31,8 @@ func CreateBuilding(con *pg.DB, name string, campus string) (*Building, error) {
 	return building, err
 }
 
-func CreateRoom(con *pg.DB, name string, floor string, number string, buildingID int) (*Room, error) {
-	room := &Room{
+func CreateRoom(con *pg.DB, name string, floor string, number string, buildingID int) (*db_models.Room, error) {
+	room := &db_models.Room{
 		Name:       name,
 		Floor:      floor,
 		Number:     number,
@@ -42,8 +43,8 @@ func CreateRoom(con *pg.DB, name string, floor string, number string, buildingID
 	return room, err
 }
 
-func CreateShelf(con *pg.DB, id string, name string, ownedBy string, roomID int, columns []ColumnInput) (*Shelf, error) {
-	shelf := &Shelf{
+func CreateShelf(con *pg.DB, id string, name string, ownedBy string, roomID int, columns []ColumnInput) (*db_models.Shelf, error) {
+	shelf := &db_models.Shelf{
 		ID:         id,
 		Name:       name,
 		OwnedBy:    ownedBy,
@@ -56,7 +57,7 @@ func CreateShelf(con *pg.DB, id string, name string, ownedBy string, roomID int,
 	}
 
 	for _, column := range columns {
-		col := &Column{
+		col := &db_models.Column{
 			ID:      column.ID,
 			ShelfID: shelf.ID,
 		}
@@ -71,7 +72,7 @@ func CreateShelf(con *pg.DB, id string, name string, ownedBy string, roomID int,
 			if element.Type != "slim" {
 				suType = 1
 			}
-			el := &ShelfUnit{
+			el := &db_models.ShelfUnit{
 				ID:               element.ID,
 				Type:             suType,
 				PositionInColumn: pos,
@@ -87,8 +88,8 @@ func CreateShelf(con *pg.DB, id string, name string, ownedBy string, roomID int,
 	return shelf, nil
 }
 
-func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*ShoppingCartItem, error) {
-	cart := &ShoppingCart{}
+func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*db_models.ShoppingCartItem, error) {
+	cart := &db_models.ShoppingCart{}
 	err := con.Model(cart).Where("user_id = ?", userID).Select()
 	if errors.Is(err, pg.ErrNoRows) {
 		cart.UserID = userID
@@ -100,7 +101,7 @@ func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*Shop
 		return nil, err
 	}
 
-	shoppingCartItem := &ShoppingCartItem{
+	shoppingCartItem := &db_models.ShoppingCartItem{
 		Amount:         num_selected,
 		InventoryID:    itemID,
 		ShoppingCartID: cart.ID,
@@ -112,8 +113,8 @@ func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*Shop
 	return shoppingCartItem, nil
 }
 
-func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string, isConsumable bool, note string) (*Inventory, error) {
-	item := &Item{}
+func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string, isConsumable bool, note string) (*db_models.Inventory, error) {
+	item := &db_models.Item{}
 	err := con.Model(item).Where("name = ?", name).Where("is_consumable = ?", isConsumable).Select()
 	if errors.Is(err, pg.ErrNoRows) {
 		item.Name = name
@@ -125,7 +126,7 @@ func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string
 	} else if err != nil {
 		return nil, err
 	}
-	inv := &Inventory{
+	inv := &db_models.Inventory{
 		ItemID:      item.ID,
 		Amount:      amount,
 		ShelfUnitID: shelfUnitID,
@@ -137,4 +138,20 @@ func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string
 		return nil, err
 	}
 	return inv, nil
+}
+
+func Create_request(con *pg.DB, request db_models.Request) error {
+	_, err := con.Model(request).Insert()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Create_request_item(con *pg.DB, request db_models.RequestItems) error {
+	_, err := con.Model(request).Insert()
+	if err != nil {
+		return err
+	}
+	return nil
 }

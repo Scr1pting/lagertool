@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db"
+	"lagertool.com/main/db_models"
 )
 
 // @Summary Create a new building
@@ -142,5 +143,32 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	//TODO: Generate request items
+
+	for k, v := range itemMap {
+		request := db_models.Request{
+			UserID:           req.UserID,
+			StartDate:        req.StartDate,
+			EndDate:          req.EndDate,
+			Note:             "",
+			Status:           "requested",
+			OrganisationName: k,
+		}
+		err := db.Create_request(h.DB, request)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		for _, item := range v {
+			reqItem := db_models.RequestItems{
+				RequestID:   request.ID,
+				InventoryID: item.ID,
+				Amount:      item.AmountSelected,
+			}
+			err := db.Create_request_item(h.DB, reqItem)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+		}
+	}
 }

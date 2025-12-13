@@ -51,4 +51,5 @@ type CheckoutRequest struct {
 	CartID    int       `json:"cartId" binding:"required"`
 	StartDate time.Time `json:"startDate" binding:"required"`
 	EndDate   time.Time `json:"endDate" binding:"required"`
+	UserID    int       `json:"userId" binding:"required"`
 }
