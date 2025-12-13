@@ -51,7 +51,7 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       input: <Combobox
         options={buildings}
         selectedOption={selectedBuilding}
-        setSelectedOption={setSelectedBuilding}
+        onOptionChange={newOption => setSelectedBuilding(newOption)}
         placeholder="Select Building"
       />
     },
@@ -62,7 +62,7 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       input: <Combobox
         options={rooms?.filter((room) => room === selectedRoom) ?? undefined}
         selectedOption={selectedRoom}
-        setSelectedOption={setSelectedRoom}
+        onOptionChange={newOption => setSelectedRoom(newOption)}
         placeholder="Select Room"
         disabled={rooms?.filter((room) => room.building === selectedBuilding).length == 0}    
       />

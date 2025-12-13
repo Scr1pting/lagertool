@@ -21,7 +21,7 @@ import { useState, type Dispatch, type SetStateAction } from "react"
 interface ComboboxProps<T, K> {
   options: T[] | null | undefined
   selectedOption: T | undefined
-  setSelectedOption: Dispatch<SetStateAction<T | undefined>>
+  onOptionChange: (newOption: T | undefined) => void
   placeholder: string
   fieldKey?: K
   disabled?: boolean
@@ -31,10 +31,10 @@ function Combobox<
   T extends { id: number | string },
   K extends keyof T = "name" & keyof T
 >(
-  { options, selectedOption, setSelectedOption, fieldKey = "name" as K, placeholder, disabled = false }: ComboboxProps<T, K>
+  { options, selectedOption, onOptionChange, fieldKey = "name" as K, placeholder, disabled = false }: ComboboxProps<T, K>
 ) {
   const [open, setOpen] = useState(false)
-  
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={options == undefined || options.length == 0}>
@@ -66,11 +66,11 @@ function Combobox<
                     key={option.id}
                     value={String(option[fieldKey])}
                     onSelect={currentValue => {
-                      setSelectedOption(
+                      onOptionChange(
                         selectedOption && currentValue === String(selectedOption[fieldKey])
                           ? undefined
                           : options.find(option => String(option[fieldKey]) === currentValue)
-                        )
+                      )
                       setOpen(false)
                     }}
                   >

@@ -63,7 +63,10 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
       input: <Combobox
         options={shelves}
         selectedOption={selectedShelf}
-        setSelectedOption={setSelectedShelf}
+        onOptionChange={newOption => {
+          setSelectedShelf(newOption)
+          setSelectedElement(undefined)
+        }}
         fieldKey="displayName"
         placeholder="Select Shelf" />
     },
