@@ -785,7 +785,7 @@ func TestCheckoutCart(t *testing.T) {
 				"endDate": "` + endDate.Format(time.RFC3339) + `",
 				"userId": ` + strconv.Itoa(user.ID) + `
 			}`,
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusCreated,
 		},
 		{
 			name:           "Invalid JSON - Missing CartID",
@@ -826,19 +826,10 @@ func TestCheckoutCart(t *testing.T) {
 				t.Log("Response body:", w.Body.String())
 			}
 
-			if tc.expectedStatus == http.StatusOK {
-				// Debug: Check if shopping cart was created and has items
-				var debugCart db_models.ShoppingCart
-				err := dbCon.Model(&debugCart).
-					Relation("ShoppingCartItems").
-					Where("user_id = ?", user.ID).
-					Select()
-				t.Logf("Debug - Cart lookup by user_id=%d: err=%v, cartID=%d, items=%d",
-					user.ID, err, debugCart.ID, len(debugCart.ShoppingCartItems))
-
+			if tc.expectedStatus == http.StatusCreated {
 				// Verify a request was created
 				var requests []db_models.Request
-				err = dbCon.Model(&requests).Where("user_id = ?", user.ID).Select()
+				err := dbCon.Model(&requests).Where("user_id = ?", user.ID).Select()
 				assert.NoError(t, err)
 				assert.NotEmpty(t, requests, "Expected at least one request to be created")
 
@@ -856,6 +847,485 @@ func TestCheckoutCart(t *testing.T) {
 				// Note: CheckoutCart uses item.ID (which is ItemID from CartItem) as InventoryID
 				assert.Equal(t, item.ID, requestItems[0].InventoryID)
 				assert.Equal(t, cartItem.Amount, requestItems[0].Amount)
+			}
+		})
+	}
+}
+
+func TestRequestReview(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/review", h.RequestReview)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Review Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user (reviewer)
+	reviewer := &db_models.User{Email: "reviewer@example.com", Name: "Reviewer"}
+	_, err = dbCon.Model(reviewer).Insert()
+	assert.NoError(t, err)
+
+	// Create test user (requester)
+	requester := &db_models.User{Email: "requester@example.com", Name: "Requester"}
+	_, err = dbCon.Model(requester).Insert()
+	assert.NoError(t, err)
+
+	// Create request for rejection test
+	request := &db_models.Request{
+		UserID:           requester.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Note:             "",
+		Status:           "requested",
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	// Cleanup function
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.RequestReview{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(reviewer).Where("id = ?", reviewer.ID).Delete()
+		_, _ = dbCon.Model(requester).Where("id = ?", requester.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	testCases := []struct {
+		name           string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Review - Rejected",
+			payload: `{
+				"user_id": ` + strconv.Itoa(reviewer.ID) + `,
+				"request_id": ` + strconv.Itoa(request.ID) + `,
+				"outcome": "rejected",
+				"note": "Not available"
+			}`,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "Invalid JSON - Missing RequestID",
+			payload:        `{"user_id": 1, "outcome": "success", "note": "ok"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid JSON - Malformed",
+			payload:        `{"user_id": 1, "request_id": 1`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", "/review", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if !assert.Equal(t, tc.expectedStatus, w.Code) {
+				t.Log("Response body:", w.Body.String())
+			}
+
+			if tc.expectedStatus == http.StatusOK {
+				// Verify review was created
+				var reviews []db_models.RequestReview
+				err := dbCon.Model(&reviews).Where("request_id = ?", request.ID).Select()
+				assert.NoError(t, err)
+				assert.NotEmpty(t, reviews)
+			}
+		})
+	}
+}
+
+func TestRequestReviewSuccess(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/review", h.RequestReview)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Review Success Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user (reviewer)
+	reviewer := &db_models.User{Email: "reviewer-success@example.com", Name: "Reviewer"}
+	_, err = dbCon.Model(reviewer).Insert()
+	assert.NoError(t, err)
+
+	// Create test user (requester)
+	requester := &db_models.User{Email: "requester-success@example.com", Name: "Requester"}
+	_, err = dbCon.Model(requester).Insert()
+	assert.NoError(t, err)
+
+	// Create building
+	building := &db_models.Building{Name: "Review Building", UpdateDate: time.Now()}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+
+	// Create room
+	room := &db_models.Room{Name: "Review Room", BuildingID: building.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf
+	shelf := &db_models.Shelf{ID: "REVIEW-S-1", Name: "Review Shelf", RoomID: room.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(shelf).Insert()
+	assert.NoError(t, err)
+
+	// Create column
+	column := &db_models.Column{ID: "REVIEW-C-1", ShelfID: shelf.ID}
+	_, err = dbCon.Model(column).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf unit
+	shelfUnit := &db_models.ShelfUnit{ID: "REVIEW-SU-1", ColumnID: column.ID}
+	_, err = dbCon.Model(shelfUnit).Insert()
+	assert.NoError(t, err)
+
+	// Create consumable item
+	consumableItem := &db_models.Item{Name: "Review Consumable Item", IsConsumable: true}
+	_, err = dbCon.Model(consumableItem).Insert()
+	assert.NoError(t, err)
+
+	// Create non-consumable item (for loan)
+	loanableItem := &db_models.Item{Name: "Review Loanable Item", IsConsumable: false}
+	_, err = dbCon.Model(loanableItem).Insert()
+	assert.NoError(t, err)
+
+	// Create inventory for consumable
+	consumableInventory := &db_models.Inventory{ItemID: consumableItem.ID, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	_, err = dbCon.Model(consumableInventory).Insert()
+	assert.NoError(t, err)
+
+	// Create inventory for loanable
+	loanableInventory := &db_models.Inventory{ItemID: loanableItem.ID, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	_, err = dbCon.Model(loanableInventory).Insert()
+	assert.NoError(t, err)
+
+	// Create request
+	request := &db_models.Request{
+		UserID:           requester.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Note:             "",
+		Status:           "requested",
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	// Create request item for consumable
+	consumableRequestItem := &db_models.RequestItems{
+		RequestID:   request.ID,
+		InventoryID: consumableInventory.ID,
+		Amount:      2,
+	}
+	_, err = dbCon.Model(consumableRequestItem).Insert()
+	assert.NoError(t, err)
+
+	// Create request item for loanable
+	loanableRequestItem := &db_models.RequestItems{
+		RequestID:   request.ID,
+		InventoryID: loanableInventory.ID,
+		Amount:      1,
+	}
+	_, err = dbCon.Model(loanableRequestItem).Insert()
+	assert.NoError(t, err)
+
+	// Cleanup function
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.Consumed{}).Where("request_item_id = ?", consumableRequestItem.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Loans{}).Where("request_item_id = ?", loanableRequestItem.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestReview{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(consumableInventory).Where("id = ?", consumableInventory.ID).Delete()
+		_, _ = dbCon.Model(loanableInventory).Where("id = ?", loanableInventory.ID).Delete()
+		_, _ = dbCon.Model(consumableItem).Where("id = ?", consumableItem.ID).Delete()
+		_, _ = dbCon.Model(loanableItem).Where("id = ?", loanableItem.ID).Delete()
+		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
+		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
+		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
+		_, _ = dbCon.Model(room).Where("id = ?", room.ID).Delete()
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		_, _ = dbCon.Model(reviewer).Where("id = ?", reviewer.ID).Delete()
+		_, _ = dbCon.Model(requester).Where("id = ?", requester.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	t.Run("Successful Review - Creates Loans and Consumed", func(t *testing.T) {
+		payload := `{
+			"user_id": ` + strconv.Itoa(reviewer.ID) + `,
+			"request_id": ` + strconv.Itoa(request.ID) + `,
+			"outcome": "success",
+			"note": "Approved"
+		}`
+
+		req, _ := http.NewRequest("POST", "/review", strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if !assert.Equal(t, http.StatusOK, w.Code) {
+			t.Log("Response body:", w.Body.String())
+		}
+
+		// Verify review was created
+		var reviews []db_models.RequestReview
+		err := dbCon.Model(&reviews).Where("request_id = ?", request.ID).Select()
+		assert.NoError(t, err)
+		assert.NotEmpty(t, reviews)
+		assert.Equal(t, "success", reviews[0].Outcome)
+
+		// Verify consumed record was created for consumable item
+		var consumed []db_models.Consumed
+		err = dbCon.Model(&consumed).Where("request_item_id = ?", consumableRequestItem.ID).Select()
+		assert.NoError(t, err)
+		assert.NotEmpty(t, consumed, "Expected consumed record to be created for consumable item")
+
+		// Verify loan record was created for loanable item
+		var loans []db_models.Loans
+		err = dbCon.Model(&loans).Where("request_item_id = ?", loanableRequestItem.ID).Select()
+		assert.NoError(t, err)
+		assert.NotEmpty(t, loans, "Expected loan record to be created for loanable item")
+		assert.False(t, loans[0].IsReturned)
+	})
+}
+
+func TestUpdateRequest(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.PUT("/update_request", h.UpdateRequest)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Update Request Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user
+	user := &db_models.User{Email: "update@example.com", Name: "Update User"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+
+	// Create request
+	request := &db_models.Request{
+		UserID:           user.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Note:             "",
+		Status:           "requested",
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	// Cleanup function
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	testCases := []struct {
+		name            string
+		payload         string
+		expectedStatus  int
+		expectedOutcome string
+	}{
+		{
+			name: "Successful Update",
+			payload: `{
+				"request_id": ` + strconv.Itoa(request.ID) + `,
+				"outcome": "approved"
+			}`,
+			expectedStatus:  http.StatusAccepted,
+			expectedOutcome: "approved",
+		},
+		{
+			name:           "Invalid JSON - Malformed",
+			payload:        `{"request_id": 1`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("PUT", "/update_request", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if !assert.Equal(t, tc.expectedStatus, w.Code) {
+				t.Log("Response body:", w.Body.String())
+			}
+
+			if tc.expectedStatus == http.StatusAccepted {
+				// Verify request was updated
+				var updatedRequest db_models.Request
+				err := dbCon.Model(&updatedRequest).Where("id = ?", request.ID).Select()
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectedOutcome, updatedRequest.Status)
+			}
+		})
+	}
+}
+
+func TestUpdateLoan(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.PUT("/update_loan", h.UpdateLoan)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Update Loan Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user
+	user := &db_models.User{Email: "loan@example.com", Name: "Loan User"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+
+	// Create building
+	building := &db_models.Building{Name: "Loan Building", UpdateDate: time.Now()}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+
+	// Create room
+	room := &db_models.Room{Name: "Loan Room", BuildingID: building.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf
+	shelf := &db_models.Shelf{ID: "LOAN-S-1", Name: "Loan Shelf", RoomID: room.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(shelf).Insert()
+	assert.NoError(t, err)
+
+	// Create column
+	column := &db_models.Column{ID: "LOAN-C-1", ShelfID: shelf.ID}
+	_, err = dbCon.Model(column).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf unit
+	shelfUnit := &db_models.ShelfUnit{ID: "LOAN-SU-1", ColumnID: column.ID}
+	_, err = dbCon.Model(shelfUnit).Insert()
+	assert.NoError(t, err)
+
+	// Create item (non-consumable for loan)
+	item := &db_models.Item{Name: "Loan Item", IsConsumable: false}
+	_, err = dbCon.Model(item).Insert()
+	assert.NoError(t, err)
+
+	// Create inventory
+	inventory := &db_models.Inventory{ItemID: item.ID, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	_, err = dbCon.Model(inventory).Insert()
+	assert.NoError(t, err)
+
+	// Create request
+	request := &db_models.Request{
+		UserID:           user.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Note:             "",
+		Status:           "approved",
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	// Create request item
+	requestItem := &db_models.RequestItems{
+		RequestID:   request.ID,
+		InventoryID: inventory.ID,
+		Amount:      1,
+	}
+	_, err = dbCon.Model(requestItem).Insert()
+	assert.NoError(t, err)
+
+	// Create loan
+	loan := &db_models.Loans{
+		RequestItemID: requestItem.ID,
+		IsReturned:    false,
+	}
+	_, err = dbCon.Model(loan).Insert()
+	assert.NoError(t, err)
+
+	// Cleanup function
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.Loans{}).Where("id = ?", loan.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("id = ?", requestItem.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(inventory).Where("id = ?", inventory.ID).Delete()
+		_, _ = dbCon.Model(item).Where("id = ?", item.ID).Delete()
+		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
+		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
+		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
+		_, _ = dbCon.Model(room).Where("id = ?", room.ID).Delete()
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	returnedAt := time.Now()
+
+	testCases := []struct {
+		name           string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Loan Return",
+			payload: `{
+				"loanId": ` + strconv.Itoa(loan.ID) + `,
+				"returnedAt": "` + returnedAt.Format(time.RFC3339) + `"
+			}`,
+			expectedStatus: http.StatusAccepted,
+		},
+		{
+			name:           "Invalid JSON - Malformed",
+			payload:        `{"loanId": 1`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("PUT", "/update_loan", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if !assert.Equal(t, tc.expectedStatus, w.Code) {
+				t.Log("Response body:", w.Body.String())
+			}
+
+			if tc.expectedStatus == http.StatusAccepted {
+				// Verify loan was updated
+				var updatedLoan db_models.Loans
+				err := dbCon.Model(&updatedLoan).Where("id = ?", loan.ID).Select()
+				assert.NoError(t, err)
+				assert.True(t, updatedLoan.IsReturned)
+				assert.False(t, updatedLoan.ReturnedAt.IsZero())
 			}
 		})
 	}

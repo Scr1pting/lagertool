@@ -195,7 +195,17 @@ func (h *Handler) RequestReview(c *gin.Context) {
 	}
 
 	if rev.Outcome == "success" {
-		for _, rItem := range rev.Request.RequestItems {
+		var request db_models.Request
+		err := h.DB.Model(&request).
+			Relation("RequestItems.Inventory.Item").
+			Where("id = ?", req.RequestID).
+			Select()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		for _, rItem := range request.RequestItems {
 			if rItem.Inventory.Item.IsConsumable {
 				cons := &db_models.Consumed{
 					RequestItemID: rItem.ID,
@@ -219,4 +229,5 @@ func (h *Handler) RequestReview(c *gin.Context) {
 			}
 		}
 	}
+	c.JSON(http.StatusOK, rev)
 }
