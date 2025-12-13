@@ -156,6 +156,11 @@ func Create_request_item(con *pg.DB, request db_models.RequestItems) error {
 	return nil
 }
 
+func Create_request_review(con *pg.DB, request *db_models.RequestReview) error {
+	_, err := con.Model(request).Insert()
+	return err
+}
+
 func Create_loans(con *pg.DB, loan *db_models.Loans) error {
 	_, err := con.Model(loan).Insert()
 	return err

@@ -188,7 +188,11 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		Outcome:   req.Outcome,
 		Note:      req.Note,
 	}
-	db.create_request_review(h.DB, rev)
+	err := db.Create_request_review(h.DB, rev)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	if rev.Outcome == "success" {
 		for _, rItem := range rev.Request.RequestItems {
@@ -196,14 +200,22 @@ func (h *Handler) RequestReview(c *gin.Context) {
 				cons := &db_models.Consumed{
 					RequestItemID: rItem.ID,
 				}
-				db.create_consumable(h.DB, cons)
+				err := db.Create_consumed(h.DB, cons)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+					return
+				}
 			} else {
 				l := &db_models.Loans{
 					RequestItemID: rItem.ID,
 					IsReturned:    false,
 					ReturnedAt:    time.Time{},
 				}
-				db.create_loan(h.DB, l)
+				err := db.Create_loans(h.DB, l)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+					return
+				}
 			}
 		}
 	}
