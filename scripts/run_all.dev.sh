@@ -1,4 +1,5 @@
-#!/bin/zsh
+#!/bin/bash
+
 # Script to run frontend, backend, and description_gen servers in parallel
 
 
