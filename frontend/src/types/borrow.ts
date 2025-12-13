@@ -1,11 +1,18 @@
 export type BorrowState = 'pending' | 'approved' | 'returned' | 'overdue'| 'on_loan';
 
-export interface BorrowItem {
+export interface BorrowedList {
   id: string;
   itemId: string;
   itemName: string;
-  personId: string;
   borrowDate: string;
-  returnDate: string | null; 
+  dueDate: string;
+  returnDate?: string;
   state: BorrowState;
+}
+
+export interface Event {
+  id: string;
+  personId: string;
+  state: "pending" | "approved" | "on_loan" | "overdue" | "returned" | "partial_overdue";
+  items: BorrowedList[];
 }

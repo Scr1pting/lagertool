@@ -57,7 +57,7 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
       label: "Name",
       input: <Input
         id="item-name"
-        placeholder="Microphone"
+        placeholder="e.g Microphone"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />

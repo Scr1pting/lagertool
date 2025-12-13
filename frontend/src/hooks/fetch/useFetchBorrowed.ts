@@ -1,8 +1,8 @@
 import useFetch from "@/hooks/fetch/useFetch";
-import { type BorrowItem } from "@/types/borrow";
+import { type Event } from "@/types/borrow";
 
 function useFetchBorrowed() {
-  return useFetch<BorrowItem[]>('/borrow.sample.json')
+  return useFetch<Event[]>('/borrow.sample.json')
 }
 
 export default useFetchBorrowed;
