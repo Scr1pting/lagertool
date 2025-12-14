@@ -1,7 +1,7 @@
 import type { InventoryItem } from "@/types/inventory"
 import InstantCheckoutVerify from "./pages/InstantCheckoutVerify"
 import AnimatedDialog from "../primitives/AnimatedDialog"
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import AmountForm from "./pages/AmountForm"
 import InstantCheckoutForm from "./pages/InstantCheckoutForm"
 

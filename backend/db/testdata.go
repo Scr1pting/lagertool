@@ -92,13 +92,13 @@ func GetDummyData() (
 	}
 
 	shelfUnits := []db_models.ShelfUnit{
-		{ID: "U-001", Type: 0, PositionInColumn: 1, ColumnID: columns[0].ID, Column: &columns[0], Description: "Small bin for beakers"},
-		{ID: "U-002", Type: 1, PositionInColumn: 2, ColumnID: columns[0].ID, Column: &columns[0], Description: "Large bin for glassware"},
+		{ID: "U-001A", Type: 0, PositionInColumn: 1, ColumnID: columns[0].ID, Column: &columns[0], Description: "Small bin for beakers"},
+		{ID: "U-002B", Type: 1, PositionInColumn: 1, ColumnID: columns[1].ID, Column: &columns[1], Description: "Tall slot for equipment cases"},
 	}
 
 	// Link ShelfUnits to Columns
-	columns[0].ShelfUnits = []db_models.ShelfUnit{shelfUnits[0], shelfUnits[1]}
-	columns[1].ShelfUnits = []db_models.ShelfUnit{} // empty column
+	columns[0].ShelfUnits = []db_models.ShelfUnit{shelfUnits[0]}
+	columns[1].ShelfUnits = []db_models.ShelfUnit{shelfUnits[1]}
 	shelf.Columns = columns
 
 	// 6️⃣ Item
