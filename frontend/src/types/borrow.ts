@@ -13,6 +13,7 @@ export interface BorrowedList {
 export interface Event {
   id: string;
   personId: string;
+  createdAt?: string;
   state: "pending" | "approved" | "on_loan" | "overdue" | "returned" | "partial_overdue";
   items: BorrowedList[];
 }

@@ -1,11 +1,11 @@
 import { format, differenceInCalendarDays, isAfter } from "date-fns";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { BorrowItem } from "@/types/borrow";
+import type { BorrowedList } from "@/types/borrow";
 import SortableHeader from "./SortableHeader";
 import MessageButton from "../MessageButton";
 
 
-const borrowedColumns: ColumnDef<BorrowItem>[] = [
+const borrowedColumns: ColumnDef<BorrowedList>[] = [
   {
     accessorKey: "itemName",
     header: ({ column }) => <SortableHeader column={column} title="Item" />,
@@ -22,13 +22,13 @@ const borrowedColumns: ColumnDef<BorrowItem>[] = [
     },
   },
   {
-    accessorKey: "returnDate",
-    header: ({ column }) => <SortableHeader column={column} title="Due/Return" />,
+    accessorKey: "dueDate",
+    header: ({ column }) => <SortableHeader column={column} title="Due" />,
     sortingFn: (a, b) =>
-      new Date(a.original.returnDate ?? 0).getTime() - new Date(b.original.returnDate ?? 0).getTime(),
+      new Date(a.original.dueDate ?? 0).getTime() - new Date(b.original.dueDate ?? 0).getTime(),
     cell: ({ row }) => {
-      if (!row.original.returnDate) return "—";
-      const date = new Date(row.original.returnDate);
+      if (!row.original.dueDate) return "—";
+      const date = new Date(row.original.dueDate);
       return Number.isNaN(date.getTime()) ? "—" : format(date, "MMM d, yyyy");
     },
   },
@@ -36,13 +36,13 @@ const borrowedColumns: ColumnDef<BorrowItem>[] = [
     id: "status",
     header: () => <div className="text-center">Status</div>,
     cell: ({ row }) => {
-      const { state, returnDate } = row.original;
+      const { state, dueDate } = row.original;
       const now = new Date();
-      const dueDate = returnDate ? new Date(returnDate) : null;
-      const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false;
-      const derivedOverdue = isDueValid ? isAfter(now, dueDate!) : false;
+      const due = dueDate ? new Date(dueDate) : null;
+      const isDueValid = due ? !Number.isNaN(due.getTime()) : false;
+      const derivedOverdue = isDueValid ? isAfter(now, due!) : false;
       const isOverdue = state === "overdue" || derivedOverdue;
-      const days = isDueValid ? differenceInCalendarDays(dueDate!, now) : null;
+      const days = isDueValid ? differenceInCalendarDays(due!, now) : null;
       const label = state === "pending" ? "Pending"
         : state === "approved" ? "Approved"
         : state === "returned" ? "Returned"

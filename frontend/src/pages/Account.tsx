@@ -1,7 +1,6 @@
 import RegularPage from "@/components/RegularPage";
-import DataTable from "@/components/DataTable/DataTable";
-import borrowedColumns from "@/components/DataTable/BorrowedColumns";
-import useFetchBorrowed from "@/hooks/useFetchBorrowed";
+import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
+import AccountEventsAccordion from "@/components/AccountEventsAccordion";
 
 function Account() {
   const { data, status, error } = useFetchBorrowed();
@@ -10,10 +9,11 @@ function Account() {
     <RegularPage title="Account" description="Your borrowed items">
       {status === "loading" && <p>Loading borrowed items…</p>}
       {status === "error" && <p className="text-red-600">Failed to load: {error?.message}</p>}
-      {status === "success" && <DataTable data={data ?? []} columns={borrowedColumns} />}
+      {status === "success" && data ? (
+        <AccountEventsAccordion events={data} />
+      ) : null}
     </RegularPage>
   );
 }
 
 export default Account;
-
