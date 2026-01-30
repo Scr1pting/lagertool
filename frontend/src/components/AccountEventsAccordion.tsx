@@ -1,5 +1,6 @@
 import { differenceInCalendarDays, format, isAfter } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
+import MessageButton from "@/components/MessageButton";
 import type { BorrowedList, Event } from "@/types/borrow";
 
 type BadgeProps = {
@@ -27,7 +28,8 @@ function Badge({ label, tone }: BadgeProps) {
 function formatMaybeDate(value?: string) {
   if (!value) return "—";
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? "—" : format(d, "MMM d, yyyy");
+  if (Number.isNaN(d.getTime())) return "Date unavailable";
+  return format(d, "MMM d, yyyy");
 }
 
 function itemStatus(item: BorrowedList) {
@@ -42,7 +44,11 @@ function itemStatus(item: BorrowedList) {
     item.state === "approved" ? "Approved" :
     item.state === "returned" ? "Returned" :
     isOverdue ? "Overdue" : "On loan";
-  const daysLabel = isOverdue && days !== null ? `${Math.abs(days)}d late` : "";
+  const daysLabel = item.state === "returned"
+    ? ""
+    : isOverdue && days !== null
+      ? `${Math.abs(days)}d late`
+      : "";
   const tone: BadgeProps["tone"] =
     item.state === "pending" ? "yellow" :
     item.state === "approved" ? "blue" :
@@ -75,8 +81,14 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
       </div>
       {items.map((item) => {
         const { label, daysLabel, tone } = itemStatus(item);
+        const rowOverdue = tone === "red";
         return (
-          <div key={item.id} className="grid grid-cols-5 items-center px-4 py-3 text-sm">
+          <div
+            key={item.id}
+            className={`grid grid-cols-5 items-center px-4 py-3 text-sm ${
+              rowOverdue ? "bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-500 rounded-md" : ""
+            }`}
+          >
             <div className="col-span-2">
               <div className="font-medium">{item.itemName}</div>
             </div>
@@ -93,17 +105,40 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
   );
 }
 
-function EventSummary({ event }: { event: Event }) {
-  const overdueCount = event.items.filter((item) => item.state === "overdue").length;
+type EventMeta = {
+  overdueCount: number;
+  totalCount: number;
+  derivedState: Event["state"];
+};
+
+function itemIsOverdue(item: BorrowedList) {
+  if (item.state === "returned") return false;
+  const dueDate = item.dueDate ? new Date(item.dueDate) : null;
+  const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false;
+  const derivedOverdue = isDueValid ? isAfter(new Date(), dueDate!) : false;
+  return item.state === "overdue" || derivedOverdue;
+}
+
+function buildEventMeta(event: Event): EventMeta {
+  const overdueCount = event.items.filter(itemIsOverdue).length;
   const totalCount = event.items.length;
+  const allReturned = totalCount > 0 && event.items.every((item) => item.state === "returned");
+
   const derivedState: Event["state"] =
-    event.state === "partial_overdue" || event.state === "overdue"
-      ? event.state
-      : overdueCount > 0 && overdueCount < totalCount
-        ? "partial_overdue"
-        : overdueCount === totalCount && totalCount > 0
-          ? "overdue"
-          : event.state;
+    allReturned
+      ? "returned"
+      : overdueCount === totalCount && totalCount > 0
+        ? "overdue"
+        : overdueCount > 0
+          ? "partial_overdue"
+          : event.state === "partial_overdue" || event.state === "overdue"
+            ? event.state
+            : event.state;
+  return { overdueCount, totalCount, derivedState };
+}
+
+function EventSummary({ event, meta }: { event: Event; meta: EventMeta }) {
+  const { overdueCount, totalCount, derivedState } = meta;
   const { label, tone } = eventTone(derivedState);
   const created = formatMaybeDate(event.createdAt);
   const title = event.eventName || `Event ${event.id}`;
@@ -130,20 +165,38 @@ interface AccountEventsAccordionProps {
 function AccountEventsAccordion({ events }: AccountEventsAccordionProps) {
   return (
     <Accordion type="single" collapsible className="space-y-3">
-      {events.map((event) => (
-        <AccordionItem key={event.id} value={event.id} className="border rounded-lg px-4">
-          <AccordionTrigger className="py-3">
-            <EventSummary event={event} />
-          </AccordionTrigger>
-          <AccordionContent className="pb-4">
-            {event.items.length ? (
-              <ItemsList items={event.items} />
-            ) : (
-              <div className="text-sm text-muted-foreground">No items in this event.</div>
-            )}
-          </AccordionContent>
-        </AccordionItem>
-      ))}
+      {events.map((event) => {
+        const meta = buildEventMeta(event);
+        const showMessage = meta.derivedState === "approved";
+        const isOverdueish = meta.derivedState === "overdue" || meta.derivedState === "partial_overdue";
+        return (
+          <AccordionItem
+            key={event.id}
+            value={event.id}
+            className={`rounded-lg px-4 ${
+              isOverdueish
+                ? "border border-red-300 dark:border-red-400"
+                : "border"
+            }`}
+          >
+            <AccordionTrigger className="py-3">
+              <EventSummary event={event} meta={meta} />
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              {showMessage ? (
+                <div className="mb-3 flex justify-end">
+                  <MessageButton label="Message borrower" />
+                </div>
+              ) : null}
+              {event.items.length ? (
+                <ItemsList items={event.items} />
+              ) : (
+                <div className="text-sm text-muted-foreground">No items in this event.</div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        );
+      })}
     </Accordion>
   );
 }
