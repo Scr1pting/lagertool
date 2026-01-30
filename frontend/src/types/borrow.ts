@@ -11,6 +11,7 @@ export interface BorrowedList {
 }
 
 export interface Event {
+  eventName?: string;
   id: string;
   personId: string;
   createdAt?: string;

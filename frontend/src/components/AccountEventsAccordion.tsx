@@ -106,10 +106,12 @@ function EventSummary({ event }: { event: Event }) {
           : event.state;
   const { label, tone } = eventTone(derivedState);
   const created = formatMaybeDate(event.createdAt);
+  const title = event.eventName || `Event ${event.id}`;
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
       <div className="flex items-center gap-3">
+        <span className="font-medium text-foreground">{title}</span>
         <Badge label={label} tone={tone} />
         <span className="text-muted-foreground">Created {created}</span>
       </div>
