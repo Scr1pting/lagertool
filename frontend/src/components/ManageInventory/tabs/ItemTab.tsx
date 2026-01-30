@@ -2,7 +2,7 @@ import { Input } from "@/components/shadcn/input"
 import type { Building } from "@/types/building"
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
-import type { Shelf } from "@/types/shelf"
+import type { Shelf, ShelfElement } from "@/types/shelf"
 import { useState } from "react"
 import type { FormElement } from "../../primitives/types/FormElement"
 import DataTable from "@/components/DataTable/DataTable"
@@ -15,13 +15,6 @@ import { Button } from "@/components/shadcn/button"
 import ShelfElementSelect from "@/components/ShelfElementSelect"
 
 
-interface ShelfOption {
-  name: string
-  id: string
-  buildingId: number
-  roomId: number
-}
-
 interface ItemTabProps {
   buildings: Building[]
   rooms: Room[]
@@ -33,22 +26,10 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
   const [name, setName] = useState("")
   const [amount, setAmount] = useState(1)
 
-  const [selectedOption, setSelectedOption] = useState<ShelfOption | undefined>()
-  const [shelfElementId, setShelfElementId] = useState<string | undefined>()
+  const [selectedShelf, setSelectedShelf] = useState<Shelf | undefined>()
+  const [selectedElement, setSelectedElement] = useState<ShelfElement | undefined>()
 
   const [showElementSelect, setShowElementSelect] = useState(false)
-
-  const selectedShelf = shelves.find(shelf => shelf.id == selectedOption?.id)
-
-  const options: ShelfOption[] = shelves.map(shelf => {
-    const text = `${shelf.building.name} - ${shelf.room.name} - ${shelf.name}`
-    return {
-      name: text,
-      id: shelf.id,
-      buildingId: shelf.building.id,
-      roomId: shelf.room.id,
-    }
-  })
 
   const elements: FormElement[] = [
     {
@@ -59,7 +40,7 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
         id="item-name"
         placeholder="e.g Microphone"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={e => setName(e.target.value)}
       />
     },
     {
@@ -72,7 +53,7 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
         min="1"
         placeholder="e.g. 15"
         value={amount}
-        onChange={(e) => setAmount(Number.parseInt(e.target.value, 10))}
+        onChange={e => setAmount(Number.parseInt(e.target.value, 10))}
       />
     },
     {
@@ -80,9 +61,13 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
       id: "item-shelf-id",
       label: "Shelf",
       input: <Combobox
-        options={options}
-        selectedOption={selectedOption}
-        setSelectedOption={setSelectedOption}
+        options={shelves}
+        selectedOption={selectedShelf}
+        onOptionChange={newOption => {
+          setSelectedShelf(newOption)
+          setSelectedElement(undefined)
+        }}
+        fieldKey="displayName"
         placeholder="Select Shelf" />
     },
     {
@@ -90,18 +75,20 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
       id: "item-shelf-element-id",
       label: "Shelf Element",
       input: <ShelfElementSelect
-          open={showElementSelect}
-          onOpenChange={() => setShowElementSelect(false)}
-          shelf={selectedShelf}
-          selectedElementId={shelfElementId}
-          setSelectedElementId={setShelfElementId}
-        >
+        open={showElementSelect}
+        onOpenChange={newOpen => setShowElementSelect(newOpen)}
+        shelf={selectedShelf}
+        selectedElement={selectedElement}
+        setSelectedElement={setSelectedElement}
+      >
         <Button
           variant="outline"
-          className="justify-between"
-          disabled={selectedShelf == null}
+          aria-expanded={showElementSelect}
+          // We have to set px-3 because Shadcn uses less padding on
+          // inputs and buttons with icons.
+          className="justify-between truncate px-3"
         >
-          Select Shelf Element
+          {selectedElement ? selectedElement.id : "Select Shelf Element"}
         </Button>
       </ShelfElementSelect>
     }

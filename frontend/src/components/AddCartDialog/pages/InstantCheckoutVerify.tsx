@@ -1,10 +1,11 @@
-import { useDate } from "@/store/useDate";
-import { format } from "date-fns/format";
-import type { FormEvent } from "react";
-import { DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog";
-import { Separator } from "../../shadcn/separator";
-import { Button } from "../../shadcn/button";
-import { toast } from "sonner";
+import { useDate } from "@/store/useDate"
+import { format } from "date-fns/format"
+import type { FormEvent } from "react"
+import { DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog"
+import { Separator } from "../../shadcn/separator"
+import { Button } from "../../shadcn/button"
+import { toast } from "sonner"
+import type { InventoryItem } from "@/types/inventory"
 
 
 interface InstantCheckoutVerifyProps {
@@ -19,7 +20,7 @@ interface InstantCheckoutVerifyProps {
 function InstantCheckoutVerify({
   numSelected, item, title, description, onBack, resetValues
 }: InstantCheckoutVerifyProps) {
-  const selectedRange = useDate((state) => state.selectedRange);
+  const selectedRange = useDate(state => state.selectedRange)
 
   const formattedDateRange = () => {
     const today = new Date()
@@ -37,7 +38,7 @@ function InstantCheckoutVerify({
   }
   
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault()
 
     toast("Submitted Borrow Request", {
       description: `${item.name} - ${numSelected}`,
@@ -45,9 +46,9 @@ function InstantCheckoutVerify({
         label: "Undo",
         onClick: () => console.log("Undo"),
       },
-    });
+    })
 
-    resetValues();
+    resetValues()
   }
 
   return (

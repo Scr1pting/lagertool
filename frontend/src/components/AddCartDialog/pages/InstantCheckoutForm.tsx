@@ -1,3 +1,4 @@
+import type { FormEvent } from "react"
 import { Button } from "../../shadcn/button"
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog"
 import { Field } from "../../shadcn/field"
@@ -19,11 +20,11 @@ function InstantCheckoutForm({
   title, setTitle, description, setDescription, onBack, onProceed
 }: InstantCheckoutFormProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault()
     if (title !== "") {
-      onProceed();
+      onProceed()
     }
-  };
+  }
 
   return(
     <form onSubmit={handleSubmit} className="grid gap-5">
@@ -40,7 +41,7 @@ function InstantCheckoutForm({
           name="title"
           type="text"
           value={title}
-          onChange={(e) => { setTitle(e.target.value) }}
+          onChange={e => { setTitle(e.target.value) }}
         />
       </Field>
 
@@ -50,7 +51,7 @@ function InstantCheckoutForm({
           id="description"
           name="description"
           value={description}
-          onChange={(e) => { setDescription(e.target.value) }}
+          onChange={e => { setDescription(e.target.value) }}
         />
       </Field>
 

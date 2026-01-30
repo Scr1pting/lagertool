@@ -79,9 +79,9 @@ function DataTable<TData>({
         wraps the Table component in components/shadcn/table.tsx.
         */ }
         <TableHeader className={sticky ? "z-10 sticky top-0" : ""}>
-          {table.getHeaderGroups().map((headerGroup) => (
+          {table.getHeaderGroups().map(headerGroup => (
             <TableRow key={headerGroup.id} className="">
-              {headerGroup.headers.map((header) => {
+              {headerGroup.headers.map(header => {
                 return (
                   <TableHead key={header.id} className="px-4 bg-neutral-900">
                     {header.isPlaceholder
@@ -98,7 +98,7 @@ function DataTable<TData>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map(row => (
               rowElement(row)
             ))
           ) : (
@@ -117,4 +117,4 @@ function DataTable<TData>({
   )
 }
 
-export default DataTable;
+export default DataTable

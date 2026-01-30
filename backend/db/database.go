@@ -8,6 +8,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 	"lagertool.com/main/config"
+	"lagertool.com/main/db_models"
 )
 
 func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
@@ -36,24 +37,24 @@ func NewDBConn(cfg *config.Config) (con *pg.DB, err error) {
 
 func InitDB(con *pg.DB) {
 	models := []interface{}{
-		(*Organisation)(nil),
-		(*User)(nil),
-		(*Session)(nil),
-		(*HasSpecialRightsFor)(nil),
-		(*Building)(nil),
-		(*Room)(nil),
-		(*Shelf)(nil),
-		(*Column)(nil),
-		(*ShelfUnit)(nil),
-		(*Item)(nil),
-		(*Inventory)(nil),
-		(*ShoppingCart)(nil),
-		(*ShoppingCartItem)(nil),
-		(*Request)(nil),
-		(*RequestItems)(nil),
-		(*RequestReview)(nil),
-		(*Loans)(nil),
-		(*Consumed)(nil),
+		(*db_models.Organisation)(nil),
+		(*db_models.User)(nil),
+		(*db_models.Session)(nil),
+		(*db_models.HasSpecialRightsFor)(nil),
+		(*db_models.Building)(nil),
+		(*db_models.Room)(nil),
+		(*db_models.Shelf)(nil),
+		(*db_models.Column)(nil),
+		(*db_models.ShelfUnit)(nil),
+		(*db_models.Item)(nil),
+		(*db_models.Inventory)(nil),
+		(*db_models.ShoppingCart)(nil),
+		(*db_models.ShoppingCartItem)(nil),
+		(*db_models.Request)(nil),
+		(*db_models.RequestItems)(nil),
+		(*db_models.RequestReview)(nil),
+		(*db_models.Loans)(nil),
+		(*db_models.Consumed)(nil),
 	}
 
 	log.Println("🚀 Initializing database tables...")

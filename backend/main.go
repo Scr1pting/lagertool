@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/gin-contrib/cors"
@@ -30,6 +31,10 @@ import (
 // @schemes http
 
 func main() {
+	testdata := flag.Bool("testdata", false, "insert testdata into db")
+	noserver := flag.Bool("noserver", false, "dont start sever")
+	flag.Parse()
+
 	// Load configuration from .env file
 	cfg := config.Load()
 
@@ -56,20 +61,24 @@ func main() {
 
 	db.InitDB(dbConnection)
 	// slack1.SetupSlack(cfg)
-	//db.InsertDummyData(dbConnection)
+	if *testdata {
+		db.InsertDummyData(dbConnection)
+	}
 	//if err := db.InsertBasicData(dbConnection); err != nil {
 	//	log.Printf("⚠️  Failed to insert test data: %v", err)
 	//}
+	if !*noserver {
+		api.SetupRoutes(router, dbConnection, cfg)
 
-	api.SetupRoutes(router, dbConnection, cfg)
+		// Swagger endpoint
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Swagger endpoint
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	log.Println("🚀 Server running on http://localhost:8000")
-	log.Println("📚 Swagger UI available at http://localhost:8000/swagger/index.html")
-	err = router.Run(":8000")
-	if err != nil {
-		return
+		log.Println("🚀 Server running on http://localhost:8000")
+		log.Println("📚 Swagger UI available at http://localhost:8000/swagger/index.html")
+		err = router.Run(":8000")
+		if err != nil {
+			return
+		}
 	}
+	return
 }

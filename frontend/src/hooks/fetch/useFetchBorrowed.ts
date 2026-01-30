@@ -5,4 +5,4 @@ function useFetchBorrowed() {
   return useFetch<Event[]>('/borrow.sample.json')
 }
 
-export default useFetchBorrowed;
+export default useFetchBorrowed

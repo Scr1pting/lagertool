@@ -28,7 +28,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
         id="room-floor"
         placeholder="F"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={e => setName(e.target.value)}
       />
     },
     {
@@ -39,7 +39,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
         id="room-number"
         placeholder="33.3"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={e => setName(e.target.value)}
       />
     },
     {
@@ -50,7 +50,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
         id="room-name"
         placeholder="Office"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={e => setName(e.target.value)}
       />
     },
     {
@@ -61,7 +61,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
         id="room-building-id"
         value={buildingId}
         options={buildings}
-        onValueChange={(value) => setBuildingId(value) }
+        onValueChange={value => setBuildingId(value) }
       />
     }
   ]

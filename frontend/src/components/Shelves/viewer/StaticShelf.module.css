@@ -25,25 +25,10 @@
   border-bottom: 1px solid #ccc;
 }
 
-.numItem {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 8px;
-  margin-bottom: 5px;
-  font-size: 15px;
-  line-height: 1;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 9999px; /* pill shape */
-  font-weight: 500;
-  min-width: 1.6rem;
-  text-align: center;
-}
-
-.highlightedElement .numItem {
-  background: #FDD62F;
-  color: black;
+.elementTrigger {
+  all: unset;
+  display: block;
+  cursor: pointer;
 }
 
 .idElement {
@@ -56,8 +41,19 @@
   font-variant-numeric: tabular-nums;
 }
 
-.elementTrigger {
-  all: unset;
-  display: block;
-  cursor: pointer;
+.highlightedElement .idElement {
+  color: #ececec;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 1),
+               0 0 15px rgba(253, 214, 47, 0.4);
+}
+
+.highlightedElement > div {
+  background: linear-gradient(135deg,
+    #FDD62F 0%,
+    #FFC940 25%,
+    rgba(253, 214, 47, 0.6) 50%,
+    rgba(253, 214, 47, 0.25) 75%,
+    rgba(0, 0, 0, 0.2) 100%);
+  box-shadow: inset 0 0 30px rgba(253, 214, 47, 0.6),
+              inset 0 0 60px rgba(253, 214, 47, 0.3);
 }

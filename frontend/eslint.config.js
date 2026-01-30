@@ -1,3 +1,5 @@
+// Run `npm run lint -- --fix` to enforce
+
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -18,6 +20,14 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+    rules: {
+      semi: ['error', 'never'],
+      'arrow-parens': ['error', 'as-needed'],
+      'prefer-arrow-callback': ['error', {
+        allowNamedFunctions: false,
+        allowUnboundThis: false,
+      }],
     },
   },
 ])

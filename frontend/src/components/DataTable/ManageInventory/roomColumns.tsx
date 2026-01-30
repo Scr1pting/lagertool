@@ -11,7 +11,8 @@ const roomColumns: ColumnDef<Room>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "building",
+    id: "building",
+    accessorFn: row => row.building?.name ?? "",
     header: ({ column }) => (
       <SortableHeader column={column} title="Building" />
     ),

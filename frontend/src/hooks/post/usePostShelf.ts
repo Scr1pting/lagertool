@@ -1,8 +1,8 @@
-import type { ShelfColumn } from "@/types/shelf";
-import usePost from "./usePost";
-import { makeId } from "@/lib/ids";
+import type { ShelfColumn } from "@/types/shelf"
+import usePost from "./usePost"
+import { makeId } from "@/lib/ids"
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 
 interface PostShelfPayload {
@@ -13,7 +13,7 @@ interface PostShelfPayload {
 }
 
 function usePostShelf() {
-  const { status, data, error, send } = usePost<ResponseType, PostShelfPayload>();
+  const { status, data, error, send } = usePost<ResponseType, PostShelfPayload>()
 
   const sendShelf = (
     columns: ShelfColumn[],
@@ -27,10 +27,10 @@ function usePostShelf() {
       columns: columns
     }
 
-    send(`${API_BASE_URL}/create_shelf`, shelf);
-  };
+    send(`${API_BASE_URL}/create_shelf`, shelf)
+  }
 
-  return { status, data, error, send: sendShelf };
+  return { status, data, error, send: sendShelf }
 }
 
-export default usePostShelf;
+export default usePostShelf

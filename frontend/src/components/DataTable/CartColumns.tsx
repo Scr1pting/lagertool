@@ -1,6 +1,6 @@
-import type { InventoryItem } from "@/types/inventory";
-import type { ColumnDef } from "@tanstack/react-table";
-import DataTableColumnHeader from "./SortableHeader";
+import type { InventoryItem } from "@/types/inventory"
+import type { ColumnDef } from "@tanstack/react-table"
+import DataTableColumnHeader from "./SortableHeader"
 
 
 const cartColumns: ColumnDef<InventoryItem>[] = [
@@ -20,14 +20,14 @@ const cartColumns: ColumnDef<InventoryItem>[] = [
     ),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
-      const a = (rowA.original.buildingName || "") + "/" + (rowA.original.roomName || "");
-      const b = (rowB.original.buildingName || "") + "/" + (rowB.original.roomName || "");
-      return a.localeCompare(b);
+      const a = (rowA.original.buildingName || "") + "/" + (rowA.original.roomName || "")
+      const b = (rowB.original.buildingName || "") + "/" + (rowB.original.roomName || "")
+      return a.localeCompare(b)
     },
     cell: ({ row }) => {
-      const building = row.original.buildingName || "unknown";
-      const room = row.original.roomName || "unknown";
-      return <div>{building + "/" + room}</div>;
+      const building = row.original.buildingName || "unknown"
+      const room = row.original.roomName || "unknown"
+      return <div>{building + "/" + room}</div>
     },
   },
   {
@@ -46,4 +46,4 @@ const cartColumns: ColumnDef<InventoryItem>[] = [
   }
 ]
 
-export default cartColumns;
+export default cartColumns

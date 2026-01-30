@@ -1,4 +1,4 @@
-package db
+package db_models
 
 import (
 	"net"
@@ -155,15 +155,18 @@ type Inventory struct {
 }
 
 type Request struct {
-	tableName struct{}  `pg:"request"`
-	ID        int       `json:"id" pg:"id,pk"`
-	UserID    int       `json:"user_id" pg:"user_id"`
-	StartDate time.Time `json:"start_date" pg:"start_date"`
-	EndDate   time.Time `json:"end_date" pg:"end_date"`
-	Note      string    `json:"note" pg:"note"`
-	Status    string    `json:"status" pg:"status"`
+	tableName        struct{}  `pg:"request"`
+	ID               int       `json:"id" pg:"id,pk"`
+	UserID           int       `json:"user_id" pg:"user_id"`
+	StartDate        time.Time `json:"start_date" pg:"start_date"`
+	EndDate          time.Time `json:"end_date" pg:"end_date"`
+	Note             string    `json:"note" pg:"note"`
+	Status           string    `json:"status" pg:"status"`
+	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
 
-	User *User `json:"user" pg:"rel:has-one,fk:user_id"`
+	Organisation *Organisation  `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
+	User         *User          `json:"user" pg:"rel:has-one,fk:user_id"`
+	RequestItems []RequestItems `json:"request_item" pg:"rel:has-many,fk:request_id"`
 }
 
 type RequestItems struct {

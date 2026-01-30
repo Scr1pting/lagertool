@@ -1,9 +1,9 @@
-import { Button } from "@/components/shadcn/button";
-import type { InventoryItem } from "@/types/inventory";
-import type { ColumnDef } from "@tanstack/react-table";
-import { ShoppingCartIcon } from "lucide-react";
-import { inventoryColumnsBase } from "./inventoryColumnsBase";
-import AddCartDialog from "@/components/AddCartDialog/AddCartDialog";
+import { Button } from "@/components/shadcn/button"
+import type { InventoryItem } from "@/types/inventory"
+import type { ColumnDef } from "@tanstack/react-table"
+import { ShoppingCartIcon } from "lucide-react"
+import { inventoryColumnsBase } from "./inventoryColumnsBase"
+import AddCartDialog from "@/components/AddCartDialog/AddCartDialog"
 
 
 export const searchColumns: ColumnDef<InventoryItem>[] = [
@@ -14,7 +14,7 @@ export const searchColumns: ColumnDef<InventoryItem>[] = [
     cell: ({ row }) => (
       <div
         className="flex w-full justify-end"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <AddCartDialog item={row.original}>
           <Button

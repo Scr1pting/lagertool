@@ -7,7 +7,7 @@ import {
 import useBuilding from "@/hooks/fetch/useFetchBuildings"
 import useFetchRooms from "@/hooks/fetch/useFetchRooms"
 import useInventory from "@/hooks/fetch/useFetchInventory"
-import useFetchShelvesMeta from "@/hooks/fetch/useFetchShelvesMeta"
+import useFetchShelves from "@/hooks/fetch/useFetchShelves"
 import ItemTab from "@/components/ManageInventory/tabs/ItemTab"
 import ShelfTab from "@/components/ManageInventory/tabs/ShelfTab"
 import RoomTab from "@/components/ManageInventory/tabs/RoomTab"
@@ -17,7 +17,7 @@ import BuildingTab from "@/components/ManageInventory/tabs/BuildingTab"
 function ManageInventory() {
   const { data: buildings } = useBuilding()
   const { data: rooms } = useFetchRooms()
-  const { data: shelves } = useFetchShelvesMeta()
+  const { data: shelves } = useFetchShelves()
   const { data: inventory } = useInventory()
 
   return (

@@ -1,7 +1,0 @@
-[
-  { "id": "11", "floor": "E", "roomNum": "33.3", "name": "Studio A", "buildingName": "HG" },
-  { "id": "12", "floor": "E", "roomNum": "33.3", "name": "Studio B", "buildingName": "HG" },
-  { "id": "13", "floor": "F", "roomNum": "33.3", "name": "Control Room", "buildingName": "LAB" },
-  { "id": "14", "floor": "G", "roomNum": "10.3", "name": "Conference 1", "buildingName": "HQ" },
-  { "id": "15", "floor": "E", "roomNum": "33.3", "name": "Workshop Bay", "buildingName": "Warehouse" }
-]

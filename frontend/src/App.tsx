@@ -1,32 +1,32 @@
-import { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react'
+import { Routes, Route } from 'react-router-dom'
 
-import Account from './pages/Account';
-import AddShelf from './pages/AddShelf';
-import Home from './pages/Home';
-import Search from './pages/Search';
-import WithNavLayout from './components/WithNavBar';
-import Persons from './pages/Persons';
-import ShoppingCart from './pages/ShoppingCart';
-import { Toaster } from './components/shadcn/sonner';
-import ManageInventory from './pages/ManageInventory';
-import ItemDetail from './pages/ItemDetail';
-import Login from './pages/Login';
+import Account from './pages/Account'
+import AddShelf from './pages/AddShelf'
+import Home from './pages/Home'
+import Search from './pages/Search'
+import WithNavLayout from './components/WithNavBar'
+import Persons from './pages/Persons'
+import ShoppingCart from './pages/ShoppingCart'
+import { Toaster } from './components/shadcn/sonner'
+import ManageInventory from './pages/ManageInventory'
+import ItemDetail from './pages/ItemDetail'
+import Login from './pages/Login'
 
 function App() {
   useEffect(() => {
-    const root = document.documentElement;
+    const root = document.documentElement
 
-    root.dataset.theme = 'dark';
-    root.classList.add('dark');
+    root.dataset.theme = 'dark'
+    root.classList.add('dark')
 
     return () => {
-      delete root.dataset.theme;
-      root.classList.remove('dark');
-    };
-  }, []);
+      delete root.dataset.theme
+      root.classList.remove('dark')
+    }
+  }, [])
 
-  const isLoggedIn = import.meta.env.VITE_IS_LOGGED_IN === "true";
+  const isLoggedIn = import.meta.env.VITE_IS_LOGGED_IN === "true"
 
   const protectedRoutes = <>
     <Route element={<WithNavLayout />}>
@@ -52,7 +52,7 @@ function App() {
       </Routes>
       <Toaster position="bottom-right" />
     </>
-  );
+  )
 }
 
-export default App;
+export default App

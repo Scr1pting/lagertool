@@ -1,14 +1,14 @@
-import { useMemo } from 'react';
-import { type ShelfElementType, ELEMENT_CATALOG } from '../../../types/shelf';
+import { useMemo } from 'react'
+import { type ShelfElementType, ELEMENT_CATALOG } from '../../../types/shelf'
 
-import styles from './Palette.module.css';
-import ShelfPiece from '../shared/ShelfElementView';
+import styles from './Palette.module.css'
+import ShelfPiece from '../shared/ShelfElementView'
 
 function Palette() {
   const catalogEntries = useMemo(
     () => Object.entries(ELEMENT_CATALOG) as [ShelfElementType, typeof ELEMENT_CATALOG[keyof typeof ELEMENT_CATALOG]][],
     []
-  );
+  )
 
   return (
     <aside className={styles.palette}>
@@ -31,7 +31,7 @@ function Palette() {
         ))}
       </div>
     </aside>
-  );
+  )
 }
 
-export default Palette;
+export default Palette

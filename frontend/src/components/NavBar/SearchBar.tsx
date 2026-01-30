@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type MouseEvent, type FormEvent, type KeyboardEvent, type ChangeEvent } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import styles from "./NavBar.module.css"
-import { Search } from "lucide-react";
-import clsx from "clsx";
+import { Search } from "lucide-react"
+import clsx from "clsx"
 
 
 interface SearchBarProps {

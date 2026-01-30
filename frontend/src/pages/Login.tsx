@@ -1,4 +1,4 @@
-import { Button } from "@/components/shadcn/button";
+import { Button } from "@/components/shadcn/button"
 
 function Login() {
   return <>
@@ -13,4 +13,4 @@ function Login() {
   </>
 }
 
-export default Login;
+export default Login

@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"lagertool.com/main/api_objects"
-	"lagertool.com/main/db"
+	"lagertool.com/main/db_models"
 )
 
 // @Summary Get all rooms sorted by update date
@@ -16,7 +16,7 @@ import (
 // @Success 200 {array} api_objects.Room
 // @Router /rooms_sorted [get]
 func (h *Handler) GetRoomsS(c *gin.Context) {
-	var dbRes []db.Room
+	var dbRes []db_models.Room
 	err := h.DB.Model(&dbRes).Column("room.*").Relation("Building").Order("update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -38,7 +38,7 @@ func (h *Handler) GetRoomsS(c *gin.Context) {
 // @Success 200 {array} api_objects.Building
 // @Router /buildings_sorted [get]
 func (h *Handler) GetBuildingsS(c *gin.Context) {
-	var dbRes []db.Building
+	var dbRes []db_models.Building
 	err := h.DB.Model(&dbRes).Order("update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -60,7 +60,7 @@ func (h *Handler) GetBuildingsS(c *gin.Context) {
 // @Success 200 {array} api_objects.ShelfSorted
 // @Router /shelves_sorted [get]
 func (h *Handler) GetShelvesS(c *gin.Context) {
-	var dbRes []db.Shelf
+	var dbRes []db_models.Shelf
 	err := h.DB.Model(&dbRes).Relation("Room.Building").Order("update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -94,7 +94,7 @@ func (h *Handler) GetInventoryS(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	var dbRes []db.Inventory
+	var dbRes []db_models.Inventory
 	err = h.DB.Model(&dbRes).Column("inventory.*").Relation("Item").Relation("ShelfUnit.Column.Shelf.Room.Building").Relation("ShelfUnit.Column.Shelf.Room").Order("inventory.update_date desc").Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

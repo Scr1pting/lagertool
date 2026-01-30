@@ -41,7 +41,7 @@ function Account() {
         <AccountEventsAccordion events={sortedEvents} />
       ) : null}
     </RegularPage>
-  );
+  )
 }
 
 export default Account;

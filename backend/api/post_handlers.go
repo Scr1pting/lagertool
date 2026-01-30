@@ -2,10 +2,12 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db"
+	"lagertool.com/main/db_models"
 )
 
 // @Summary Create a new building
@@ -129,4 +131,103 @@ func (h *Handler) CreateItem(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, newItem)
+}
+
+func (h *Handler) CheckoutCart(c *gin.Context) {
+	var req api_objects.CheckoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	itemMap, err := h.GetCartItemHelper(req.CartID, req.StartDate, req.EndDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	for k, v := range itemMap {
+		request := &db_models.Request{
+			UserID:           req.UserID,
+			StartDate:        req.StartDate,
+			EndDate:          req.EndDate,
+			Note:             "",
+			Status:           "requested",
+			OrganisationName: k,
+		}
+		err := db.Create_request(h.DB, request)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
+			return
+		}
+		for _, item := range v {
+			reqItem := db_models.RequestItems{
+				RequestID:   request.ID,
+				InventoryID: item.ID,
+				Amount:      item.AmountSelected,
+				Request:     request,
+			}
+			err := db.Create_request_item(h.DB, reqItem)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request item"})
+				return
+			}
+		}
+	}
+	c.JSON(http.StatusCreated, req)
+}
+
+func (h *Handler) RequestReview(c *gin.Context) {
+	var req api_objects.RequestReview
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	rev := &db_models.RequestReview{
+		UserID:    req.UserID,
+		RequestID: req.RequestID,
+		Outcome:   req.Outcome,
+		Note:      req.Note,
+	}
+	err := db.Create_request_review(h.DB, rev)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if rev.Outcome == "success" {
+		var request db_models.Request
+		err := h.DB.Model(&request).
+			Relation("RequestItems.Inventory.Item").
+			Where("id = ?", req.RequestID).
+			Select()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		for _, rItem := range request.RequestItems {
+			if rItem.Inventory.Item.IsConsumable {
+				cons := &db_models.Consumed{
+					RequestItemID: rItem.ID,
+				}
+				err := db.Create_consumed(h.DB, cons)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+					return
+				}
+			} else {
+				l := &db_models.Loans{
+					RequestItemID: rItem.ID,
+					IsReturned:    false,
+					ReturnedAt:    time.Time{},
+				}
+				err := db.Create_loans(h.DB, l)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+					return
+				}
+			}
+		}
+	}
+	c.JSON(http.StatusOK, rev)
 }

@@ -15,19 +15,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/shadcn/popover"
-import { useState, type Dispatch, type SetStateAction } from "react"
+import { useState } from "react"
 
 
-interface ComboboxProps<D> {
-  options: D[] | null | undefined
-  selectedOption: D | undefined
-  setSelectedOption: Dispatch<SetStateAction<D | undefined>>
+interface ComboboxProps<T, K> {
+  options: T[] | null | undefined
+  selectedOption: T | undefined
+  onOptionChange: (newOption: T | undefined) => void
   placeholder: string
+  fieldKey?: K
   disabled?: boolean
 }
 
-function Combobox<D extends { id: string | number, name: string }>(
-  { options, selectedOption, setSelectedOption, placeholder, disabled = false }: ComboboxProps<D>
+function Combobox<
+  T extends { id: number | string },
+  K extends keyof T = "name" & keyof T
+>(
+  { options, selectedOption, onOptionChange, fieldKey = "name" as K, placeholder, disabled = false }: ComboboxProps<T, K>
 ) {
   const [open, setOpen] = useState(false)
 
@@ -38,16 +42,16 @@ function Combobox<D extends { id: string | number, name: string }>(
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="justify-between truncate"
           disabled={disabled}
         >
-          {selectedOption && options
-            ? options.find((option) => option === selectedOption)?.name
-            : placeholder}
+          <span className="truncate min-w-0 text-left">
+            {selectedOption && options ? String(selectedOption[fieldKey]) : placeholder}
+          </span>
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="p-0">
         <Command>
           <CommandInput
             placeholder="Search..."
@@ -57,20 +61,20 @@ function Combobox<D extends { id: string | number, name: string }>(
             <CommandEmpty>Nothing found.</CommandEmpty>
             <CommandGroup>
               {options && options
-                .map((option) => (
+                .map(option => (
                   <CommandItem
                     key={option.id}
-                    value={option.name}
-                    onSelect={(currentValue) => {
-                      setSelectedOption(
-                          selectedOption && currentValue === selectedOption.name
-                            ? undefined
-                            : options.find(option => option.name == currentValue)
-                        )
+                    value={String(option[fieldKey])}
+                    onSelect={currentValue => {
+                      onOptionChange(
+                        selectedOption && currentValue === String(selectedOption[fieldKey])
+                          ? undefined
+                          : options.find(option => String(option[fieldKey]) === currentValue)
+                      )
                       setOpen(false)
                     }}
                   >
-                    {option.name}
+                    {String(option[fieldKey])}
                     <Check
                       className={cn(
                         "ml-auto",
