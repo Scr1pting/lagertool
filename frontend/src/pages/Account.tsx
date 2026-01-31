@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import RegularPage from "@/components/RegularPage";
 import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
 import AccountEventsAccordion from "@/components/AccountEventsAccordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
 import { Button } from "@/components/shadcn/button";
 
 const SkeletonRow = () => (
@@ -39,8 +39,6 @@ const EmptyState = ({ onRetry }: { onRetry: () => void }) => (
 function Account() {
   const { data, status, error, refetch } = useFetchBorrowed();
   const [sortMode, setSortMode] = useState<"recent" | "name">("recent");
-
-  const showSkeleton = status === "loading";
 
   const sortedEvents = useMemo(() => {
     if (!data) return [];
