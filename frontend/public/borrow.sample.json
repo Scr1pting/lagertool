@@ -4,7 +4,7 @@
     "id": "evt-1",
     "personId": "user-1",
     "createdAt": "2026-01-15T12:00:00Z",
-    "state": "partial_overdue",
+    "state": "on_loan",
     "items": [
       {
         "id": "line-1",
@@ -12,7 +12,7 @@
         "itemName": "Projector",    
         "borrowDate": "2026-01-15T12:00:00Z",
         "dueDate": "2026-01-25T23:59:59Z",
-        "state": "overdue"
+        "state": "on_loan"
       },
       {
         "id": "line-2",
