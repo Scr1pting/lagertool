@@ -8,9 +8,37 @@ import useFetchItem from "@/hooks/fetch/useFetchItem"
 import { PencilIcon, ShoppingCartIcon } from "lucide-react"
 
 
+interface itemMetaData {
+  title: string
+  value: string | number
+}
+
 function ItemDetail() {
   const { data: item } = useFetchItem()
   
+  const metaData: itemMetaData[] = [
+    {
+      "title": "Name",
+      "value": item?.name ?? ""
+    },
+    {
+      "title": "Building",
+      "value": item?.building.name ?? ""
+    },
+    {
+      "title": "Room",
+      "value": item?.room.name ?? ""
+    },
+    {
+      "title": "Amount",
+      "value": item?.amount ?? ""
+    },
+    {
+      "title": "Available",
+      "value": item?.available ?? ""
+    }
+  ]
+
   return (
     <RegularPage title={item?.name ?? "Loading"}>
       { item && (
@@ -30,38 +58,16 @@ function ItemDetail() {
           </div>
 
           <div className="flex flex-col mt-5 gap-1">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Name</span>
-              <span className="font-medium">{item.name}</span>
-            </div>
+            {metaData.map((item, i) =>
+              <>
+                {i != 0 && <Separator/>}
 
-            <Separator />
-
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Building</span>
-              <span className="font-medium">{item.building.name}</span>
-            </div>
-
-            <Separator />
-
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Room</span>
-              <span className="font-medium">{item.room.name}</span>
-            </div>
-
-            <Separator />
-
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Amount</span>
-              <span className="font-medium">{item.amount}</span>
-            </div>
-
-            <Separator />
-
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Available</span>
-              <span className="font-medium">{item.available}</span>
-            </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{item.title}</span>
+                  <span className="font-medium">{item.value}</span>
+                </div>
+              </>
+            )}
           </div>
 
           <h2 className="text-xl font-semibold pt-10 pb-5">

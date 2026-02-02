@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
-import RegularPage from "@/components/RegularPage";
-import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
-import AccountEventsAccordion from "@/components/AccountEventsAccordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
-import { Button } from "@/components/shadcn/button";
+import { useMemo, useState } from "react"
+import RegularPage from "@/components/RegularPage"
+import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed"
+import AccountEventsAccordion from "@/components/AccountEventsAccordion"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/tabs"
+import { Button } from "@/components/shadcn/button"
 
 const SkeletonRow = () => (
   <div className="animate-pulse rounded-lg border px-4 py-3">
@@ -21,7 +21,7 @@ const SkeletonRow = () => (
       <div className="h-4 rounded bg-muted" />
     </div>
   </div>
-);
+)
 
 const EmptyState = ({ onRetry }: { onRetry: () => void }) => (
   <div className="flex flex-col items-center justify-center gap-3 rounded-lg border bg-muted/20 p-6 text-center">
@@ -34,60 +34,60 @@ const EmptyState = ({ onRetry }: { onRetry: () => void }) => (
       Retry
     </Button>
   </div>
-);
+)
 
 function Account() {
-  const { data, status, error, refetch } = useFetchBorrowed();
-  const [sortMode, setSortMode] = useState<"recent" | "name">("recent");
+  const { data, status, error, refetch } = useFetchBorrowed()
+  const [sortMode, setSortMode] = useState<"recent" | "name">("recent")
 
-  const showSkeleton = status === "loading";
+  const showSkeleton = status === "loading"
 
   const sortedEvents = useMemo(() => {
-    if (!data) return [];
-    const copy = [...data];
+    if (!data) return []
+    const copy = [...data]
     const itemIsOverdue = (item: (typeof copy)[number]["items"][number]) => {
-      if (item.state === "returned") return false;
-      const dueDate = item.dueDate ? new Date(item.dueDate) : null;
-      const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false;
-      const derivedOverdue = isDueValid ? new Date().getTime() > dueDate!.getTime() : false;
-      return item.state === "overdue" || derivedOverdue;
-    };
+      if (item.state === "returned") return false
+      const dueDate = item.dueDate ? new Date(item.dueDate) : null
+      const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false
+      const derivedOverdue = isDueValid ? new Date().getTime() > dueDate!.getTime() : false
+      return item.state === "overdue" || derivedOverdue
+    }
     const derivedState = (event: (typeof copy)[number]) => {
-      const overdueCount = event.items.filter(itemIsOverdue).length;
-      const totalCount = event.items.length;
-      const allReturned = totalCount > 0 && event.items.every((item) => item.state === "returned");
-      if (allReturned) return "returned";
-      if (overdueCount === totalCount && totalCount > 0) return "overdue";
-      if (overdueCount > 0) return "partial_overdue";
-      if (event.state === "partial_overdue" || event.state === "overdue") return event.state;
-      return event.state;
-    };
+      const overdueCount = event.items.filter(itemIsOverdue).length
+      const totalCount = event.items.length
+      const allReturned = totalCount > 0 && event.items.every(item => item.state === "returned")
+      if (allReturned) return "returned"
+      if (overdueCount === totalCount && totalCount > 0) return "overdue"
+      if (overdueCount > 0) return "partial_overdue"
+      if (event.state === "partial_overdue" || event.state === "overdue") return event.state
+      return event.state
+    }
     const isCritical = (event: (typeof copy)[number]) => {
-      const state = derivedState(event);
-      return state === "overdue" || state === "partial_overdue";
-    };
+      const state = derivedState(event)
+      return state === "overdue" || state === "partial_overdue"
+    }
 
     if (sortMode === "recent") {
       return copy.sort((a, b) => {
-        const aCritical = isCritical(a);
-        const bCritical = isCritical(b);
-        if (aCritical !== bCritical) return aCritical ? -1 : 1;
-        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return bDate - aDate;
-      });
+        const aCritical = isCritical(a)
+        const bCritical = isCritical(b)
+        if (aCritical !== bCritical) return aCritical ? -1 : 1
+        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return bDate - aDate
+      })
     }
     return copy.sort((a, b) => {
-      const aCritical = isCritical(a);
-      const bCritical = isCritical(b);
-      if (aCritical !== bCritical) return aCritical ? -1 : 1;
-      return (a.eventName || a.id).localeCompare(b.eventName || b.id);
-    });
-  }, [data, sortMode]);
+      const aCritical = isCritical(a)
+      const bCritical = isCritical(b)
+      if (aCritical !== bCritical) return aCritical ? -1 : 1
+      return (a.eventName || a.id).localeCompare(b.eventName || b.id)
+    })
+  }, [data, sortMode])
 
   return (
     <RegularPage title="Account" description="Your borrowed items">
-      <Tabs value={sortMode} onValueChange={(v) => setSortMode(v as "recent" | "name")} className="mb-4">
+      <Tabs value={sortMode} onValueChange={v => setSortMode(v as "recent" | "name")} className="mb-4">
         <TabsList className="grid grid-cols-2 gap-2 w-full sm:w-auto">
           <TabsTrigger value="recent" className="text-sm">
             Sort: Most Recent
@@ -126,4 +126,4 @@ function Account() {
   )
 }
 
-export default Account;
+export default Account

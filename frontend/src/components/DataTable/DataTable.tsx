@@ -59,7 +59,7 @@ function DataTable<TData>({
           destination ? () => navigate(destination) : undefined
         }
       >
-        {row.getVisibleCells().map((cell) => (
+        {row.getVisibleCells().map(cell => (
           <TableCell key={cell.id} className="px-4 py-3">
             {flexRender(
               cell.column.columnDef.cell,
