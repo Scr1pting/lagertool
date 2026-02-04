@@ -1,7 +1,8 @@
-import { differenceInCalendarDays, format, isAfter } from "date-fns"
+import { differenceInCalendarDays, format } from "date-fns"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion"
 import MessageButton from "@/components/MessageButton"
 import type { BorrowedList, Event } from "@/types/borrow"
+import { getEventMeta, isItemOverdue, type EventMeta } from "@/lib/borrow-utils"
 
 type BadgeProps = {
   label: string;
@@ -36,14 +37,13 @@ function itemStatus(item: BorrowedList) {
   const now = new Date()
   const dueDate = item.dueDate ? new Date(item.dueDate) : null
   const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false
-  const derivedOverdue = isDueValid ? isAfter(now, dueDate!) : false
-  const isOverdue = item.state === "overdue" || derivedOverdue
+  const isOverdue = isItemOverdue(item)
   const days = isDueValid ? differenceInCalendarDays(dueDate!, now) : null
   const label =
     item.state === "pending" ? "Pending" :
-    item.state === "approved" ? "Approved" :
-    item.state === "returned" ? "Returned" :
-    isOverdue ? "Overdue" : "On loan"
+      item.state === "approved" ? "Approved" :
+        item.state === "returned" ? "Returned" :
+          isOverdue ? "Overdue" : "On loan"
   const daysLabel = item.state === "returned"
     ? ""
     : isOverdue && days !== null
@@ -51,10 +51,10 @@ function itemStatus(item: BorrowedList) {
       : ""
   const tone: BadgeProps["tone"] =
     item.state === "pending" ? "yellow" :
-    item.state === "approved" ? "blue" :
-    item.state === "returned" ? "emerald" :
-    isOverdue ? "red" :
-    "slate"
+      item.state === "approved" ? "blue" :
+        item.state === "returned" ? "emerald" :
+          isOverdue ? "red" :
+            "slate"
 
   return { label, daysLabel, tone }
 }
@@ -85,9 +85,8 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
         return (
           <div
             key={item.id}
-            className={`grid grid-cols-5 items-center px-4 py-3 text-sm ${
-              rowOverdue ? "bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-500 rounded-md" : ""
-            }`}
+            className={`grid grid-cols-5 items-center px-4 py-3 text-sm ${rowOverdue ? "bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-500 rounded-md" : ""
+              }`}
           >
             <div className="col-span-2">
               <div className="font-medium">{item.itemName}</div>
@@ -105,37 +104,7 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
   )
 }
 
-type EventMeta = {
-  overdueCount: number;
-  totalCount: number;
-  derivedState: Event["state"];
-};
 
-function itemIsOverdue(item: BorrowedList) {
-  if (item.state === "returned") return false
-  const dueDate = item.dueDate ? new Date(item.dueDate) : null
-  const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false
-  const derivedOverdue = isDueValid ? isAfter(new Date(), dueDate!) : false
-  return item.state === "overdue" || derivedOverdue
-}
-
-function buildEventMeta(event: Event): EventMeta {
-  const overdueCount = event.items.filter(itemIsOverdue).length
-  const totalCount = event.items.length
-  const allReturned = totalCount > 0 && event.items.every(item => item.state === "returned")
-
-  const derivedState: Event["state"] =
-    allReturned
-      ? "returned"
-      : overdueCount === totalCount && totalCount > 0
-        ? "overdue"
-        : overdueCount > 0
-          ? "partial_overdue"
-          : event.state === "partial_overdue" || event.state === "overdue"
-            ? event.state
-            : event.state
-  return { overdueCount, totalCount, derivedState }
-}
 
 function EventSummary({ event, meta }: { event: Event; meta: EventMeta }) {
   const { overdueCount, totalCount, derivedState } = meta
@@ -166,18 +135,17 @@ function AccountEventsAccordion({ events }: AccountEventsAccordionProps) {
   return (
     <Accordion type="single" collapsible className="space-y-3">
       {events.map(event => {
-        const meta = buildEventMeta(event)
+        const meta = getEventMeta(event)
         const showMessage = meta.derivedState === "approved"
         const isOverdueish = meta.derivedState === "overdue" || meta.derivedState === "partial_overdue"
         return (
           <AccordionItem
             key={event.id}
             value={event.id}
-            className={`rounded-lg px-4 ${
-              isOverdueish
-                ? "border border-red-300 dark:border-red-400"
-                : "border"
-            }`}
+            className={`rounded-lg px-4 ${isOverdueish
+              ? "border border-red-300 dark:border-red-400"
+              : "border"
+              }`}
           >
             <AccordionTrigger className="py-3">
               <EventSummary event={event} meta={meta} />

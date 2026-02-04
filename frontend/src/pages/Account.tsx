@@ -3,6 +3,7 @@ import RegularPage from "@/components/RegularPage";
 import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
 import AccountEventsAccordion from "@/components/AccountEventsAccordion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
+import { getEventMeta } from "@/lib/borrow-utils";
 import { Button } from "@/components/shadcn/button";
 
 const SkeletonRow = () => (
@@ -43,26 +44,9 @@ function Account() {
   const sortedEvents = useMemo(() => {
     if (!data) return []
     const copy = [...data]
-    const itemIsOverdue = (item: (typeof copy)[number]["items"][number]) => {
-      if (item.state === "returned") return false
-      const dueDate = item.dueDate ? new Date(item.dueDate) : null
-      const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false
-      const derivedOverdue = isDueValid ? new Date().getTime() > dueDate!.getTime() : false
-      return item.state === "overdue" || derivedOverdue
-    }
-    const derivedState = (event: (typeof copy)[number]) => {
-      const overdueCount = event.items.filter(itemIsOverdue).length
-      const totalCount = event.items.length
-      const allReturned = totalCount > 0 && event.items.every(item => item.state === "returned")
-      if (allReturned) return "returned"
-      if (overdueCount === totalCount && totalCount > 0) return "overdue"
-      if (overdueCount > 0) return "partial_overdue"
-      if (event.state === "partial_overdue" || event.state === "overdue") return event.state
-      return event.state
-    }
     const isCritical = (event: (typeof copy)[number]) => {
-      const state = derivedState(event)
-      return state === "overdue" || state === "partial_overdue"
+      const { derivedState } = getEventMeta(event)
+      return derivedState === "overdue" || derivedState === "partial_overdue"
     }
 
     if (sortMode === "recent") {
