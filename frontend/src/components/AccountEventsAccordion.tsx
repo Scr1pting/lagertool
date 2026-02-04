@@ -1,37 +1,13 @@
-import { differenceInCalendarDays, format } from "date-fns"
+import { differenceInCalendarDays } from "date-fns"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion"
 import MessageButton from "@/components/MessageButton"
 import type { BorrowedList, Event } from "@/types/borrow"
 import { getEventMeta, isItemOverdue, type EventMeta } from "@/lib/borrow-utils"
+import { Badge } from "@/components/shadcn/badge"
+import { formatDate } from "@/lib/utils"
 
-type BadgeProps = {
-  label: string;
-  tone: "yellow" | "blue" | "red" | "slate" | "emerald" | "amber";
-};
 
-const badgeToneClass: Record<BadgeProps["tone"], string> = {
-  yellow: "bg-yellow-100 text-yellow-700",
-  blue: "bg-blue-100 text-blue-700",
-  red: "bg-red-100 text-red-700",
-  emerald: "bg-emerald-100 text-emerald-700",
-  slate: "bg-slate-100 text-slate-700",
-  amber: "bg-amber-100 text-amber-700",
-}
 
-function Badge({ label, tone }: BadgeProps) {
-  return (
-    <span className={`rounded-full px-2 py-1 text-xs font-medium ${badgeToneClass[tone]}`}>
-      {label}
-    </span>
-  )
-}
-
-function formatMaybeDate(value?: string) {
-  if (!value) return "—"
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return "Date unavailable"
-  return format(d, "MMM d, yyyy")
-}
 
 function itemStatus(item: BorrowedList) {
   const now = new Date()
@@ -49,7 +25,7 @@ function itemStatus(item: BorrowedList) {
     : isOverdue && days !== null
       ? `${Math.abs(days)}d late`
       : ""
-  const tone: BadgeProps["tone"] =
+  const tone: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link" | "yellow" | "blue" | "red" | "emerald" | "slate" | "amber" =
     item.state === "pending" ? "yellow" :
       item.state === "approved" ? "blue" :
         item.state === "returned" ? "emerald" :
@@ -91,10 +67,10 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
             <div className="col-span-2">
               <div className="font-medium">{item.itemName}</div>
             </div>
-            <div>{formatMaybeDate(item.borrowDate)}</div>
-            <div>{formatMaybeDate(item.dueDate)}</div>
+            <div>{formatDate(item.borrowDate)}</div>
+            <div>{formatDate(item.dueDate)}</div>
             <div className="text-right sm:text-left">
-              <Badge label={label} tone={tone} />
+              <Badge variant={tone}>{label}</Badge>
               {daysLabel && <div className="mt-1 text-xs text-red-600">{daysLabel}</div>}
             </div>
           </div>
@@ -109,14 +85,14 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
 function EventSummary({ event, meta }: { event: Event; meta: EventMeta }) {
   const { overdueCount, totalCount, derivedState } = meta
   const { label, tone } = eventTone(derivedState)
-  const created = formatMaybeDate(event.createdAt)
+  const created = formatDate(event.createdAt)
   const title = event.eventName || `Event ${event.id}`
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
       <div className="flex items-center gap-3">
         <span className="font-medium text-foreground">{title}</span>
-        <Badge label={label} tone={tone} />
+        <Badge variant={tone}>{label}</Badge>
         <span className="text-muted-foreground">Created {created}</span>
       </div>
       <div className="flex items-center gap-3 text-muted-foreground">
