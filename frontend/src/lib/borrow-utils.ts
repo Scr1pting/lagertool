@@ -7,7 +7,6 @@ export type EventMeta = {
     derivedState: Event["state"]
 }
 
-
 export function isItemOverdue(item: BorrowedList): boolean {
     if (item.state === "returned") return false
 
@@ -34,7 +33,6 @@ export function getEventMeta(event: Event): EventMeta {
     } else if (overdueCount > 0) {
         derivedState = "partial_overdue"
     }
-    // Otherwise keep original state (unless it was already one of the above, which captures mostly everything)
 
     return { overdueCount, totalCount, derivedState }
 }
