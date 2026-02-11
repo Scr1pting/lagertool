@@ -1,7 +1,7 @@
 import AddCartDialog from "@/components/AddCartDialog/AddCartDialog"
 import RegularPage from "@/components/RegularPage"
 import { Button } from "@/components/shadcn/button"
-import { Card, CardContent } from "@/components/shadcn/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shadcn/card"
 import { Separator } from "@/components/shadcn/separator"
 import StaticShelf from "@/components/Shelves/viewer/StaticShelf"
 import useFetchItem from "@/hooks/fetch/useFetchItem"
@@ -17,10 +17,6 @@ function ItemDetail() {
   const { data: item } = useFetchItem()
   
   const metaData: itemMetaData[] = [
-    {
-      "title": "Name",
-      "value": item?.name ?? ""
-    },
     {
       "title": "Building",
       "value": item?.building.name ?? ""
@@ -57,21 +53,42 @@ function ItemDetail() {
             </AddCartDialog>
           </div>
 
-          <div className="flex flex-col mt-5 gap-1">
-            {metaData.map((item, i) =>
-              <>
-                {i != 0 && <Separator/>}
+          <div className="grid grid-cols-2 gap-5 mt-5">
+            <Card size="sm" className="gap-3">
+              <CardHeader>
+                <CardTitle>Location</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="flex justify-between">
+                  <span className="font-medium">Building</span>
+                  <span>{item?.building.name ?? ""}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="font-medium">Room</span>
+                  <span>{item?.room.name ?? ""}</span>
+                </p>
+              </CardContent>
+            </Card>
 
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{item.title}</span>
-                  <span className="font-medium">{item.value}</span>
-                </div>
-              </>
-            )}
+            <Card size="sm" className="gap-3">
+              <CardHeader>
+                <CardTitle>Items</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="flex justify-between">
+                  <span className="font-medium">Amount</span>
+                  <span>{item?.amount ?? ""}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span className="font-medium">Available</span>
+                  <span>{item?.available ?? ""}</span>
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           <h2 className="text-xl font-semibold pt-10 pb-5">
-            Location in Shelf
+            Position in Shelf
           </h2>
 
           <Card>
