@@ -1,39 +1,18 @@
 import AddCartDialog from "@/components/AddCartDialog/AddCartDialog"
 import RegularPage from "@/components/RegularPage"
 import { Button } from "@/components/shadcn/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/shadcn/card"
-import { Separator } from "@/components/shadcn/separator"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/card"
 import StaticShelf from "@/components/Shelves/viewer/StaticShelf"
 import useFetchItem from "@/hooks/fetch/useFetchItem"
 import { PencilIcon, ShoppingCartIcon } from "lucide-react"
+import { useSearchParams } from "react-router-dom"
 
-
-interface itemMetaData {
-  title: string
-  value: string | number
-}
 
 function ItemDetail() {
-  const { data: item } = useFetchItem()
-  
-  const metaData: itemMetaData[] = [
-    {
-      "title": "Building",
-      "value": item?.building.name ?? ""
-    },
-    {
-      "title": "Room",
-      "value": item?.room.name ?? ""
-    },
-    {
-      "title": "Amount",
-      "value": item?.amount ?? ""
-    },
-    {
-      "title": "Available",
-      "value": item?.available ?? ""
-    }
-  ]
+  const [searchParams] = useSearchParams()
+  const id = parseInt(searchParams.get("id") ?? "-1")
+
+  const { data: item = null } = useFetchItem(id)
 
   return (
     <RegularPage title={item?.name ?? "Loading"}>
