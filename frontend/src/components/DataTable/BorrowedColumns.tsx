@@ -3,7 +3,6 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { BorrowedList } from "@/types/borrow"
 import SortableHeader from "./SortableHeader"
 import MessageButton from "../MessageButton"
-import { isItemOverdue } from "@/lib/borrow-utils"
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/shadcn/badge"
 
@@ -34,7 +33,7 @@ const borrowedColumns: ColumnDef<BorrowedList>[] = [
     cell: ({ row }) => {
       const { state, returnDate } = row.original
       const now = new Date()
-      const isOverdue = isItemOverdue(row.original)
+      const isOverdue = row.original.state === "overdue"
 
       const dueDate = returnDate ? new Date(returnDate) : null
       const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false

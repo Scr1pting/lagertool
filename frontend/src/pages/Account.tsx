@@ -3,7 +3,6 @@ import RegularPage from "@/components/RegularPage";
 import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
 import AccountEventsAccordion from "@/components/AccountEventsAccordion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
-import { getEventMeta } from "@/lib/borrow-utils";
 import { Button } from "@/components/shadcn/button";
 
 const SkeletonRow = () => (
@@ -45,8 +44,7 @@ function Account() {
     if (!data) return []
     const copy = [...data]
     const isCritical = (event: (typeof copy)[number]) => {
-      const { derivedState } = getEventMeta(event)
-      return derivedState === "overdue" || derivedState === "partial_overdue"
+      return event.state === "overdue" || event.state === "partial_overdue"
     }
 
     if (sortMode === "recent") {
