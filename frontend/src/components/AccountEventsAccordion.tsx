@@ -5,6 +5,7 @@ import type { BorrowedList, Event } from "@/types/borrow"
 
 import { Badge } from "@/components/shadcn/badge"
 import { formatDate } from "@/lib/utils"
+import { getBorrowStateUI } from "@/lib/borrow-ui"
 
 
 
@@ -16,37 +17,18 @@ const itemStatus = (item: BorrowedList) => {
   const isOverdue = item.state === "overdue"
   const days = isDueValid ? differenceInCalendarDays(dueDate!, now) : null
 
-  const label =
-    item.state === "pending" ? "Pending" :
-      item.state === "approved" ? "Approved" :
-        item.state === "returned" ? "Returned" :
-          isOverdue ? "Overdue" : "On loan"
+  const { label, variant: tone } = getBorrowStateUI(item.state)
 
   const daysLabel = item.state === "returned"
     ? ""
     : isOverdue && days !== null
       ? `${Math.abs(days)}d late`
       : ""
-  const tone: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link" | "yellow" | "blue" | "red" | "emerald" | "slate" | "amber" =
-    item.state === "pending" ? "yellow" :
-      item.state === "approved" ? "blue" :
-        item.state === "returned" ? "emerald" :
-          isOverdue ? "red" :
-            "slate"
 
   return { label, daysLabel, tone }
 }
 
-function eventTone(state: Event["state"]) {
-  switch (state) {
-    case "pending": return { label: "Pending", tone: "yellow" as const }
-    case "approved": return { label: "Approved", tone: "blue" as const }
-    case "returned": return { label: "Returned", tone: "emerald" as const }
-    case "partial_overdue": return { label: "Partial overdue", tone: "amber" as const }
-    case "overdue": return { label: "Overdue", tone: "red" as const }
-    default: return { label: "On loan", tone: "slate" as const }
-  }
-}
+
 
 function ItemsList({ items }: { items: BorrowedList[] }) {
   return (
@@ -86,7 +68,7 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
 function EventSummary({ event }: { event: Event }) {
   const overdueCount = event.items.filter(item => item.state === "overdue").length
   const totalCount = event.items.length
-  const { label, tone } = eventTone(event.state)
+  const { label, variant: tone } = getBorrowStateUI(event.state)
   const created = formatDate(event.createdAt)
   const title = event.eventName || `Event ${event.id}`
 

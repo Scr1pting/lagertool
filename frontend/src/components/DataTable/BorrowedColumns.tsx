@@ -5,6 +5,7 @@ import SortableHeader from "./SortableHeader"
 import MessageButton from "../MessageButton"
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/shadcn/badge"
+import { getBorrowStateUI } from "@/lib/borrow-ui"
 
 
 const borrowedColumns: ColumnDef<BorrowedList>[] = [
@@ -39,21 +40,11 @@ const borrowedColumns: ColumnDef<BorrowedList>[] = [
       const isDueValid = dueDate ? !Number.isNaN(dueDate.getTime()) : false
       const days = isDueValid ? differenceInCalendarDays(dueDate!, now) : null
 
-      const label = state === "pending" ? "Pending"
-        : state === "approved" ? "Approved"
-          : state === "returned" ? "Returned"
-            : isOverdue ? "Overdue" : "On loan"
+      const { label, variant: badgeVariant } = getBorrowStateUI(state)
 
       const daysLabel = isOverdue && days !== null && state !== "returned"
         ? `${Math.abs(days)}d late`
         : ""
-
-      const badgeVariant: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link" | "yellow" | "blue" | "red" | "emerald" | "slate" | "amber" =
-        state === "pending" ? "yellow" :
-          state === "approved" ? "blue" :
-            state === "returned" ? "emerald" :
-              isOverdue ? "red" :
-                "slate"
 
       return (
         <div className="text-right">
