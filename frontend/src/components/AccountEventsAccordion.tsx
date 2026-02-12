@@ -7,8 +7,6 @@ import { formatDate } from "@/lib/utils"
 import { getBorrowStateUI } from "@/lib/borrow-ui"
 
 
-
-
 const itemStatus = (item: BorrowedList) => {
   const now = new Date()
   const dueDate = item.dueDate ? new Date(item.dueDate) : null

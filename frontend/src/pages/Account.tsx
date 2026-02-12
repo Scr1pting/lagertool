@@ -4,6 +4,7 @@ import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
 import AccountEventsAccordion from "@/components/AccountEventsAccordion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
 import { Button } from "@/components/shadcn/button";
+import SummaryStatistics from "@/components/Accounts/SummaryStatistics";
 
 const SkeletonRow = () => (
   <div className="animate-pulse rounded-lg border px-4 py-3">
@@ -66,7 +67,9 @@ function Account() {
   }, [data, sortMode])
 
   return (
-    <RegularPage title="Account" description="Your borrowed items">
+    <RegularPage title="Account">
+      <SummaryStatistics />
+
       <Tabs value={sortMode} onValueChange={v => setSortMode(v as "recent" | "name")} className="mb-4">
         <TabsList className="grid grid-cols-2 gap-2 w-full sm:w-auto">
           <TabsTrigger value="recent" className="text-sm">
