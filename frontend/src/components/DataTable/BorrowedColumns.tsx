@@ -2,7 +2,7 @@ import { differenceInCalendarDays } from "date-fns"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { BorrowedList } from "@/types/borrow"
 import SortableHeader from "./SortableHeader"
-import MessageButton from "../MessageButton"
+
 import { formatDate } from "@/lib/utils"
 import { Badge } from "@/components/shadcn/badge"
 import { getBorrowStateUI } from "@/lib/borrow-ui"
@@ -54,16 +54,7 @@ const borrowedColumns: ColumnDef<BorrowedList>[] = [
       )
     },
   },
-  {
-    id: "message",
-    header: () => <div className="text-right">Message</div>,
-    enableHiding: false,
-    cell: ({ row }) => (
-      <div className="text-right">
-        {row.original.state === "approved" ? <MessageButton /> : null}
-      </div>
-    ),
-  },
+
 ]
 
 export default borrowedColumns
