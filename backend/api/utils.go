@@ -21,8 +21,8 @@ func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, e
 	shelfObj.Name = shelf.Name
 	shelfObj.Room = *shelf.Room
 	shelfObj.Building = *shelf.Room.Building
-	var col api_objects.Columns
 	for _, c := range shelf.Columns {
+		var col api_objects.Columns
 		col.ID = c.ID
 		var el api_objects.Element
 		for _, e := range c.ShelfUnits {

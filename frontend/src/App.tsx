@@ -12,6 +12,7 @@ import { Toaster } from './components/shadcn/sonner'
 import ManageInventory from './pages/ManageInventory'
 import ItemDetail from './pages/ItemDetail'
 import Login from './pages/Login'
+import BorrowRequests from './pages/BorrowRequests'
 
 function App() {
   useEffect(() => {
@@ -34,6 +35,7 @@ function App() {
       <Route path="/search" element={<Search />}/>
       <Route path="/manage-inventory" element={<ManageInventory />}/>
       <Route path="/persons" element={<Persons />}/>
+      <Route path="/borrow-requests" element={<BorrowRequests />}/>
       <Route path="/shopping-cart" element={<ShoppingCart />}/>
       <Route path="/item" element={<ItemDetail />}/>
       <Route path="/account" element={<Account />} />
