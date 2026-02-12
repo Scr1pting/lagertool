@@ -25,6 +25,7 @@ interface ItemTabProps {
 function ItemTab({ shelves, inventory }: ItemTabProps) {
   const [name, setName] = useState("")
   const [amount, setAmount] = useState(1)
+  const [keywords, setKeywords] = useState("")
 
   const [selectedShelf, setSelectedShelf] = useState<Shelf | undefined>()
   const [selectedElement, setSelectedElement] = useState<ShelfElement | undefined>()
@@ -33,18 +34,18 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
 
   const elements: FormElement[] = [
     {
-      size: "full",
+      size: "half",
       id: "item-name",
       label: "Name",
       input: <Input
         id="item-name"
-        placeholder="e.g Microphone"
+        placeholder="e.g El Tony Mate"
         value={name}
         onChange={e => setName(e.target.value)}
       />
     },
     {
-      size: "full",
+      size: "half",
       id: "item-amount",
       label: "Amount",
       input: <Input
@@ -54,6 +55,18 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
         placeholder="e.g. 15"
         value={amount}
         onChange={e => setAmount(Number.parseInt(e.target.value, 10))}
+      />
+    },
+    {
+      size: "full",
+      id: "item-keywords",
+      label: "Keywords (separated by commas)",
+      input: <Input
+        id="item-keywords"
+        min="1"
+        placeholder="e.g. Drink, Cans"
+        value={keywords}
+        onChange={e => setKeywords(e.target.value)}
       />
     },
     {
