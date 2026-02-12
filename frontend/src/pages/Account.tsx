@@ -95,8 +95,41 @@ function Account() {
         </div>
       ) : null}
 
-      {status === "success" && sortedEvents.length ? (
-        <AccountEventsAccordion events={sortedEvents} />
+      {status === "success" && sortedEvents.length > 0 ? (
+        <div className="space-y-8">
+          {sortedEvents.some(e => e.state === "overdue" || e.state === "partial_overdue") && (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold text-red-400 flex items-center gap-2">
+                Overdue
+              </h2>
+              <AccountEventsAccordion
+                events={sortedEvents.filter(e => e.state === "overdue" || e.state === "partial_overdue")}
+              />
+            </section>
+          )}
+
+          {sortedEvents.some(e => e.state === "pending" || e.state === "approved" || e.state === "on_loan") && (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold flex items-center gap-2">
+                Current
+              </h2>
+              <AccountEventsAccordion
+                events={sortedEvents.filter(e => e.state === "pending" || e.state === "approved" || e.state === "on_loan")}
+              />
+            </section>
+          )}
+
+          {sortedEvents.some(e => e.state === "returned") && (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold text-green-300 flex items-center gap-2">
+                Returned
+              </h2>
+              <AccountEventsAccordion
+                events={sortedEvents.filter(e => e.state === "returned")}
+              />
+            </section>
+          )}
+        </div>
       ) : null}
 
       {status === "success" && sortedEvents.length === 0 ? (
