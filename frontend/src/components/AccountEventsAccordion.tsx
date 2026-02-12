@@ -1,6 +1,5 @@
 import { differenceInCalendarDays } from "date-fns"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion"
-import MessageButton from "@/components/MessageButton"
 import type { BorrowedList, Event } from "@/types/borrow"
 
 import { Badge } from "@/components/shadcn/badge"
@@ -94,33 +93,28 @@ interface AccountEventsAccordionProps {
 function AccountEventsAccordion({ events }: AccountEventsAccordionProps) {
   return (
     <Accordion type="single" collapsible className="space-y-3">
-      {events.map(event => {
-        const showMessage = event.state === "approved"
+      {events.map(event =>
+        <AccordionItem
+          key={event.id}
+          value={event.id}
+          className="rounded-lg px-4 border"
+        >
+          <AccordionTrigger className="py-3 hover:no-underline">
+            <EventSummary event={event} />
+          </AccordionTrigger>
+          <AccordionContent>
+            <p className="mb-3">
+              <span className="font-medium">Message:</span> This is a placeholder for an admin message or instructions about the approved loan.
+            </p>
 
-        return (
-          <AccordionItem
-            key={event.id}
-            value={event.id}
-            className="rounded-lg px-4 border"
-          >
-            <AccordionTrigger className="py-3 hover:no-underline">
-              <EventSummary event={event} />
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              {showMessage ? (
-                <div className="mb-3 flex justify-end">
-                  <MessageButton label="Message borrower" />
-                </div>
-              ) : null}
-              {event.items.length ? (
-                <ItemsList items={event.items} />
-              ) : (
-                <div className="text-sm text-muted-foreground">No items in this event.</div>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        )
-      })}
+            {event.items.length ? (
+              <ItemsList items={event.items} />
+            ) : (
+              <div className="text-sm text-muted-foreground">No items in this event.</div>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      )}
     </Accordion>
   )
 }
