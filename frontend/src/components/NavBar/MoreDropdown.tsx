@@ -27,6 +27,9 @@ export default function MoreDropdown() {
           <DropdownMenuItem>
             <Link to="/persons">Person Management</Link>
           </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/borrow-requests">Borrow Requests</Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
