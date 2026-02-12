@@ -16,7 +16,7 @@ function Search() {
       <DataTable
         data={inventory ?? []}
         columns={searchColumns}
-        rowLink={row => `/item?id=${row.id}`}
+        rowLink={row => `/item?id=${row.original.id}`}
       />
     </RegularPage>
   )

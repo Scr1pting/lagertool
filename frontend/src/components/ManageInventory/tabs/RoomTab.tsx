@@ -43,9 +43,9 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
       />
     },
     {
-      size: "full",
+      size: "half",
       id: "room-name",
-      label: "Name (Optional)",
+      label: "Name (optional)",
       input: <Input
         id="room-name"
         placeholder="Office"
@@ -54,7 +54,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
       />
     },
     {
-      size: "full",
+      size: "half",
       id: "room-building-id",
       label: "Building",
       input: <StandardSelect

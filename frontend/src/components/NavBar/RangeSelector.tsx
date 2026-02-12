@@ -76,7 +76,7 @@ function RangeSelector() {
                 setIsCalendarOpen(false)
               }}
             >
-              Close
+              Done
             </Button>
           </div>
         </PopoverContent>
