@@ -6,7 +6,7 @@ interface Statistic {
 }
 
 function SummaryStatistics() {
-  const statistics: [Statistic] = [
+  const statistics: Statistic[] = [
     {
       num: 10,
       label: "overdue"
@@ -22,12 +22,12 @@ function SummaryStatistics() {
   ]
 
   return (
-    <div className="grid grid-cols-3 gap-5 mb-5">
+    <div className="grid grid-cols-3 gap-4 mb-5">
       {statistics.map(stat =>
-        <Card className="p-5">
+        <Card className="py-4 px-5">
           <CardContent className="p-0">
-            <h2 className="text-4xl font-medium">{stat.num}</h2>
-            <p className="mt-2">{stat.label}</p>
+            <h2 className="text-3xl font-medium">{stat.num}</h2>
+            <p className="text-sm mt-1">{stat.label}</p>
           </CardContent>
         </Card>
       )}
