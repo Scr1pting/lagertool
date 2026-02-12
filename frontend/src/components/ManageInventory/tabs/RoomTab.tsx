@@ -43,7 +43,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
       />
     },
     {
-      size: "full",
+      size: "half",
       id: "room-name",
       label: "Name (Optional)",
       input: <Input
@@ -54,7 +54,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
       />
     },
     {
-      size: "full",
+      size: "half",
       id: "room-building-id",
       label: "Building",
       input: <StandardSelect
