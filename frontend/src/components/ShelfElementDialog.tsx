@@ -1,6 +1,6 @@
 import useFetchInventory from "@/hooks/fetch/useFetchInventory"
 import DataTable from "./DataTable/DataTable"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./shadcn/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./temp/dialog"
 import AvailabilityDescription from "./AvailabilityDescription"
 import type { Shelf, ShelfElement } from "@/types/shelf"
 import { inventoryShelfColumns } from "./DataTable/inventoryShelfColumns"

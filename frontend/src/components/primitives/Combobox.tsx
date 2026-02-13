@@ -1,7 +1,7 @@
 import { Check, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/cn"
-import { Button } from "@/components/shadcn/button"
+import { Button } from "@/components/temp/button"
 import {
   Command,
   CommandEmpty,
@@ -9,12 +9,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/shadcn/command"
+} from "@/components/temp/command"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/shadcn/popover"
+} from "@/components/temp/popover"
 import { useState } from "react"
 
 

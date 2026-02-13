@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { Button } from "@/components/shadcn/button"
+import { Button } from "@/components/temp/button"
 import { type ShelfColumn } from '../../../types/shelf'
 import { X } from 'lucide-react'
-import { Dialog } from '@/components/shadcn/dialog'
+import { Dialog } from '@/components/temp/dialog'
 import { DialogTrigger } from '@radix-ui/react-dialog'
 import AddShelfForm from './AddShelfForm'
 

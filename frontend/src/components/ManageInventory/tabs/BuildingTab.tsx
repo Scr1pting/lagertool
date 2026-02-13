@@ -1,9 +1,9 @@
 import { useState } from "react"
 import type { FormElement } from "../../primitives/types/FormElement"
-import { Input } from "@/components/shadcn/input"
+import { Input } from "@/components/temp/input"
 import type { Building } from "@/types/building"
 import DataTable from "@/components/DataTable/DataTable"
-import { TabsContent } from "@/components/shadcn/tabs"
+import { TabsContent } from "@/components/temp/tabs"
 import ManageInventoryCard from "../ManageInventoryCard"
 import buildingColumns from "@/components/DataTable/ManageInventory/buildingColumns"
 

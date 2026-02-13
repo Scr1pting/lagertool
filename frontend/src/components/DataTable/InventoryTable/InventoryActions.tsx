@@ -1,10 +1,10 @@
-import { Button } from "@/components/shadcn/button"
+import { Button } from "@/components/temp/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/shadcn/dropdown-menu"
+} from "@/components/temp/dropdown-menu"
 import { MoreHorizontal, Pen, Trash2 } from "lucide-react"
 
 

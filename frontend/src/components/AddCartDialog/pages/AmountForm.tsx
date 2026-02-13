@@ -3,11 +3,11 @@ import type { CartItem } from "@/types/cart"
 import type { InventoryItem } from "@/types/inventory"
 import type { FormEvent } from "react"
 import { toast } from "sonner"
-import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog"
-import { Field, FieldError } from "../../shadcn/field"
-import { Label } from "../../shadcn/label"
-import { Input } from "../../shadcn/input"
-import { Button } from "../../shadcn/button"
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../temp/dialog"
+import { Field, FieldError } from "../../temp/field"
+import { Label } from "../../temp/label"
+import { Input } from "../../temp/input"
+import { Button } from "../../temp/button"
 
 
 interface MainProps {

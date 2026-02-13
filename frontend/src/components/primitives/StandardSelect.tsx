@@ -1,4 +1,4 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shadcn/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/temp/select"
 
 
 interface StandardSelect<T extends { id: string | number, name: string}> {

@@ -5,7 +5,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/components/shadcn/dropdown-menu"
+} from "@/components/temp/dropdown-menu"
 import styles from "./NavBar.module.css"
 
 import useOrgs from "@/store/useOrgs"

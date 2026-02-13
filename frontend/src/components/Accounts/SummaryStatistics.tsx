@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/shadcn/card"
+import { Card, CardContent } from "@/components/temp/card"
 
 interface Statistic {
   num: number

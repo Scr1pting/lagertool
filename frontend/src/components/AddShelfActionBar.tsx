@@ -1,15 +1,15 @@
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Button } from "@/components/shadcn/button"
-import { ButtonGroup } from "@/components/shadcn/button-group"
-import { FieldGroup, Field } from "@/components/shadcn/field"
-import { Input } from "@/components/shadcn/input"
-import { Label } from "@/components/shadcn/label"
+import { Button } from "@/components/temp/button"
+import { ButtonGroup } from "@/components/temp/button-group"
+import { FieldGroup, Field } from "@/components/temp/field"
+import { Input } from "@/components/temp/input"
+import { Label } from "@/components/temp/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/shadcn/popover'
+} from '@/components/temp/popover'
 import usePostShelf from "@/hooks/post/usePostShelf"
 import { type ShelfColumn } from '../types/shelf'
 import { X } from 'lucide-react'

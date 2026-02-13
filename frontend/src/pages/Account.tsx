@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import RegularPage from "@/components/RegularPage";
 import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
 import AccountEventsAccordion from "@/components/AccountEventsAccordion";
-import { Button } from "@/components/shadcn/button";
+import { Button } from "@/components/temp/button";
 import SummaryStatistics from "@/components/Accounts/SummaryStatistics";
 
 

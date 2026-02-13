@@ -1,6 +1,6 @@
 import type { BorrowRequest } from "@/types/borrowRequest"
 import SidebarItem from "./SidebarRequest"
-import { Separator } from "../shadcn/separator"
+import { Separator } from "../temp/separator"
 import { Fragment } from "react/jsx-runtime"
 
 interface SidebarProps {

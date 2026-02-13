@@ -1,4 +1,4 @@
-import { Button } from "@/components/shadcn/button"
+import { Button } from "@/components/temp/button"
 import type { InventoryItem } from "@/types/inventory"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ShoppingCartIcon } from "lucide-react"

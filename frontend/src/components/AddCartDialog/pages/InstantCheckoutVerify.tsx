@@ -1,9 +1,9 @@
 import { useDate } from "@/store/useDate"
 import { format } from "date-fns/format"
 import type { FormEvent } from "react"
-import { DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog"
-import { Separator } from "../../shadcn/separator"
-import { Button } from "../../shadcn/button"
+import { DialogFooter, DialogHeader, DialogTitle } from "../../temp/dialog"
+import { Separator } from "../../temp/separator"
+import { Button } from "../../temp/button"
 import { toast } from "sonner"
 import type { InventoryItem } from "@/types/inventory"
 

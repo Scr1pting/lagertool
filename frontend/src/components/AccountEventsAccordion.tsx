@@ -1,8 +1,8 @@
 import { differenceInCalendarDays } from "date-fns"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/temp/accordion"
 import type { BorrowedList, Event } from "@/types/borrow"
 
-import { Badge } from "@/components/shadcn/badge"
+import { Badge } from "@/components/temp/badge"
 import { formatDate } from "@/lib/cn"
 import { getBorrowStateUI } from "@/lib/borrow-ui"
 

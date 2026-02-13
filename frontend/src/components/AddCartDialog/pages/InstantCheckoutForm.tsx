@@ -1,10 +1,10 @@
 import type { FormEvent } from "react"
-import { Button } from "../../shadcn/button"
-import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog"
-import { Field } from "../../shadcn/field"
-import { Input } from "../../shadcn/input"
-import { Label } from "../../shadcn/label"
-import { Textarea } from "../../shadcn/textarea"
+import { Button } from "../../temp/button"
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../temp/dialog"
+import { Field } from "../../temp/field"
+import { Input } from "../../temp/input"
+import { Label } from "../../temp/label"
+import { Textarea } from "../../temp/textarea"
 
 
 interface InstantCheckoutFormProps {
