@@ -1,5 +1,5 @@
 import DataTable from "@/components/DataTable/DataTable"
-import { searchColumns } from "@/components/DataTable/InventoryTable/searchColumns"
+import { searchColumns } from "@/components/DataTable/InventoryTable/temp-searchColumns"
 import RegularPage from "@/components/RegularPage"
 import AvailabilityDescription from "@/components/AvailabilityDescription"
 import useFetchInventory from "@/hooks/fetch/useFetchInventory"

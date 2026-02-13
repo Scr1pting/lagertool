@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import NavBar from './NavBar'
 
-function WithNavLayout() {
+function WithNavBar() {
   return (
     <>
       <NavBar />
@@ -12,4 +12,4 @@ function WithNavLayout() {
   )
 }
 
-export default WithNavLayout
+export default WithNavBar
