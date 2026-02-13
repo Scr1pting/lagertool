@@ -1,7 +1,7 @@
 import type { Column } from "@tanstack/react-table"
 import { Button } from "../shadcn/button"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/cn"
 
 interface SortableHeaderProps<TData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {

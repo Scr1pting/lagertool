@@ -1,5 +1,5 @@
+import { formatDate } from "@/lib/formatDate"
 import { useDate } from "@/store/useDate"
-import { format } from "date-fns/format"
 
 function AvailabilityDescription() {
   const range = useDate(state => state.selectedRange)
@@ -9,11 +9,11 @@ function AvailabilityDescription() {
   if (!range?.from) {
     formattedDate = "today"
   } else {
-    const formattedStart = format(range.from, "MMM d, yyyy")
+    const formattedStart = formatDate(range.from)
     if (!range.to || range.from === range.to) {
       formattedDate = formattedStart
     } else {
-      const formattedEnd = format(range.to, "MMM d, yyyy")
+      const formattedEnd = formatDate(range.to)
       formattedDate = `${formattedStart} – ${formattedEnd}`
     }
   }

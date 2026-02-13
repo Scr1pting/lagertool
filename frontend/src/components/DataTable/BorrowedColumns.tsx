@@ -3,7 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { BorrowedList } from "@/types/borrow"
 import SortableHeader from "./SortableHeader"
 
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/cn"
 import { Badge } from "@/components/shadcn/badge"
 import { getBorrowStateUI } from "@/lib/borrow-ui"
 

@@ -3,7 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import type { BorrowedList, Event } from "@/types/borrow"
 
 import { Badge } from "@/components/shadcn/badge"
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/cn"
 import { getBorrowStateUI } from "@/lib/borrow-ui"
 
 

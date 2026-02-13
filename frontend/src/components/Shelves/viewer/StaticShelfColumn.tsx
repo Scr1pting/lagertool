@@ -2,7 +2,7 @@ import { ELEMENT_CATALOG, type Shelf, type ShelfColumn, type ShelfElement } from
 import { ShelfElementViewInner } from "../shared/ShelfElementView"
 
 import styles from './StaticShelf.module.css'
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/cn"
 
 
 interface StaticShelfColumnParams {
