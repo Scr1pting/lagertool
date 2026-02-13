@@ -2,7 +2,7 @@ import { Button } from "@/components/shadcn/button"
 import type { InventoryItem } from "@/types/inventory"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ShoppingCartIcon } from "lucide-react"
-import { inventoryColumnsBase } from "./temp-inventoryColumnsBase"
+import { inventoryColumnsBase } from "./inventoryColumnsBase"
 import AddCartDialog from "@/components/AddCartDialog/AddCartDialog"
 
 
