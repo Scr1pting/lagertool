@@ -4,7 +4,7 @@ import type { BorrowedList } from "@/types/borrow"
 import SortableHeader from "./SortableHeader"
 
 import { formatDate } from "@/lib/cn"
-import { Badge } from "@/components/temp/badge"
+import { Badge } from "@/components/shadcn/badge"
 import { getBorrowStateUI } from "@/lib/borrow-ui"
 
 

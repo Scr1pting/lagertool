@@ -3,7 +3,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from "@/components/temp/tabs"
+} from "@/components/shadcn/tabs"
 import useBuilding from "@/hooks/fetch/useFetchBuildings"
 import useFetchRooms from "@/hooks/fetch/useFetchRooms"
 import useInventory from "@/hooks/fetch/useFetchInventory"

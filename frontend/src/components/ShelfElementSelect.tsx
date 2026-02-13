@@ -2,8 +2,8 @@ import type { Shelf, ShelfElement } from "@/types/shelf"
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog"
 import StaticShelf from "./Shelves/viewer/StaticShelf"
 import type { Dispatch, ReactNode, SetStateAction } from "react"
-import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./temp/dialog"
-import { Button } from "./temp/button"
+import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./shadcn/dialog"
+import { Button } from "./shadcn/button"
 
 
 interface ShelfElementSelectProps {

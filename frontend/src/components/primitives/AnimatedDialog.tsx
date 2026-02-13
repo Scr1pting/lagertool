@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion"
 import { useLayoutEffect, useRef, type ReactNode } from "react"
-import { Dialog, DialogContent, DialogTrigger } from "../temp/dialog"
+import { Dialog, DialogContent, DialogTrigger } from "../shadcn/dialog"
 
 
 const MotionDialogContent = motion.create(DialogContent)

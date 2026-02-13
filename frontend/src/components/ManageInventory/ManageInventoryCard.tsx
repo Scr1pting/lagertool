@@ -1,5 +1,5 @@
-import { Button } from "../temp/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../temp/card"
+import { Button } from "../shadcn/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../shadcn/card"
 import type { FormElement } from "../primitives/types/FormElement"
 import FormLayout from "../primitives/FormLayout"
 

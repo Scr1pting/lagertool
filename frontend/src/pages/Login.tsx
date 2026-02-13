@@ -1,4 +1,4 @@
-import { Button } from "@/components/temp/button"
+import { Button } from "@/components/shadcn/button"
 
 function Login() {
   return <>

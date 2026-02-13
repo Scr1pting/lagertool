@@ -1,6 +1,6 @@
 import { type ReactNode, useMemo } from "react"
 import { Link } from "react-router-dom"
-import { Button } from "@/components/temp/button"
+import { Button } from "@/components/shadcn/button"
 import DataTable from "@/components/DataTable/DataTable"
 import type { ColumnDef } from "@tanstack/react-table"
 import { useCart } from "@/store/useCart"
@@ -13,7 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/temp/sheet"
+} from "@/components/shadcn/sheet"
 
 interface MiniCartProps {
   trigger: ReactNode

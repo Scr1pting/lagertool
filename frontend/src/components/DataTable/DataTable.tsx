@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/temp/table"
+} from "@/components/shadcn/table"
 import { useNavigate } from "react-router-dom"
 
 

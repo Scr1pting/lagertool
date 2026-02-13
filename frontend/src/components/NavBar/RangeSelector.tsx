@@ -1,10 +1,10 @@
 import { useDate } from "@/store/useDate"
 import clsx from "clsx"
 import { useEffect, useState } from "react"
-import { Button } from "../temp/button"
-import { Popover, PopoverContent, PopoverTrigger } from "../temp/popover"
+import { Button } from "../shadcn/button"
+import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover"
 import { CalendarDays } from "lucide-react"
-import { Calendar } from "../temp/calendar"
+import { Calendar } from "../shadcn/calendar"
 
 import styles from "./NavBar.module.css"
 import { startOfToday } from "date-fns"

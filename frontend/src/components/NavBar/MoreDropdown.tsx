@@ -6,7 +6,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/temp/dropdown-menu"
+} from "@/components/shadcn/dropdown-menu"
 import { Link } from "react-router-dom"
 import clsx from "clsx"
 

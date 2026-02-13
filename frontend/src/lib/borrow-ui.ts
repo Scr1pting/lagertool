@@ -1,5 +1,5 @@
 import { type VariantProps } from "class-variance-authority"
-import { badgeVariants } from "@/components/temp/badge"
+import { badgeVariants } from "@/components/shadcn/badge"
 
 export type BorrowStateUI = {
     label: string

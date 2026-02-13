@@ -2,8 +2,8 @@ import cartColumns from "@/components/DataTable/cartColumns"
 import DataTable from "@/components/DataTable/DataTable"
 import RegularPage from "@/components/RegularPage"
 import AvailabilityDescription from "@/components/AvailabilityDescription"
-import { Button } from "@/components/temp/button"
-import { ButtonGroup } from "@/components/temp/button-group"
+import { Button } from "@/components/shadcn/button"
+import { ButtonGroup } from "@/components/shadcn/button-group"
 import { useCart } from "@/store/useCart"
 
 

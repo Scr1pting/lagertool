@@ -1,7 +1,7 @@
 import Sidebar from "@/components/BorrowRequests/Sidebar"
 import RegularPage from "@/components/RegularPage"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/temp/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/temp/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shadcn/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/tabs"
 import { Check, Clock, X } from "lucide-react"
 
 function BorrowRequests() {
