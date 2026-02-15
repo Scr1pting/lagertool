@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/ca
 import StaticShelf from "@/components/Shelves/viewer/StaticShelf"
 import useFetchItem from "@/hooks/fetch/useFetchItem"
 import { PencilIcon, ShoppingCartIcon } from "lucide-react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router"
 
 
 function ItemDetail() {

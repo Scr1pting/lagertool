@@ -1,10 +1,13 @@
-import Sidebar from "@/components/BorrowRequests/Sidebar"
+import RequestTypePage from "@/components/BorrowRequests/RequestTypePage"
 import RegularPage from "@/components/RegularPage"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shadcn/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/tabs"
+import useFetchBorrowRequests from "@/hooks/fetch/useFetchBorrowRequests"
 import { Check, Clock, X } from "lucide-react"
 
 function BorrowRequests() {
+  const { data: borrowRequests } = useFetchBorrowRequests()
+  
   return (
     <RegularPage title="Borrow Requests">
       <Tabs defaultValue="overview" className="w-[400px]">
@@ -23,7 +26,7 @@ function BorrowRequests() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="pending-approval">
-          <Sidebar  />
+          <RequestTypePage borrowRequests={borrowRequests ?? []}  />
         </TabsContent>
         <TabsContent value="approved">
           <Card>

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { ShoppingCart, UserRoundIcon } from 'lucide-react'
 import styles from "./NavBar.module.css"
 import MoreDropdown from "./MoreDropdown"

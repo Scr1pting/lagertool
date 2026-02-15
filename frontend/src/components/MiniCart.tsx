@@ -1,5 +1,5 @@
 import { type ReactNode, useMemo } from "react"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { Button } from "@/components/shadcn/button"
 import DataTable from "@/components/DataTable/DataTable"
 import type { ColumnDef } from "@tanstack/react-table"

@@ -1,7 +1,7 @@
 import { Button } from "@/components/shadcn/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/card"
 import { ArrowUpRightIcon } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import type { Shelf } from "@/types/shelf"
 import { TabsContent } from "@/components/shadcn/tabs"
 import DataTable from "@/components/DataTable/DataTable"

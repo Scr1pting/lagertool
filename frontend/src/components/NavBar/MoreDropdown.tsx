@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import clsx from "clsx"
 
 export default function MoreDropdown() {

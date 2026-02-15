@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/shadcn/table"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 
 
 interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivElement> {

@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 
 import { Button } from "@/components/shadcn/button"
 import { type ShelfColumn } from '../../../types/shelf'
