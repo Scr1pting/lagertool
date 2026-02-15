@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import RegularPage from "@/components/RegularPage";
 import useFetchBorrowed from "@/hooks/fetch/useFetchBorrowed";
 import AccountEventsAccordion from "@/components/AccountEventsAccordion";
@@ -20,8 +20,8 @@ const EmptyState = ({ onRetry }: { onRetry: () => void }) => (
 )
 
 function Account() {
-  const { data, status, error, refetch } = useFetchBorrowed()
-  const [sortMode, setSortMode] = useState<"recent" | "name">("recent")
+  const { data, status, refetch } = useFetchBorrowed()
+  const sortMode: "recent" | "name" = "recent"
 
   const sortedEvents = useMemo(() => {
     if (!data) return []
@@ -46,7 +46,7 @@ function Account() {
       if (aCritical !== bCritical) return aCritical ? -1 : 1
       return (a.eventName || a.id).localeCompare(b.eventName || b.id)
     })
-  }, [data, sortMode])
+  }, [data])
 
   return (
     <RegularPage title="Account">
