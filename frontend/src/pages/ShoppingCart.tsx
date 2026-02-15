@@ -1,4 +1,4 @@
-import cartColumns from "@/components/DataTable/cartColumns"
+import cartColumns from "@/components/DataTable/CartColumns"
 import DataTable from "@/components/DataTable/DataTable"
 import RegularPage from "@/components/RegularPage"
 import AvailabilityDescription from "@/components/AvailabilityDescription"

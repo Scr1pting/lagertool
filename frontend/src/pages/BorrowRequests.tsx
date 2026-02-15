@@ -23,7 +23,7 @@ function BorrowRequests() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="pending-approval">
-          <Sidebar  />
+          <Sidebar borrowRequests={[]} />
         </TabsContent>
         <TabsContent value="approved">
           <Card>

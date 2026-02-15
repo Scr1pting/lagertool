@@ -16,7 +16,7 @@ function ItemDetail() {
 
   return (
     <RegularPage title={item?.name ?? "Loading"}>
-      { item && (
+      {item && (
         <>
           <div className="flex gap-3">
             <Button variant="outline">
@@ -33,7 +33,7 @@ function ItemDetail() {
           </div>
 
           <div className="grid grid-cols-2 gap-5 mt-5">
-            <Card size="sm" className="gap-3">
+            <Card className="gap-3">
               <CardHeader>
                 <CardTitle>Location</CardTitle>
               </CardHeader>
@@ -49,7 +49,7 @@ function ItemDetail() {
               </CardContent>
             </Card>
 
-            <Card size="sm" className="gap-3">
+            <Card className="gap-3">
               <CardHeader>
                 <CardTitle>Items</CardTitle>
               </CardHeader>
@@ -72,13 +72,13 @@ function ItemDetail() {
 
           <Card>
             <CardContent className="flex justify-center pt-8">
-              { item?.shelf &&
+              {item?.shelf &&
                 <StaticShelf shelf={item.shelf} highlightedElement={item.shelfElementId} />
               }
             </CardContent>
           </Card>
-      </>
-    )}
+        </>
+      )}
     </RegularPage>
   )
 }
