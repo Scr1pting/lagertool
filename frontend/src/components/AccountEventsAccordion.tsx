@@ -1,11 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion"
 import type { BorrowedList, Event } from "@/types/borrow"
-import { Check } from 'lucide-react';
-import { CircleAlert } from 'lucide-react';
-import { Clock } from 'lucide-react';
-import { Undo2 } from 'lucide-react';
-import { CircleArrowOutUpRight } from 'lucide-react';
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/formatDate"
 
 
 function ItemsList({ items }: { items: BorrowedList[] }) {
@@ -36,29 +31,18 @@ function ItemsList({ items }: { items: BorrowedList[] }) {
 
 
 
-function getEventIconInfo(state: string) {
-  switch (state) {
-    case "approved": return { Icon: Check, color: "text-blue-600" }
-    case "overdue": return { Icon: CircleAlert, color: "text-red-600" }
-    case "partial_overdue": return { Icon: CircleAlert, color: "text-amber-600" }
-    case "pending": return { Icon: Clock, color: "text-yellow-600" }
-    case "returned": return { Icon: Undo2, color: "text-emerald-600" }
-    default: return { Icon: CircleArrowOutUpRight, color: "text-white-600" }
-  }
-}
+
 
 function EventSummary({ event }: { event: Event }) {
   const overdueCount = event.items.filter(item => item.state === "overdue").length
   const totalCount = event.items.length
 
-  const { Icon, color } = getEventIconInfo(event.state)
   const created = formatDate(event.createdAt)
   const title = event.eventName || `Event ${event.id}`
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
       <div className="flex items-center gap-3">
-        <Icon className={`h-4 w-4 ${color}`} />
         <span className="font-medium text-foreground">{title}</span>
         <span className="text-muted-foreground">Created {created}</span>
       </div>

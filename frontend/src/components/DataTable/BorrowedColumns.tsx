@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import type { BorrowedList } from "@/types/borrow"
 import SortableHeader from "./SortableHeader"
-import { formatDate } from "@/lib/utils"
+import { formatDate } from "@/lib/formatDate"
 
 
 const borrowedColumns: ColumnDef<BorrowedList>[] = [
