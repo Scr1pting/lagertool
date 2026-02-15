@@ -23,7 +23,6 @@ function RangeSelector() {
   const startMonth = new Date(today.getFullYear(), today.getMonth())
   const endMonth = new Date(today.getFullYear() + 1, 11)   // Dec of next year
 
-
   useEffect(() => {
     if (selectedRange?.from) setVisibleMonth(selectedRange.from)
   }, [selectedRange?.from])

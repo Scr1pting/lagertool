@@ -97,7 +97,7 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
         <Button
           variant="outline"
           aria-expanded={showElementSelect}
-          // We have to set px-3 because Shadcn uses less padding on
+          // We have to set px-3 because shadcn uses less padding on
           // inputs and buttons with icons.
           className="justify-between truncate px-3"
         >

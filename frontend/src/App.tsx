@@ -5,7 +5,7 @@ import Account from './pages/Account'
 import AddShelf from './pages/AddShelf'
 import Home from './pages/Home'
 import Search from './pages/Search'
-import WithNavLayout from './components/WithNavBar'
+import WithNavBar from './components/NavBar/WithNavBar'
 import Persons from './pages/Persons'
 import ShoppingCart from './pages/ShoppingCart'
 import { Toaster } from './components/shadcn/sonner'
@@ -30,7 +30,7 @@ function App() {
   const isLoggedIn = import.meta.env.VITE_IS_LOGGED_IN === "true"
 
   const protectedRoutes = <>
-    <Route element={<WithNavLayout />}>
+    <Route element={<WithNavBar />}>
       <Route path="/" element={<Home />} />
       <Route path="/search" element={<Search />}/>
       <Route path="/manage-inventory" element={<ManageInventory />}/>
@@ -47,7 +47,7 @@ function App() {
     <>
       <Routes>
         { isLoggedIn ? protectedRoutes :
-          <Route element={<WithNavLayout />}>
+          <Route element={<WithNavBar />}>
             <Route path="*" element={<Login />} />
           </Route>
         }

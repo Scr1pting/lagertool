@@ -1,6 +1,6 @@
 import type { InventoryItem } from "@/types/inventory"
 import type { ColumnDef } from "@tanstack/react-table"
-import InventoryActions from "../InventoryTable/InventoryActions"
+import InventoryActions from "../InventoryTable/inventoryActions"
 import { inventoryColumnsBase } from "../InventoryTable/inventoryColumnsBase"
 
 

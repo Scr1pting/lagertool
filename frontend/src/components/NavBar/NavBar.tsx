@@ -8,8 +8,7 @@ import MiniCart from '../MiniCart'
 import OrgSelector from './OrgSelector'
 import RangeSelector from './RangeSelector'
 
-export default function NavBar() {
-
+function NavBar() {
   return (
     <div className={styles.NavBar}>
       <div className={styles.content}>
@@ -52,3 +51,5 @@ export default function NavBar() {
     </div>
   )
 }
+
+export default NavBar
