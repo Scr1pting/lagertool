@@ -60,7 +60,7 @@ function Account() {
             { state: "pending", label: "Pending", color: "text-gray-300" },
             { state: "approved", label: "Approved", color: "text-gray-300" },
             { state: "on_loan", label: "On Loan", color: "text-gray-300" },
-            { state: "returned", label: "Returned", color: "text-emerald-600" },
+            { state: "returned", label: "Returned", color: "text-gray-300" },
           ].map((section) => {
             const events = sortedEvents.filter((e) => e.state === section.state)
             if (events.length === 0) return null
