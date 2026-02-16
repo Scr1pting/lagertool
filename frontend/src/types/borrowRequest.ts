@@ -2,6 +2,10 @@ import type { InventoryItem } from "./inventory"
 
 export type RequestState = "pending" | "approved" | "rejected"
 
+export interface BorrowItem extends InventoryItem {
+  borrowed: number
+}
+
 export interface BorrowRequest {
   id: number
   title: string
@@ -10,6 +14,6 @@ export interface BorrowRequest {
   borrowDate: Date
   dueDate: Date
   returnedDate?: Date
-  items: InventoryItem
+  items: BorrowItem[]
   state: RequestState
 }

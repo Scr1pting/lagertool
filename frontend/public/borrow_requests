@@ -6,15 +6,18 @@
     "creationDate": "2026-02-01T09:00:00Z",
     "borrowDate": "2026-02-10T08:00:00Z",
     "dueDate": "2026-02-17T17:00:00Z",
-    "items": {
-      "id": 12,
-      "name": "Erlenmeyer Flask 500ml",
-      "tags": ["glassware"],
-      "amount": 20,
-      "available": 14,
-      "building": { "id": 1, "name": "Science Hall" },
-      "room": { "id": 3, "name": "Storage Room A", "number": "105", "building": { "id": 1, "name": "Science Hall" } }
-    },
+    "items": [
+      {
+        "id": 12,
+        "name": "Erlenmeyer Flask 500ml",
+        "tags": ["glassware"],
+        "amount": 20,
+        "available": 14,
+        "borrowed": 6,
+        "building": { "id": 1, "name": "Science Hall" },
+        "room": { "id": 3, "name": "Storage Room A", "number": "105", "building": { "id": 1, "name": "Science Hall" } }
+      }
+    ],
     "state": "approved"
   },
   {
@@ -24,15 +27,18 @@
     "creationDate": "2026-02-05T14:30:00Z",
     "borrowDate": "2026-02-14T09:00:00Z",
     "dueDate": "2026-02-14T18:00:00Z",
-    "items": {
-      "id": 7,
-      "name": "Portable Projector",
-      "tags": ["electronics"],
-      "amount": 5,
-      "available": 2,
-      "building": { "id": 2, "name": "Main Building" },
-      "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
-    },
+    "items": [
+      {
+        "id": 7,
+        "name": "Portable Projector",
+        "tags": ["electronics"],
+        "amount": 5,
+        "available": 2,
+        "borrowed": 3,
+        "building": { "id": 2, "name": "Main Building" },
+        "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
+      }
+    ],
     "state": "pending"
   },
   {
@@ -43,15 +49,18 @@
     "borrowDate": "2026-02-03T10:00:00Z",
     "dueDate": "2026-02-10T17:00:00Z",
     "returnedDate": "2026-02-09T15:30:00Z",
-    "items": {
-      "id": 22,
-      "name": "Digital Caliper",
-      "tags": ["tools"],
-      "amount": 15,
-      "available": 15,
-      "building": { "id": 3, "name": "Engineering Wing" },
-      "room": { "id": 8, "name": "Tool Room", "number": "B12", "building": { "id": 3, "name": "Engineering Wing" } }
-    },
+    "items": [
+      {
+        "id": 22,
+        "name": "Digital Caliper",
+        "tags": ["tools"],
+        "amount": 15,
+        "available": 15,
+        "borrowed": 4,
+        "building": { "id": 3, "name": "Engineering Wing" },
+        "room": { "id": 8, "name": "Tool Room", "number": "B12", "building": { "id": 3, "name": "Engineering Wing" } }
+      }
+    ],
     "state": "approved"
   },
   {
@@ -61,15 +70,18 @@
     "creationDate": "2026-02-10T16:00:00Z",
     "borrowDate": "2026-02-20T08:00:00Z",
     "dueDate": "2026-03-06T17:00:00Z",
-    "items": {
-      "id": 31,
-      "name": "Canon DSLR Kit",
-      "tags": ["electronics", "media"],
-      "amount": 3,
-      "available": 1,
-      "building": { "id": 2, "name": "Main Building" },
-      "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
-    },
+    "items": [
+      {
+        "id": 31,
+        "name": "Canon DSLR Kit",
+        "tags": ["electronics", "media"],
+        "amount": 3,
+        "available": 1,
+        "borrowed": 2,
+        "building": { "id": 2, "name": "Main Building" },
+        "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
+      }
+    ],
     "state": "pending"
   },
   {
@@ -79,15 +91,18 @@
     "creationDate": "2026-02-08T10:45:00Z",
     "borrowDate": "2026-02-12T09:00:00Z",
     "dueDate": "2026-02-19T17:00:00Z",
-    "items": {
-      "id": 45,
-      "name": "Soldering Station Kit",
-      "tags": ["electronics", "tools"],
-      "amount": 8,
-      "available": 5,
-      "building": { "id": 3, "name": "Engineering Wing" },
-      "room": { "id": 9, "name": "Electronics Lab", "number": "B20", "building": { "id": 3, "name": "Engineering Wing" } }
-    },
+    "items": [
+      {
+        "id": 45,
+        "name": "Soldering Station Kit",
+        "tags": ["electronics", "tools"],
+        "amount": 8,
+        "available": 5,
+        "borrowed": 3,
+        "building": { "id": 3, "name": "Engineering Wing" },
+        "room": { "id": 9, "name": "Electronics Lab", "number": "B20", "building": { "id": 3, "name": "Engineering Wing" } }
+      }
+    ],
     "state": "rejected"
   }
 ]

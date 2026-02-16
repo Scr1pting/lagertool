@@ -1,6 +1,7 @@
 import type { BorrowRequest } from "@/types/borrowRequest"
 import { Button } from "@/components/shadcn/button"
 import DataTable from "../DataTable/DataTable"
+import { borrowColumns } from "../DataTable/InventoryTable/borrowColumns"
 
 interface RequestDetailProps {
   request: BorrowRequest
@@ -21,9 +22,15 @@ function RequestDetail({ request }: RequestDetailProps) {
         </div>
       </div>
       
-      <p className="mt-2">
+      <p className="mt-5">
         <span className="font-bold">Description:</span> {request.description}
       </p>
+
+      <DataTable
+        data={request.items} 
+        columns={borrowColumns}
+        className="mt-4"
+      />
     </section>
   )
 }

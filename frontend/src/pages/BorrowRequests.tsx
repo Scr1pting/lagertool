@@ -9,8 +9,8 @@ function BorrowRequests() {
   
   return (
     <RegularPage title="Borrow Requests">
-      <Tabs defaultValue="pending-approval" className="w-full">
-        <TabsList>
+      <Tabs defaultValue="pending-approval">
+      <TabsList>
           <TabsTrigger value="pending-approval">
             <Clock />
             Pending Approval
