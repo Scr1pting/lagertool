@@ -31,7 +31,7 @@ function RequestTypePage({ borrowRequests }: RequestTypePageProps) {
       <ResizableHandle />
       <ResizablePanel
         minSize="10rem"
-        className="pl-2.5 my-1"
+        className="pl-2.5 my-2.5"
       >
         <RequestDetail request={selectedRequest} />
       </ResizablePanel>

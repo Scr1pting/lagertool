@@ -1,9 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { InventoryItem } from "@/types/inventory"
 import SortableHeader from "../SortableHeader"
+import type { BorrowItem } from "@/types/borrowRequest"
 
 
-export const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
+export const borrowColumns: ColumnDef<BorrowItem>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -29,17 +29,10 @@ export const inventoryColumnsBase: ColumnDef<InventoryItem>[] = [
     },
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    accessorKey: "borrowed",
+    header: () => <div className="text-right">Borrowed</div>,
     cell: ({ row }) => (
-      <div className="text-right">{row.original.amount}</div>
-    ),
-  },
-  {
-    accessorKey: "available",
-    header: () => <div className="text-right">Available</div>,
-    cell: ({ row }) => (
-      <div className="text-right">{row.original.available}</div>
+      <div className="text-right">{row.original.borrowed}</div>
     ),
   }
 ]
