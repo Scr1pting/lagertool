@@ -7,8 +7,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 function useFetchShelves() {
   const selectedOrg = useOrgs(s => s.selectedOrg)
 
-  const parse = (res: Omit<Shelf, "displayName">[]) =>   
-    res
+  const parse = (res: Omit<Shelf, "displayName">[]) =>
+    (Array.isArray(res) ? res : [])
       .map(shelf => ({
         ...shelf,
         displayName: `${shelf.building.name} - ${shelf.room.name} - ${shelf.name}`,
