@@ -4,7 +4,6 @@ import type { FormElement } from "../primitives/types/FormElement"
 import FormLayout from "../primitives/FormLayout"
 
 
-
 interface ManageInventoryCardProps {
   title: string
   elements: FormElement[]

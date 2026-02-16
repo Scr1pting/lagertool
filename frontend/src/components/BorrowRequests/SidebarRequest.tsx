@@ -5,17 +5,17 @@ import type { Dispatch, SetStateAction } from "react"
 
 interface SidebarRequestProps {
   request: BorrowRequest
-  selectedId: number | undefined
-  setSelectedId: Dispatch<SetStateAction<number | undefined>>
+  selectedRequest: BorrowRequest
+  setSelectedRequest: Dispatch<SetStateAction<BorrowRequest>>
 }
 
-function SidebarRequest({ request, selectedId, setSelectedId } : SidebarRequestProps) {
+function SidebarRequest(
+  { request, selectedRequest, setSelectedRequest } : SidebarRequestProps
+) {
   return (
     <button
-      className={cn("flex flex-col p-2 w-full items-start text-left", selectedId == request.id ? "rounded-lg bg-muted" : "")}
-      onClick={() => setSelectedId(
-        selectedId == request.id ? undefined : request.id
-      )}
+      className={cn("flex flex-col p-2 w-full items-start text-left", selectedRequest == request ? "rounded-lg bg-muted" : "")}
+      onClick={() => setSelectedRequest(request)}
     >
       <span>{request.title}</span>
       <span className="text-sm text-muted-foreground">{formatDate(request.creationDate)}</span>
