@@ -9,7 +9,8 @@ export interface BorrowItem extends InventoryItem {
 export interface BorrowRequest {
   id: number
   title: string
-  description: string
+  author: string
+  description?: string | null
   creationDate: Date
   borrowDate: Date
   dueDate: Date

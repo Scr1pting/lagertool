@@ -1,7 +1,8 @@
 import type { BorrowRequest } from "@/types/borrowRequest"
-import { Button } from "@/components/shadcn/button"
 import DataTable from "../DataTable/DataTable"
 import { borrowColumns } from "../DataTable/InventoryTable/borrowColumns"
+import RejectRequest from "./dialogs/RejectRequest"
+import ApproveRequest from "./dialogs/ApproveRequest"
 
 interface RequestDetailProps {
   request: BorrowRequest
@@ -13,18 +14,20 @@ function RequestDetail({ request }: RequestDetailProps) {
       <div className="flex justify-between">
         <h2 className="text-2xl font-semibold">{request.title}</h2>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-          >
-            Reject
-          </Button>
-          <Button variant="outline">Approve</Button>
+          <RejectRequest request={request} />
+          <ApproveRequest request={request} />
         </div>
       </div>
       
-      <p className="mt-5">
-        <span className="font-bold">Description:</span> {request.description}
+      <p className="mt-4">
+        <span className="font-bold">Author:</span> {request.author}
       </p>
+
+      {request.description &&
+        <p className="mt-1.5">
+          <span className="font-bold">Description:</span> {request.description}
+        </p>
+      }
 
       <DataTable
         data={request.items} 

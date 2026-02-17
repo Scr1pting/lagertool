@@ -18,7 +18,9 @@ function SidebarRequest(
       onClick={() => setSelectedRequest(request)}
     >
       <span>{request.title}</span>
-      <span className="text-sm text-muted-foreground">{formatDate(request.creationDate)}</span>
+      <span className="text-sm text-muted-foreground">
+        {request.author} 
+      </span>
     </button>
   )
 }

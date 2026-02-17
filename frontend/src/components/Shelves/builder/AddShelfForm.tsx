@@ -70,7 +70,7 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
   ]
 
   return (
-    <DialogContent className="w-100">
+    <DialogContent className="w-150">
       <form onSubmit={submit} className="grid gap-5">
         <DialogHeader>
           <DialogTitle>Add Shelf</DialogTitle>
@@ -81,14 +81,16 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
         <DialogFooter>
           <Field orientation="horizontal" className="justify-end">
             <Button type="submit" className="bg-primary" disabled={statusPost == "loading"}>
-            {statusPost === "loading" ? "Submitting..." : "Submit"}
+              {statusPost === "loading" ? "Submitting..." : "Submit"}
             </Button>
-            {statusPost === "error" && errorPost ? (
+
+            {statusPost === "error" && errorPost &&
               <p className="text-sm text-destructive">{errorPost.message}</p>
-            ) : null}
-            {statusPost === "success" ? (
+            }
+
+            {statusPost === "success" &&
               <p className="text-sm text-muted-foreground">Shelf saved successfully.</p>
-            ) : null}
+            }
           </Field>
         </DialogFooter>
       </form>
