@@ -60,7 +60,7 @@ function DataTable<TData>({
         }
       >
         {row.getVisibleCells().map(cell => (
-          <TableCell key={cell.id} className="px-4 py-3">
+          <TableCell key={cell.id} className="px-4 py-3 whitespace-normal">
             {flexRender(
               cell.column.columnDef.cell,
               cell.getContext()

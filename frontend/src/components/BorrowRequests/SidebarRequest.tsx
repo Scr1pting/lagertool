@@ -1,5 +1,4 @@
 import { cn } from "@/lib/cn"
-import { formatDate } from "@/lib/formatDate"
 import type { BorrowRequest } from "@/types/borrowRequest"
 import type { Dispatch, SetStateAction } from "react"
 
@@ -14,7 +13,7 @@ function SidebarRequest(
 ) {
   return (
     <button
-      className={cn("flex flex-col p-2 w-full items-start text-left", selectedRequest == request ? "rounded-lg bg-muted" : "")}
+      className={cn("flex flex-col py-2 px-2.5 w-full items-start text-left", selectedRequest == request ? "rounded-lg bg-muted" : "")}
       onClick={() => setSelectedRequest(request)}
     >
       <span>{request.title}</span>

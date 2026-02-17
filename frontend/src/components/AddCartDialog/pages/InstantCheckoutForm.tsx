@@ -35,7 +35,7 @@ function InstantCheckoutForm({
         </DialogDescription>
       </DialogHeader>
       <Field>
-        <Label htmlFor="title">Title (Required)</Label>
+        <Label htmlFor="title">Title</Label>
         <Input
           id="title"
           name="title"
@@ -46,7 +46,7 @@ function InstantCheckoutForm({
       </Field>
 
       <Field>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">Description (optional)</Label>
         <Textarea
           id="description"
           name="description"
