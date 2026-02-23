@@ -159,6 +159,12 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
 			return
 		}
+		request.GroupID = request.ID
+		_, err = h.DB.Model(request).Set("group_id = ?", request.GroupID).Where("id = ?", request.ID).Update()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
+			return
+		}
 		for _, item := range v {
 			reqItem := db_models.RequestItems{
 				RequestID:   request.ID,

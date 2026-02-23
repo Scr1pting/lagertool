@@ -838,6 +838,7 @@ func TestCheckoutCart(t *testing.T) {
 				assert.Equal(t, user.ID, request.UserID)
 				assert.Equal(t, "requested", request.Status)
 				assert.Equal(t, org.Name, request.OrganisationName)
+				assert.NotZero(t, request.GroupID, "Expected group_id to be set")
 
 				// Verify request items were created
 				var requestItems []db_models.RequestItems
@@ -882,6 +883,7 @@ func TestRequestReview(t *testing.T) {
 		Note:             "",
 		Status:           "requested",
 		OrganisationName: org.Name,
+		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -1021,6 +1023,7 @@ func TestRequestReviewSuccess(t *testing.T) {
 		Note:             "",
 		Status:           "requested",
 		OrganisationName: org.Name,
+		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -1130,6 +1133,7 @@ func TestUpdateRequest(t *testing.T) {
 		Note:             "",
 		Status:           "requested",
 		OrganisationName: org.Name,
+		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -1247,6 +1251,7 @@ func TestUpdateLoan(t *testing.T) {
 		Note:             "",
 		Status:           "approved",
 		OrganisationName: org.Name,
+		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
