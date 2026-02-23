@@ -3,6 +3,11 @@ import DataTable from "../DataTable/DataTable"
 import { borrowColumns } from "../DataTable/InventoryTable/borrowColumns"
 import RejectRequest from "./dialogs/RejectRequest"
 import ApproveRequest from "./dialogs/ApproveRequest"
+import { cn } from "@/lib/cn"
+import { Button } from "../shadcn/button"
+import { ArrowUp } from "lucide-react"
+import { Input } from "../shadcn/input"
+import { useEffect, useRef, useState } from "react"
 
 
 interface RequestDetailProps {
@@ -10,8 +15,26 @@ interface RequestDetailProps {
 }
 
 function RequestDetail({ request }: RequestDetailProps) {
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const [minHeight, setMinHeight] = useState(0)
+
+  useEffect(() => {
+    function updateHeight() {
+      if (sectionRef.current) {
+        const top = sectionRef.current.getBoundingClientRect().top
+        const parentStyle = window.getComputedStyle(sectionRef.current.parentElement!)
+        const parentPaddingBottom = parseFloat(parentStyle.paddingBottom) || 0
+        const parentMarginBottom = parseFloat(parentStyle.marginBottom) || 0
+        setMinHeight(window.innerHeight - top - parentPaddingBottom - parentMarginBottom)
+      }
+    }
+    updateHeight()
+    window.addEventListener("resize", updateHeight)
+    return () => window.removeEventListener("resize", updateHeight)
+  }, [])
+
   return (
-    <section>
+    <section ref={sectionRef} className="flex flex-col" style={{ minHeight }}>
       <div className="flex justify-between">
         <h2 className="text-2xl font-semibold mb-1.5">{request.title}</h2>
         <div className="flex gap-2">
@@ -44,8 +67,37 @@ function RequestDetail({ request }: RequestDetailProps) {
         columns={borrowColumns}
         className="mt-4"
       />
+      
+      <h2 className="text-xl font-semibold mt-5">Chat</h2>
+
+      <div className="flex flex-col gap-2 mt-2">
+        {request.messages.map(message =>
+          <span
+            key={message.id}
+            className={cn(
+              "rounded-full px-3 py-1 inline-block",
+              message.author == request.author ? "self-start bg-muted" : "self-end bg-[rgba(253,214,47,0.75)]"
+            )}
+          >
+            {message.text}
+          </span>
+        )}
+      </div>
+
+      <div className="flex-grow" />
+
+      <div className="flex items-center gap-2.5 mt-10">
+        <Input />
+
+        <Button
+          size="icon"
+        >
+          <ArrowUp className="size-5" />
+        </Button>
+      </div>
     </section>
   )
 }
 
 export default RequestDetail
+

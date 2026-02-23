@@ -8,7 +8,7 @@ function BorrowRequests() {
   const { data: borrowRequests } = useFetchBorrowRequests()
   
   return (
-    <RegularPage title="Borrow Requests">
+    <RegularPage title="Borrow Requests" noBottomPadding>
       <Tabs defaultValue="pending-approval">
       <TabsList>
           <TabsTrigger value="pending-approval">

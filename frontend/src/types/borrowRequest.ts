@@ -17,4 +17,11 @@ export interface BorrowRequest {
   returnedDate?: Date
   items: BorrowItem[]
   state: RequestState
+  messages: Message[]
+}
+
+export interface Message {
+  id: number
+  text: string
+  author: string
 }

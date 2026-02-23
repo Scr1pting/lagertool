@@ -19,7 +19,19 @@
         "room": { "id": 3, "name": "Storage Room A", "number": "105", "building": { "id": 1, "name": "Science Hall" } }
       }
     ],
-    "state": "approved"
+    "state": "approved",
+    "messages": [
+      {
+        "id": 1,
+        "text": "Please handle the glassware with care.",
+        "author": "Lab Manager"
+      },
+      {
+        "id": 2,
+        "text": "Of course, thank you!",
+        "author": "Alex Nguyen"
+      }
+    ]
   },
   {
     "id": 2,
@@ -41,12 +53,31 @@
         "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
       }
     ],
-    "state": "pending"
+    "state": "pending",
+    "messages": [
+      {
+        "id": 1,
+        "text": "Projector must be returned by 18:00 sharp.",
+        "author": "AV Team"
+      }
+    ]
   },
   {
     "id": 3,
     "title": "Measuring Tools",
     "description": "Calipers and rulers for mechanical engineering assignment.",
+    "messages": [
+      {
+        "id": 1,
+        "text": "Don't forget to wash them before returning them!",
+        "author": "Santa Clause"
+      },
+      {
+        "id": 2,
+        "text": "Will do, thanks for the reminder!",
+        "author": "Mateo Alvarez"
+      }
+    ],
     "author": "Mateo Alvarez",
     "creationDate": "2026-01-28T11:15:00Z",
     "borrowDate": "2026-02-03T10:00:00Z",
@@ -86,7 +117,19 @@
         "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
       }
     ],
-    "state": "pending"
+    "state": "pending",
+    "messages": [
+      {
+        "id": 1,
+        "text": "Tripod is included in the kit.",
+        "author": "Media Center"
+      },
+      {
+        "id": 2,
+        "text": "Thank you for confirming!",
+        "author": "Sara Lindberg"
+      }
+    ]
   },
   {
     "id": 5,
@@ -108,6 +151,13 @@
         "room": { "id": 9, "name": "Electronics Lab", "number": "B20", "building": { "id": 3, "name": "Engineering Wing" } }
       }
     ],
-    "state": "rejected"
+    "state": "rejected",
+    "messages": [
+      {
+        "id": 1,
+        "text": "Request rejected due to maintenance schedule.",
+        "author": "Lab Supervisor"
+      }
+    ]
   }
 ]

@@ -5,14 +5,20 @@ interface RegularPageProps {
   title: string;
   description?: ReactNode;
   children: ReactNode
+  noBottomPadding?: boolean
 }
 
-function RegularPage({ title, description = undefined, children }: RegularPageProps) {
+function RegularPage(
+  { title, description, children, noBottomPadding }: RegularPageProps
+) {
   return (
-    <main className={cn("mx-auto w-full max-w-[850px] px-5 py-15")}>
+    <main className={cn(
+      "mx-auto w-full max-w-[850px] px-5",
+      noBottomPadding ? "pt-15" : "py-15"
+    )}>
       <header className="flex flex-col pb-4 gap-2">
         <h1 className="text-3xl font-semibold">{title}</h1>
-        {description !== undefined && description}
+        {description}
       </header>
 
       {children}
