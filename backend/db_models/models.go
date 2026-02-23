@@ -163,6 +163,7 @@ type Request struct {
 	Note             string    `json:"note" pg:"note"`
 	Status           string    `json:"status" pg:"status"`
 	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
+	GroupID          int       `json:"group_id" pg:"group_id"`
 
 	Organisation *Organisation  `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
 	User         *User          `json:"user" pg:"rel:has-one,fk:user_id"`
