@@ -34,5 +34,12 @@ export const borrowColumns: ColumnDef<BorrowItem>[] = [
     cell: ({ row }) => (
       <div className="text-right">{row.original.borrowed}</div>
     ),
+  },
+  {
+    accessorKey: "available",
+    header: () => <div className="text-right">Available</div>,
+    cell: ({ row }) => (
+      <div className="text-right">{row.original.available}</div>
+    ),
   }
 ]

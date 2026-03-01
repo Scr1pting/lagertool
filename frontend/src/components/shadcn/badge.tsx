@@ -20,12 +20,12 @@ const badgeVariants = cva(
         link: "text-primary underline-offset-4 [a&]:hover:underline",
 
         // Custom colors
-        yellow: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100/80",
-        blue: "bg-blue-100 text-blue-700 hover:bg-blue-100/80",
-        red: "bg-red-100 text-red-700 hover:bg-red-100/80",
-        emerald: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80",
-        slate: "bg-slate-100 text-slate-700 hover:bg-slate-100/80",
-        amber: "bg-amber-100 text-amber-700 hover:bg-amber-100/80",
+        yellow: "bg-yellow-900 text-yellow-50",
+        blue: "bg-blue-900 text-blue-50",
+        red: "bg-red-900 text-red-50",
+        emerald: "bg-emerald-900 text-emerald-50",
+        slate: "bg-slate-900 text-slate-50",
+        amber: "bg-amber-900 text-amber-50",
       },
     },
     defaultVariants: {

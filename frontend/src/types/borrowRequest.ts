@@ -3,7 +3,7 @@ import type { InventoryItem } from "./inventory"
 export const APPROVAL_STATES = ["pending", "approved", "rejected"] as const
 export type ApprovalState = typeof APPROVAL_STATES[number]
 
-export const TIME_STATES = ["overdue", "on loan", "returned"] as const
+export const TIME_STATES = ["future", "on loan", "overdue", "returned"] as const
 export type TimeState = typeof TIME_STATES[number]
 
 export interface BorrowItem extends InventoryItem {
@@ -18,8 +18,8 @@ export interface BorrowRequest {
   author: string
   description?: string
   creationDate: Date
-  borrowDate: Date
-  dueDate: Date
+  startDate: Date
+  endDate: Date
   returnedDate?: Date
   items: BorrowItem[]
   messages: Message[]

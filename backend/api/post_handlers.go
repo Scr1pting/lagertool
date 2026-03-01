@@ -11,6 +11,60 @@ import (
 	"lagertool.com/main/db_models"
 )
 
+// @Summary Create a new building
+// @Description Create a new building for an organisation
+// @Tags buildings
+// @Accept  json
+// @Produce  json
+// @Param orgId path string true "Organisation name"
+// @Param building body api_objects.BuildingRequest true "Building object"
+// @Success 201 {object} db_models.Building
+// @Router /organisations/{orgId}/buildings [post]
+func (h *Handler) CreateBuilding(c *gin.Context) {
+	var req api_objects.BuildingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newBuilding, err := db.CreateBuilding(h.DB, req.Name, req.Campus)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, newBuilding)
+}
+
+// @Summary Create a new room
+// @Description Create a new room in a building
+// @Tags rooms
+// @Accept  json
+// @Produce  json
+// @Param orgId path string true "Organisation name"
+// @Param buildingId path int true "Building ID"
+// @Param room body api_objects.RoomRequest true "Room object"
+// @Success 201 {object} db_models.Room
+// @Router /organisations/{orgId}/buildings/{buildingId}/rooms [post]
+func (h *Handler) CreateRoom(c *gin.Context) {
+	buildingId, err := strconv.Atoi(c.Param("buildingId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid building id"})
+		return
+	}
+	var req api_objects.RoomRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newRoom, err := db.CreateRoom(h.DB, req.Name, req.Floor, req.Number, buildingId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, newRoom)
+}
+
 // @Summary Create a new inventory item
 // @Description Create a new inventory item
 // @Tags items
@@ -216,4 +270,47 @@ func (h *Handler) PostMessage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusOK, msg)
+}
+
+// @Summary Create a new shelf
+// @Description Create a new shelf in a room
+// @Tags shelves
+// @Accept  json
+// @Produce  json
+// @Param orgId path string true "Organisation name"
+// @Param buildingId path int true "Building ID"
+// @Param roomId path int true "Room ID"
+// @Param shelf body api_objects.ShelfRequest true "Shelf object"
+// @Success 201 {object} db_models.Shelf
+// @Router /organisations/{orgId}/buildings/{buildingId}/rooms/{roomId}/shelves [post]
+func (h *Handler) CreateShelf(c *gin.Context) {
+	orgId := c.Param("orgId")
+	roomId, err := strconv.Atoi(c.Param("roomId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+		return
+	}
+
+	var req api_objects.ShelfRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert api_objects columns to db.ColumnInput
+	columns := make([]db.ColumnInput, len(req.Columns))
+	for i, col := range req.Columns {
+		elements := make([]db.ShelfElementInput, len(col.Elements))
+		for j, el := range col.Elements {
+			elements[j] = db.ShelfElementInput{ID: el.ID, Type: el.Type}
+		}
+		columns[i] = db.ColumnInput{ID: col.ID, Elements: elements}
+	}
+
+	newShelf, err := db.CreateShelf(h.DB, req.ID, req.Name, orgId, roomId, columns)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, newShelf)
 }
