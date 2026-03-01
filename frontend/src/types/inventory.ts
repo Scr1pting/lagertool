@@ -1,6 +1,7 @@
 import type { Building } from "./building"
 import type { Room } from "./room"
 import { type Shelf } from "./shelf"
+import type { ItemBorrowHistory } from "./borrow"
 
 export interface InventoryItem {
   id: number
@@ -15,4 +16,5 @@ export interface InventoryItem {
 export interface InventoryItemFull extends InventoryItem {
   shelf: Shelf
   shelfElementId: string
+  borrowHistory?: ItemBorrowHistory[]
 }

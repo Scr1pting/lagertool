@@ -6,6 +6,9 @@ import StaticShelf from "@/components/Shelves/viewer/StaticShelf"
 import useFetchItem from "@/hooks/fetch/useFetchItem"
 import { PencilIcon, ShoppingCartIcon } from "lucide-react"
 import { useSearchParams } from "react-router"
+import DataTable from "@/components/DataTable/DataTable"
+import itemBorrowHistoryColumns from "@/components/DataTable/ItemBorrowHistoryColumns"
+import useFetchItemBorrowHistory from "@/hooks/fetch/useFetchItemBorrowHistory"
 
 
 function ItemDetail() {
@@ -13,6 +16,7 @@ function ItemDetail() {
   const id = parseInt(searchParams.get("id") ?? "-1")
 
   const { data: item = null } = useFetchItem(id)
+  const { data: borrowHistory = [] } = useFetchItemBorrowHistory(id)
 
   return (
     <RegularPage title={item?.name ?? "Loading"}>
@@ -77,6 +81,19 @@ function ItemDetail() {
               }
             </CardContent>
           </Card>
+
+          <h2 className="text-xl font-semibold pt-10 pb-5">
+            Borrow History
+          </h2>
+
+
+          {(borrowHistory ?? []).length > 0 ? (
+            <DataTable data={borrowHistory!} columns={itemBorrowHistoryColumns} />
+          ) : (
+            <p className="text-muted-foreground text-sm">No borrow history for this item.</p>
+          )}
+
+
         </>
       )}
     </RegularPage>

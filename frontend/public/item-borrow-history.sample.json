@@ -1,0 +1,52 @@
+[
+    {
+        "id": "Anna Müller",
+        "itemId": "42",
+        "eventName": "Filmproduktion Workshop",
+        "borrowDate": "2026-01-10",
+        "dueDate": "2026-01-24",
+        "returnDate": "2026-01-22",
+        "state": "returned",
+        "quantity": 1
+    },
+    {
+        "id": "Erik Johansson",
+        "itemId": "42",
+        "eventName": "Sommerfest 2026",
+        "borrowDate": "2026-02-01",
+        "dueDate": "2026-02-15",
+        "returnDate": null,
+        "state": "on_loan",
+        "quantity": 2
+    },
+    {
+        "id": "Sophie Larsen",
+        "itemId": "42",
+        "eventName": "Teambuilding Outdoor",
+        "borrowDate": "2026-01-20",
+        "dueDate": "2026-02-03",
+        "returnDate": null,
+        "state": "overdue",
+        "quantity": 1
+    },
+    {
+        "id": "Max Weber",
+        "itemId": "42",
+        "eventName": "Hackathon März",
+        "borrowDate": "2026-02-25",
+        "dueDate": "2026-03-11",
+        "returnDate": null,
+        "state": "pending",
+        "quantity": 3
+    },
+    {
+        "id": "Lisa Berger",
+        "itemId": "42",
+        "eventName": "Fotoshooting Katalog",
+        "borrowDate": "2026-02-20",
+        "dueDate": "2026-03-06",
+        "returnDate": null,
+        "state": "approved",
+        "quantity": 1
+    }
+]
