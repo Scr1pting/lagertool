@@ -8,15 +8,13 @@ import { PencilIcon, ShoppingCartIcon } from "lucide-react"
 import { useSearchParams } from "react-router"
 import DataTable from "@/components/DataTable/DataTable"
 import itemBorrowHistoryColumns from "@/components/DataTable/ItemBorrowHistoryColumns"
-import useFetchItemBorrowHistory from "@/hooks/fetch/useFetchItemBorrowHistory"
 
 
 function ItemDetail() {
   const [searchParams] = useSearchParams()
   const id = parseInt(searchParams.get("id") ?? "-1")
 
-  const { data: item = null } = useFetchItem(id)
-  const { data: borrowHistory = [] } = useFetchItemBorrowHistory(id)
+  const { data: item = null, borrowHistory = [] } = useFetchItem(id)
 
   return (
     <RegularPage title={item?.name ?? "Loading"}>
