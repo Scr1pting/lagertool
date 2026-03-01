@@ -1,10 +1,20 @@
 import type { InventoryItem } from "./inventory"
 
-export const APPROVAL_STATES = ["pending", "approved", "rejected"] as const
-export type ApprovalState = typeof APPROVAL_STATES[number]
+export const APPROVAL_STATES = {
+  pending: { title: "Pending", color: "zinc" },
+  approved: { title: "Approved", color: "green" },
+  rejected: { title: "Rejected", color: "red" },
+} as const
+export type ApprovalState = keyof typeof APPROVAL_STATES
 
-export const TIME_STATES = ["future", "on loan", "overdue", "returned"] as const
-export type TimeState = typeof TIME_STATES[number]
+export const TIME_STATES = {
+  future: { title: "Future", color: "purple" },
+  onLoan: { title: "On Loan", color: "blue" },
+  overdue: { title: "Overdue", color: "blue" },
+  returned: { title: "Returned", color: "green" }
+} as const
+export type TimeState = keyof typeof APPROVAL_STATES
+
 
 export interface BorrowItem extends InventoryItem {
   borrowed: number
