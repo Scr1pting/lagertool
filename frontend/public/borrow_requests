@@ -20,6 +20,7 @@
       }
     ],
     "approvalState": "approved",
+    "timeState": "future",
     "messages": [
       {
         "id": 1,
@@ -95,7 +96,8 @@
         "room": { "id": 8, "name": "Tool Room", "number": "B12", "building": { "id": 3, "name": "Engineering Wing" } }
       }
     ],
-    "approvalState": "approved"
+    "approvalState": "approved",
+    "timeState": "ongoing"
   },
   {
     "id": 4,

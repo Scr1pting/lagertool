@@ -3,7 +3,6 @@ import CheckboxDropdown from "@/components/primitives/CheckboxDropdown"
 import type { CheckedOption } from "@/components/primitives/types/CheckedOption"
 import RegularPage from "@/components/RegularPage"
 import useFetchBorrowRequestsPersonal from "@/hooks/fetch/useFetchBorrowRequestsPersonal"
-import { capitalize } from "@/lib/capitalize"
 import { APPROVAL_STATES, TIME_STATES } from "@/types/borrowRequest"
 import { useState } from "react"
 
@@ -11,18 +10,34 @@ function Account() {
   const { data: borrowRequests } = useFetchBorrowRequestsPersonal()
   
   const [approvalOptions, setApprovalOptions] = useState<CheckedOption[]>(
-    Object.values(APPROVAL_STATES).map(state => ({
-      title: capitalize(state.title),
-      checked: true
-    }))
-  )
+    Object.entries(APPROVAL_STATES).map(([key, state]) => ({
+      key: key,
+      title: state.title,
+      checked: true,
+    })
+  ))
 
   const [timeOptions, setTimeOptions] = useState<CheckedOption[]>(
-    Object.values(TIME_STATES).map(state => ({
-      title: capitalize(state.title),
-      checked: true
-    }))
-  )
+    Object.entries(TIME_STATES).map(([key, state]) => ({
+      key,
+      title: state.title,
+      checked: true,
+    })
+  ))
+
+  const filteredBorrowRequests = borrowRequests?.filter(request => {
+    const approvalMatch = approvalOptions.some(option =>
+      option.checked && option.key === request.approvalState
+    )
+
+    const timeMatch =
+      request.approvalState !== "approved"
+      || timeOptions.some(option =>
+          option.checked && option.key === request.timeState
+        )
+
+    return approvalMatch && timeMatch
+  }) ?? []
 
   return (
     <RegularPage title="Account" noBottomPadding>
@@ -49,7 +64,7 @@ function Account() {
 
       {borrowRequests != null
         && borrowRequests.length != 0
-        && <RequestTypePage borrowRequests={borrowRequests}  />
+        && <RequestTypePage borrowRequests={filteredBorrowRequests}  />
       }
     </RegularPage>
   )
