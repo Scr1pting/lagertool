@@ -22,12 +22,12 @@ function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed 
   const add = useCart(state => state.add)
 
   const exceedsAvailable = !Number.isNaN(amountSelected) && amountSelected > item.available
-  const isInvalidQuantity = Number.isNaN(amountSelected) || amountSelected < 1 || exceedsAvailable
+  const isInvalidAmount = Number.isNaN(amountSelected) || amountSelected < 1 || exceedsAvailable
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (!isInvalidQuantity) {
+    if (!isInvalidAmount) {
       const cartItem: CartItem = { ...item, amountSelected: amountSelected }
       add(cartItem)
 
@@ -72,7 +72,7 @@ function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed 
       <DialogFooter>
         <Field orientation="horizontal" className="justify-end">
           <Button
-            disabled={isInvalidQuantity}
+            disabled={isInvalidAmount}
             type="button"
             onClick={onProceed}
             variant="outline"
@@ -81,7 +81,7 @@ function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed 
           </Button>
 
           <Button
-            disabled={isInvalidQuantity}
+            disabled={isInvalidAmount}
             type="submit"
           >
             Add to Cart

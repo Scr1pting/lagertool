@@ -1,5 +1,5 @@
 import useFetch from "./useFetch"
-import { type InventoryItemFull, type ItemBorrowHistory } from "@/types/inventory"
+import { type InventoryItemFull, type ItemBorrowEvent } from "@/types/inventory"
 import useOrgs from "@/store/useOrgs"
 import { useDateParams } from "@/hooks/useDateParams"
 
@@ -10,7 +10,7 @@ function useFetchItem(id: number) {
   const { startDate, endDate } = useDateParams()
 
   const itemState = useFetch<InventoryItemFull>(`${API_BASE_URL}/organisations/${selectedOrg?.name}/items/${id}?start=${startDate}&end=${endDate}`)
-  const borrowHistoryState = useFetch<ItemBorrowHistory[]>(`/item-borrow-history.sample.json`)
+  const borrowHistoryState = useFetch<ItemBorrowEvent[]>(`/item-borrow-history.sample.json`)
 
   return {
     ...itemState,

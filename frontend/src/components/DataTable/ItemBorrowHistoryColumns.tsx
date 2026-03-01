@@ -1,25 +1,16 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { BorrowState } from "@/types/borrow"
-import type { ItemBorrowHistory } from "@/types/inventory"
+import type { ItemBorrowEvent } from "@/types/inventory"
 import SortableHeader from "./SortableHeader"
 import { formatDate } from "@/lib/formatDate"
 import { Badge } from "@/components/shadcn/badge"
+import { APPROVAL_STATES, TIME_STATES } from "@/types/borrowRequest"
 
-const stateVariant: Record<BorrowState, { label: string; variant: "yellow" | "blue" | "slate" | "red" | "emerald" }> = {
-    pending: { label: "Pending", variant: "yellow" },
-    approved: { label: "Approved", variant: "blue" },
-    on_loan: { label: "On Loan", variant: "slate" },
-    overdue: { label: "Overdue", variant: "red" },
-    returned: { label: "Returned", variant: "emerald" },
-}
-
-const itemBorrowHistoryColumns: ColumnDef<ItemBorrowHistory>[] = [
+const itemBorrowHistoryColumns: ColumnDef<ItemBorrowEvent>[] = [
     {
         accessorKey: "id",
         header: ({ column }) => <SortableHeader column={column} title="User" />,
         cell: ({ row }) => row.original.id,
     },
-
     {
         accessorKey: "eventName",
         header: ({ column }) => <SortableHeader column={column} title="Event" />,
@@ -36,24 +27,30 @@ const itemBorrowHistoryColumns: ColumnDef<ItemBorrowHistory>[] = [
         accessorKey: "returnDate",
         header: ({ column }) => <SortableHeader column={column} title="Due/Return" />,
         sortingFn: (a, b) =>
-            new Date(a.original.returnDate ?? 0).getTime() - new Date(b.original.returnDate ?? 0).getTime(),
-        cell: ({ row }) => row.original.returnDate ? formatDate(row.original.returnDate) : "—",
+            new Date(a.original.returnedDate ?? 0).getTime() - new Date(b.original.returnedDate ?? 0).getTime(),
+        cell: ({ row }) => row.original.returnedDate ? formatDate(row.original.returnedDate) : formatDate(row.original.endDate),
     },
     {
         accessorKey: "state",
         header: ({ column }) => <SortableHeader column={column} title="State" />,
-        cell: ({ row }) => {
-            const { label, variant } = stateVariant[row.original.state] ?? { label: row.original.state, variant: "outline" as const }
-            return <Badge variant={variant}>{label}</Badge>
-        },
+        cell: ({ row }) =>
+          <div className="flex flex-col gap-2">
+            <Badge variant={APPROVAL_STATES[row.original.approvalState].color}>
+              {APPROVAL_STATES[row.original.approvalState].title}
+            </Badge>
+            {row.original.timeState
+             && <Badge variant={TIME_STATES[row.original.timeState].color}>
+               {TIME_STATES[row.original.timeState].title}
+             </Badge>  
+            }
+          </div>
+        ,
     },
     {
-        accessorKey: "quantity",
-        header: ({ column }) => <SortableHeader column={column} title="Quantity" />,
-        cell: ({ row }) => row.original.quantity,
+        accessorKey: "amount",
+        header: ({ column }) => <SortableHeader column={column} title="Amount" />,
+        cell: ({ row }) => row.original.amount,
     },
-
-
 ]
 
 export default itemBorrowHistoryColumns

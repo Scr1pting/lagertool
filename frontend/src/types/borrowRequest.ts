@@ -13,8 +13,7 @@ export const TIME_STATES = {
   overdue: { title: "Overdue", color: "blue" },
   returned: { title: "Returned", color: "green" }
 } as const
-export type TimeState = keyof typeof APPROVAL_STATES
-
+export type TimeState = keyof typeof TIME_STATES
 
 export interface BorrowItem extends InventoryItem {
   borrowed: number

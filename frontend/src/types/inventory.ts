@@ -1,7 +1,7 @@
+import type { ApprovalState, TimeState } from "./borrowRequest"
 import type { Building } from "./building"
 import type { Room } from "./room"
 import { type Shelf } from "./shelf"
-import type { BorrowState } from "./borrow"
 
 export interface InventoryItem {
   id: number
@@ -16,15 +16,16 @@ export interface InventoryItem {
 export interface InventoryItemFull extends InventoryItem {
   shelf: Shelf
   shelfElementId: string
-  borrowHistory?: ItemBorrowHistory[]
+  borrowHistory: ItemBorrowEvent[]
 }
 
-export interface ItemBorrowHistory {
-  id: string;
-  eventName: string;
-  startDate: string;
-  endDate: string;
-  returnDate?: string;
-  state: BorrowState;
-  quantity: number;
+export interface ItemBorrowEvent {
+  id: string
+  approvalState: ApprovalState
+  timeState?: TimeState
+  eventName: string
+  startDate: string
+  endDate: string
+  returnedDate?: string
+  amount: number
 }
