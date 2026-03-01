@@ -103,6 +103,8 @@ http://localhost:8000/swagger/index.html
 | `PUT` | `/loans/:id` | Update a loan (e.g. mark as returned) |
 | `PUT` | `/requests/:id` | Update a request status |
 | `POST` | `/requests/:id/review` | Review/approve/deny a request |
+| `GET` | `/requests/:id/messages` | Get messages for a request |
+| `POST` | `/requests/:id/messages` | Post a message to a request |
 
 #### Auth
 | Method | Endpoint | Description |
