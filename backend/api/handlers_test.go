@@ -1366,6 +1366,99 @@ func TestCreateRoom(t *testing.T) {
 	}
 }
 
+func TestCreateShelf(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/organisations/:orgId/buildings/:buildingId/rooms/:roomId/shelves", h.CreateShelf)
+
+	org := &db_models.Organisation{Name: "CreateShelf Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	building := &db_models.Building{Name: "Test Building", Campus: "Test Campus"}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+
+	room := &db_models.Room{Name: "Test Room", BuildingID: building.ID}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+
+	defer func() {
+		_, _ = dbCon.Model(room).Where("id = ?", room.ID).Delete()
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	base := "/organisations/" + org.Name + "/buildings/" + strconv.Itoa(building.ID) + "/rooms/" + strconv.Itoa(room.ID) + "/shelves"
+
+	testCases := []struct {
+		name           string
+		url            string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Creation",
+			url:  base,
+			payload: `{
+				"id": "S-1",
+				"name": "Test Shelf",
+				"columns": [
+					{
+						"id": "C-1",
+						"elements": [
+							{"id": "SU-1", "type": "slim"},
+							{"id": "SU-2", "type": "large"}
+						]
+					}
+				]
+			}`,
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Missing ID",
+			url:            base,
+			payload:        `{"name": "Test Shelf"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid Room ID",
+			url:            "/organisations/" + org.Name + "/buildings/" + strconv.Itoa(building.ID) + "/rooms/notanumber/shelves",
+			payload:        `{"id": "S-2", "name": "Shelf", "columns": []}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", tc.url, strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedStatus, w.Code)
+
+			if tc.expectedStatus == http.StatusCreated {
+				var createdShelf db_models.Shelf
+				err := json.Unmarshal(w.Body.Bytes(), &createdShelf)
+				assert.NoError(t, err)
+				assert.Equal(t, "Test Shelf", createdShelf.Name)
+				assert.Equal(t, "S-1", createdShelf.ID)
+				assert.Equal(t, org.Name, createdShelf.OwnedBy)
+				assert.Equal(t, room.ID, createdShelf.RoomID)
+
+				// Cleanup created shelf hierarchy
+				_, _ = dbCon.Model(&db_models.ShelfUnit{}).Where("id = 'SU-1' OR id = 'SU-2'").Delete()
+				_, _ = dbCon.Model(&db_models.Column{}).Where("id = 'C-1'").Delete()
+				_, _ = dbCon.Model(&db_models.Shelf{}).Where("id = 'S-1'").Delete()
+			}
+		})
+	}
+}
+
 func TestPostMessage(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()

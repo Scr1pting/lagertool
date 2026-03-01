@@ -271,3 +271,46 @@ func (h *Handler) PostMessage(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, msg)
 }
+
+// @Summary Create a new shelf
+// @Description Create a new shelf in a room
+// @Tags shelves
+// @Accept  json
+// @Produce  json
+// @Param orgId path string true "Organisation name"
+// @Param buildingId path int true "Building ID"
+// @Param roomId path int true "Room ID"
+// @Param shelf body api_objects.ShelfRequest true "Shelf object"
+// @Success 201 {object} db_models.Shelf
+// @Router /organisations/{orgId}/buildings/{buildingId}/rooms/{roomId}/shelves [post]
+func (h *Handler) CreateShelf(c *gin.Context) {
+	orgId := c.Param("orgId")
+	roomId, err := strconv.Atoi(c.Param("roomId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+		return
+	}
+
+	var req api_objects.ShelfRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert api_objects columns to db.ColumnInput
+	columns := make([]db.ColumnInput, len(req.Columns))
+	for i, col := range req.Columns {
+		elements := make([]db.ShelfElementInput, len(col.Elements))
+		for j, el := range col.Elements {
+			elements[j] = db.ShelfElementInput{ID: el.ID, Type: el.Type}
+		}
+		columns[i] = db.ColumnInput{ID: col.ID, Elements: elements}
+	}
+
+	newShelf, err := db.CreateShelf(h.DB, req.ID, req.Name, orgId, roomId, columns)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, newShelf)
+}

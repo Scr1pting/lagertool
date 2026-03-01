@@ -24,12 +24,9 @@ type ColumnElementRequest struct {
 }
 
 type ShelfRequest struct {
-	ID         string                 `json:"id" binding:"required"`
-	Name       string                 `json:"name" binding:"required"`
-	BuildingID int                    `json:"buildingId" binding:"required"`
-	RoomID     int                    `json:"roomId" binding:"required"`
-	Columns    []ColumnElementRequest `json:"columns" binding:"required"`
-	OwnedBy    string                 `json:"ownedBy" binding:"required"`
+	ID      string                 `json:"id" binding:"required"`
+	Name    string                 `json:"name" binding:"required"`
+	Columns []ColumnElementRequest `json:"columns" binding:"required"`
 }
 
 type CartRequest struct {
