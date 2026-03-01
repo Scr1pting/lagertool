@@ -193,3 +193,22 @@ func (h *Handler) RequestReview(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, rev)
 }
+
+func (h *Handler) PostMessage(c *gin.Context) {
+	requestId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
+		return
+	}
+	var msg api_objects.UserMessage
+	if err = c.ShouldBindJSON(&msg); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error while parsing payload": err.Error()})
+		return
+	}
+	err = db.CreateUserMessage(h.DB, db_models.UserRequestMessage{
+		UserID:    msg.UserID,
+		RequestID: requestId,
+		Message:   msg.Message,
+		TimeStamp: time.Now(),
+	})
+}
