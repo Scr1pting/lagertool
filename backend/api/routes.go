@@ -18,9 +18,9 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/organisations/:orgId/inventory", h.GetInventory) // ?start=X&end=X
 
 	// Items
-	r.GET("/items/:id", h.GetItem) // ?start=X&end=X
-	r.POST("/items", h.CreateItem)
-	r.PUT("/items/:id", h.UpdateItem)
+	r.GET("/organisations/:orgId/items/:id", h.GetItem) // ?start=X&end=X
+	r.POST("/organisations/:orgId/items", h.CreateItem)
+	r.PUT("/organisations/:orgId/items/:id", h.UpdateItem)
 
 	// Cart
 	r.GET("/users/:userId/cart", h.GetShoppingCart) // ?start=X&end=X

@@ -323,7 +323,7 @@ func TestGetItem(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 	h := NewHandler(dbCon, nil)
-	router.GET("/items/:id", h.GetItem)
+	router.GET("/organisations/:orgId/items/:id", h.GetItem)
 
 	// Create test organisation
 	org := &db_models.Organisation{Name: "Item Test Org"}
@@ -342,7 +342,7 @@ func TestGetItem(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test with item ID in path
-	req, _ := http.NewRequest("GET", "/items/"+strconv.Itoa(hier.Inventory.ID)+"?start=2025-01-01&end=2025-12-31", nil)
+	req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/items/"+strconv.Itoa(hier.Inventory.ID)+"?start=2025-01-01&end=2025-12-31", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -439,7 +439,15 @@ func TestCreateItem(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.POST("/items", h.CreateItem)
+	router.POST("/organisations/:orgId/items", h.CreateItem)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "CreateItem Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
 
 	hier := createTestHierarchy(t, dbCon)
 	defer cleanupTestHierarchy(t, dbCon, hier)
@@ -469,7 +477,7 @@ func TestCreateItem(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/items", strings.NewReader(tc.payload))
+			req, _ := http.NewRequest("POST", "/organisations/"+org.Name+"/items", strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -1150,10 +1158,20 @@ func TestUpdateItem(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.PUT("/items/:id", h.UpdateItem)
+	router.PUT("/organisations/:orgId/items/:id", h.UpdateItem)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "UpdateItem Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
 
 	hier := createTestHierarchy(t, dbCon)
 	defer cleanupTestHierarchy(t, dbCon, hier)
+
+	base := "/organisations/" + org.Name + "/items/"
 
 	testCases := []struct {
 		name           string
@@ -1163,7 +1181,7 @@ func TestUpdateItem(t *testing.T) {
 	}{
 		{
 			name: "Successful Update - Amount",
-			url:  "/items/" + strconv.Itoa(hier.Inventory.ID),
+			url:  base + strconv.Itoa(hier.Inventory.ID),
 			payload: `{
 				"amount": 50
 			}`,
@@ -1171,7 +1189,7 @@ func TestUpdateItem(t *testing.T) {
 		},
 		{
 			name: "Successful Update - Note",
-			url:  "/items/" + strconv.Itoa(hier.Inventory.ID),
+			url:  base + strconv.Itoa(hier.Inventory.ID),
 			payload: `{
 				"note": "Updated note"
 			}`,
@@ -1179,13 +1197,13 @@ func TestUpdateItem(t *testing.T) {
 		},
 		{
 			name:           "Invalid ID",
-			url:            "/items/notanumber",
+			url:            base + "notanumber",
 			payload:        `{"amount": 50}`,
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
 			name:           "Non-existent item",
-			url:            "/items/999999",
+			url:            base + "999999",
 			payload:        `{"amount": 50}`,
 			expectedStatus: http.StatusNotFound,
 		},

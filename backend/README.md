@@ -1,15 +1,14 @@
 
 # BACKEND 2025
 
-A Go-based backend API for an inventory management system ("lagertool") with integrated Slack bot for borrowing items.
+A Go-based backend API for an inventory management system ("lagertool") that tracks items, locations, and loans.
 
 ## Features
 
-- RESTful API for managing inventory items, locations, persons, and loans
+- RESTful API for managing organisations, inventory, carts, loans, and requests
 - PostgreSQL database with go-pg ORM
-- Slack bot integration for conversational item borrowing
-- Interactive date picker support via Slack
-- Fuzzy search for inventory items
+- EduID (OIDC) authentication
+- Request messaging system for borrow request communication
 - Auto-generated Swagger/OpenAPI documentation
 - CORS-enabled for frontend integration
 
@@ -19,7 +18,6 @@ A Go-based backend API for an inventory management system ("lagertool") with int
 
 - Go 1.25+
 - Docker and Docker Compose (for PostgreSQL)
-- Slack App with Bot Token (optional, for Slack integration)
 
 ### Installation
 
@@ -58,9 +56,6 @@ DB_USER=postgres
 DB_PASSWORD=example
 DB_NAME=appdb
 
-# Slack Configuration (optional)
-SLACK_BOT_TOKEN=xoxb-your-slack-bot-token
-
 # Application Configuration
 APP_PORT=8000
 ```
@@ -86,9 +81,9 @@ http://localhost:8000/swagger/index.html
 #### Items
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/items/:id?start=X&end=X` | Get a specific inventory item |
-| `POST` | `/items` | Create a new inventory item |
-| `PUT` | `/items/:id` | Update an inventory item |
+| `GET` | `/organisations/:orgId/items/:id?start=X&end=X` | Get a specific inventory item |
+| `POST` | `/organisations/:orgId/items` | Create a new inventory item |
+| `PUT` | `/organisations/:orgId/items/:id` | Update an inventory item |
 
 #### Cart
 | Method | Endpoint | Description |
@@ -112,74 +107,56 @@ http://localhost:8000/swagger/index.html
 | `GET` | `/auth/eduid/login` | Initiate EduID login |
 | `GET` | `/auth/eduid/callback` | EduID OAuth callback |
 
-## Slack Bot Integration
-
-### Setup
-
-1. Create a Slack App at https://api.slack.com/apps
-2. Enable the following features:
-   - **Event Subscriptions**: Subscribe to `message.im` events
-   - **Interactive Components**: Enable and set Request URL to `https://your-domain/slack/interactivity`
-   - **Bot Token Scopes**:
-     - `chat:write`
-     - `im:history`
-     - `users:read`
-
-3. Install the app to your workspace and copy the Bot Token
-4. Set `SLACK_BOT_TOKEN` in your `.env` file
-5. Configure the Event Subscriptions Request URL to `https://your-domain/slack/events`
-
-### How to Use
-
-1. Open a direct message with the bot in Slack
-2. Send any message to start the borrowing flow
-3. Follow the conversational prompts:
-   - **Item**: Name of the item to borrow
-   - **Quantity**: How many items you need
-   - **Location**: Where to borrow from (format: "Campus Building Room")
-   - **Due Date**: Use the interactive date picker to select a return date
-4. The bot will confirm and record your borrow in the database
-
-### Slack Bot Architecture
-
-The Slack integration uses:
-- **Session-based conversation flow** with in-memory state management
-- **Event API** for receiving messages
-- **Interactive Components** for date picker functionality
-- **Automatic person creation** from Slack usernames
-
 ## Development
 
 ### Project Structure
 
 ```
 .
-├── main.go              # Application entry point
+├── main.go                # Application entry point
 ├── api/
-│   ├── routes.go        # Route definitions
-│   ├── handlers.go      # HTTP request handlers
-│   └── localhandlers.go # Helper functions
+│   ├── routes.go          # Route definitions
+│   ├── handlers.go        # GET request handlers
+│   ├── post_handlers.go   # POST request handlers
+│   ├── update_handlers.go # PUT request handlers
+│   ├── handlers_output_sorted_by_date.go # Org-scoped resource handlers
+│   ├── utils.go           # Helper functions
+│   └── handlers_test.go   # API tests
+├── api_objects/
+│   ├── request_objects.go  # Request DTOs
+│   └── response_objects.go # Response DTOs
+├── auth/
+│   └── auth.go            # EduID OIDC authentication
 ├── db/
-│   ├── database.go      # Database connection
-│   ├── models.go        # Data models
-│   ├── slackrequests.go # Slack-specific DB operations
-│   └── testdata.go      # Test data insertion
-├── slack1/
-│   └── slack.go         # Slack client and session management
+│   ├── database.go        # Database connection & init
+│   ├── database_create.go # Create operations
+│   ├── database_update.go # Update operations
+│   └── testdata.go        # Test data insertion
+├── db_models/
+│   └── models.go          # Data models
 ├── config/
-│   └── config.go        # Configuration management
+│   └── config.go          # Configuration management
 ├── util/
-│   └── fuzzyfind.go     # Fuzzy search utilities
-└── docs/                # Auto-generated Swagger docs
+│   └── fuzzyfind.go       # Fuzzy search utilities
+└── docs/                  # Auto-generated Swagger docs
 ```
 
 ### Database Schema
 
-- **location**: Physical locations (campus, building, room, shelf, shelf unit)
-- **item**: Inventory items with names and categories
-- **inventory**: Junction table linking items to locations with quantities
-- **person**: People who can borrow items (includes slack_id for Slack users)
-- **loans**: Borrow records (person_id, item_id, amount, begin, until dates)
+- **organisation**: Organisations that own shelves
+- **user**: User accounts (EduID-linked)
+- **building**: Physical buildings (name, campus, GPS)
+- **room**: Rooms within buildings
+- **shelf**: Storage shelves owned by organisations
+- **column** / **shelf_unit**: Shelf structure (columns containing units)
+- **item**: Product templates (name, consumable flag)
+- **inventory**: Physical inventory instances (item + location + amount)
+- **shopping_cart** / **shopping_cart_item**: User shopping carts
+- **request** / **request_items**: Loan/borrow requests
+- **request_review**: Admin review/approval of requests
+- **user_request_message**: Chat messages on requests
+- **loans**: Active loan tracking
+- **consumed**: Consumed item tracking
 
 ### Running Tests
 
@@ -197,32 +174,12 @@ swag init
 
 ## Troubleshooting
 
-### Slack Date Picker Not Working
-
-**Problem**: After selecting a date in Slack, nothing happens.
-
-**Solution**: This was caused by the `/slack/interactivity` route not being connected to the handler. Ensure `routes.go` has:
-```go
-r.POST("/slack/interactivity", h.Interactivity)
-```
-
 ### Database Connection Issues
 
 - Verify PostgreSQL is running: `docker-compose ps`
 - Check database credentials in `.env`
 - Ensure database is initialized: `docker-compose up -d`
 
-### Slack Bot Not Responding
-
-- Verify `SLACK_BOT_TOKEN` is set correctly
-- Check Slack App event subscriptions are configured
-- Ensure the bot is installed in your workspace
-- Check server logs for authentication errors
-
 ## License
 
 MIT
-
-## Contributing
-
-For detailed development guidelines, see [CLAUDE.md](./CLAUDE.md)
