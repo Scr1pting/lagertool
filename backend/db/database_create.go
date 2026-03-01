@@ -170,3 +170,8 @@ func Create_consumed(con *pg.DB, consumed *db_models.Consumed) error {
 	_, err := con.Model(consumed).Insert()
 	return err
 }
+
+func CreateUserMessage(con *pg.DB, message *db_models.UserRequestMessage) error {
+	_, err := con.Model(message).Insert()
+	return err
+}

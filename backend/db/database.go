@@ -55,6 +55,7 @@ func InitDB(con *pg.DB) {
 		(*db_models.RequestReview)(nil),
 		(*db_models.Loans)(nil),
 		(*db_models.Consumed)(nil),
+		(*db_models.UserRequestMessage)(nil),
 	}
 
 	log.Println("🚀 Initializing database tables...")

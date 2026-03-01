@@ -71,3 +71,8 @@ type UpdateItemRequest struct {
 	Note        *string `json:"note"`
 	ShelfUnitID *string `json:"shelfUnitId"`
 }
+
+type UserMessage struct {
+	UserID  int    `json:"userId"`
+	Message string `json:"message"`
+}
