@@ -1,11 +1,11 @@
 import RequestTypePage from "@/components/BorrowRequests/RequestTypePage"
 import RegularPage from "@/components/RegularPage"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/tabs"
-import useFetchBorrowRequests from "@/hooks/fetch/useFetchBorrowRequests"
+import useFetchBorrowRequestsAdmin from "@/hooks/fetch/useFetchBorrowRequestsAdmin"
 import { Check, Clock, X } from "lucide-react"
 
 function BorrowRequests() {
-  const { data: borrowRequests } = useFetchBorrowRequests()
+  const { data: borrowRequests } = useFetchBorrowRequestsAdmin()
   
   return (
     <RegularPage title="Borrow Requests" noBottomPadding>

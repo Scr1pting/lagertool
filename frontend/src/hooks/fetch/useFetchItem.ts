@@ -5,7 +5,7 @@ import useOrgs from "@/store/useOrgs"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
-function useFetchInventory(id: number) {
+function useFetchItem(id: number) {
   const selectedOrg = useOrgs(s => s.selectedOrg)
 
   const selectedRange = useDate(s => s.selectedRange)
@@ -15,4 +15,4 @@ function useFetchInventory(id: number) {
   return useFetch<InventoryItemFull>(`${API_BASE_URL}/item?organisation=${selectedOrg?.name}&id=${id}&start=${startDate}&end=${endDate}`)
 }
 
-export default useFetchInventory
+export default useFetchItem

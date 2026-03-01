@@ -1,8 +1,8 @@
 import useFetch from "@/hooks/fetch/useFetch"
 import type { BorrowRequest } from "@/types/borrowRequest"
 
-function useFetchBorrowRequests() {
+function useFetchBorrowRequestsAdmin() {
   return useFetch<BorrowRequest[]>(`/borrow_requests`)
 }
 
-export default useFetchBorrowRequests
+export default useFetchBorrowRequestsAdmin
