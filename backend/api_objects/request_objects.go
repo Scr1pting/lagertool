@@ -48,25 +48,26 @@ type InventoryItemRequest struct {
 }
 
 type CheckoutRequest struct {
-	CartID    int       `json:"cartId" binding:"required"`
 	StartDate time.Time `json:"startDate" binding:"required"`
 	EndDate   time.Time `json:"endDate" binding:"required"`
-	UserID    int       `json:"userId" binding:"required"`
 }
 
 type RequestReview struct {
-	UserID    int    `json:"user_id"` //editor
-	RequestID int    `json:"request_id"`
-	Outcome   string `json:"outcome"`
-	Note      string `json:"note"`
+	UserID  int    `json:"user_id"`
+	Outcome string `json:"outcome"`
+	Note    string `json:"note"`
 }
 
 type UpdateRequest struct {
-	RequestID int    `json:"request_id"`
-	Outcome   string `json:"outcome"`
+	Outcome string `json:"outcome"`
 }
 
 type UpdateLoan struct {
 	ReturnedAt time.Time `json:"returnedAt"`
-	LoanID     int       `json:"loanId"`
+}
+
+type UpdateItemRequest struct {
+	Amount      *int    `json:"amount"`
+	Note        *string `json:"note"`
+	ShelfUnitID *string `json:"shelfUnitId"`
 }

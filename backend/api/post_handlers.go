@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -10,115 +11,14 @@ import (
 	"lagertool.com/main/db_models"
 )
 
-// @Summary Create a new building
-// @Description Create a new building
-// @Tags buildings
-// @Accept  json
-// @Produce  json
-// @Param building body api_objects.BuildingRequest true "Building object"
-// @Success 201 {object} db.Building
-// @Router /create_building [post]
-func (h *Handler) CreateBuilding(c *gin.Context) {
-	var req api_objects.BuildingRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	newBuilding, err := db.CreateBuilding(h.DB, req.Name, req.Campus)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusCreated, newBuilding)
-}
-
-// @Summary Create a new room
-// @Description Create a new room
-// @Tags rooms
-// @Accept  json
-// @Produce  json
-// @Param room body api_objects.RoomRequest true "Room object"
-// @Success 201 {object} db.Room
-// @Router /create_room [post]
-func (h *Handler) CreateRoom(c *gin.Context) {
-	var req api_objects.RoomRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	newRoom, err := db.CreateRoom(h.DB, req.Name, req.Floor, req.Number, req.BuildingID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusCreated, newRoom)
-}
-
-// @Summary Create a new shelf
-// @Description Create a new shelf
-// @Tags shelves
-// @Accept  json
-// @Produce  json
-// @Param shelf body api_objects.ShelfRequest true "Shelf object"
-// @Success 201 {object} db.Shelf
-// @Router /create_shelf [post]
-func (h *Handler) CreateShelf(c *gin.Context) {
-	var req api_objects.ShelfRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Convert api_objects columns to db.ColumnInput
-	columns := make([]db.ColumnInput, len(req.Columns))
-	for i, col := range req.Columns {
-		elements := make([]db.ShelfElementInput, len(col.Elements))
-		for j, el := range col.Elements {
-			elements[j] = db.ShelfElementInput{ID: el.ID, Type: el.Type}
-		}
-		columns[i] = db.ColumnInput{ID: col.ID, Elements: elements}
-	}
-
-	newShelf, err := db.CreateShelf(h.DB, req.ID, req.Name, req.OwnedBy, req.RoomID, columns)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusCreated, newShelf)
-}
-
-// @Summary Add an item to the shopping cart
-// @Description Add an item to the shopping cart
-// @Tags shopping_cart
-// @Accept  json
-// @Produce  json
-// @Param cart_item body api_objects.CartRequest true "Cart item object"
-// @Success 201 {object} db.ShoppingCartItem
-// @Router /add_item_to_cart [post]
-func (h *Handler) CreateCartItem(c *gin.Context) {
-	var req api_objects.CartRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	newCart, err := db.CreateCartItem(h.DB, req.InvItemID, req.NumSelected, 1) //TODO: user id is currently a dummy
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusCreated, newCart)
-}
-
 // @Summary Create a new inventory item
 // @Description Create a new inventory item
 // @Tags items
 // @Accept  json
 // @Produce  json
 // @Param item body api_objects.InventoryItemRequest true "Inventory item object"
-// @Success 201 {object} db.Inventory
-// @Router /create_item [post]
+// @Success 201 {object} db_models.Inventory
+// @Router /items [post]
 func (h *Handler) CreateItem(c *gin.Context) {
 	var req api_objects.InventoryItemRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -133,13 +33,55 @@ func (h *Handler) CreateItem(c *gin.Context) {
 	c.JSON(http.StatusCreated, newItem)
 }
 
+// @Summary Add an item to the shopping cart
+// @Description Add an item to the shopping cart
+// @Tags cart
+// @Accept  json
+// @Produce  json
+// @Param userId path int true "User ID"
+// @Param cart_item body api_objects.CartRequest true "Cart item object"
+// @Success 201 {object} db_models.ShoppingCartItem
+// @Router /users/{userId}/cart/items [post]
+func (h *Handler) CreateCartItem(c *gin.Context) {
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	var req api_objects.CartRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	newCart, err := db.CreateCartItem(h.DB, req.InvItemID, req.NumSelected, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, newCart)
+}
+
+// @Summary Checkout shopping cart
+// @Description Checkout the user's shopping cart and create requests
+// @Tags cart
+// @Accept  json
+// @Produce  json
+// @Param userId path int true "User ID"
+// @Param checkout body api_objects.CheckoutRequest true "Checkout details"
+// @Success 201
+// @Router /users/{userId}/cart/checkout [post]
 func (h *Handler) CheckoutCart(c *gin.Context) {
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
 	var req api_objects.CheckoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	itemMap, err := h.GetCartItemHelper(req.CartID, req.StartDate, req.EndDate)
+	itemMap, err := h.GetCartItemHelper(userId, req.StartDate, req.EndDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -147,7 +89,7 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 
 	for k, v := range itemMap {
 		request := &db_models.Request{
-			UserID:           req.UserID,
+			UserID:           userId,
 			StartDate:        req.StartDate,
 			EndDate:          req.EndDate,
 			Note:             "",
@@ -179,10 +121,24 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 			}
 		}
 	}
-	c.JSON(http.StatusCreated, req)
+	c.JSON(http.StatusCreated, gin.H{"status": "checkout complete"})
 }
 
+// @Summary Review a request
+// @Description Review/approve/deny a borrow request
+// @Tags requests
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Request ID"
+// @Param review body api_objects.RequestReview true "Review details"
+// @Success 200 {object} db_models.RequestReview
+// @Router /requests/{id}/review [post]
 func (h *Handler) RequestReview(c *gin.Context) {
+	requestId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
+		return
+	}
 	var req api_objects.RequestReview
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -190,11 +146,11 @@ func (h *Handler) RequestReview(c *gin.Context) {
 	}
 	rev := &db_models.RequestReview{
 		UserID:    req.UserID,
-		RequestID: req.RequestID,
+		RequestID: requestId,
 		Outcome:   req.Outcome,
 		Note:      req.Note,
 	}
-	err := db.Create_request_review(h.DB, rev)
+	err = db.Create_request_review(h.DB, rev)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -204,7 +160,7 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		var request db_models.Request
 		err := h.DB.Model(&request).
 			Relation("RequestItems.Inventory.Item").
-			Where("id = ?", req.RequestID).
+			Where("id = ?", requestId).
 			Select()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

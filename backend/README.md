@@ -72,31 +72,43 @@ Full API documentation is available via Swagger UI at:
 http://localhost:8000/swagger/index.html
 ```
 
-### Main Endpoints
+### Endpoints Overview
 
-#### Inventory Management
-- `GET /items` - List all items
-- `GET /items/search?name=<query>` - Search items by name
-- `GET /inventory` - List all inventory records (items with locations)
-- `GET /search?search_term=<query>` - Fuzzy search across inventory
+#### Resources
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/organisations` | List all organisations |
+| `GET` | `/organisations/:orgId/buildings` | List buildings for an organisation |
+| `GET` | `/organisations/:orgId/rooms` | List rooms for an organisation |
+| `GET` | `/organisations/:orgId/shelves` | List shelves for an organisation |
+| `GET` | `/organisations/:orgId/inventory?start=X&end=X` | List inventory for an organisation |
 
-#### Locations
-- `GET /locations` - List all locations
-- `POST /locations` - Create a new location
+#### Items
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/items/:id?start=X&end=X` | Get a specific inventory item |
+| `POST` | `/items` | Create a new inventory item |
+| `PUT` | `/items/:id` | Update an inventory item |
 
-#### Persons
-- `GET /persons` - List all persons
-- `GET /persons/search` - Search persons by email, firstname, or lastname
+#### Cart
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/users/:userId/cart?start=X&end=X` | Get a user's shopping cart |
+| `POST` | `/users/:userId/cart/items` | Add an item to the cart |
+| `POST` | `/users/:userId/cart/checkout` | Checkout the cart (creates requests) |
 
-#### Loans
-- `GET /loans` - List all loans
-- `GET /loans/overdue` - Get overdue loans
-- `GET /borrows` - Get loans with person details
-- `GET /borrows_count` - Get total count of borrows
+#### Loans & Requests
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `PUT` | `/loans/:id` | Update a loan (e.g. mark as returned) |
+| `PUT` | `/requests/:id` | Update a request status |
+| `POST` | `/requests/:id/review` | Review/approve/deny a request |
 
-#### Slack Integration
-- `POST /slack/events` - Slack Events API webhook
-- `POST /slack/interactivity` - Slack Interactive Components webhook
+#### Auth
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/auth/eduid/login` | Initiate EduID login |
+| `GET` | `/auth/eduid/callback` | EduID OAuth callback |
 
 ## Slack Bot Integration
 

@@ -21,22 +21,34 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 	return &Handler{DB: db, Cfg: cfg}
 }
 
-// @Summary Get all shelves
-// @Description Get all shelves
-// @Tags shelves
+// @Summary Get all organisations
+// @Description Get all organisations
+// @Tags organisations
 // @Produce  json
-// @Param organisation query string true "Organisation name"
-// @Success 200 {array} api_objects.Shelves
-// @Router /shelves [get]
-func (h *Handler) GetShelves(c *gin.Context) {
-	organisation := c.Query("organisation")
-	if organisation == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No organisation"})
+// @Success 200 {array} db_models.Organisation
+// @Router /organisations [get]
+func (h *Handler) GetOrganisations(c *gin.Context) {
+	var organisations []db_models.Organisation
+	err := h.DB.Model(&organisations).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(http.StatusOK, organisations)
+}
+
+// @Summary Get all shelves for an organisation
+// @Description Get all shelves for an organisation
+// @Tags shelves
+// @Produce  json
+// @Param orgId path string true "Organisation name"
+// @Success 200 {array} api_objects.Shelves
+// @Router /organisations/{orgId}/shelves [get]
+func (h *Handler) GetShelves(c *gin.Context) {
+	organisation := c.Param("orgId")
 	var res []api_objects.Shelves
 	var dbRes []db_models.Shelf
-	err := h.DB.Model(&dbRes).Select()
+	err := h.DB.Model(&dbRes).Where("owned_by = ?", organisation).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -57,31 +69,25 @@ func (h *Handler) GetShelves(c *gin.Context) {
 // @Description Get a specific item
 // @Tags items
 // @Produce  json
-// @Param organisation query string true "Organisation name"
-// @Param id query int true "Inventory Item ID"
-// @Param start query string true "Start date in format 2006-01-02"
-// @Param end query string true "End date in format 2006-01-02"
+// @Param id path int true "Inventory Item ID"
+// @Param start query string false "Start date in format 2006-01-02"
+// @Param end query string false "End date in format 2006-01-02"
 // @Success 200 {object} api_objects.InventoryItemWithShelf
-// @Router /item [get]
+// @Router /items/{id} [get]
 func (h *Handler) GetItem(c *gin.Context) {
-	organisation := c.Query("organisation")
-	if organisation == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No organisation"})
-		return
-	}
-	id, err := strconv.Atoi(c.Query("id")) //the id should be the id of the inventory entry
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
 		return
 	}
 	start, err := time.Parse("2006-01-02", c.Query("start"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start date"})
 		return
 	}
 	end, err := time.Parse("2006-01-02", c.Query("end"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end date"})
 		return
 	}
 	invItem, err := h.GetInventoryItemHelper(id, start, end)
@@ -89,55 +95,57 @@ func (h *Handler) GetItem(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	shelf, err := h.GetShelfHelper(invItem.ShelfID, organisation)
+
+	// Look up the organisation from the shelf
+	var shelf db_models.Shelf
+	err = h.DB.Model(&shelf).Where("id = ?", invItem.ShelfID).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	shelfObj, err := h.GetShelfHelper(invItem.ShelfID, shelf.OwnedBy)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	res := api_objects.InventoryItemWithShelf{
-		invItem, shelf,
+		InventoryItem: invItem,
+		Shelf:         shelfObj,
 	}
 	c.JSON(http.StatusOK, res)
 }
 
-// @Summary Get all organisations
-// @Description Get all organisations
-// @Tags organisations
-// @Produce  json
-// @Success 200 {array} db.Organisation
-// @Router /organisations [get]
-func (h *Handler) GetOrganisations(c *gin.Context) {
-	var organisations []db_models.Organisation
-	err := h.DB.Model(&organisations).Select()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, organisations)
-}
-
 // @Summary Get a user's shopping cart
 // @Description Get a user's shopping cart
-// @Tags shopping_cart
+// @Tags cart
 // @Produce  json
-// @Param userID query int true "User ID"
+// @Param userId path int true "User ID"
 // @Param start query string true "Start date in format 2006-01-02"
 // @Param end query string true "End date in format 2006-01-02"
 // @Success 200 {object} map[string][]api_objects.CartItem
-// @Router /shopping_cart [get]
+// @Router /users/{userId}/cart [get]
 func (h *Handler) GetShoppingCart(c *gin.Context) {
-	id, err := strconv.Atoi(c.Query("userID")) //the id should be the id of the inventory entry
+	id, err := strconv.Atoi(c.Param("userId"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
 	}
 	start, err := time.Parse("2006-01-02", c.Query("start"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start date"})
 		return
 	}
 	end, err := time.Parse("2006-01-02", c.Query("end"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end date"})
 		return
 	}
 	m, err := h.GetCartItemHelper(id, start, end)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, m)
 }

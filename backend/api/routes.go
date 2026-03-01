@@ -10,31 +10,29 @@ import (
 func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	h := NewHandler(dbCon, cfg)
 
-	r.GET("/shelves", h.GetShelves) // ?organisation=
-	r.GET("/item", h.GetItem)       // ?organisation=X&id=X&start=X&end=X
+	// Resources
 	r.GET("/organisations", h.GetOrganisations)
-	r.GET("/shopping_cart", h.GetShoppingCart) // ?userID=X&start=X&end=X
+	r.GET("/organisations/:orgId/buildings", h.GetBuildings)
+	r.GET("/organisations/:orgId/rooms", h.GetRooms)
+	r.GET("/organisations/:orgId/shelves", h.GetShelves)
+	r.GET("/organisations/:orgId/inventory", h.GetInventory) // ?start=X&end=X
 
-	// Edu-ID endpoints
+	// Items
+	r.GET("/items/:id", h.GetItem) // ?start=X&end=X
+	r.POST("/items", h.CreateItem)
+	r.PUT("/items/:id", h.UpdateItem)
+
+	// Cart
+	r.GET("/users/:userId/cart", h.GetShoppingCart) // ?start=X&end=X
+	r.POST("/users/:userId/cart/items", h.CreateCartItem)
+	r.POST("/users/:userId/cart/checkout", h.CheckoutCart)
+
+	// Loans & Requests
+	r.PUT("/loans/:id", h.UpdateLoan)
+	r.PUT("/requests/:id", h.UpdateRequest)
+	r.POST("/requests/:id/review", h.RequestReview)
+
+	// Auth
 	r.GET("/auth/eduid/login", auth.LoginHandler)
 	r.GET("/auth/eduid/callback", auth.CallbackHandler)
-
-	//sorted by date
-	r.GET("/rooms_sorted", h.GetRoomsS)
-	r.GET("/buildings_sorted", h.GetBuildingsS)
-	r.GET("/shelves_sorted", h.GetShelvesS)
-	r.GET("/inventory_sorted", h.GetInventoryS) //?start=X&end=X
-
-	//post
-	r.POST("/create_building", h.CreateBuilding)
-	r.POST("/create_room", h.CreateRoom)
-	r.POST("/create_shelf", h.CreateShelf)
-	r.POST("/add_item_to_cart", h.CreateCartItem)
-	r.POST("/create_item", h.CreateItem)
-	r.POST("/checkout", h.CheckoutCart)
-
-	r.POST("/review", h.RequestReview)
-
-	r.PUT("/update_request", h.UpdateRequest)
-	r.PUT("/update_loan", h.UpdateLoan)
 }

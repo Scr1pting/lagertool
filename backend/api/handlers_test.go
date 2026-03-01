@@ -144,122 +144,45 @@ func TestGetOrganisations(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCreateBuilding(t *testing.T) {
+func TestGetBuildings(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.POST("/create_building", h.CreateBuilding)
+	router.GET("/organisations/:orgId/buildings", h.GetBuildings)
 
-	testCases := []struct {
-		name           string
-		payload        string
-		expectedStatus int
-		expectedName   string
-	}{
-		{
-			name:           "Successful Creation",
-			payload:        `{"name": "Main Library", "campus": "Main Campus"}`,
-			expectedStatus: http.StatusCreated, // Expect 201 Created
-			expectedName:   "Main Library",
-		},
-		{
-			name:           "Invalid JSON - Missing Name",
-			payload:        `{"campus": "Test Campus"}`,
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name:           "Invalid JSON - Malformed",
-			payload:        `{"name": "Main Library", "campus": "Main Campus"`,
-			expectedStatus: http.StatusBadRequest,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/create_building", strings.NewReader(tc.payload))
-			req.Header.Set("Content-Type", "application/json")
-
-			w := httptest.NewRecorder()
-			router.ServeHTTP(w, req)
-
-			assert.Equal(t, tc.expectedStatus, w.Code)
-
-			if tc.expectedStatus == http.StatusCreated {
-				var createdBuilding db_models.Building
-				err := json.Unmarshal(w.Body.Bytes(), &createdBuilding)
-				assert.NoError(t, err)
-				assert.Equal(t, tc.expectedName, createdBuilding.Name)
-				assert.NotZero(t, createdBuilding.ID) // Verify an ID was assigned
-
-				// Clean up the created record
-				_, err = dbCon.Model(&createdBuilding).Where("id = ?", createdBuilding.ID).Delete()
-				assert.NoError(t, err)
-			}
-		})
-	}
-}
-
-func TestCreateRoom(t *testing.T) {
-	router, dbCon := setupTestRouter()
-	defer dbCon.Close()
-
-	h := NewHandler(dbCon, nil)
-	router.POST("/create_room", h.CreateRoom)
-
-	// Pre-insert a building for the foreign key constraint
-	building := &db_models.Building{ID: 1, Name: "Test Building", Campus: "Test Campus"}
-	_, err := dbCon.Model(building).Insert()
-	assert.NoError(t, err)
-	// Defer cleanup to ensure it runs even if the test fails
-	defer func() {
-		_, err := dbCon.Model(building).Where("id = ?", building.ID).Delete()
-		assert.NoError(t, err)
-	}()
-
-	// Define test case
-	payload := `{"name": "Room 101", "floor": "1", "number": "101", "building": 1}`
-	req, _ := http.NewRequest("POST", "/create_room", strings.NewReader(payload))
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	// Assert the status code, and print body on failure
-	if !assert.Equal(t, http.StatusCreated, w.Code) {
-		t.Log("Response body:", w.Body.String())
-	}
-
-	// Assert the response body
-	var createdRoom db_models.Room
-	err = json.Unmarshal(w.Body.Bytes(), &createdRoom)
-	assert.NoError(t, err)
-	assert.Equal(t, "Room 101", createdRoom.Name)
-	assert.NotZero(t, createdRoom.ID)
-
-	// Clean up the created room record
-	_, err = dbCon.Model(&createdRoom).Where("id = ?", createdRoom.ID).Delete()
-	assert.NoError(t, err)
-}
-
-func TestGetBuildingsS(t *testing.T) {
-	router, dbCon := setupTestRouter()
-	defer dbCon.Close()
-
-	h := NewHandler(dbCon, nil)
-	router.GET("/buildings_sorted", h.GetBuildingsS)
-
-	// Clean up any previous runs of this test
-	_, err := dbCon.Model(&db_models.Building{}).Where("name = ? OR name = ?", "Old Building", "New Building").Delete()
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Buildings Test Org"}
+	_, err := dbCon.Model(org).Insert()
 	assert.NoError(t, err)
 
-	// Insert test data with different update dates
+	// Create buildings with rooms and shelves owned by the org
 	b1 := &db_models.Building{Name: "Old Building", Campus: "Main", UpdateDate: time.Now().Add(-time.Hour)}
 	b2 := &db_models.Building{Name: "New Building", Campus: "Main", UpdateDate: time.Now()}
 	_, err = dbCon.Model(b1, b2).Insert()
 	assert.NoError(t, err)
 
-	req, _ := http.NewRequest("GET", "/buildings_sorted", nil)
+	r1 := &db_models.Room{Name: "Room 1", BuildingID: b1.ID, UpdateDate: time.Now()}
+	r2 := &db_models.Room{Name: "Room 2", BuildingID: b2.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(r1, r2).Insert()
+	assert.NoError(t, err)
+
+	s1 := &db_models.Shelf{ID: "BUILD-S-1", Name: "Shelf 1", RoomID: r1.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	s2 := &db_models.Shelf{ID: "BUILD-S-2", Name: "Shelf 2", RoomID: r2.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(s1, s2).Insert()
+	assert.NoError(t, err)
+
+	defer func() {
+		_, _ = dbCon.Model(s1).Where("id = ?", s1.ID).Delete()
+		_, _ = dbCon.Model(s2).Where("id = ?", s2.ID).Delete()
+		_, _ = dbCon.Model(r1).Where("id = ?", r1.ID).Delete()
+		_, _ = dbCon.Model(r2).Where("id = ?", r2.ID).Delete()
+		_, _ = dbCon.Model(b1).Where("id = ?", b1.ID).Delete()
+		_, _ = dbCon.Model(b2).Where("id = ?", b2.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/buildings", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -269,35 +192,49 @@ func TestGetBuildingsS(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &buildings)
 	assert.NoError(t, err)
 
-	// Assert that we got at least 2 buildings and they are in the correct order (newest first)
 	assert.GreaterOrEqual(t, len(buildings), 2)
 	assert.Equal(t, "New Building", buildings[0].Name)
 	assert.Equal(t, "Old Building", buildings[1].Name)
-
-	// Cleanup
-	_, err = dbCon.Model(&db_models.Building{}).Where("name = ? OR name = ?", "Old Building", "New Building").Delete()
-	assert.NoError(t, err)
 }
 
-func TestGetRoomsS(t *testing.T) {
+func TestGetRooms(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.GET("/rooms_sorted", h.GetRoomsS)
+	router.GET("/organisations/:orgId/rooms", h.GetRooms)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Rooms Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
 
 	// Insert related building
 	building := &db_models.Building{Name: "Test Building", Campus: "Test Campus"}
-	_, err := dbCon.Model(building).Insert()
+	_, err = dbCon.Model(building).Insert()
 	assert.NoError(t, err)
 
-	// Insert test data with different update dates
+	// Insert rooms
 	r1 := &db_models.Room{Name: "Old Room", BuildingID: building.ID, UpdateDate: time.Now().Add(-time.Hour)}
 	r2 := &db_models.Room{Name: "New Room", BuildingID: building.ID, UpdateDate: time.Now()}
 	_, err = dbCon.Model(r1, r2).Insert()
 	assert.NoError(t, err)
 
-	req, _ := http.NewRequest("GET", "/rooms_sorted", nil)
+	// Create shelves owned by the org in these rooms
+	s1 := &db_models.Shelf{ID: "ROOM-S-1", Name: "Shelf 1", RoomID: r1.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	s2 := &db_models.Shelf{ID: "ROOM-S-2", Name: "Shelf 2", RoomID: r2.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(s1, s2).Insert()
+	assert.NoError(t, err)
+
+	defer func() {
+		_, _ = dbCon.Model(s1).Where("id = ?", s1.ID).Delete()
+		_, _ = dbCon.Model(s2).Where("id = ?", s2.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Room{}).Where("name = ? OR name = ?", "Old Room", "New Room").Delete()
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/rooms", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -310,44 +247,16 @@ func TestGetRoomsS(t *testing.T) {
 	assert.GreaterOrEqual(t, len(rooms), 2)
 	assert.Equal(t, "New Room", rooms[0].Name)
 	assert.Equal(t, "Old Room", rooms[1].Name)
-
-	// Cleanup
-	_, err = dbCon.Model(&db_models.Room{}).Where("name = ? OR name = ?", "Old Room", "New Room").Delete()
-	assert.NoError(t, err)
-	_, err = dbCon.Model(building).Where("id = ?", building.ID).Delete()
-	assert.NoError(t, err)
-}
-
-func TestGetShelvesS(t *testing.T) {
-	router, dbCon := setupTestRouter()
-	defer dbCon.Close()
-	h := NewHandler(dbCon, nil)
-	router.GET("/shelves_sorted", h.GetShelvesS)
-
-	hier := createTestHierarchy(t, dbCon)
-
-	req, _ := http.NewRequest("GET", "/shelves_sorted", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	var shelves []api_objects.ShelfSorted
-	err := json.Unmarshal(w.Body.Bytes(), &shelves)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, shelves)
-	assert.Equal(t, "Hierarchy Shelf", shelves[0].Name)
-
-	cleanupTestHierarchy(t, dbCon, hier)
 }
 
 func TestGetShelves(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 	h := NewHandler(dbCon, nil)
-	router.GET("/shelves", h.GetShelves)
+	router.GET("/organisations/:orgId/shelves", h.GetShelves)
 
 	// Create test organisation
-	org := &db_models.Organisation{Name: "Test Org"}
+	org := &db_models.Organisation{Name: "Shelves Test Org"}
 	_, err := dbCon.Model(org).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -362,15 +271,9 @@ func TestGetShelves(t *testing.T) {
 	_, err = dbCon.Model(hier.Shelf).WherePK().Update()
 	assert.NoError(t, err)
 
-	// Test without organisation parameter (should fail)
-	req, _ := http.NewRequest("GET", "/shelves", nil)
+	// Test with organisation in path
+	req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/shelves", nil)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-
-	// Test with organisation parameter
-	req, _ = http.NewRequest("GET", "/shelves?organisation="+org.Name, nil)
-	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -382,21 +285,34 @@ func TestGetShelves(t *testing.T) {
 	cleanupTestHierarchy(t, dbCon, hier)
 }
 
-func TestGetInventoryS(t *testing.T) {
+func TestGetInventory(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 	h := NewHandler(dbCon, nil)
-	router.GET("/inventory_sorted", h.GetInventoryS)
+	router.GET("/organisations/:orgId/inventory", h.GetInventory)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Inventory Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
 
 	hier := createTestHierarchy(t, dbCon)
 
-	req, _ := http.NewRequest("GET", "/inventory_sorted?start=2025-01-01&end=2025-12-31", nil)
+	// Update the shelf to be owned by the test organisation
+	hier.Shelf.OwnedBy = org.Name
+	_, err = dbCon.Model(hier.Shelf).WherePK().Update()
+	assert.NoError(t, err)
+
+	req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/inventory?start=2025-01-01&end=2025-12-31", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	var inventory []api_objects.InventorySorted
-	err := json.Unmarshal(w.Body.Bytes(), &inventory)
+	err = json.Unmarshal(w.Body.Bytes(), &inventory)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, inventory)
 
@@ -407,10 +323,10 @@ func TestGetItem(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 	h := NewHandler(dbCon, nil)
-	router.GET("/item", h.GetItem)
+	router.GET("/items/:id", h.GetItem)
 
 	// Create test organisation
-	org := &db_models.Organisation{Name: "Test Org"}
+	org := &db_models.Organisation{Name: "Item Test Org"}
 	_, err := dbCon.Model(org).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -420,15 +336,14 @@ func TestGetItem(t *testing.T) {
 
 	hier := createTestHierarchy(t, dbCon)
 
-	// Test without organisation parameter (should fail)
-	req, _ := http.NewRequest("GET", "/item?id="+strconv.Itoa(hier.Inventory.ID)+"&start=2025-01-01&end=2025-12-31", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	// Update the shelf to be owned by the test organisation
+	hier.Shelf.OwnedBy = org.Name
+	_, err = dbCon.Model(hier.Shelf).WherePK().Update()
+	assert.NoError(t, err)
 
-	// Test with organisation parameter
-	req, _ = http.NewRequest("GET", "/item?organisation="+org.Name+"&id="+strconv.Itoa(hier.Inventory.ID)+"&start=2025-01-01&end=2025-12-31", nil)
-	w = httptest.NewRecorder()
+	// Test with item ID in path
+	req, _ := http.NewRequest("GET", "/items/"+strconv.Itoa(hier.Inventory.ID)+"?start=2025-01-01&end=2025-12-31", nil)
+	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -445,10 +360,10 @@ func TestCreateCartItem(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.POST("/add_item_to_cart", h.CreateCartItem)
+	router.POST("/users/:userId/cart/items", h.CreateCartItem)
 
-	// The user ID is hardcoded to 1 in the handler, so we create a user with ID 1.
-	user := &db_models.User{ID: 1, Email: "test@example.com", Name: "Test User"}
+	// Create a test user
+	user := &db_models.User{Email: "test@example.com", Name: "Test User"}
 	_, err := dbCon.Model(user).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -494,7 +409,7 @@ func TestCreateCartItem(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/add_item_to_cart", strings.NewReader(tc.payload))
+			req, _ := http.NewRequest("POST", "/users/"+strconv.Itoa(user.ID)+"/cart/items", strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -519,105 +434,12 @@ func TestCreateCartItem(t *testing.T) {
 	}
 }
 
-func TestCreateShelf(t *testing.T) {
-	router, dbCon := setupTestRouter()
-	defer dbCon.Close()
-
-	h := NewHandler(dbCon, nil)
-	router.POST("/create_shelf", h.CreateShelf)
-
-	// Pre-insert an organisation, a building and a room for the foreign key constraint
-	org := &db_models.Organisation{Name: "Test Org"}
-	_, err := dbCon.Model(org).Insert()
-	assert.NoError(t, err)
-	defer func() {
-		_, err := dbCon.Model(org).Where("name = ?", org.Name).Delete()
-		assert.NoError(t, err)
-	}()
-
-	building := &db_models.Building{Name: "Test Building", Campus: "Test Campus"}
-	_, err = dbCon.Model(building).Insert()
-	assert.NoError(t, err)
-	defer func() {
-		_, err := dbCon.Model(building).Where("id = ?", building.ID).Delete()
-		assert.NoError(t, err)
-	}()
-
-	room := &db_models.Room{Name: "Test Room", BuildingID: building.ID}
-	_, err = dbCon.Model(room).Insert()
-	assert.NoError(t, err)
-	defer func() {
-		_, err := dbCon.Model(room).Where("id = ?", room.ID).Delete()
-		assert.NoError(t, err)
-	}()
-
-	testCases := []struct {
-		name           string
-		payload        string
-		expectedStatus int
-	}{
-		{
-			name: "Successful Creation",
-			payload: `{
-                "id": "S-1",
-                "name": "Test Shelf",
-                "buildingId": ` + strconv.Itoa(building.ID) + `,
-                "roomId": ` + strconv.Itoa(room.ID) + `,
-                "ownedBy": "` + org.Name + `",
-                "columns": [
-                    {
-                        "id": "C-1",
-                        "elements": [
-                            {"id": "SU-1", "type": "slim"},
-                            {"id": "SU-2", "type": "large"}
-                        ]
-                    }
-                ]
-            }`,
-			expectedStatus: http.StatusCreated,
-		},
-		{
-			name:           "Invalid JSON - Missing ID",
-			payload:        `{"name": "Test Shelf"}`,
-			expectedStatus: http.StatusBadRequest,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/create_shelf", strings.NewReader(tc.payload))
-			req.Header.Set("Content-Type", "application/json")
-
-			w := httptest.NewRecorder()
-			router.ServeHTTP(w, req)
-
-			assert.Equal(t, tc.expectedStatus, w.Code)
-
-			if tc.expectedStatus == http.StatusCreated {
-				var createdShelf db_models.Shelf
-				err := json.Unmarshal(w.Body.Bytes(), &createdShelf)
-				assert.NoError(t, err)
-				assert.Equal(t, "Test Shelf", createdShelf.Name)
-				assert.Equal(t, "S-1", createdShelf.ID)
-
-				// Clean up the created records
-				_, err = dbCon.Model(&db_models.ShelfUnit{}).Where("id = 'SU-1' OR id = 'SU-2'").Delete()
-				assert.NoError(t, err)
-				_, err = dbCon.Model(&db_models.Column{}).Where("id = 'C-1'").Delete()
-				assert.NoError(t, err)
-				_, err = dbCon.Model(&db_models.Shelf{}).Where("id = 'S-1'").Delete()
-				assert.NoError(t, err)
-			}
-		})
-	}
-}
-
 func TestCreateItem(t *testing.T) {
 	router, dbCon := setupTestRouter()
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.POST("/create_item", h.CreateItem)
+	router.POST("/items", h.CreateItem)
 
 	hier := createTestHierarchy(t, dbCon)
 	defer cleanupTestHierarchy(t, dbCon, hier)
@@ -647,7 +469,7 @@ func TestCreateItem(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/create_item", strings.NewReader(tc.payload))
+			req, _ := http.NewRequest("POST", "/items", strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -677,7 +499,7 @@ func TestCheckoutCart(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.POST("/checkout", h.CheckoutCart)
+	router.POST("/users/:userId/cart/checkout", h.CheckoutCart)
 
 	// Create test organisation (must exist before shelf references it)
 	org := &db_models.Organisation{Name: "Checkout Test Org"}
@@ -780,43 +602,31 @@ func TestCheckoutCart(t *testing.T) {
 		{
 			name: "Successful Checkout",
 			payload: `{
-				"cartId": ` + strconv.Itoa(user.ID) + `,
 				"startDate": "` + startDate.Format(time.RFC3339) + `",
-				"endDate": "` + endDate.Format(time.RFC3339) + `",
-				"userId": ` + strconv.Itoa(user.ID) + `
+				"endDate": "` + endDate.Format(time.RFC3339) + `"
 			}`,
 			expectedStatus: http.StatusCreated,
 		},
 		{
-			name:           "Invalid JSON - Missing CartID",
-			payload:        `{"startDate": "2025-01-01T00:00:00Z", "endDate": "2025-01-02T00:00:00Z", "userId": 1}`,
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
 			name:           "Invalid JSON - Missing StartDate",
-			payload:        `{"cartId": 1, "endDate": "2025-01-02T00:00:00Z", "userId": 1}`,
+			payload:        `{"endDate": "2025-01-02T00:00:00Z"}`,
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
 			name:           "Invalid JSON - Missing EndDate",
-			payload:        `{"cartId": 1, "startDate": "2025-01-01T00:00:00Z", "userId": 1}`,
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name:           "Invalid JSON - Missing UserID",
-			payload:        `{"cartId": 1, "startDate": "2025-01-01T00:00:00Z", "endDate": "2025-01-02T00:00:00Z"}`,
+			payload:        `{"startDate": "2025-01-01T00:00:00Z"}`,
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
 			name:           "Invalid JSON - Malformed",
-			payload:        `{"cartId": 1, "startDate": "2025-01-01T00:00:00Z"`,
+			payload:        `{"startDate": "2025-01-01T00:00:00Z"`,
 			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/checkout", strings.NewReader(tc.payload))
+			req, _ := http.NewRequest("POST", "/users/"+strconv.Itoa(user.ID)+"/cart/checkout", strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -845,7 +655,6 @@ func TestCheckoutCart(t *testing.T) {
 				err = dbCon.Model(&requestItems).Where("request_id = ?", request.ID).Select()
 				assert.NoError(t, err)
 				assert.NotEmpty(t, requestItems)
-				// Note: CheckoutCart uses item.ID (which is ItemID from CartItem) as InventoryID
 				assert.Equal(t, item.ID, requestItems[0].InventoryID)
 				assert.Equal(t, cartItem.Amount, requestItems[0].Amount)
 			}
@@ -858,7 +667,7 @@ func TestRequestReview(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.POST("/review", h.RequestReview)
+	router.POST("/requests/:id/review", h.RequestReview)
 
 	// Create test organisation
 	org := &db_models.Organisation{Name: "Review Test Org"}
@@ -900,34 +709,31 @@ func TestRequestReview(t *testing.T) {
 
 	testCases := []struct {
 		name           string
+		url            string
 		payload        string
 		expectedStatus int
 	}{
 		{
 			name: "Successful Review - Rejected",
+			url:  "/requests/" + strconv.Itoa(request.ID) + "/review",
 			payload: `{
 				"user_id": ` + strconv.Itoa(reviewer.ID) + `,
-				"request_id": ` + strconv.Itoa(request.ID) + `,
 				"outcome": "rejected",
 				"note": "Not available"
 			}`,
 			expectedStatus: http.StatusOK,
 		},
 		{
-			name:           "Invalid JSON - Missing RequestID",
-			payload:        `{"user_id": 1, "outcome": "success", "note": "ok"}`,
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
 			name:           "Invalid JSON - Malformed",
-			payload:        `{"user_id": 1, "request_id": 1`,
+			url:            "/requests/" + strconv.Itoa(request.ID) + "/review",
+			payload:        `{"user_id": 1`,
 			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("POST", "/review", strings.NewReader(tc.payload))
+			req, _ := http.NewRequest("POST", tc.url, strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -953,7 +759,7 @@ func TestRequestReviewSuccess(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.POST("/review", h.RequestReview)
+	router.POST("/requests/:id/review", h.RequestReview)
 
 	// Create test organisation
 	org := &db_models.Organisation{Name: "Review Success Test Org"}
@@ -1071,12 +877,11 @@ func TestRequestReviewSuccess(t *testing.T) {
 	t.Run("Successful Review - Creates Loans and Consumed", func(t *testing.T) {
 		payload := `{
 			"user_id": ` + strconv.Itoa(reviewer.ID) + `,
-			"request_id": ` + strconv.Itoa(request.ID) + `,
 			"outcome": "success",
 			"note": "Approved"
 		}`
 
-		req, _ := http.NewRequest("POST", "/review", strings.NewReader(payload))
+		req, _ := http.NewRequest("POST", "/requests/"+strconv.Itoa(request.ID)+"/review", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
@@ -1113,7 +918,7 @@ func TestUpdateRequest(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.PUT("/update_request", h.UpdateRequest)
+	router.PUT("/requests/:id", h.UpdateRequest)
 
 	// Create test organisation
 	org := &db_models.Organisation{Name: "Update Request Test Org"}
@@ -1148,14 +953,15 @@ func TestUpdateRequest(t *testing.T) {
 
 	testCases := []struct {
 		name            string
+		url             string
 		payload         string
 		expectedStatus  int
 		expectedOutcome string
 	}{
 		{
 			name: "Successful Update",
+			url:  "/requests/" + strconv.Itoa(request.ID),
 			payload: `{
-				"request_id": ` + strconv.Itoa(request.ID) + `,
 				"outcome": "approved"
 			}`,
 			expectedStatus:  http.StatusAccepted,
@@ -1163,14 +969,15 @@ func TestUpdateRequest(t *testing.T) {
 		},
 		{
 			name:           "Invalid JSON - Malformed",
-			payload:        `{"request_id": 1`,
+			url:            "/requests/" + strconv.Itoa(request.ID),
+			payload:        `{"outcome": "approved"`,
 			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("PUT", "/update_request", strings.NewReader(tc.payload))
+			req, _ := http.NewRequest("PUT", tc.url, strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -1196,7 +1003,7 @@ func TestUpdateLoan(t *testing.T) {
 	defer dbCon.Close()
 
 	h := NewHandler(dbCon, nil)
-	router.PUT("/update_loan", h.UpdateLoan)
+	router.PUT("/loans/:id", h.UpdateLoan)
 
 	// Create test organisation
 	org := &db_models.Organisation{Name: "Update Loan Test Org"}
@@ -1294,27 +1101,29 @@ func TestUpdateLoan(t *testing.T) {
 
 	testCases := []struct {
 		name           string
+		url            string
 		payload        string
 		expectedStatus int
 	}{
 		{
 			name: "Successful Loan Return",
+			url:  "/loans/" + strconv.Itoa(loan.ID),
 			payload: `{
-				"loanId": ` + strconv.Itoa(loan.ID) + `,
 				"returnedAt": "` + returnedAt.Format(time.RFC3339) + `"
 			}`,
 			expectedStatus: http.StatusAccepted,
 		},
 		{
 			name:           "Invalid JSON - Malformed",
-			payload:        `{"loanId": 1`,
+			url:            "/loans/" + strconv.Itoa(loan.ID),
+			payload:        `{"returnedAt": "2025-01-01"`,
 			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, _ := http.NewRequest("PUT", "/update_loan", strings.NewReader(tc.payload))
+			req, _ := http.NewRequest("PUT", tc.url, strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -1334,4 +1143,72 @@ func TestUpdateLoan(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUpdateItem(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.PUT("/items/:id", h.UpdateItem)
+
+	hier := createTestHierarchy(t, dbCon)
+	defer cleanupTestHierarchy(t, dbCon, hier)
+
+	testCases := []struct {
+		name           string
+		url            string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Update - Amount",
+			url:  "/items/" + strconv.Itoa(hier.Inventory.ID),
+			payload: `{
+				"amount": 50
+			}`,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Successful Update - Note",
+			url:  "/items/" + strconv.Itoa(hier.Inventory.ID),
+			payload: `{
+				"note": "Updated note"
+			}`,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "Invalid ID",
+			url:            "/items/notanumber",
+			payload:        `{"amount": 50}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Non-existent item",
+			url:            "/items/999999",
+			payload:        `{"amount": 50}`,
+			expectedStatus: http.StatusNotFound,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("PUT", tc.url, strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if !assert.Equal(t, tc.expectedStatus, w.Code) {
+				t.Log("Response body:", w.Body.String())
+			}
+		})
+	}
+
+	// Verify the updates actually persisted
+	var updatedInv db_models.Inventory
+	err := dbCon.Model(&updatedInv).Where("id = ?", hier.Inventory.ID).Select()
+	assert.NoError(t, err)
+	assert.Equal(t, 50, updatedInv.Amount)
+	assert.Equal(t, "Updated note", updatedInv.Note)
 }
