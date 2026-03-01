@@ -26,11 +26,11 @@ const itemBorrowHistoryColumns: ColumnDef<ItemBorrowHistory>[] = [
         cell: ({ row }) => row.original.eventName,
     },
     {
-        accessorKey: "borrowDate",
+        accessorKey: "startDate",
         header: ({ column }) => <SortableHeader column={column} title="Borrowed" />,
         sortingFn: (a, b) =>
-            new Date(a.original.borrowDate).getTime() - new Date(b.original.borrowDate).getTime(),
-        cell: ({ row }) => formatDate(row.original.borrowDate),
+            new Date(a.original.startDate).getTime() - new Date(b.original.startDate).getTime(),
+        cell: ({ row }) => formatDate(row.original.startDate),
     },
     {
         accessorKey: "returnDate",

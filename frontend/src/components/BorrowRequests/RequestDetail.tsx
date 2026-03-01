@@ -8,6 +8,10 @@ import { Button } from "../shadcn/button"
 import { ArrowUp } from "lucide-react"
 import { Input } from "../shadcn/input"
 import { useEffect, useRef, useState } from "react"
+import { Badge } from "../shadcn/badge"
+import { capitalize } from "@/lib/capitalize"
+import { Card, CardContent } from "../shadcn/card"
+import { formatDate } from "@/lib/formatDate"
 
 
 interface RequestDetailProps {
@@ -35,32 +39,32 @@ function RequestDetail({ request }: RequestDetailProps) {
 
   return (
     <section ref={sectionRef} className="flex flex-col" style={{ minHeight }}>
-      <div className="flex justify-between">
+      <div className="flex gap-2">
+        <Badge variant="red">{capitalize(request.approvalState)}</Badge>
+        {request.timeState && <Badge>{capitalize(request.timeState)}</Badge>}
+      </div>
+
+      <div className="flex justify-between mt-2">
         <h2 className="text-2xl font-semibold mb-1.5">{request.title}</h2>
         <div className="flex gap-2">
           <RejectRequest request={request} />
           <ApproveRequest request={request} />
         </div>
       </div>
-      
-      <div className="flex gap-1.5 items-center -ml-0.5 mt-1.5">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          viewBox="0 0 24 24" 
-          fill="currentColor"
-          className="size-8.5 text-muted-foreground"
-        >
-          <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clipRule="evenodd" />
-        </svg>
-      
-        {request.author}
-      </div>
 
-      {request.description &&
-        <p className="mt-3">
-          <span className="font-bold">Description:</span> {request.description}
-        </p>
-      }
+      <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5 text-sm mt-3">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Submitted</span>
+        <span className="font-medium">{formatDate(request.creationDate)}</span>
+
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Borrow</span>
+
+        <span className="font-medium">
+          {formatDate(request.startDate)} → {formatDate(request.endDate)}
+        </span>
+
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Author</span>
+        <span className="font-medium">{request.author}</span>
+      </div>
 
       <DataTable
         data={request.items} 

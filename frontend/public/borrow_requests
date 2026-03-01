@@ -5,8 +5,8 @@
     "description": "Beakers and flasks needed for organic chemistry lab session on Monday.",
     "author": "Alex Nguyen",
     "creationDate": "2026-02-01T09:00:00Z",
-    "borrowDate": "2026-02-10T08:00:00Z",
-    "dueDate": "2026-02-17T17:00:00Z",
+    "startDate": "2026-02-10T08:00:00Z",
+    "endDate": "2026-02-17T17:00:00Z",
     "items": [
       {
         "id": 12,
@@ -19,7 +19,7 @@
         "room": { "id": 3, "name": "Storage Room A", "number": "105", "building": { "id": 1, "name": "Science Hall" } }
       }
     ],
-    "state": "approved",
+    "approvalState": "approved",
     "messages": [
       {
         "id": 1,
@@ -39,8 +39,8 @@
     "description": "Need a portable projector for the design thinking workshop.",
     "author": "Priya Shah",
     "creationDate": "2026-02-05T14:30:00Z",
-    "borrowDate": "2026-02-14T09:00:00Z",
-    "dueDate": "2026-02-14T18:00:00Z",
+    "startDate": "2026-02-14T09:00:00Z",
+    "endDate": "2026-02-14T18:00:00Z",
     "items": [
       {
         "id": 7,
@@ -53,7 +53,7 @@
         "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
       }
     ],
-    "state": "pending",
+    "approvalState": "pending",
     "messages": [
       {
         "id": 1,
@@ -80,8 +80,8 @@
     ],
     "author": "Mateo Alvarez",
     "creationDate": "2026-01-28T11:15:00Z",
-    "borrowDate": "2026-02-03T10:00:00Z",
-    "dueDate": "2026-02-10T17:00:00Z",
+    "startDate": "2026-02-03T10:00:00Z",
+    "endDate": "2026-02-10T17:00:00Z",
     "returnedDate": "2026-02-09T15:30:00Z",
     "items": [
       {
@@ -95,7 +95,7 @@
         "room": { "id": 8, "name": "Tool Room", "number": "B12", "building": { "id": 3, "name": "Engineering Wing" } }
       }
     ],
-    "state": "approved"
+    "approvalState": "approved"
   },
   {
     "id": 4,
@@ -103,8 +103,8 @@
     "description": "DSLR camera with tripod for student documentary project.",
     "author": "Sara Lindberg",
     "creationDate": "2026-02-10T16:00:00Z",
-    "borrowDate": "2026-02-20T08:00:00Z",
-    "dueDate": "2026-03-06T17:00:00Z",
+    "startDate": "2026-02-20T08:00:00Z",
+    "endDate": "2026-03-06T17:00:00Z",
     "items": [
       {
         "id": 31,
@@ -117,7 +117,7 @@
         "room": { "id": 5, "name": "AV Storage", "number": "201", "building": { "id": 2, "name": "Main Building" } }
       }
     ],
-    "state": "pending",
+    "approvalState": "pending",
     "messages": [
       {
         "id": 1,
@@ -137,8 +137,8 @@
     "description": "Soldering iron and accessories for circuit board prototyping.",
     "author": "Jordan Wells",
     "creationDate": "2026-02-08T10:45:00Z",
-    "borrowDate": "2026-02-12T09:00:00Z",
-    "dueDate": "2026-02-19T17:00:00Z",
+    "startDate": "2026-02-12T09:00:00Z",
+    "endDate": "2026-02-19T17:00:00Z",
     "items": [
       {
         "id": 45,
@@ -151,7 +151,7 @@
         "room": { "id": 9, "name": "Electronics Lab", "number": "B20", "building": { "id": 3, "name": "Engineering Wing" } }
       }
     ],
-    "state": "rejected",
+    "approvalState": "rejected",
     "messages": [
       {
         "id": 1,

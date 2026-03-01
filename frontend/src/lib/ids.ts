@@ -1,4 +1,4 @@
-export const makeId = (): string => {
+export function makeId(): string {
   const ALPHANUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   const buf = new Uint8Array(5)
   crypto.getRandomValues(buf)

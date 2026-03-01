@@ -22,8 +22,8 @@ export interface InventoryItemFull extends InventoryItem {
 export interface ItemBorrowHistory {
   id: string;
   eventName: string;
-  borrowDate: string;
-  dueDate: string;
+  startDate: string;
+  endDate: string;
   returnDate?: string;
   state: BorrowState;
   quantity: number;
