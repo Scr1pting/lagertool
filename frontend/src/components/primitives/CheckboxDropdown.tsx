@@ -8,24 +8,25 @@ import {
 } from "@/components/shadcn/dropdown-menu"
 import { Button } from "../shadcn/button"
 import type { CheckedOption } from "./types/CheckedOption"
-import { useState } from "react"
+import { ChevronDown } from "lucide-react"
 
 interface CheckboxDropdownProps {
-  title: string
   options: CheckedOption[]
   setOptions: React.Dispatch<React.SetStateAction<CheckedOption[]>>
+  disabled?: boolean
+  children: React.ReactNode
 }
 
 function CheckboxDropdown(
-  { title, options, setOptions }: CheckboxDropdownProps
+  { children, options, disabled, setOptions }: CheckboxDropdownProps
 ) {
-  const [showActivityBar, setShowActivityBar] = useState(false)
-  const [showPanel, setShowPanel] = useState(false)
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">{title}</Button>
+        <Button variant="outline" disabled={disabled}>
+          {children}
+          <ChevronDown className="size-4 opacity-50" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40">
         <DropdownMenuGroup>
@@ -50,4 +51,4 @@ function CheckboxDropdown(
   )
 }
 
-export default CheckboxDropdown;
+export default CheckboxDropdown

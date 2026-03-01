@@ -27,16 +27,22 @@ function Account() {
     <RegularPage title="Account" noBottomPadding>
       <div className="flex gap-2">
         <CheckboxDropdown
-          title="Approval"
           options={approvalOptions}
           setOptions={setApprovalOptions}
-        />
+        >
+          Approved
+        </CheckboxDropdown>
 
         <CheckboxDropdown
-          title="Approval"
           options={timeOptions}
           setOptions={setTimeOptions}
-        />
+          disabled={
+            !approvalOptions.some(opt => opt.title === "Approved" && opt.checked)
+          }
+        >
+          Time
+          
+        </CheckboxDropdown>
       </div>
 
 
