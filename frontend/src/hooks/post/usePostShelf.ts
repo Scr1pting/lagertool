@@ -1,33 +1,39 @@
 import type { ShelfColumn } from "@/types/shelf"
 import usePost from "./usePost"
 import { makeId } from "@/lib/ids"
+import useOrgs from "@/store/useOrgs"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
-
 
 interface PostShelfPayload {
   id: string
   name: string
-  roomId: number
   columns: ShelfColumn[]
 }
 
 function usePostShelf() {
-  const { status, data, error, send } = usePost<ResponseType, PostShelfPayload>()
+  const { status, data, error, send } = usePost<unknown, PostShelfPayload>()
+  const selectedOrg = useOrgs(s => s.selectedOrg)
 
   const sendShelf = (
     columns: ShelfColumn[],
     name: string,
+    buildingId: number,
     roomId: number
   ) => {
+    if (!selectedOrg) {
+      console.error("Missing organization context for creating shelf")
+      return
+    }
+
     const shelf = {
       id: makeId(),
       name: name,
-      roomId: roomId,
       columns: columns
     }
 
-    send(`${API_BASE_URL}/create_shelf`, shelf)
+    const url = `${API_BASE_URL}/organisations/${selectedOrg.name}/buildings/${buildingId}/rooms/${roomId}/shelves`
+    send(url, shelf)
   }
 
   return { status, data, error, send: sendShelf }

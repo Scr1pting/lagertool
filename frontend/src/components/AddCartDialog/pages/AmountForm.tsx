@@ -11,28 +11,28 @@ import { Button } from "../../shadcn/button"
 
 
 interface MainProps {
-  numSelected: number
-  setNumSelected: React.Dispatch<React.SetStateAction<number>>
+  amountSelected: number
+  setAmountSelected: React.Dispatch<React.SetStateAction<number>>
   item: InventoryItem
   resetValues: () => void
   onProceed: () => void
 }
 
-function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: MainProps) {
+function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed }: MainProps) {
   const add = useCart(state => state.add)
 
-  const exceedsAvailable = !Number.isNaN(numSelected) && numSelected > item.available
-  const isInvalidQuantity = Number.isNaN(numSelected) || numSelected < 1 || exceedsAvailable
+  const exceedsAvailable = !Number.isNaN(amountSelected) && amountSelected > item.available
+  const isInvalidQuantity = Number.isNaN(amountSelected) || amountSelected < 1 || exceedsAvailable
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    
+
     if (!isInvalidQuantity) {
-      const cartItem: CartItem = { ...item, numSelected: numSelected }
+      const cartItem: CartItem = { ...item, amountSelected: amountSelected }
       add(cartItem)
 
       toast("Added to cart", {
-        description: `${cartItem.name} - ${cartItem.numSelected}`,
+        description: `${cartItem.name} - ${cartItem.amountSelected}`,
         action: {
           label: "Undo",
           onClick: () => console.log("Undo"),
@@ -43,7 +43,7 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
     }
   }
 
-  return(
+  return (
     <form onSubmit={handleSubmit} className="grid gap-5">
       <DialogHeader>
         <DialogTitle>{item.name}</DialogTitle>
@@ -55,13 +55,13 @@ function Main({ numSelected, setNumSelected, item, resetValues, onProceed }: Mai
         <Label htmlFor="num-selected">Amount</Label>
         <Input
           id="num-selected"
-          name="numSelected"
+          name="amountSelected"
           type="number"
           min={1}
           max={item.available}
           aria-invalid={exceedsAvailable}
-          value={numSelected}
-          onChange={e => { setNumSelected(Number.parseInt(e.target.value, 10)) }}
+          value={amountSelected}
+          onChange={e => { setAmountSelected(Number.parseInt(e.target.value, 10)) }}
         />
         {exceedsAvailable && (
           <FieldError className="text-destructive" role="alert">

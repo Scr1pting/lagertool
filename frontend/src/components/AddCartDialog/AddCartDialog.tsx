@@ -10,19 +10,19 @@ function AddCartDialog({ item, children }: { item: InventoryItem, children?: Rea
   const [open, setOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
 
-  const [numSelected, setNumSelected] = useState<number>(1)
+  const [amountSelected, setAmountSelected] = useState<number>(1)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
 
   const resetValues = () => {
-    
+
   }
 
   const pages = [
     <AmountForm
       item={item}
-      numSelected={numSelected}
-      setNumSelected={setNumSelected}
+      amountSelected={amountSelected}
+      setAmountSelected={setAmountSelected}
       onProceed={() => setCurrentPage(currentPage + 1)}
       resetValues={resetValues}
     />,
@@ -36,7 +36,7 @@ function AddCartDialog({ item, children }: { item: InventoryItem, children?: Rea
     />,
     <InstantCheckoutVerify
       item={item}
-      numSelected={numSelected}
+      amountSelected={amountSelected}
       title={title}
       description={description}
       onBack={() => setCurrentPage(currentPage - 1)}

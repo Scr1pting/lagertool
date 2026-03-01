@@ -10,13 +10,14 @@ import type { FormElement } from "@/components/primitives/types/FormElement"
 import FormLayout from "@/components/primitives/FormLayout"
 import { Field } from "@/components/shadcn/field"
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/shadcn/dialog"
+
 import type { Building } from "@/types/building"
 import type { Room } from "@/types/room"
 
 
 function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
-  const { status: statusRooms, data: rooms, error: errorRooms } = useFetchRooms()
-  const { status: statusBuildings, data: buildings, error: errorBuildings } = useFetchBuildings()
+  const { data: rooms } = useFetchRooms()
+  const { data: buildings } = useFetchBuildings()
 
   const [name, setName] = useState("")
   const [selectedBuilding, setSelectedBuilding] = useState<Building | undefined>()
@@ -26,8 +27,8 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (selectedRoom == undefined) return
-    send(columns, name, selectedRoom.id)
+    if (!selectedBuilding || !selectedRoom) return
+    send(columns, name, selectedBuilding.id, selectedRoom.id)
   }
 
   const elements: FormElement[] = [
@@ -49,9 +50,12 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       id: "shelf-building",
       label: "Building",
       input: <Combobox
-        options={buildings}
+        options={buildings ?? []}
         selectedOption={selectedBuilding}
-        onOptionChange={newOption => setSelectedBuilding(newOption)}
+        onOptionChange={newOption => {
+          setSelectedBuilding(newOption)
+          setSelectedRoom(undefined)
+        }}
         placeholder="Select Building"
       />
     },
@@ -60,11 +64,11 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
       id: "shelf-room",
       label: "Room",
       input: <Combobox
-        options={rooms?.filter(room => room === selectedRoom) ?? undefined}
+        options={rooms?.filter(room => room.building.id === selectedBuilding?.id) ?? []}
         selectedOption={selectedRoom}
         onOptionChange={newOption => setSelectedRoom(newOption)}
         placeholder="Select Room"
-        disabled={rooms?.filter(room => room.building === selectedBuilding).length == 0}    
+        disabled={!selectedBuilding || rooms?.filter(room => room.building.id === selectedBuilding?.id).length === 0}
       />
     }
   ]
@@ -77,7 +81,7 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
         </DialogHeader>
 
         <FormLayout elements={elements} />
-        
+
         <DialogFooter>
           <Field orientation="horizontal" className="justify-end">
             <Button type="submit" className="bg-primary" disabled={statusPost == "loading"}>

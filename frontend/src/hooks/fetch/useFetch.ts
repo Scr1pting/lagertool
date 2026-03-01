@@ -12,6 +12,8 @@ function useFetch<T>(url: string, parser?: (res: unknown) => T) {
   })
 
   useEffect(() => {
+    if (!url || url.includes('undefined')) return
+
     let isMounted = true
     setState(prev => ({ ...prev, status: "loading", error: null }))
     get(url)

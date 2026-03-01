@@ -1,9 +1,9 @@
-import type { InventoryItem } from "@/types/inventory"
+import type { CartItem } from "@/types/cart"
 import type { ColumnDef } from "@tanstack/react-table"
 import DataTableColumnHeader from "./SortableHeader"
 
 
-const cartColumns: ColumnDef<InventoryItem>[] = [
+const cartColumns: ColumnDef<CartItem>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -38,10 +38,10 @@ const cartColumns: ColumnDef<InventoryItem>[] = [
     ),
   },
   {
-    accessorKey: "numSelected",
+    accessorKey: "amountSelected",
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => (
-      <div className="text-right">{row.getValue("numSelected")}</div>
+      <div className="text-right">{row.getValue("amountSelected")}</div>
     ),
   }
 ]

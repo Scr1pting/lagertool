@@ -9,7 +9,7 @@ import type { InventoryItem } from "@/types/inventory"
 
 
 interface InstantCheckoutVerifyProps {
-  numSelected: number;
+  amountSelected: number;
   item: InventoryItem;
   title: string;
   description: string;
@@ -18,7 +18,7 @@ interface InstantCheckoutVerifyProps {
 }
 
 function InstantCheckoutVerify({
-  numSelected, item, title, description, onBack, resetValues
+  amountSelected, item, title, description, onBack, resetValues
 }: InstantCheckoutVerifyProps) {
   const selectedRange = useDate(state => state.selectedRange)
 
@@ -36,12 +36,12 @@ function InstantCheckoutVerify({
 
     return `${startLabel} - ${endLabel}`
   }
-  
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     toast("Submitted Borrow Request", {
-      description: `${item.name} - ${numSelected}`,
+      description: `${item.name} - ${amountSelected}`,
       action: {
         label: "Undo",
         onClick: () => console.log("Undo"),
@@ -84,7 +84,7 @@ function InstantCheckoutVerify({
 
           <div className="flex justify-between">
             <span className="text-muted-foreground">Amount</span>
-            <span className="font-medium">{numSelected}</span>
+            <span className="font-medium">{amountSelected}</span>
           </div>
 
           <Separator />

@@ -32,10 +32,10 @@ function MiniCart({ trigger }: MiniCartProps) {
         ),
       },
       {
-        accessorKey: "numSelected",
+        accessorKey: "amountSelected",
         header: () => <span className="float-right">Borrowing</span>,
         cell: ({ row }) => (
-          <span className="float-right">{row.getValue("numSelected")}</span>
+          <span className="float-right">{row.getValue("amountSelected")}</span>
         ),
       },
     ],

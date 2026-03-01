@@ -35,10 +35,10 @@ function AddShelfButtons({ columns }: { columns: ShelfColumn[] }) {
       })
       return
     }
-    navigate("/", { replace: false })
+    navigate("/manage-inventory", { replace: false })
   }
 
-  return(
+  return (
     <div className="fixed top-6 right-6 z-20 flex gap-2 items-center">
       <Dialog>
         <DialogTrigger>

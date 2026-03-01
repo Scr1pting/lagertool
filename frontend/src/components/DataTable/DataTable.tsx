@@ -20,11 +20,12 @@ interface DataTableProps<TData> extends React.HTMLAttributes<HTMLDivElement> {
   rowLink?: (row: Row<TData>) => string
   sticky?: boolean
   className?: string
+  loading?: boolean
 }
 
 function DataTable<TData>({
-  data, columns, rowLink, sticky = false, className=""
-} : DataTableProps<TData>) {
+  data, columns, rowLink, sticky = false, className = "", loading = false
+}: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -87,9 +88,9 @@ function DataTable<TData>({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 )
               })}
@@ -97,7 +98,16 @@ function DataTable<TData>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {loading ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center"
+              >
+                Loading...
+              </TableCell>
+            </TableRow>
+          ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map(row => (
               rowElement(row)
             ))
