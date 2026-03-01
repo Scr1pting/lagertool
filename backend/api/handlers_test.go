@@ -1225,10 +1225,145 @@ func TestUpdateItem(t *testing.T) {
 
 	// Verify the updates actually persisted
 	var updatedInv db_models.Inventory
-	err := dbCon.Model(&updatedInv).Where("id = ?", hier.Inventory.ID).Select()
+	err = dbCon.Model(&updatedInv).Where("id = ?", hier.Inventory.ID).Select()
 	assert.NoError(t, err)
 	assert.Equal(t, 50, updatedInv.Amount)
 	assert.Equal(t, "Updated note", updatedInv.Note)
+}
+
+func TestCreateBuilding(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/organisations/:orgId/buildings", h.CreateBuilding)
+
+	org := &db_models.Organisation{Name: "CreateBuilding Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	testCases := []struct {
+		name           string
+		payload        string
+		expectedStatus int
+		expectedName   string
+	}{
+		{
+			name:           "Successful Creation",
+			payload:        `{"name": "Main Library", "campus": "Main Campus"}`,
+			expectedStatus: http.StatusCreated,
+			expectedName:   "Main Library",
+		},
+		{
+			name:           "Missing Name",
+			payload:        `{"campus": "Test Campus"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Malformed JSON",
+			payload:        `{"name": "Main Library"`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", "/organisations/"+org.Name+"/buildings", strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedStatus, w.Code)
+
+			if tc.expectedStatus == http.StatusCreated {
+				var createdBuilding db_models.Building
+				err := json.Unmarshal(w.Body.Bytes(), &createdBuilding)
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectedName, createdBuilding.Name)
+				assert.NotZero(t, createdBuilding.ID)
+
+				_, err = dbCon.Model(&createdBuilding).Where("id = ?", createdBuilding.ID).Delete()
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCreateRoom(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/organisations/:orgId/buildings/:buildingId/rooms", h.CreateRoom)
+
+	org := &db_models.Organisation{Name: "CreateRoom Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	building := &db_models.Building{Name: "Test Building", Campus: "Test Campus"}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+
+	defer func() {
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	testCases := []struct {
+		name           string
+		url            string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name:           "Successful Creation",
+			url:            "/organisations/" + org.Name + "/buildings/" + strconv.Itoa(building.ID) + "/rooms",
+			payload:        `{"name": "Room 101", "floor": "1", "number": "101"}`,
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Missing Floor",
+			url:            "/organisations/" + org.Name + "/buildings/" + strconv.Itoa(building.ID) + "/rooms",
+			payload:        `{"name": "Room 101", "number": "101"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid Building ID",
+			url:            "/organisations/" + org.Name + "/buildings/notanumber/rooms",
+			payload:        `{"name": "Room 101", "floor": "1", "number": "101"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", tc.url, strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if !assert.Equal(t, tc.expectedStatus, w.Code) {
+				t.Log("Response body:", w.Body.String())
+			}
+
+			if tc.expectedStatus == http.StatusCreated {
+				var createdRoom db_models.Room
+				err := json.Unmarshal(w.Body.Bytes(), &createdRoom)
+				assert.NoError(t, err)
+				assert.Equal(t, "Room 101", createdRoom.Name)
+				assert.Equal(t, building.ID, createdRoom.BuildingID)
+				assert.NotZero(t, createdRoom.ID)
+
+				_, err = dbCon.Model(&createdRoom).Where("id = ?", createdRoom.ID).Delete()
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestPostMessage(t *testing.T) {

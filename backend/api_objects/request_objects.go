@@ -8,10 +8,9 @@ type BuildingRequest struct {
 }
 
 type RoomRequest struct {
-	Name       string `json:"name"`
-	Floor      string `json:"floor" binding:"required"`
-	Number     string `json:"number" binding:"required"`
-	BuildingID int    `json:"building"  binding:"required"`
+	Name   string `json:"name"`
+	Floor  string `json:"floor" binding:"required"`
+	Number string `json:"number" binding:"required"`
 }
 
 type ShelfElementRequest struct {

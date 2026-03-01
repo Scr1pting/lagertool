@@ -77,6 +77,8 @@ http://localhost:8000/swagger/index.html
 | `GET` | `/organisations/:orgId/rooms` | List rooms for an organisation |
 | `GET` | `/organisations/:orgId/shelves` | List shelves for an organisation |
 | `GET` | `/organisations/:orgId/inventory?start=X&end=X` | List inventory for an organisation |
+| `POST` | `/organisations/:orgId/buildings` | Create a new building |
+| `POST` | `/organisations/:orgId/buildings/:buildingId/rooms` | Create a new room in a building |
 
 #### Items
 | Method | Endpoint | Description |
