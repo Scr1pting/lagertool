@@ -27,12 +27,22 @@ const itemBorrowHistoryColumns: ColumnDef<ItemBorrowEvent>[] = [
         accessorKey: "returnDate",
         header: ({ column }) => <SortableHeader column={column} title="Due/Return" />,
         sortingFn: (a, b) =>
-            new Date(a.original.returnedDate ?? 0).getTime() - new Date(b.original.returnedDate ?? 0).getTime(),
+          new Date(a.original.returnedDate ?? a.original.endDate).getTime() - new Date(b.original.returnedDate ?? b.original.endDate).getTime(),
         cell: ({ row }) => row.original.returnedDate ? formatDate(row.original.returnedDate) : formatDate(row.original.endDate),
     },
     {
         accessorKey: "state",
         header: ({ column }) => <SortableHeader column={column} title="State" />,
+        sortingFn: (a, b) => {
+          const approvalCompare = a.original.approvalState.localeCompare(b.original.approvalState)
+          if (approvalCompare !== 0) return approvalCompare
+
+          if (a.original.timeState && b.original.timeState) {
+            return a.original.timeState.localeCompare(b.original.timeState)
+          }
+
+          return 0
+        },
         cell: ({ row }) =>
           <div className="flex flex-col gap-2">
             <Badge variant={APPROVAL_STATES[row.original.approvalState].color}>
