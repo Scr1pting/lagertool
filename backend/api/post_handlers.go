@@ -205,10 +205,15 @@ func (h *Handler) PostMessage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error while parsing payload": err.Error()})
 		return
 	}
-	err = db.CreateUserMessage(h.DB, db_models.UserRequestMessage{
+	dbMsg := db_models.UserRequestMessage{
 		UserID:    msg.UserID,
 		RequestID: requestId,
 		Message:   msg.Message,
 		TimeStamp: time.Now(),
-	})
+	}
+	err = db.CreateUserMessage(h.DB, &dbMsg)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, msg)
 }

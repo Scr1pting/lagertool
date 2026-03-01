@@ -1212,3 +1212,198 @@ func TestUpdateItem(t *testing.T) {
 	assert.Equal(t, 50, updatedInv.Amount)
 	assert.Equal(t, "Updated note", updatedInv.Note)
 }
+
+func TestPostMessage(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/requests/:id/messages", h.PostMessage)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Message Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user
+	user := &db_models.User{Email: "msg@example.com", Name: "Message User"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+
+	// Create request
+	request := &db_models.Request{
+		UserID:           user.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Status:           "requested",
+		OrganisationName: org.Name,
+		GroupID:          1,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.UserRequestMessage{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	testCases := []struct {
+		name           string
+		url            string
+		payload        string
+		expectedStatus int
+	}{
+		{
+			name: "Successful Message",
+			url:  "/requests/" + strconv.Itoa(request.ID) + "/messages",
+			payload: `{
+				"userId": ` + strconv.Itoa(user.ID) + `,
+				"message": "Hello, can I borrow this?"
+			}`,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "Invalid Request ID",
+			url:            "/requests/notanumber/messages",
+			payload:        `{"userId": 1, "message": "test"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid JSON - Malformed",
+			url:            "/requests/" + strconv.Itoa(request.ID) + "/messages",
+			payload:        `{"userId": 1`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, _ := http.NewRequest("POST", tc.url, strings.NewReader(tc.payload))
+			req.Header.Set("Content-Type", "application/json")
+
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if !assert.Equal(t, tc.expectedStatus, w.Code) {
+				t.Log("Response body:", w.Body.String())
+			}
+
+			if tc.expectedStatus == http.StatusOK {
+				// Verify message was persisted
+				var messages []db_models.UserRequestMessage
+				err := dbCon.Model(&messages).Where("request_id = ?", request.ID).Select()
+				assert.NoError(t, err)
+				assert.NotEmpty(t, messages)
+				assert.Equal(t, "Hello, can I borrow this?", messages[0].Message)
+				assert.Equal(t, user.ID, messages[0].UserID)
+			}
+		})
+	}
+}
+
+func TestGetMessages(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.GET("/requests/:id/messages", h.GetMessages)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "GetMsg Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test users
+	member := &db_models.User{Email: "member-msg@example.com", Name: "Member"}
+	_, err = dbCon.Model(member).Insert()
+	assert.NoError(t, err)
+
+	admin := &db_models.User{Email: "admin-msg@example.com", Name: "Admin"}
+	_, err = dbCon.Model(admin).Insert()
+	assert.NoError(t, err)
+
+	// Create request
+	request := &db_models.Request{
+		UserID:           member.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Status:           "requested",
+		OrganisationName: org.Name,
+		GroupID:          1,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	// Create a user message (older)
+	userMsg := &db_models.UserRequestMessage{
+		UserID:    member.ID,
+		RequestID: request.ID,
+		Message:   "Can I borrow this?",
+		TimeStamp: time.Now().Add(-2 * time.Hour),
+	}
+	_, err = dbCon.Model(userMsg).Insert()
+	assert.NoError(t, err)
+
+	// Create an admin review message (newer)
+	adminReview := &db_models.RequestReview{
+		UserID:    admin.ID,
+		RequestID: request.ID,
+		Outcome:   "rejected",
+		Note:      "Not available this week",
+		TimeStamp: time.Now().Add(-1 * time.Hour),
+	}
+	_, err = dbCon.Model(adminReview).Insert()
+	assert.NoError(t, err)
+
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.RequestReview{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.UserRequestMessage{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(member).Where("id = ?", member.ID).Delete()
+		_, _ = dbCon.Model(admin).Where("id = ?", admin.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	t.Run("Returns messages sorted by timestamp", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/requests/"+strconv.Itoa(request.ID)+"/messages", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var messages []api_objects.Message
+		err := json.Unmarshal(w.Body.Bytes(), &messages)
+		assert.NoError(t, err)
+		assert.Len(t, messages, 2)
+
+		// First message should be the older user message
+		assert.Equal(t, "Can I borrow this?", messages[0].Message)
+		assert.Equal(t, "Member", messages[0].AuthorName)
+		assert.False(t, messages[0].IsAdmin)
+
+		// Second message should be the newer admin review
+		assert.Equal(t, "Not available this week", messages[1].Message)
+		assert.Equal(t, "Admin", messages[1].AuthorName)
+		assert.True(t, messages[1].IsAdmin)
+	})
+
+	t.Run("Empty messages for unknown request", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/requests/999999/messages", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Invalid request ID", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/requests/notanumber/messages", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}

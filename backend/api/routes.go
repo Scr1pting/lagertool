@@ -32,7 +32,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.PUT("/requests/:id", h.UpdateRequest)
 	r.POST("/requests/:id/review", h.RequestReview)
 	r.GET("/requests/:id/messages", h.GetMessages)
-	r.POST("requests/:id/message", h.PostMessage)
+	r.POST("/requests/:id/messages", h.PostMessage)
 
 	// Auth
 	r.GET("/auth/eduid/login", auth.LoginHandler)
