@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { BorrowState, ItemBorrowHistory } from "@/types/borrow"
+import type { BorrowState } from "@/types/borrow"
+import type { ItemBorrowHistory } from "@/types/inventory"
 import SortableHeader from "./SortableHeader"
 import { formatDate } from "@/lib/formatDate"
 import { Badge } from "@/components/shadcn/badge"
