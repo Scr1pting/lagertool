@@ -1,4 +1,4 @@
-import type { BorrowRequest } from "@/types/borrowRequest"
+import { APPROVAL_STATES, type BorrowRequest } from "@/types/borrowRequest"
 import DataTable from "../DataTable/DataTable"
 import { borrowColumns } from "../DataTable/InventoryTable/borrowColumns"
 import RejectRequest from "./dialogs/RejectRequest"
@@ -10,7 +10,6 @@ import { Input } from "../shadcn/input"
 import { useEffect, useRef, useState } from "react"
 import { Badge } from "../shadcn/badge"
 import { capitalize } from "@/lib/capitalize"
-import { Card, CardContent } from "../shadcn/card"
 import { formatDate } from "@/lib/formatDate"
 
 
@@ -40,8 +39,11 @@ function RequestDetail({ request }: RequestDetailProps) {
   return (
     <section ref={sectionRef} className="flex flex-col" style={{ minHeight }}>
       <div className="flex gap-2">
-        <Badge variant="red">{capitalize(request.approvalState)}</Badge>
-        {request.timeState && <Badge>{capitalize(request.timeState)}</Badge>}
+        <Badge variant={APPROVAL_STATES[request.approvalState].color}>{capitalize(APPROVAL_STATES[request.approvalState].title)}</Badge>
+        {request.timeState
+         && <Badge variant={APPROVAL_STATES[request.approvalState].color}>
+           {capitalize(APPROVAL_STATES[request.approvalState].title)}
+         </Badge>}
       </div>
 
       <div className="flex justify-between mt-2">

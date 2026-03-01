@@ -23,9 +23,9 @@ const badgeVariants = cva(
         yellow: "bg-yellow-900 text-yellow-50",
         blue: "bg-blue-900 text-blue-50",
         red: "bg-red-900 text-red-50",
-        emerald: "bg-emerald-900 text-emerald-50",
-        slate: "bg-slate-900 text-slate-50",
-        amber: "bg-amber-900 text-amber-50",
+        purple: "bg-purple-900 text-purple-50",
+        green: "bg-green-900 text-green-50",
+        zinc: "bg-zinc-600 text-zinc-50",
       },
     },
     defaultVariants: {
@@ -53,4 +53,4 @@ function Badge({
   )
 }
 
-export { Badge, badgeVariants }
+export { Badge }
