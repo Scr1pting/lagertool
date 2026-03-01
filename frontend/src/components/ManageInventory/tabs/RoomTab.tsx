@@ -17,6 +17,8 @@ interface RoomTabProps {
 
 function RoomTab({ buildings, rooms }: RoomTabProps) {
   const [name, setName] = useState<string>("")
+  const [floor, setFloor] = useState<string>("")
+  const [number, setNumber] = useState<string>("")
   const [buildingId, setBuildingId] = useState<string | undefined>()
 
   const elements: FormElement[] = [
@@ -27,8 +29,8 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
       input: <Input
         id="room-floor"
         placeholder="F"
-        value={name}
-        onChange={e => setName(e.target.value)}
+        value={floor}
+        onChange={e => setFloor(e.target.value)}
       />
     },
     {
@@ -38,8 +40,8 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
       input: <Input
         id="room-number"
         placeholder="33.3"
-        value={name}
-        onChange={e => setName(e.target.value)}
+        value={number}
+        onChange={e => setNumber(e.target.value)}
       />
     },
     {
@@ -61,7 +63,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
         id="room-building-id"
         value={buildingId}
         options={buildings}
-        onValueChange={value => setBuildingId(value) }
+        onValueChange={value => setBuildingId(value)}
       />
     }
   ]
@@ -70,7 +72,7 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
     <TabsContent value="rooms">
       <div className="space-y-10">
         <ManageInventoryCard title="Add Room" elements={elements} />
-        
+
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">
             Recently Added
