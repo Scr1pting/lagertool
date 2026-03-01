@@ -14,7 +14,7 @@ function useFetchShelves() {
         displayName: `${shelf.building.name} - ${shelf.room.name} - ${shelf.name}`,
       }))
 
-  return useFetch<Shelf[]>(`${API_BASE_URL}/shelves?organisation=${selectedOrg?.name}`, res => parse(res as Shelf[]))
+  return useFetch<Shelf[]>(`${API_BASE_URL}/organisations/${selectedOrg?.name}/shelves`, res => parse(res as Shelf[]))
 }
 
 export default useFetchShelves
