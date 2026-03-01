@@ -181,11 +181,25 @@ type RequestItems struct {
 	Inventory *Inventory `json:"inventory" pg:"rel:has-one,fk:inventory_id"`
 }
 type RequestReview struct {
-	tableName struct{} `pg:"request_review"`
-	UserID    int      `json:"user_id" pg:"user_id"`
-	RequestID int      `json:"request_id" pg:"request_id"`
-	Outcome   string   `json:"outcome" pg:"outcome"`
-	Note      string   `json:"note" pg:"note"`
+	tableName struct{}  `pg:"request_review"`
+	ID        int       `json:"id" pg:"id,pk"`
+	UserID    int       `json:"user_id" pg:"user_id"`
+	RequestID int       `json:"request_id" pg:"request_id"`
+	Outcome   string    `json:"outcome" pg:"outcome"`
+	Note      string    `json:"note" pg:"note"`
+	TimeStamp time.Time `json:"time_stamp" pg:"time_stamp"`
+
+	User    *User    `json:"user" pg:"rel:has-one,fk:user_id"`
+	Request *Request `json:"request" pg:"rel:has-one,fk:request_id"`
+}
+
+type UserRequestMessage struct {
+	ID        int       `json:"id" pg:"id,pk"`
+	tableName struct{}  `pg:"user_request_message"`
+	UserID    int       `json:"user_id" pg:"user_id"`
+	RequestID int       `json:"request_id" pg:"request_id"`
+	Message   string    `json:"message" pg:"message"`
+	TimeStamp time.Time `json:"time_stamp" pg:"time_stamp"`
 
 	User    *User    `json:"user" pg:"rel:has-one,fk:user_id"`
 	Request *Request `json:"request" pg:"rel:has-one,fk:request_id"`

@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -148,4 +149,41 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, m)
+}
+
+func (h *Handler) GetMessages(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
+		return
+	}
+	var res []api_objects.Message
+	var dbResAdmin []db_models.RequestReview
+	var dbResMember []db_models.UserRequestMessage
+
+	err = h.DB.Model(&dbResMember).Relation("User").
+		Where("request_id = ?", id).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	err = h.DB.Model(&dbResAdmin).Relation("User").Where("request_id = ?", id).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	for _, admin := range dbResAdmin {
+		res = append(res, api_objects.Message{ID: admin.ID, AuthorName: admin.User.Name, Message: admin.Note, IsAdmin: true, TimeStamp: admin.TimeStamp})
+	}
+	for _, member := range dbResMember {
+		res = append(res, api_objects.Message{
+			ID:         member.ID,
+			AuthorName: member.User.Name,
+			Message:    member.Message,
+			IsAdmin:    false,
+			TimeStamp:  member.TimeStamp,
+		})
+	}
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].TimeStamp.Before(res[j].TimeStamp)
+	})
+	c.JSON(http.StatusOK, res)
 }

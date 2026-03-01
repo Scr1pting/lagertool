@@ -1,6 +1,8 @@
 package api_objects
 
 import (
+	"time"
+
 	"lagertool.com/main/db_models"
 )
 
@@ -78,4 +80,13 @@ type InventorySorted struct {
 	Available    int                `json:"available"`
 	RoomName     db_models.Room     `json:"room"`
 	BuildingName db_models.Building `json:"building"`
+}
+
+type Message struct {
+	ID         int       `json:"id"`
+	AuthorName string    `json:"authorName"`
+	Message    string    `json:"message"`
+	IsAdmin    bool      `json:"isAdmin"`
+	State      string    `json:"state"`
+	TimeStamp  time.Time `json:"timeStamp"`
 }
