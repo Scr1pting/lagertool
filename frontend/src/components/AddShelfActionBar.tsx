@@ -62,17 +62,16 @@ function Form({ columns }: FormProps) {
         return
       }
 
-      setStatus("submitting")
-
+      const buildingId = Number.parseInt(values.building, 10)
       const roomId = Number.parseInt(values.room, 10)
-      if (Number.isNaN(roomId)) {
+      if (Number.isNaN(buildingId) || Number.isNaN(roomId)) {
         setStatus("error")
-        setError("Enter a numeric room ID.")
+        setError("Enter numeric building and room IDs.")
         return
       }
 
       try {
-        await send(columns, values.name.trim(), roomId)
+        await send(columns, values.name.trim(), buildingId, roomId)
 
         setStatus("success")
         setValues(prev => ({ name: "", building: prev.building, room: "" }))
@@ -82,7 +81,7 @@ function Form({ columns }: FormProps) {
         setError(message)
       }
     },
-    [columns.length, columns, values.building, values.name, values.room]
+    [columns.length, columns, values.building, values.name, values.room, send]
   )
 
   const isSubmitDisabled = status === "submitting" || columns.length === 0
@@ -173,7 +172,7 @@ function ActionBar({ columns }: { columns: ShelfColumn[] }) {
     navigate("/", { replace: false })
   }
 
-  return(
+  return (
     <Popover >
       <ButtonGroup className="fixed top-6 right-6 z-20">
         <ButtonGroup>

@@ -1,3 +1,4 @@
+import { useCallback } from "react"
 import type { ShelfColumn } from "@/types/shelf"
 import usePost from "./usePost"
 import { makeId } from "@/lib/ids"
@@ -15,7 +16,7 @@ function usePostShelf() {
   const { status, data, error, send } = usePost<unknown, PostShelfPayload>()
   const selectedOrg = useOrgs(s => s.selectedOrg)
 
-  const sendShelf = (
+  const sendShelf = useCallback((
     columns: ShelfColumn[],
     name: string,
     buildingId: number,
@@ -34,7 +35,7 @@ function usePostShelf() {
 
     const url = `${API_BASE_URL}/organisations/${selectedOrg.name}/buildings/${buildingId}/rooms/${roomId}/shelves`
     send(url, shelf)
-  }
+  }, [selectedOrg, send])
 
   return { status, data, error, send: sendShelf }
 }
