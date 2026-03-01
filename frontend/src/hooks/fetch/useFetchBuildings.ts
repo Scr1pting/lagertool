@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 function useFetchBuildings() {
   const selectedOrg = useOrgs(s => s.selectedOrg)
 
-  return useFetch<Building[]>(`${API_BASE_URL}/buildings_sorted?organisation=${selectedOrg?.name}`)
+  return useFetch<Building[]>(`${API_BASE_URL}/organisations/${selectedOrg?.name}/buildings`)
 }
 
 export default useFetchBuildings

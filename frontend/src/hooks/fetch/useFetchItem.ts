@@ -12,7 +12,7 @@ function useFetchItem(id: number) {
   const startDate = selectedRange?.from?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]
   const endDate = selectedRange?.to?.toISOString().split('T')[0] || startDate
 
-  const itemState = useFetch<InventoryItemFull>(`${API_BASE_URL}/item?organisation=${selectedOrg?.name}&id=${id}&start=${startDate}&end=${endDate}`)
+  const itemState = useFetch<InventoryItemFull>(`${API_BASE_URL}/organisations/${selectedOrg?.name}/items/${id}?start=${startDate}&end=${endDate}`)
   const borrowHistoryState = useFetch<ItemBorrowHistory[]>(`/item-borrow-history.sample.json`)
 
   return {

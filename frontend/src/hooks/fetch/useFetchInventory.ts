@@ -12,7 +12,7 @@ function useFetchInventory() {
   const startDate = selectedRange?.from?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]
   const endDate = selectedRange?.to?.toISOString().split('T')[0] || startDate
 
-  return useFetch<InventoryItem[]>(`${API_BASE_URL}/inventory_sorted?organisation=${selectedOrg?.name}&start=${startDate}&end=${endDate}`)
+  return useFetch<InventoryItem[]>(`${API_BASE_URL}/organisations/${selectedOrg?.name}/inventory?start=${startDate}&end=${endDate}`)
 }
 
 export default useFetchInventory
