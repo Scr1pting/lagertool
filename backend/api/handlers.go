@@ -196,9 +196,9 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 	}
 	var dbRes []db_models.RequestItems
 	err = h.DB.Model(&dbRes).
-		Where("item_id = ?", itemId).
-		Relation("Request").
-		Relation("User").
+		Relation("Inventory").
+		Where("inventory.item_id = ?", itemId).
+		Relation("Request.User").
 		Select()
 	var res []api_objects.BorrowHistory
 	for _, item := range dbRes {
@@ -212,9 +212,10 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 		}
 		if item.Request.Status == "success" {
 			var db2res db_models.Loans
-			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.RequestID).Select()
+			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.ID).First()
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
 			}
 			if db2res.IsReturned {
 				out.DueAt = db2res.ReturnedAt
