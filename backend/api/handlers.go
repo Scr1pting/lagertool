@@ -187,3 +187,40 @@ func (h *Handler) GetMessages(c *gin.Context) {
 	})
 	c.JSON(http.StatusOK, res)
 }
+
+func (h *Handler) GetBorrowHistory(c *gin.Context) {
+	itemId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
+		return
+	}
+	var dbRes []db_models.RequestItems
+	err = h.DB.Model(&dbRes).
+		Where("item_id = ?", itemId).
+		Relation("Request").
+		Relation("User").
+		Select()
+	var res []api_objects.BorrowHistory
+	for _, item := range dbRes {
+		out := api_objects.BorrowHistory{
+			User:      item.Request.User.Name,
+			Event:     item.Request.Note,
+			StartedAt: item.Request.StartDate,
+			DueAt:     item.Request.EndDate,
+			Status:    "",
+			Amount:    item.Amount,
+		}
+		if item.Request.Status == "success" {
+			var db2res db_models.Loans
+			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.RequestID).Select()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
+			if db2res.IsReturned {
+				out.DueAt = db2res.ReturnedAt
+			}
+		}
+		res = append(res, out)
+	}
+	c.JSON(http.StatusOK, res)
+}
