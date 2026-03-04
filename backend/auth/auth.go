@@ -196,7 +196,20 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 }
 
 func (h *AuthHandler) LogoutHandler(c *gin.Context) {
+	sessionID, err := c.Cookie("user_session")
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No session cookie"})
+		return
+	}
 
+	_, err = h.DB.Model((*db_models.Session)(nil)).Where("session_id = ?", sessionID).Delete()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session", "details": err.Error()})
+		return
+	}
+
+	c.SetCookie("user_session", "", -1, "/", "localhost", true, true)
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
 func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {

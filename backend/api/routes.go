@@ -42,4 +42,5 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	// Auth
 	r.GET("/auth/eduid/login", authHandler.LoginHandler)
 	r.GET("/auth/eduid/callback", authHandler.CallbackHandler)
+	r.GET("/auth/eduid/logout", authHandler.LogoutHandler)
 }
