@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -126,8 +127,7 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 	http_only := true
 	path := "/"           // path for which cookie is valid
 	domain := "localhost" // domain for which cookie is valid
-	lifetime := 3600      // example
-	c.SetCookie("user_session", claims.Sub, lifetime, path, domain, secure, http_only)
+	lifetime := 1         // example
 
 	var dbUser []db_models.User
 	err = h.DB.Model(&dbUser).Where("subject = ?", claims.Sub).Select()
@@ -168,5 +168,57 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 		}
 	}
 
+	var user db_models.User
+	err = h.DB.Model(&user).Where("subject = ?", claims.Sub).First()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "User not found", "details": err.Error()})
+		return
+	}
+
+	session := db_models.Session{
+		UserID:    user.ID,
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(time.Duration(lifetime) * time.Hour),
+		UserIP:    net.ParseIP(c.ClientIP()),
+	}
+	_, err = h.DB.Model(&session).Insert()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal server error",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.SetCookie("user_session", fmt.Sprint(session.ID), lifetime*3600, path, domain, secure, http_only)
+
 	c.JSON(http.StatusOK, gin.H{"message": "Authentication successful!"})
+}
+
+func (h *AuthHandler) LogoutHandler(c *gin.Context) {
+
+}
+
+func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sessionID, err := c.Cookie("user_session")
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "No session cookie", "details": err.Error()})
+			return
+		}
+
+		var session db_models.Session
+		err = h.DB.Model(&session).Relation("User").Where("session.session_id = ?", sessionID).First()
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "invalid session", "details": err.Error()})
+			return
+		}
+		if time.Now().After(session.ExpiresAt) {
+			c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"error": "session expired", "details": sessionID})
+			return
+		}
+		c.Set("user", session.User)
+		c.Set("session", &session)
+		c.Next()
+	}
 }

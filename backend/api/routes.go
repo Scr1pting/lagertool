@@ -25,25 +25,19 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/organisations/:orgId/items/:id", h.GetItem) // ?start=X&end=X
 	r.POST("/organisations/:orgId/items", h.CreateItem)
 	r.PUT("/organisations/:orgId/items/:id", h.UpdateItem)
-	r.GET("/organisations/:orgId/items/:id/borrows", h.GetBorrowHistory) //INVENTORY ITEM ID!! Items does not exist anymore
+	r.GET("/organisations/:orgId/items/:id/borrows", h.GetBorrowHistory)
 
 	// Cart
 	r.GET("/users/:userId/cart", h.GetShoppingCart) // ?start=X&end=X
 	r.POST("/users/:userId/cart/items", h.CreateCartItem)
 	r.POST("/users/:userId/cart/checkout", h.CheckoutCart)
-	r.DELETE("/users/:userId/cart/items", h.DeleteAllCartItems)
-	r.DELETE("/users/:userId/cart/items/:itemId", h.DeleteCartItem)
-	r.PUT("/users/:userId/cart/items/:itemId", h.UpdateCartItem)
+
 	// Loans & Requests
 	r.PUT("/loans/:id", h.UpdateLoan)
 	r.PUT("/requests/:id", h.UpdateRequest)
-	r.PUT("/requests/:id/loans", h.UpdateLoanBulk)
 	r.POST("/requests/:id/review", h.RequestReview)
 	r.GET("/requests/:id/messages", h.GetMessages)
 	r.POST("/requests/:id/messages", h.PostMessage)
-
-	//search
-	r.GET("/search/:searchTerm", h.FuzzyFindItems)
 
 	// Auth
 	r.GET("/auth/eduid/login", authHandler.LoginHandler)
