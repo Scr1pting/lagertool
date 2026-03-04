@@ -1653,3 +1653,123 @@ func TestGetMessages(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }
+
+func TestGetBorrowHistory(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.GET("/organisations/:orgId/items/:id/borrows", h.GetBorrowHistory)
+
+	// Create test hierarchy (building -> room -> shelf -> column -> shelf_unit -> item -> inventory)
+	hier := createTestHierarchy(t, dbCon)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "BorrowHist Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user
+	user := &db_models.User{Email: "borrowhist@example.com", Name: "Borrower"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+
+	// Create a pending request
+	pendingRequest := &db_models.Request{
+		UserID:           user.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Note:             "Need for project",
+		Status:           "requested",
+		OrganisationName: org.Name,
+		GroupID:          1,
+	}
+	_, err = dbCon.Model(pendingRequest).Insert()
+	assert.NoError(t, err)
+
+	// Create request item for the pending request
+	pendingReqItem := &db_models.RequestItems{
+		RequestID:   pendingRequest.ID,
+		InventoryID: hier.Inventory.ID,
+		Amount:      2,
+	}
+	_, err = dbCon.Model(pendingReqItem).Insert()
+	assert.NoError(t, err)
+
+	// Create a successful request with a returned loan
+	successRequest := &db_models.Request{
+		UserID:           user.ID,
+		StartDate:        time.Now().Add(-72 * time.Hour),
+		EndDate:          time.Now().Add(-24 * time.Hour),
+		Note:             "Past borrowing",
+		Status:           "success",
+		OrganisationName: org.Name,
+		GroupID:          1,
+	}
+	_, err = dbCon.Model(successRequest).Insert()
+	assert.NoError(t, err)
+
+	successReqItem := &db_models.RequestItems{
+		RequestID:   successRequest.ID,
+		InventoryID: hier.Inventory.ID,
+		Amount:      3,
+	}
+	_, err = dbCon.Model(successReqItem).Insert()
+	assert.NoError(t, err)
+
+	returnedAt := time.Now().Add(-48 * time.Hour)
+	loan := &db_models.Loans{
+		RequestItemID: successReqItem.ID,
+		IsReturned:    true,
+		ReturnedAt:    returnedAt,
+	}
+	_, err = dbCon.Model(loan).Insert()
+	assert.NoError(t, err)
+
+	cleanup := func() {
+		_, _ = dbCon.Model(loan).Where("id = ?", loan.ID).Delete()
+		_, _ = dbCon.Model(successReqItem).Where("id = ?", successReqItem.ID).Delete()
+		_, _ = dbCon.Model(pendingReqItem).Where("id = ?", pendingReqItem.ID).Delete()
+		_, _ = dbCon.Model(successRequest).Where("id = ?", successRequest.ID).Delete()
+		_, _ = dbCon.Model(pendingRequest).Where("id = ?", pendingRequest.ID).Delete()
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+		cleanupTestHierarchy(t, dbCon, hier)
+	}
+	defer cleanup()
+
+	t.Run("Returns borrow history for item", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/items/"+strconv.Itoa(hier.Item.ID)+"/borrows", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var history []api_objects.BorrowHistory
+		err := json.Unmarshal(w.Body.Bytes(), &history)
+		assert.NoError(t, err)
+		assert.Len(t, history, 2)
+
+		// Verify fields are populated
+		for _, entry := range history {
+			assert.Equal(t, "Borrower", entry.User)
+			assert.NotZero(t, entry.Amount)
+		}
+	})
+
+	t.Run("Returns empty for item with no borrows", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/items/999999/borrows", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Invalid item ID", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/items/notanumber/borrows", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}

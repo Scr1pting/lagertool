@@ -87,6 +87,7 @@ http://localhost:8000/swagger/index.html
 | `GET` | `/organisations/:orgId/items/:id?start=X&end=X` | Get a specific inventory item |
 | `POST` | `/organisations/:orgId/items` | Create a new inventory item |
 | `PUT` | `/organisations/:orgId/items/:id` | Update an inventory item |
+| `GET` | `/organisations/:orgId/items/:id/borrows` | Get borrow history for an item |
 
 #### Cart
 | Method | Endpoint | Description |

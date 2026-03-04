@@ -9,9 +9,9 @@ function BorrowRequests() {
   
   return (
     <RegularPage title="Borrow Requests" noBottomPadding>
-      <Tabs defaultValue="pending-approval">
+      <Tabs defaultValue="pending">
       <TabsList>
-          <TabsTrigger value="pending-approval">
+          <TabsTrigger value="pending">
             <Clock />
             Pending Approval
           </TabsTrigger>
@@ -24,23 +24,32 @@ function BorrowRequests() {
             Rejected
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="pending-approval">
+        <TabsContent value="pending">
           {borrowRequests != null
            && borrowRequests.length != 0
-           && <RequestTypePage borrowRequests={borrowRequests}  />
-          }
+           && <RequestTypePage borrowRequests={
+            borrowRequests.filter(
+              request => request.approvalState == "pending"
+            )
+           }/>}
         </TabsContent>
         <TabsContent value="approved">
           {borrowRequests != null
            && borrowRequests.length != 0
-           && <RequestTypePage borrowRequests={borrowRequests}  />
-          }
+           && <RequestTypePage borrowRequests={
+            borrowRequests.filter(
+              request => request.approvalState == "approved"
+            )
+           }/>}
         </TabsContent>
         <TabsContent value="rejected">
           {borrowRequests != null
            && borrowRequests.length != 0
-           && <RequestTypePage borrowRequests={borrowRequests}  />
-          }
+           && <RequestTypePage borrowRequests={
+            borrowRequests.filter(
+              request => request.approvalState == "rejected"
+            )
+           }/>}
         </TabsContent>
       </Tabs>
     </RegularPage>

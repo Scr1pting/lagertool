@@ -1,4 +1,4 @@
-import { APPROVAL_STATES, type BorrowRequest } from "@/types/borrowRequest"
+import { APPROVAL_STATES, TIME_STATES, type BorrowRequest } from "@/types/borrowRequest"
 import DataTable from "../DataTable/DataTable"
 import { borrowColumns } from "../DataTable/InventoryTable/borrowColumns"
 import RejectRequest from "./dialogs/RejectRequest"
@@ -41,8 +41,8 @@ function RequestDetail({ request }: RequestDetailProps) {
       <div className="flex gap-2">
         <Badge variant={APPROVAL_STATES[request.approvalState].color}>{capitalize(APPROVAL_STATES[request.approvalState].title)}</Badge>
         {request.timeState
-         && <Badge variant={APPROVAL_STATES[request.approvalState].color}>
-           {capitalize(APPROVAL_STATES[request.approvalState].title)}
+         && <Badge variant={TIME_STATES[request.timeState].color}>
+           {capitalize(TIME_STATES[request.timeState].title)}
          </Badge>}
       </div>
 
