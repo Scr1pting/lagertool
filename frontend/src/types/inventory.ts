@@ -24,7 +24,7 @@ export interface ItemBorrowEvent {
   authorName: string
   approvalState: ApprovalState
   timeState?: TimeState
-  eventName: string
+  title: string
   startDate: string
   endDate: string
   returnedDate?: string
