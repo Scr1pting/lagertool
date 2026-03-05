@@ -9,7 +9,7 @@ import (
 
 func Update_Request(con *pg.DB, id int, status string) error {
 	_, err := con.Model((*db_models.Request)(nil)).
-		Set("status = ?", status).
+		Set("state = ?", status).
 		Where("id = ?", id).
 		Update()
 

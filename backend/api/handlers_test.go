@@ -885,7 +885,7 @@ func TestRequestReviewSuccess(t *testing.T) {
 	t.Run("Successful Review - Creates Loans and Consumed", func(t *testing.T) {
 		payload := `{
 			"user_id": ` + strconv.Itoa(reviewer.ID) + `,
-			"outcome": "success",
+			"outcome": "Approved",
 			"note": "Approved"
 		}`
 
@@ -904,7 +904,7 @@ func TestRequestReviewSuccess(t *testing.T) {
 		err := dbCon.Model(&reviews).Where("request_id = ?", request.ID).Select()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, reviews)
-		assert.Equal(t, "success", reviews[0].Outcome)
+		assert.Equal(t, "Approved", reviews[0].Outcome)
 
 		// Verify consumed record was created for consumable item
 		var consumed []db_models.Consumed
@@ -970,10 +970,10 @@ func TestUpdateRequest(t *testing.T) {
 			name: "Successful Update",
 			url:  "/requests/" + strconv.Itoa(request.ID),
 			payload: `{
-				"outcome": "approved"
+				"outcome": "Approved"
 			}`,
 			expectedStatus:  http.StatusAccepted,
-			expectedOutcome: "approved",
+			expectedOutcome: "Approved",
 		},
 		{
 			name:           "Invalid JSON - Malformed",
@@ -1702,7 +1702,7 @@ func TestGetBorrowHistory(t *testing.T) {
 		StartDate:        time.Now().Add(-72 * time.Hour),
 		EndDate:          time.Now().Add(-24 * time.Hour),
 		Note:             "Past borrowing",
-		State:            "success",
+		State:            "Approved",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
