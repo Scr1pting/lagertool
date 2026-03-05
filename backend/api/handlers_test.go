@@ -654,7 +654,7 @@ func TestCheckoutCart(t *testing.T) {
 				// Verify request has correct data
 				request := requests[0]
 				assert.Equal(t, user.ID, request.UserID)
-				assert.Equal(t, "requested", request.Status)
+				assert.Equal(t, "requested", request.State)
 				assert.Equal(t, org.Name, request.OrganisationName)
 				assert.NotZero(t, request.GroupID, "Expected group_id to be set")
 
@@ -698,7 +698,7 @@ func TestRequestReview(t *testing.T) {
 		StartDate:        time.Now().Add(24 * time.Hour),
 		EndDate:          time.Now().Add(48 * time.Hour),
 		Note:             "",
-		Status:           "requested",
+		State:            "requested",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
@@ -835,7 +835,7 @@ func TestRequestReviewSuccess(t *testing.T) {
 		StartDate:        time.Now().Add(24 * time.Hour),
 		EndDate:          time.Now().Add(48 * time.Hour),
 		Note:             "",
-		Status:           "requested",
+		State:            "requested",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
@@ -944,7 +944,7 @@ func TestUpdateRequest(t *testing.T) {
 		StartDate:        time.Now().Add(24 * time.Hour),
 		EndDate:          time.Now().Add(48 * time.Hour),
 		Note:             "",
-		Status:           "requested",
+		State:            "requested",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
@@ -1000,7 +1000,7 @@ func TestUpdateRequest(t *testing.T) {
 				var updatedRequest db_models.Request
 				err := dbCon.Model(&updatedRequest).Where("id = ?", request.ID).Select()
 				assert.NoError(t, err)
-				assert.Equal(t, tc.expectedOutcome, updatedRequest.Status)
+				assert.Equal(t, tc.expectedOutcome, updatedRequest.State)
 			}
 		})
 	}
@@ -1064,7 +1064,7 @@ func TestUpdateLoan(t *testing.T) {
 		StartDate:        time.Now().Add(24 * time.Hour),
 		EndDate:          time.Now().Add(48 * time.Hour),
 		Note:             "",
-		Status:           "approved",
+		State:            "approved",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
@@ -1481,7 +1481,7 @@ func TestPostMessage(t *testing.T) {
 		UserID:           user.ID,
 		StartDate:        time.Now().Add(24 * time.Hour),
 		EndDate:          time.Now().Add(48 * time.Hour),
-		Status:           "requested",
+		State:            "requested",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
@@ -1576,7 +1576,7 @@ func TestGetMessages(t *testing.T) {
 		UserID:           member.ID,
 		StartDate:        time.Now().Add(24 * time.Hour),
 		EndDate:          time.Now().Add(48 * time.Hour),
-		Status:           "requested",
+		State:            "requested",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
@@ -1680,7 +1680,7 @@ func TestGetBorrowHistory(t *testing.T) {
 		StartDate:        time.Now().Add(24 * time.Hour),
 		EndDate:          time.Now().Add(48 * time.Hour),
 		Note:             "Need for project",
-		Status:           "requested",
+		State:            "requested",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}
@@ -1702,7 +1702,7 @@ func TestGetBorrowHistory(t *testing.T) {
 		StartDate:        time.Now().Add(-72 * time.Hour),
 		EndDate:          time.Now().Add(-24 * time.Hour),
 		Note:             "Past borrowing",
-		Status:           "success",
+		State:            "success",
 		OrganisationName: org.Name,
 		GroupID:          1,
 	}

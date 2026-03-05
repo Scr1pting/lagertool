@@ -147,7 +147,7 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 			StartDate:        req.StartDate,
 			EndDate:          req.EndDate,
 			Note:             "",
-			Status:           "requested",
+			State:            "requested",
 			OrganisationName: k,
 		}
 		err := db.Create_request(h.DB, request)
@@ -210,7 +210,7 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		return
 	}
 
-	if rev.Outcome == "success" {
+	if rev.Outcome == "Approved" {
 		var request db_models.Request
 		err := h.DB.Model(&request).
 			Relation("RequestItems.Inventory.Item").

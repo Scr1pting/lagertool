@@ -196,15 +196,9 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 	}
 	var dbRes []db_models.RequestItems
 	err = h.DB.Model(&dbRes).
-<<<<<<< HEAD
-		Where("item_id = ?", itemId).
-		Relation("Request").
-		Relation("User").
-=======
 		Relation("Inventory").
 		Where("inventory.item_id = ?", itemId).
 		Relation("Request.User").
->>>>>>> f7a77156effdedfa5534b6391accbd1c3a38ed3d
 		Select()
 	var res []api_objects.BorrowHistory
 	for _, item := range dbRes {
@@ -213,24 +207,18 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 			Event:     item.Request.Note,
 			StartedAt: item.Request.StartDate,
 			DueAt:     item.Request.EndDate,
-			Status:    "",
+			State:     "",
 			Amount:    item.Amount,
 		}
-		if item.Request.Status == "success" {
+		if item.Request.State == "Approved" {
 			var db2res db_models.Loans
-<<<<<<< HEAD
-			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.RequestID).Select()
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-=======
 			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.ID).First()
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
->>>>>>> f7a77156effdedfa5534b6391accbd1c3a38ed3d
 			}
 			if db2res.IsReturned {
-				out.DueAt = db2res.ReturnedAt
+				out.ReturnedAt = db2res.ReturnedAt
 			}
 		}
 		res = append(res, out)

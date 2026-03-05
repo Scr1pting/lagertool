@@ -92,10 +92,12 @@ type Message struct {
 }
 
 type BorrowHistory struct {
-	User      string    `json:"user"`
-	Event     string    `json:"event"`
-	StartedAt time.Time `json:"startedAt"`
-	DueAt     time.Time `json:"dueAt"`
-	Status    string    `json:"status"`
-	Amount    int       `json:"amount"`
+	User       string    `json:"user"`
+	Event      string    `json:"event"`
+	StartedAt  time.Time `json:"startDate"`
+	DueAt      time.Time `json:"dueAt"`
+	ReturnedAt time.Time `json:"returnedAt"`
+	State      string    `json:"approvalState"`
+	TimeState  string    `json:"approvalStateTime"`
+	Amount     int       `json:"amount"`
 }

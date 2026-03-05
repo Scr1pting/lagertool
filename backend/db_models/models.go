@@ -161,7 +161,9 @@ type Request struct {
 	StartDate        time.Time `json:"start_date" pg:"start_date"`
 	EndDate          time.Time `json:"end_date" pg:"end_date"`
 	Note             string    `json:"note" pg:"note"`
-	Status           string    `json:"status" pg:"status"`
+	State            string    `json:"state" pg:"state"`
+	TimeState        string    `json:"time_state" pg:"time_state"`
+	CreatedAt        time.Time `json:"created_at" pg:"created_at"`
 	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
 	GroupID          int       `json:"group_id" pg:"group_id"`
 
