@@ -10,7 +10,7 @@ function useFetchItem(id: number) {
   const { startDate, endDate } = useDateParams()
 
   const itemState = useFetch<InventoryItemFull>(`${API_BASE_URL}/organisations/${selectedOrg?.name}/items/${id}?start=${startDate}&end=${endDate}`)
-  const borrowHistoryState = useFetch<ItemBorrowEvent[]>(`/item-borrow-history.sample.json`)
+  const borrowHistoryState = useFetch<ItemBorrowEvent[]>(`${API_BASE_URL}/organisations/${selectedOrg?.name}/items/${id}/borrows`)
 
   return {
     ...itemState,
