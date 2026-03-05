@@ -92,7 +92,7 @@ type Message struct {
 }
 
 type BorrowHistory struct {
-	User       string    `json:"user"`
+	User       string    `json:"authorName"`
 	Event      string    `json:"event"`
 	StartedAt  time.Time `json:"startDate"`
 	DueAt      time.Time `json:"dueAt"`
