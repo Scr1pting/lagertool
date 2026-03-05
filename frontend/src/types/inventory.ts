@@ -20,7 +20,7 @@ export interface InventoryItemFull extends InventoryItem {
 }
 
 export interface ItemBorrowEvent {
-  id: string
+  authorName: string
   approvalState: ApprovalState
   timeState?: TimeState
   eventName: string
