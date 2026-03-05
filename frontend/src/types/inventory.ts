@@ -17,10 +17,10 @@ export interface InventoryItem {
 export interface InventoryItemFull extends InventoryItem {
   shelf: Shelf
   shelfElementId: string
-  borrowHistory: ItemBorrowEvent[]
+  borrowHistory: ItemBorrowEntry[]
 }
 
-export interface ItemBorrowEvent {
+export interface ItemBorrowEntry {
   authorName: string
   approvalState: ApprovalState
   timeState?: TimeState

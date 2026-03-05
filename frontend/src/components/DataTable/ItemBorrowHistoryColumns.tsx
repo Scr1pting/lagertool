@@ -1,11 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { ItemBorrowEvent } from "@/types/inventory"
+import type { ItemBorrowEntry } from "@/types/inventory"
 import SortableHeader from "./SortableHeader"
 import { formatDate } from "@/lib/formatDate"
 import { Badge } from "@/components/shadcn/badge"
 import { APPROVAL_STATES, TIME_STATES } from "@/types/borrowRequest"
 
-const itemBorrowHistoryColumns: ColumnDef<ItemBorrowEvent>[] = [
+const itemBorrowHistoryColumns: ColumnDef<ItemBorrowEntry>[] = [
   {
     accessorKey: "authorName",
     header: ({ column }) => <SortableHeader column={column} title="User" />,
