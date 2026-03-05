@@ -41,7 +41,7 @@ function AddShelfButtons({ columns }: { columns: ShelfColumn[] }) {
   return (
     <div className="fixed top-6 right-6 z-20 flex gap-2 items-center">
       <Dialog>
-        <DialogTrigger>
+        <DialogTrigger asChild>
           <Button>
             Next
           </Button>

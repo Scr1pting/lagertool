@@ -30,7 +30,7 @@ function RejectRequest({ request }: RejectRequestProps) {
 
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant="outline">
           Approve
         </Button>

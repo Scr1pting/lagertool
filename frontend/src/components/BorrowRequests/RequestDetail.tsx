@@ -36,6 +36,8 @@ function RequestDetail({ request }: RequestDetailProps) {
     return () => window.removeEventListener("resize", updateHeight)
   }, [])
 
+  console.log(request.timeState)
+
   return (
     <section ref={sectionRef} className="flex flex-col" style={{ minHeight }}>
       <div className="flex gap-2">

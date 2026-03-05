@@ -45,7 +45,7 @@ function ShelfElementSelect(
         }
 
         <DialogFooter>
-          <DialogClose>
+          <DialogClose asChild>
             <Button>Done</Button>
           </DialogClose>
         </DialogFooter>

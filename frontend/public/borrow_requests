@@ -97,7 +97,7 @@
       }
     ],
     "approvalState": "approved",
-    "timeState": "ongoing"
+    "timeState": "onLoan"
   },
   {
     "id": 4,

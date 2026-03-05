@@ -13,7 +13,7 @@ function BorrowRequests() {
       <TabsList>
           <TabsTrigger value="pending">
             <Clock />
-            Pending Approval
+            Pending
           </TabsTrigger>
           <TabsTrigger value="approved">
             <Check />
