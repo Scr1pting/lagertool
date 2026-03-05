@@ -80,15 +80,19 @@ function ItemDetail() {
             </CardContent>
           </Card>
 
-          <h2 className="text-xl font-semibold pt-10 pb-5">
+          <h2 className="text-xl font-semibold pt-10">
             Borrow History
           </h2>
 
 
           {(borrowHistory ?? []).length > 0 ? (
-            <DataTable data={borrowHistory!} columns={itemBorrowHistoryColumns} />
+            <DataTable
+              className="pt-5"
+              data={borrowHistory!}
+              columns={itemBorrowHistoryColumns}
+            />
           ) : (
-            <p className="text-muted-foreground text-sm">No borrow history for this item.</p>
+            <p className="text-muted-foreground text-sm pt-3">No borrow history for this item.</p>
           )}
 
 

@@ -1,7 +1,7 @@
 import type { Shelf, ShelfElement } from "@/types/shelf"
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog"
 import StaticShelf from "./Shelves/viewer/StaticShelf"
-import type { Dispatch, ReactNode, SetStateAction } from "react"
+import type { ReactNode } from "react"
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./shadcn/dialog"
 import { Button } from "./shadcn/button"
 
@@ -11,12 +11,12 @@ interface ShelfElementSelectProps {
   onOpenChange: (newOpen: boolean) => void
   shelf: Shelf | undefined
   selectedElement: ShelfElement | undefined
-  setSelectedElement: Dispatch<SetStateAction<ShelfElement | undefined>>
+  onElementChange: (element: ShelfElement) => void
   children: ReactNode
 }
 
 function ShelfElementSelect(
-  { open, onOpenChange, shelf, selectedElement, setSelectedElement, children }: ShelfElementSelectProps
+  { open, onOpenChange, shelf, selectedElement, onElementChange, children }: ShelfElementSelectProps
 ) {
   return (
     <Dialog
@@ -38,7 +38,7 @@ function ShelfElementSelect(
           <div className="m-3 mt-6">
             <StaticShelf
               shelf={shelf}
-              onElementSelect={newElement => setSelectedElement(newElement)}
+              onElementSelect={onElementChange}
               highlightedElement={selectedElement?.id}
             />
           </div>

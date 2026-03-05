@@ -1,12 +1,13 @@
 import type { ApprovalState, TimeState } from "./borrowRequest"
 import type { Building } from "./building"
 import type { Room } from "./room"
-import { type Shelf } from "./shelf"
+import { type Shelf, type ShelfElement } from "./shelf"
+
 
 export interface InventoryItem {
   id: number
   name: string
-  tags: [string]
+  keywords: string
   amount: number
   available: number
   building: Building
@@ -28,4 +29,12 @@ export interface ItemBorrowEvent {
   endDate: string
   returnedDate?: string
   amount: number
+}
+
+export interface InventoryItemPayload {
+  name: string
+  keywords: string
+  amount: number
+  shelf: Shelf | undefined
+  shelfElement: ShelfElement | undefined
 }
