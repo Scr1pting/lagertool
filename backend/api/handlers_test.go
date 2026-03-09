@@ -2112,3 +2112,116 @@ func TestFuzzyFindItems(t *testing.T) {
 		assert.GreaterOrEqual(t, len(results), 2)
 	})
 }
+
+func TestDeleteAllCartItems(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.DELETE("/users/:userId/cart/items", h.DeleteAllCartItems)
+
+	// Create a test user
+	user := &db_models.User{Email: "deleteall@example.com", Name: "DeleteAll Test User"}
+	_, err := dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+	}()
+
+	// Create inventory items
+	inventory1 := &db_models.Inventory{Name: "Delete Cart Item 1", IsConsumable: true, Amount: 10}
+	inventory2 := &db_models.Inventory{Name: "Delete Cart Item 2", IsConsumable: false, Amount: 5}
+	_, err = dbCon.Model(inventory1).Insert()
+	assert.NoError(t, err)
+	_, err = dbCon.Model(inventory2).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(inventory1).Where("id = ?", inventory1.ID).Delete()
+		_, _ = dbCon.Model(inventory2).Where("id = ?", inventory2.ID).Delete()
+	}()
+
+	// Create a shopping cart for the user
+	cart := &db_models.ShoppingCart{UserID: user.ID}
+	_, err = dbCon.Model(cart).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(cart).Where("id = ?", cart.ID).Delete()
+	}()
+
+	// Create cart items
+	cartItem1 := &db_models.ShoppingCartItem{ShoppingCartID: cart.ID, InventoryID: inventory1.ID, Amount: 2}
+	cartItem2 := &db_models.ShoppingCartItem{ShoppingCartID: cart.ID, InventoryID: inventory2.ID, Amount: 3}
+	_, err = dbCon.Model(cartItem1).Insert()
+	assert.NoError(t, err)
+	_, err = dbCon.Model(cartItem2).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(cartItem1).Where("id = ?", cartItem1.ID).Delete()
+		_, _ = dbCon.Model(cartItem2).Where("id = ?", cartItem2.ID).Delete()
+	}()
+
+	t.Run("Does not return cart items belonging to another user", func(t *testing.T) {
+		// Create a second user with their own cart and items
+		otherUser := &db_models.User{Email: "other@example.com", Name: "Other User"}
+		_, err := dbCon.Model(otherUser).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherUser).Where("id = ?", otherUser.ID).Delete()
+		}()
+
+		otherCart := &db_models.ShoppingCart{UserID: otherUser.ID}
+		_, err = dbCon.Model(otherCart).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherCart).Where("id = ?", otherCart.ID).Delete()
+		}()
+
+		otherCartItem := &db_models.ShoppingCartItem{ShoppingCartID: otherCart.ID, InventoryID: inventory1.ID, Amount: 7}
+		_, err = dbCon.Model(otherCartItem).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherCartItem).Where("id = ?", otherCartItem.ID).Delete()
+		}()
+
+		// Request cart items for the original user — should not include otherUser's items
+		req, _ := http.NewRequest("DELETE", "/users/"+strconv.Itoa(user.ID)+"/cart/items", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var results []db_models.ShoppingCartItem
+		err = json.Unmarshal(w.Body.Bytes(), &results)
+		assert.NoError(t, err)
+
+		// Should only contain the original user's 2 cart items, not the other user's
+		assert.Equal(t, 2, len(results))
+		for _, item := range results {
+			assert.NotEqual(t, otherCartItem.ID, item.ID)
+		}
+	})
+
+	t.Run("Returns empty list for user with no cart items", func(t *testing.T) {
+		// Create a user with no cart
+		userNoCart := &db_models.User{Email: "nocart@example.com", Name: "No Cart User"}
+		_, err := dbCon.Model(userNoCart).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(userNoCart).Where("id = ?", userNoCart.ID).Delete()
+		}()
+
+		req, _ := http.NewRequest("DELETE", "/users/"+strconv.Itoa(userNoCart.ID)+"/cart/items", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Invalid user ID returns bad request", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", "/users/abc/cart/items", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}

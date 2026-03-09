@@ -30,6 +30,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/users/:userId/cart", h.GetShoppingCart) // ?start=X&end=X
 	r.POST("/users/:userId/cart/items", h.CreateCartItem)
 	r.POST("/users/:userId/cart/checkout", h.CheckoutCart)
+	r.DELETE("/users/:userId/cart/items", h.DeleteAllCartItems)
 
 	// Loans & Requests
 	r.PUT("/loans/:id", h.UpdateLoan)

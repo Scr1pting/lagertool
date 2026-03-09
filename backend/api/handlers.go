@@ -237,3 +237,31 @@ func (h *Handler) FuzzyFindItems(c *gin.Context) {
 	res := util.FindItemSearchTermsInDB(dbRes, searchTerm)
 	c.JSON(http.StatusOK, res)
 }
+
+func (h *Handler) DeleteAllCartItems(c *gin.Context) {
+	var dbCI []db_models.ShoppingCartItem
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	err = h.DB.Model(&dbCI).Relation("ShoppingCart").Where("shopping_cart.user_id = ?", userId).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if len(dbCI) == 0 {
+		c.JSON(http.StatusOK, []db_models.ShoppingCartItem{})
+		return
+	}
+	ids := make([]int, len(dbCI))
+	for i, item := range dbCI {
+		ids[i] = item.ID
+	}
+	_, err = h.DB.Model((*db_models.ShoppingCartItem)(nil)).Where("id IN (?)", pg.In(ids)).Delete()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dbCI)
+}
