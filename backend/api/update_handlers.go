@@ -78,7 +78,13 @@ func (h *Handler) UpdateLoanBulk(c *gin.Context) {
 		return
 	}
 	var dbRes []db_models.Loans
-	err = h.DB.Model(&dbRes).Where("request_id = ?", requestId).Select()
+	err = h.DB.Model(&dbRes).
+		Where("request_item_id IN (SELECT id FROM request_items WHERE request_id = ?)", requestId).
+		Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	for _, loan := range dbRes {
 		err = db.Update_Loan(h.DB, loan.ID, req.ReturnedAt, true)
 		if err != nil {

@@ -1773,3 +1773,245 @@ func TestGetBorrowHistory(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }
+
+func TestUpdateLoanBulk(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.PUT("/requests/:id/loans", h.UpdateLoanBulk)
+
+	// Create test organisation
+	org := &db_models.Organisation{Name: "Bulk Loan Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	// Create test user
+	user := &db_models.User{Email: "bulkloan@example.com", Name: "Bulk Loan User"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+
+	// Create building
+	building := &db_models.Building{Name: "Bulk Loan Building", UpdateDate: time.Now()}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+
+	// Create room
+	room := &db_models.Room{Name: "Bulk Loan Room", BuildingID: building.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf
+	shelf := &db_models.Shelf{ID: "BLOAN-S-1", Name: "Bulk Loan Shelf", RoomID: room.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(shelf).Insert()
+	assert.NoError(t, err)
+
+	// Create column
+	column := &db_models.Column{ID: "BLOAN-C-1", ShelfID: shelf.ID}
+	_, err = dbCon.Model(column).Insert()
+	assert.NoError(t, err)
+
+	// Create shelf unit
+	shelfUnit := &db_models.ShelfUnit{ID: "BLOAN-SU-1", ColumnID: column.ID}
+	_, err = dbCon.Model(shelfUnit).Insert()
+	assert.NoError(t, err)
+
+	// Create items (non-consumable for loans)
+	item1 := &db_models.Item{Name: "Bulk Loan Item 1", IsConsumable: false}
+	_, err = dbCon.Model(item1).Insert()
+	assert.NoError(t, err)
+
+	item2 := &db_models.Item{Name: "Bulk Loan Item 2", IsConsumable: false}
+	_, err = dbCon.Model(item2).Insert()
+	assert.NoError(t, err)
+
+	// Create inventories
+	inventory1 := &db_models.Inventory{ItemID: item1.ID, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	_, err = dbCon.Model(inventory1).Insert()
+	assert.NoError(t, err)
+
+	inventory2 := &db_models.Inventory{ItemID: item2.ID, ShelfUnitID: shelfUnit.ID, Amount: 3, UpdateDate: time.Now()}
+	_, err = dbCon.Model(inventory2).Insert()
+	assert.NoError(t, err)
+
+	// Create request
+	request := &db_models.Request{
+		UserID:           user.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Note:             "",
+		State:            "approved",
+		OrganisationName: org.Name,
+		GroupID:          1,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	// Create request items
+	requestItem1 := &db_models.RequestItems{
+		RequestID:   request.ID,
+		InventoryID: inventory1.ID,
+		Amount:      1,
+	}
+	_, err = dbCon.Model(requestItem1).Insert()
+	assert.NoError(t, err)
+
+	requestItem2 := &db_models.RequestItems{
+		RequestID:   request.ID,
+		InventoryID: inventory2.ID,
+		Amount:      1,
+	}
+	_, err = dbCon.Model(requestItem2).Insert()
+	assert.NoError(t, err)
+
+	// Create loans for both request items
+	loan1 := &db_models.Loans{
+		RequestItemID: requestItem1.ID,
+		IsReturned:    false,
+	}
+	_, err = dbCon.Model(loan1).Insert()
+	assert.NoError(t, err)
+
+	loan2 := &db_models.Loans{
+		RequestItemID: requestItem2.ID,
+		IsReturned:    false,
+	}
+	_, err = dbCon.Model(loan2).Insert()
+	assert.NoError(t, err)
+
+	// Create a separate request with its own loan that should NOT be affected
+	otherRequest := &db_models.Request{
+		UserID:           user.ID,
+		StartDate:        time.Now().Add(24 * time.Hour),
+		EndDate:          time.Now().Add(48 * time.Hour),
+		Note:             "",
+		State:            "approved",
+		OrganisationName: org.Name,
+		GroupID:          1,
+	}
+	_, err = dbCon.Model(otherRequest).Insert()
+	assert.NoError(t, err)
+
+	otherRequestItem := &db_models.RequestItems{
+		RequestID:   otherRequest.ID,
+		InventoryID: inventory1.ID,
+		Amount:      1,
+	}
+	_, err = dbCon.Model(otherRequestItem).Insert()
+	assert.NoError(t, err)
+
+	otherLoan := &db_models.Loans{
+		RequestItemID: otherRequestItem.ID,
+		IsReturned:    false,
+	}
+	_, err = dbCon.Model(otherLoan).Insert()
+	assert.NoError(t, err)
+
+	// Cleanup function
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.Loans{}).Where("id = ?", loan1.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Loans{}).Where("id = ?", loan2.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Loans{}).Where("id = ?", otherLoan.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("id = ?", requestItem1.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("id = ?", requestItem2.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("id = ?", otherRequestItem.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", otherRequest.ID).Delete()
+		_, _ = dbCon.Model(inventory1).Where("id = ?", inventory1.ID).Delete()
+		_, _ = dbCon.Model(inventory2).Where("id = ?", inventory2.ID).Delete()
+		_, _ = dbCon.Model(item1).Where("id = ?", item1.ID).Delete()
+		_, _ = dbCon.Model(item2).Where("id = ?", item2.ID).Delete()
+		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
+		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
+		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
+		_, _ = dbCon.Model(room).Where("id = ?", room.ID).Delete()
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	returnedAt := time.Now()
+
+	t.Run("Successful Bulk Loan Return", func(t *testing.T) {
+		payload := `{"returnedAt": "` + returnedAt.Format(time.RFC3339) + `"}`
+		req, _ := http.NewRequest("PUT", "/requests/"+strconv.Itoa(request.ID)+"/loans", strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if !assert.Equal(t, http.StatusAccepted, w.Code) {
+			t.Log("Response body:", w.Body.String())
+		}
+
+		// Verify both loans were updated
+		var updatedLoan1 db_models.Loans
+		err := dbCon.Model(&updatedLoan1).Where("id = ?", loan1.ID).Select()
+		assert.NoError(t, err)
+		assert.True(t, updatedLoan1.IsReturned)
+		assert.False(t, updatedLoan1.ReturnedAt.IsZero())
+
+		var updatedLoan2 db_models.Loans
+		err = dbCon.Model(&updatedLoan2).Where("id = ?", loan2.ID).Select()
+		assert.NoError(t, err)
+		assert.True(t, updatedLoan2.IsReturned)
+		assert.False(t, updatedLoan2.ReturnedAt.IsZero())
+	})
+
+	t.Run("Invalid Request ID", func(t *testing.T) {
+		payload := `{"returnedAt": "` + returnedAt.Format(time.RFC3339) + `"}`
+		req, _ := http.NewRequest("PUT", "/requests/abc/loans", strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Invalid JSON - Malformed", func(t *testing.T) {
+		req, _ := http.NewRequest("PUT", "/requests/"+strconv.Itoa(request.ID)+"/loans", strings.NewReader(`{"returnedAt": "2025-01-01"`))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Does Not Update Loans From Other Requests", func(t *testing.T) {
+		// Reset the other loan to ensure it's not returned
+		_, err := dbCon.Model(otherLoan).Set("returned = ?", false).Set("returned_at = ?", time.Time{}).Where("id = ?", otherLoan.ID).Update()
+		assert.NoError(t, err)
+
+		payload := `{"returnedAt": "` + returnedAt.Format(time.RFC3339) + `"}`
+		req, _ := http.NewRequest("PUT", "/requests/"+strconv.Itoa(request.ID)+"/loans", strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusAccepted, w.Code)
+
+		// Verify the loan from the other request was NOT updated
+		var unchangedLoan db_models.Loans
+		err = dbCon.Model(&unchangedLoan).Where("id = ?", otherLoan.ID).Select()
+		assert.NoError(t, err)
+		assert.False(t, unchangedLoan.IsReturned, "loan from another request should not be updated")
+		assert.True(t, unchangedLoan.ReturnedAt.IsZero(), "loan from another request should have no return date")
+	})
+
+	t.Run("Request With No Loans", func(t *testing.T) {
+		// Use a request ID that has no loans
+		payload := `{"returnedAt": "` + returnedAt.Format(time.RFC3339) + `"}`
+		req, _ := http.NewRequest("PUT", "/requests/999999/loans", strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		// Should still return accepted even with no loans to update
+		assert.Equal(t, http.StatusAccepted, w.Code)
+	})
+}
