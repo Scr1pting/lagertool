@@ -24,7 +24,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/organisations/:orgId/items/:id", h.GetItem) // ?start=X&end=X
 	r.POST("/organisations/:orgId/items", h.CreateItem)
 	r.PUT("/organisations/:orgId/items/:id", h.UpdateItem)
-	r.GET("/organisations/:orgId/items/:id/borrows", h.GetBorrowHistory) //INVENTORY ITEM ID!! Items does not exists anymore
+	r.GET("/organisations/:orgId/items/:id/borrows", h.GetBorrowHistory) //INVENTORY ITEM ID!! Items does not exist anymore
 
 	// Cart
 	r.GET("/users/:userId/cart", h.GetShoppingCart) // ?start=X&end=X
