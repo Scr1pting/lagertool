@@ -46,7 +46,7 @@ func InitDB(con *pg.DB) {
 		(*db_models.Shelf)(nil),
 		(*db_models.Column)(nil),
 		(*db_models.ShelfUnit)(nil),
-		(*db_models.Item)(nil),
+		//(*db_models.Item)(nil),
 		(*db_models.Inventory)(nil),
 		(*db_models.ShoppingCart)(nil),
 		(*db_models.ShoppingCartItem)(nil),
@@ -76,7 +76,7 @@ func InitDB(con *pg.DB) {
 }
 
 func InsertDummyData(con *pg.DB) {
-	org, user, session, building, room, shelf, columns, units, item, inventory, shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed := GetDummyData()
+	org, user, session, building, room, shelf, columns, units, inventory, shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed := GetDummyData()
 
 	log.Println("🚀 Inserting dummy data...")
 
@@ -109,9 +109,9 @@ func InsertDummyData(con *pg.DB) {
 	}
 
 	// 3️⃣ Insert Item and Inventory
-	if _, err := con.Model(item).Insert(); err != nil {
-		log.Fatalf("Insert Item failed: %v", err)
-	}
+	//if _, err := con.Model(item).Insert(); err != nil {
+	//	log.Fatalf("Insert Item failed: %v", err)
+	//}
 	if _, err := con.Model(inventory).Insert(); err != nil {
 		log.Fatalf("Insert Inventory failed: %v", err)
 	}

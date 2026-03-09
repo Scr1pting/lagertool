@@ -113,7 +113,6 @@ func (h *Handler) GetInventory(c *gin.Context) {
 	var dbRes []db_models.Inventory
 	err = h.DB.Model(&dbRes).
 		Column("inventory.*").
-		Relation("Item").
 		Relation("ShelfUnit.Column.Shelf.Room.Building").
 		Relation("ShelfUnit.Column.Shelf.Room").
 		Where("inventory.id IN (?)", pg.In(inventoryIDs)).
@@ -131,7 +130,7 @@ func (h *Handler) GetInventory(c *gin.Context) {
 			return
 		}
 		res = append(res, api_objects.InventorySorted{
-			ID: item.ItemID, Name: item.Item.Name, Amount: item.Amount, Available: available, RoomName: *item.ShelfUnit.Column.Shelf.Room, BuildingName: *item.ShelfUnit.Column.Shelf.Room.Building,
+			ID: item.ItemID, Name: item.Name, Amount: item.Amount, Available: available, RoomName: *item.ShelfUnit.Column.Shelf.Room, BuildingName: *item.ShelfUnit.Column.Shelf.Room.Building,
 		})
 	}
 	c.JSON(http.StatusOK, res)

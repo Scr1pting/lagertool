@@ -16,7 +16,7 @@ func GetDummyData() (
 	*db_models.Shelf,
 	[]db_models.Column,
 	[]db_models.ShelfUnit,
-	*db_models.Item,
+	//*db_models.Item,
 	*db_models.Inventory,
 	*db_models.ShoppingCart,
 	[]db_models.ShoppingCartItem,
@@ -102,21 +102,21 @@ func GetDummyData() (
 	shelf.Columns = columns
 
 	// 6️⃣ Item
-	item := &db_models.Item{
-		ID:           1,
-		Name:         "Beaker Set 500ml",
-		IsConsumable: false,
-	}
+	//item := &db_models.Item{
+	//	ID:           1,
+	//	Name:         "Beaker Set 500ml",
+	//	IsConsumable: false,
+	//}
 
 	// 7️⃣ Inventory
 	inventory := &db_models.Inventory{
-		ID:          1,
-		ItemID:      item.ID,
-		ShelfUnitID: shelfUnits[0].ID,
-		Amount:      12,
-		UpdateDate:  now,
-		Item:        item,
-		ShelfUnit:   &shelfUnits[0],
+		ID:           1,
+		Name:         "Beaker Set 500ml",
+		IsConsumable: false,
+		ShelfUnitID:  shelfUnits[0].ID,
+		Amount:       12,
+		UpdateDate:   now,
+		ShelfUnit:    &shelfUnits[0],
 	}
 
 	// 8️⃣ ShoppingCart + Items
@@ -182,5 +182,5 @@ func GetDummyData() (
 		RequestItems:  &requestItems[0],
 	}
 
-	return org, user, session, building, room, shelf, columns, shelfUnits, item, inventory, &shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed
+	return org, user, session, building, room, shelf, columns, shelfUnits, inventory, &shoppingCart, shoppingCartItems, request, requestItems, requestReview, loan, consumed
 }

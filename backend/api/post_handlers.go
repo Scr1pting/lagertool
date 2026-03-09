@@ -213,7 +213,7 @@ func (h *Handler) RequestReview(c *gin.Context) {
 	if rev.Outcome == "Approved" {
 		var request db_models.Request
 		err := h.DB.Model(&request).
-			Relation("RequestItems.Inventory.Item").
+			Relation("RequestItems.Inventory").
 			Where("id = ?", requestId).
 			Select()
 		if err != nil {
@@ -222,7 +222,7 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		}
 
 		for _, rItem := range request.RequestItems {
-			if rItem.Inventory.Item.IsConsumable {
+			if rItem.Inventory.IsConsumable {
 				cons := &db_models.Consumed{
 					RequestItemID: rItem.ID,
 				}

@@ -114,26 +114,15 @@ func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*db_m
 }
 
 func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string, isConsumable bool, note string) (*db_models.Inventory, error) {
-	item := &db_models.Item{}
-	err := con.Model(item).Where("name = ?", name).Where("is_consumable = ?", isConsumable).Select()
-	if errors.Is(err, pg.ErrNoRows) {
-		item.Name = name
-		item.IsConsumable = isConsumable
-		_, err = con.Model(item).Insert()
-		if err != nil {
-			return nil, err
-		}
-	} else if err != nil {
-		return nil, err
-	}
 	inv := &db_models.Inventory{
-		ItemID:      item.ID,
-		Amount:      amount,
-		ShelfUnitID: shelfUnitID,
-		UpdateDate:  time.Now(),
-		Note:        note,
+		Name:         name,
+		IsConsumable: isConsumable,
+		Amount:       amount,
+		ShelfUnitID:  shelfUnitID,
+		UpdateDate:   time.Now(),
+		Note:         note,
 	}
-	_, err = con.Model(inv).Insert()
+	_, err := con.Model(inv).Insert()
 	if err != nil {
 		return nil, err
 	}

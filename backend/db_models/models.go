@@ -97,14 +97,14 @@ type ShelfUnit struct { //it is also the new LOCATION
 	Column *Column `json:"column" pg:"rel:has-one,fk:column_id"`
 }
 
-type Item struct {
-	tableName struct{} `pg:"item"`
-	ID        int      `json:"id" pg:"id,pk"`
-	Name      string   `json:"name" pg:"name"`
-	//Description  string   `json:"description" pg:"description"`
-	//Category     string   `json:"category" pg:"category"`
-	IsConsumable bool `json:"is_consumable" pg:"is_consumable"`
-}
+//type Item struct {
+//	tableName struct{} `pg:"item"`
+//	ID        int      `json:"id" pg:"id,pk"`
+//	Name      string   `json:"name" pg:"name"`
+//	//Description  string   `json:"description" pg:"description"`
+//	//Category     string   `json:"category" pg:"category"`
+//	IsConsumable bool `json:"is_consumable" pg:"is_consumable"`
+//}
 
 //type NonConsumable struct { //This should be implemented into the logic not in the database
 //	tableName struct{} `pg:"non_consumable"`
@@ -141,15 +141,16 @@ type ShoppingCartItem struct {
 }
 
 type Inventory struct {
-	tableName   struct{}  `pg:"Inventory"`
-	ID          int       `json:"id" pg:"id,pk"`
-	ItemID      int       `json:"item_id" pg:"item_id"`
-	ShelfUnitID string    `json:"shelf_unit_id" pg:"shelf_unit_id"`
-	Amount      int       `json:"amount" pg:"amount"`
-	UpdateDate  time.Time `json:"update_date" pg:"update_date"`
-	Note        string    `json:"note" pg:"note"`
+	tableName    struct{}  `pg:"Inventory"`
+	ID           int       `json:"id" pg:"id,pk"`
+	ItemID       int       `json:"item_id" pg:"item_id"`
+	ShelfUnitID  string    `json:"shelf_unit_id" pg:"shelf_unit_id"`
+	Amount       int       `json:"amount" pg:"amount"`
+	UpdateDate   time.Time `json:"update_date" pg:"update_date"`
+	Note         string    `json:"note" pg:"note"`
+	Name         string    `json:"name" pg:"name"`
+	IsConsumable bool      `json:"is_consumable" pg:"is_consumable"`
 
-	Item         *Item          `json:"item" pg:"rel:has-one,fk:item_id"`
 	ShelfUnit    *ShelfUnit     `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`
 	RequestItems []RequestItems `json:"request_item" pg:"rel:has-many,fk:inventory_id"`
 }

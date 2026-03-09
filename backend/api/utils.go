@@ -42,12 +42,11 @@ func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, e
 func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, error) {
 	var dbInv db_models.Inventory
 	err := h.DB.Model(&dbInv).
-		Relation("Item").
 		Relation("RequestItems.Request").Where("inventory.id = ?", invId).Select()
 	if err != nil {
 		return 0, err
 	}
-	if dbInv.Item.IsConsumable {
+	if dbInv.IsConsumable {
 		return dbInv.Amount, nil
 	}
 	count := 0
@@ -63,13 +62,12 @@ func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time)
 	var dbInv db_models.Inventory
 	var res api_objects.InventoryItem
 	err := h.DB.Model(&dbInv).
-		Relation("Item").
 		Relation("ShelfUnit.Column.Shelf.Room.Building").Where("inventory.id = ?", id).Select()
 	if err != nil {
 		return api_objects.InventoryItem{}, err
 	}
 	res.ID = id
-	res.Name = dbInv.Item.Name
+	res.Name = dbInv.Name
 	res.Amount = dbInv.Amount
 	res.Available, err = h.GetAvailable(id, start, end)
 	if err != nil {
@@ -84,7 +82,7 @@ func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time)
 func (h *Handler) GetCartItemHelper(id int, start time.Time, end time.Time) (map[string][]api_objects.CartItem, error) {
 	var shoppingCart db_models.ShoppingCart
 	err := h.DB.Model(&shoppingCart).
-		Relation("ShoppingCartItems.Inventory.Item").
+		Relation("ShoppingCartItems.Inventory").
 		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Room").
 		Relation("ShoppingCartItems.Inventory.ShelfUnit.Column.Shelf.Organisation").
 		Where("user_id = ?", id).
@@ -108,10 +106,10 @@ func (h *Handler) GetCartItemHelper(id int, start time.Time, end time.Time) (map
 		}
 
 		var ci api_objects.CartItem
-		ci.ID = item.Inventory.ItemID
-		ci.Name = item.Inventory.Item.Name
+		ci.ID = item.Inventory.ID
+		ci.Name = item.Inventory.Name
 		ci.Amount = item.Inventory.Amount
-		ci.Available, err = h.GetAvailable(item.Inventory.ItemID, start, end)
+		ci.Available, err = h.GetAvailable(item.Inventory.ID, start, end)
 		if err != nil {
 			return nil, err
 		}

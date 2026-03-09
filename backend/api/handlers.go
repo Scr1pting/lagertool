@@ -196,8 +196,7 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 	}
 	var dbRes []db_models.RequestItems
 	err = h.DB.Model(&dbRes).
-		Relation("Inventory").
-		Where("inventory.item_id = ?", itemId).
+		Where("inventory_id = ?", itemId).
 		Relation("Request.User").
 		Select()
 	var res []api_objects.BorrowHistory

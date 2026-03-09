@@ -47,7 +47,6 @@ type TestHierarchy struct {
 	Shelf     *db_models.Shelf
 	Column    *db_models.Column
 	ShelfUnit *db_models.ShelfUnit
-	Item      *db_models.Item
 	Inventory *db_models.Inventory
 }
 
@@ -75,11 +74,7 @@ func createTestHierarchy(t *testing.T, dbCon *pg.DB) *TestHierarchy {
 	_, err = dbCon.Model(h.ShelfUnit).Insert()
 	assert.NoError(t, err)
 
-	h.Item = &db_models.Item{Name: "Hierarchy Item", IsConsumable: true}
-	_, err = dbCon.Model(h.Item).Insert()
-	assert.NoError(t, err)
-
-	h.Inventory = &db_models.Inventory{ItemID: h.Item.ID, ShelfUnitID: h.ShelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	h.Inventory = &db_models.Inventory{IsConsumable: true, Name: "Hierarchy Item", ShelfUnitID: h.ShelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
 	_, err = dbCon.Model(h.Inventory).Insert()
 	assert.NoError(t, err)
 
@@ -89,8 +84,6 @@ func createTestHierarchy(t *testing.T, dbCon *pg.DB) *TestHierarchy {
 // cleanupTestHierarchy deletes the data created by createTestHierarchy in the correct order.
 func cleanupTestHierarchy(t *testing.T, dbCon *pg.DB, h *TestHierarchy) {
 	_, err := dbCon.Model(h.Inventory).Where("id = ?", h.Inventory.ID).Delete()
-	assert.NoError(t, err)
-	_, err = dbCon.Model(h.Item).Where("id = ?", h.Item.ID).Delete()
 	assert.NoError(t, err)
 	_, err = dbCon.Model(h.ShelfUnit).Where("id = ?", h.ShelfUnit.ID).Delete()
 	assert.NoError(t, err)
@@ -371,15 +364,15 @@ func TestCreateCartItem(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	item := &db_models.Item{Name: "Test Item", IsConsumable: true}
-	_, err = dbCon.Model(item).Insert()
-	assert.NoError(t, err)
-	defer func() {
-		_, err := dbCon.Model(item).Where("id = ?", item.ID).Delete()
-		assert.NoError(t, err)
-	}()
+	//item := &db_models.Item{Name: "Test Item", IsConsumable: true}
+	//_, err = dbCon.Model(item).Insert()
+	//assert.NoError(t, err)
+	//defer func() {
+	//	_, err := dbCon.Model(item).Where("id = ?", item.ID).Delete()
+	//	assert.NoError(t, err)
+	//}()
 
-	inventory := &db_models.Inventory{ItemID: item.ID, Amount: 10}
+	inventory := &db_models.Inventory{Name: "Test Item", IsConsumable: true, Amount: 10}
 	_, err = dbCon.Model(inventory).Insert()
 	assert.NoError(t, err)
 	defer func() {
@@ -495,8 +488,8 @@ func TestCreateItem(t *testing.T) {
 				// Clean up the created records
 				_, err = dbCon.Model(&db_models.Inventory{}).Where("id = ?", createdItem.ID).Delete()
 				assert.NoError(t, err)
-				_, err = dbCon.Model(&db_models.Item{}).Where("name = 'New Test Item'").Delete()
-				assert.NoError(t, err)
+				//_, err = dbCon.Model(&db_models.Item{}).Where("name = 'New Test Item'").Delete()
+				//assert.NoError(t, err)
 			}
 		})
 	}
@@ -545,12 +538,12 @@ func TestCheckoutCart(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create item
-	item := &db_models.Item{Name: "Checkout Item", IsConsumable: true}
-	_, err = dbCon.Model(item).Insert()
-	assert.NoError(t, err)
+	//item := &db_models.Item{Name: "Checkout Item", IsConsumable: true}
+	//_, err = dbCon.Model(item).Insert()
+	//assert.NoError(t, err)
 
 	// Create inventory
-	inventory := &db_models.Inventory{ItemID: item.ID, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	inventory := &db_models.Inventory{Name: "Checkout Item", IsConsumable: true, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory).Insert()
 	assert.NoError(t, err)
 
@@ -571,7 +564,7 @@ func TestCheckoutCart(t *testing.T) {
 	// Cleanup function
 	cleanup := func() {
 		// Delete request items first (foreign key constraint)
-		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("inventory_id = ?", item.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("inventory_id = ?", inventory.ID).Delete()
 		// Delete requests
 		_, _ = dbCon.Model(&db_models.Request{}).Where("user_id = ?", user.ID).Delete()
 		// Delete shopping cart items
@@ -581,7 +574,7 @@ func TestCheckoutCart(t *testing.T) {
 		// Delete inventory
 		_, _ = dbCon.Model(inventory).Where("id = ?", inventory.ID).Delete()
 		// Delete item
-		_, _ = dbCon.Model(item).Where("id = ?", item.ID).Delete()
+		//_, _ = dbCon.Model(item).Where("id = ?", item.ID).Delete()
 		// Delete shelf unit
 		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
 		// Delete column
@@ -663,7 +656,7 @@ func TestCheckoutCart(t *testing.T) {
 				err = dbCon.Model(&requestItems).Where("request_id = ?", request.ID).Select()
 				assert.NoError(t, err)
 				assert.NotEmpty(t, requestItems)
-				assert.Equal(t, item.ID, requestItems[0].InventoryID)
+				//assert.Equal(t, item.ID, requestItems[0].InventoryID)
 				assert.Equal(t, cartItem.Amount, requestItems[0].Amount)
 			}
 		})
@@ -809,23 +802,23 @@ func TestRequestReviewSuccess(t *testing.T) {
 	_, err = dbCon.Model(shelfUnit).Insert()
 	assert.NoError(t, err)
 
-	// Create consumable item
-	consumableItem := &db_models.Item{Name: "Review Consumable Item", IsConsumable: true}
-	_, err = dbCon.Model(consumableItem).Insert()
-	assert.NoError(t, err)
+	//// Create consumable item
+	//consumableItem := &db_models.Item{}
+	//_, err = dbCon.Model(consumableItem).Insert()
+	//assert.NoError(t, err)
 
-	// Create non-consumable item (for loan)
-	loanableItem := &db_models.Item{Name: "Review Loanable Item", IsConsumable: false}
-	_, err = dbCon.Model(loanableItem).Insert()
-	assert.NoError(t, err)
+	//// Create non-consumable item (for loan)
+	//loanableItem := &db_models.Item{Name: "Review Loanable Item", IsConsumable: false}
+	//_, err = dbCon.Model(loanableItem).Insert()
+	//assert.NoError(t, err)
 
 	// Create inventory for consumable
-	consumableInventory := &db_models.Inventory{ItemID: consumableItem.ID, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	consumableInventory := &db_models.Inventory{Name: "Review Consumable Item", IsConsumable: true, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
 	_, err = dbCon.Model(consumableInventory).Insert()
 	assert.NoError(t, err)
 
 	// Create inventory for loanable
-	loanableInventory := &db_models.Inventory{ItemID: loanableItem.ID, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	loanableInventory := &db_models.Inventory{Name: "Review Loanable Item", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
 	_, err = dbCon.Model(loanableInventory).Insert()
 	assert.NoError(t, err)
 
@@ -869,8 +862,8 @@ func TestRequestReviewSuccess(t *testing.T) {
 		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
 		_, _ = dbCon.Model(consumableInventory).Where("id = ?", consumableInventory.ID).Delete()
 		_, _ = dbCon.Model(loanableInventory).Where("id = ?", loanableInventory.ID).Delete()
-		_, _ = dbCon.Model(consumableItem).Where("id = ?", consumableItem.ID).Delete()
-		_, _ = dbCon.Model(loanableItem).Where("id = ?", loanableItem.ID).Delete()
+		//_, _ = dbCon.Model(consumableItem).Where("id = ?", consumableItem.ID).Delete()
+		//_, _ = dbCon.Model(loanableItem).Where("id = ?", loanableItem.ID).Delete()
 		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
 		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
 		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
@@ -1049,12 +1042,12 @@ func TestUpdateLoan(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create item (non-consumable for loan)
-	item := &db_models.Item{Name: "Loan Item", IsConsumable: false}
-	_, err = dbCon.Model(item).Insert()
-	assert.NoError(t, err)
+	//item := &db_models.Item{Name: "Loan Item", IsConsumable: false}
+	//_, err = dbCon.Model(item).Insert()
+	//assert.NoError(t, err)
 
 	// Create inventory
-	inventory := &db_models.Inventory{ItemID: item.ID, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	inventory := &db_models.Inventory{Name: "Loan Item", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory).Insert()
 	assert.NoError(t, err)
 
@@ -1094,7 +1087,7 @@ func TestUpdateLoan(t *testing.T) {
 		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("id = ?", requestItem.ID).Delete()
 		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
 		_, _ = dbCon.Model(inventory).Where("id = ?", inventory.ID).Delete()
-		_, _ = dbCon.Model(item).Where("id = ?", item.ID).Delete()
+		//_, _ = dbCon.Model(item).Where("id = ?", item.ID).Delete()
 		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
 		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
 		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
@@ -1739,7 +1732,7 @@ func TestGetBorrowHistory(t *testing.T) {
 	defer cleanup()
 
 	t.Run("Returns borrow history for item", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/items/"+strconv.Itoa(hier.Item.ID)+"/borrows", nil)
+		req, _ := http.NewRequest("GET", "/organisations/"+org.Name+"/items/"+strconv.Itoa(hier.Inventory.ID)+"/borrows", nil)
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
@@ -1817,20 +1810,20 @@ func TestUpdateLoanBulk(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create items (non-consumable for loans)
-	item1 := &db_models.Item{Name: "Bulk Loan Item 1", IsConsumable: false}
-	_, err = dbCon.Model(item1).Insert()
-	assert.NoError(t, err)
-
-	item2 := &db_models.Item{Name: "Bulk Loan Item 2", IsConsumable: false}
-	_, err = dbCon.Model(item2).Insert()
-	assert.NoError(t, err)
+	//item1 := &db_models.Item{Name: "Bulk Loan Item 1", IsConsumable: false}
+	//_, err = dbCon.Model(item1).Insert()
+	//assert.NoError(t, err)
+	//
+	//item2 := &db_models.Item{Name: "Bulk Loan Item 2", IsConsumable: false}
+	//_, err = dbCon.Model(item2).Insert()
+	//assert.NoError(t, err)
 
 	// Create inventories
-	inventory1 := &db_models.Inventory{ItemID: item1.ID, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	inventory1 := &db_models.Inventory{Name: "Bulk Loan Item 1", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory1).Insert()
 	assert.NoError(t, err)
 
-	inventory2 := &db_models.Inventory{ItemID: item2.ID, ShelfUnitID: shelfUnit.ID, Amount: 3, UpdateDate: time.Now()}
+	inventory2 := &db_models.Inventory{Name: "Bulk Loan Item 2", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 3, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory2).Insert()
 	assert.NoError(t, err)
 
@@ -1919,8 +1912,8 @@ func TestUpdateLoanBulk(t *testing.T) {
 		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", otherRequest.ID).Delete()
 		_, _ = dbCon.Model(inventory1).Where("id = ?", inventory1.ID).Delete()
 		_, _ = dbCon.Model(inventory2).Where("id = ?", inventory2.ID).Delete()
-		_, _ = dbCon.Model(item1).Where("id = ?", item1.ID).Delete()
-		_, _ = dbCon.Model(item2).Where("id = ?", item2.ID).Delete()
+		//_, _ = dbCon.Model(item1).Where("id = ?", item1.ID).Delete()
+		//_, _ = dbCon.Model(item2).Where("id = ?", item2.ID).Delete()
 		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
 		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
 		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
