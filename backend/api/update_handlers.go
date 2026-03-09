@@ -54,7 +54,7 @@ func (h *Handler) UpdateLoan(c *gin.Context) {
 		return
 	}
 	var req api_objects.UpdateLoan
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -62,6 +62,29 @@ func (h *Handler) UpdateLoan(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+	c.JSON(http.StatusAccepted, req)
+}
+
+func (h *Handler) UpdateLoanBulk(c *gin.Context) {
+	requestId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid loan id"})
+		return
+	}
+	var req api_objects.UpdateLoan
+	if err = c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var dbRes []db_models.Loans
+	err = h.DB.Model(&dbRes).Where("request_id = ?", requestId).Select()
+	for _, loan := range dbRes {
+		err = db.Update_Loan(h.DB, loan.ID, req.ReturnedAt, true)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 	c.JSON(http.StatusAccepted, req)
 }

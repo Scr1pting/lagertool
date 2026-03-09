@@ -34,6 +34,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	// Loans & Requests
 	r.PUT("/loans/:id", h.UpdateLoan)
 	r.PUT("/requests/:id", h.UpdateRequest)
+	r.PUT("/requests/:id/loans", h.UpdateLoanBulk)
 	r.POST("/requests/:id/review", h.RequestReview)
 	r.GET("/requests/:id/messages", h.GetMessages)
 	r.POST("/requests/:id/messages", h.PostMessage)
