@@ -39,6 +39,9 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config) {
 	r.GET("/requests/:id/messages", h.GetMessages)
 	r.POST("/requests/:id/messages", h.PostMessage)
 
+	//search
+	r.GET("/search/:searchTerm", h.FuzzyFindItems)
+
 	// Auth
 	r.GET("/auth/eduid/login", auth.LoginHandler)
 	r.GET("/auth/eduid/callback", auth.CallbackHandler)

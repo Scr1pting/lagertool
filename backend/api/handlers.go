@@ -11,6 +11,7 @@ import (
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db_models"
+	"lagertool.com/main/util"
 )
 
 type Handler struct {
@@ -222,5 +223,17 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 		}
 		res = append(res, out)
 	}
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *Handler) FuzzyFindItems(c *gin.Context) {
+	searchTerm := c.Query("searchTerm")
+	var dbRes []db_models.Inventory
+	err := h.DB.Model(&dbRes).Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	res := util.FindItemSearchTermsInDB(dbRes, searchTerm)
 	c.JSON(http.StatusOK, res)
 }

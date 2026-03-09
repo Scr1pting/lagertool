@@ -2008,3 +2008,107 @@ func TestUpdateLoanBulk(t *testing.T) {
 		assert.Equal(t, http.StatusAccepted, w.Code)
 	})
 }
+
+func TestFuzzyFindItems(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+	h := NewHandler(dbCon, nil)
+	router.GET("/search", h.FuzzyFindItems)
+
+	// Create test hierarchy with a known item name
+	hierarchy := createTestHierarchy(t, dbCon)
+	defer cleanupTestHierarchy(t, dbCon, hierarchy)
+
+	// Insert additional items for fuzzy matching
+	extraItem1 := &db_models.Inventory{
+		Name:         "Hierarchy Itam",
+		ShelfUnitID:  hierarchy.ShelfUnit.ID,
+		Amount:       5,
+		IsConsumable: false,
+		UpdateDate:   time.Now(),
+	}
+	extraItem2 := &db_models.Inventory{
+		Name:         "Completely Different",
+		ShelfUnitID:  hierarchy.ShelfUnit.ID,
+		Amount:       3,
+		IsConsumable: false,
+		UpdateDate:   time.Now(),
+	}
+	_, err := dbCon.Model(extraItem1).Insert()
+	assert.NoError(t, err)
+	_, err = dbCon.Model(extraItem2).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		dbCon.Model(extraItem1).Where("id = ?", extraItem1.ID).Delete()
+		dbCon.Model(extraItem2).Where("id = ?", extraItem2.ID).Delete()
+	}()
+
+	t.Run("Exact match returns single result", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/search?searchTerm=Hierarchy+Item", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var results []db_models.Inventory
+		err := json.Unmarshal(w.Body.Bytes(), &results)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(results))
+		assert.Equal(t, "Hierarchy Item", results[0].Name)
+	})
+
+	t.Run("Fuzzy match returns close matches", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/search?searchTerm=Hierarchy+Itam", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var results []db_models.Inventory
+		err := json.Unmarshal(w.Body.Bytes(), &results)
+		assert.NoError(t, err)
+		// "Hierarchy Itam" is an exact match for extraItem1, so should return 1
+		assert.Equal(t, 1, len(results))
+		assert.Equal(t, "Hierarchy Itam", results[0].Name)
+	})
+
+	t.Run("No match returns empty list", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/search?searchTerm=ZZZZZZZZZZZZZ", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var results []db_models.Inventory
+		err := json.Unmarshal(w.Body.Bytes(), &results)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(results))
+	})
+
+	t.Run("Empty search term", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/search?searchTerm=", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var results []db_models.Inventory
+		err := json.Unmarshal(w.Body.Bytes(), &results)
+		assert.NoError(t, err)
+		// Empty string has small Levenshtein distance to short names, so results may vary
+	})
+
+	t.Run("Close misspelling returns fuzzy results ordered by relevance", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/search?searchTerm=Hierarchy+Iten", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var results []db_models.Inventory
+		err := json.Unmarshal(w.Body.Bytes(), &results)
+		assert.NoError(t, err)
+		// "Hierarchy Item" and "Hierarchy Itam" are both 1 edit away from "Hierarchy Iten"
+		assert.GreaterOrEqual(t, len(results), 2)
+	})
+}

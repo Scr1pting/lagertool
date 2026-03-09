@@ -13,14 +13,14 @@ func SufficientlySimilar(s1 string, s2 string, degree int) bool {
 	return false
 }
 
-func FindItemSearchTermsInDB(table []db_models.Item, s string) []db_models.Item {
-	result_prim := []db_models.Item{}
-	result_sec := []db_models.Item{}
-	result_tert := []db_models.Item{}
+func FindItemSearchTermsInDB(table []db_models.Inventory, s string) []db_models.Inventory {
+	result_prim := []db_models.Inventory{}
+	result_sec := []db_models.Inventory{}
+	result_tert := []db_models.Inventory{}
 	for _, v := range table {
 		name := v.Name
 		if name == s {
-			return []db_models.Item{v}
+			return []db_models.Inventory{v}
 		}
 		if SufficientlySimilar(s, name, 1) {
 			result_prim = append(result_prim, v)
