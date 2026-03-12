@@ -1,10 +1,8 @@
 fastapi
 pydantic>=2
 uvicorn[standard]
-sentence_transformers
 torch
 nltk
 numpy
 inflect
 requests
-beautifulsoup4
