@@ -114,8 +114,10 @@ func GetDummyData() (
 		Name:         "Beaker Set 500ml",
 		IsConsumable: false,
 		ShelfUnitID:  shelfUnits[0].ID,
+		ShelfID:      shelf.ID,
 		Amount:       12,
 		UpdateDate:   now,
+		Shelf:        shelf,
 		ShelfUnit:    &shelfUnits[0],
 	}
 

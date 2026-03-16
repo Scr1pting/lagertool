@@ -74,7 +74,7 @@ func createTestHierarchy(t *testing.T, dbCon *pg.DB) *TestHierarchy {
 	_, err = dbCon.Model(h.ShelfUnit).Insert()
 	assert.NoError(t, err)
 
-	h.Inventory = &db_models.Inventory{IsConsumable: true, Name: "Hierarchy Item", ShelfUnitID: h.ShelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	h.Inventory = &db_models.Inventory{IsConsumable: true, Name: "Hierarchy Item", ShelfUnitID: h.ShelfUnit.ID, ShelfID: h.Shelf.ID, Amount: 10, UpdateDate: time.Now()}
 	_, err = dbCon.Model(h.Inventory).Insert()
 	assert.NoError(t, err)
 
@@ -456,6 +456,7 @@ func TestCreateItem(t *testing.T) {
 				"name": "New Test Item",
 				"amount": 100,
 				"shelfUnitId": "` + hier.ShelfUnit.ID + `",
+				"shelfId": "` + hier.Shelf.ID + `",
 				"isConsumable": true,
 				"note": "A note"
 			}`,
@@ -543,7 +544,7 @@ func TestCheckoutCart(t *testing.T) {
 	//assert.NoError(t, err)
 
 	// Create inventory
-	inventory := &db_models.Inventory{Name: "Checkout Item", IsConsumable: true, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	inventory := &db_models.Inventory{Name: "Checkout Item", IsConsumable: true, ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 10, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory).Insert()
 	assert.NoError(t, err)
 
@@ -813,12 +814,12 @@ func TestRequestReviewSuccess(t *testing.T) {
 	//assert.NoError(t, err)
 
 	// Create inventory for consumable
-	consumableInventory := &db_models.Inventory{Name: "Review Consumable Item", IsConsumable: true, ShelfUnitID: shelfUnit.ID, Amount: 10, UpdateDate: time.Now()}
+	consumableInventory := &db_models.Inventory{Name: "Review Consumable Item", IsConsumable: true, ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 10, UpdateDate: time.Now()}
 	_, err = dbCon.Model(consumableInventory).Insert()
 	assert.NoError(t, err)
 
 	// Create inventory for loanable
-	loanableInventory := &db_models.Inventory{Name: "Review Loanable Item", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	loanableInventory := &db_models.Inventory{Name: "Review Loanable Item", IsConsumable: false, ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 5, UpdateDate: time.Now()}
 	_, err = dbCon.Model(loanableInventory).Insert()
 	assert.NoError(t, err)
 
@@ -1047,7 +1048,7 @@ func TestUpdateLoan(t *testing.T) {
 	//assert.NoError(t, err)
 
 	// Create inventory
-	inventory := &db_models.Inventory{Name: "Loan Item", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	inventory := &db_models.Inventory{Name: "Loan Item", IsConsumable: false, ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 5, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory).Insert()
 	assert.NoError(t, err)
 
@@ -1819,11 +1820,11 @@ func TestUpdateLoanBulk(t *testing.T) {
 	//assert.NoError(t, err)
 
 	// Create inventories
-	inventory1 := &db_models.Inventory{Name: "Bulk Loan Item 1", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 5, UpdateDate: time.Now()}
+	inventory1 := &db_models.Inventory{Name: "Bulk Loan Item 1", IsConsumable: false, ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 5, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory1).Insert()
 	assert.NoError(t, err)
 
-	inventory2 := &db_models.Inventory{Name: "Bulk Loan Item 2", IsConsumable: false, ShelfUnitID: shelfUnit.ID, Amount: 3, UpdateDate: time.Now()}
+	inventory2 := &db_models.Inventory{Name: "Bulk Loan Item 2", IsConsumable: false, ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 3, UpdateDate: time.Now()}
 	_, err = dbCon.Model(inventory2).Insert()
 	assert.NoError(t, err)
 
@@ -2023,6 +2024,7 @@ func TestFuzzyFindItems(t *testing.T) {
 	extraItem1 := &db_models.Inventory{
 		Name:         "Hierarchy Itam",
 		ShelfUnitID:  hierarchy.ShelfUnit.ID,
+		ShelfID:      hierarchy.Shelf.ID,
 		Amount:       5,
 		IsConsumable: false,
 		UpdateDate:   time.Now(),
@@ -2030,6 +2032,7 @@ func TestFuzzyFindItems(t *testing.T) {
 	extraItem2 := &db_models.Inventory{
 		Name:         "Completely Different",
 		ShelfUnitID:  hierarchy.ShelfUnit.ID,
+		ShelfID:      hierarchy.Shelf.ID,
 		Amount:       3,
 		IsConsumable: false,
 		UpdateDate:   time.Now(),
