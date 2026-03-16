@@ -95,15 +95,24 @@ http://localhost:8000/swagger/index.html
 | `GET` | `/users/:userId/cart?start=X&end=X` | Get a user's shopping cart |
 | `POST` | `/users/:userId/cart/items` | Add an item to the cart |
 | `POST` | `/users/:userId/cart/checkout` | Checkout the cart (creates requests) |
+| `DELETE` | `/users/:userId/cart/items` | Delete all items from the cart |
+| `DELETE` | `/users/:userId/cart/items/:itemId` | Delete a single item from the cart |
+| `PUT` | `/users/:userId/cart/items/:itemId` | Update a cart item's amount |
 
 #### Loans & Requests
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `PUT` | `/loans/:id` | Update a loan (e.g. mark as returned) |
 | `PUT` | `/requests/:id` | Update a request status |
+| `PUT` | `/requests/:id/loans` | Bulk update loans for a request |
 | `POST` | `/requests/:id/review` | Review/approve/deny a request |
 | `GET` | `/requests/:id/messages` | Get messages for a request |
 | `POST` | `/requests/:id/messages` | Post a message to a request |
+
+#### Search
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/search/:searchTerm` | Fuzzy search for inventory items |
 
 #### Auth
 | Method | Endpoint | Description |
