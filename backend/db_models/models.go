@@ -145,12 +145,14 @@ type Inventory struct {
 	ID           int       `json:"id" pg:"id,pk"`
 	ItemID       int       `json:"item_id" pg:"item_id"`
 	ShelfUnitID  string    `json:"shelf_unit_id" pg:"shelf_unit_id"`
+	ShelfID      string    `json:"shelf_id" pg:"shelf_id"`
 	Amount       int       `json:"amount" pg:"amount"`
 	UpdateDate   time.Time `json:"update_date" pg:"update_date"`
 	Note         string    `json:"note" pg:"note"`
 	Name         string    `json:"name" pg:"name"`
 	IsConsumable bool      `json:"is_consumable" pg:"is_consumable"`
 
+	Shelf        *Shelf         `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
 	ShelfUnit    *ShelfUnit     `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`
 	RequestItems []RequestItems `json:"request_item" pg:"rel:has-many,fk:inventory_id"`
 }

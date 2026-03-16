@@ -38,6 +38,7 @@ type InventoryItemRequest struct {
 	Name         string `json:"name" binding:"required"`
 	Amount       int    `json:"amount" binding:"required"`
 	ShelfUnitID  string `json:"shelfUnitId" binding:"required"`
+	ShelfID      string `json:"shelfId" binding:"required"`
 	IsConsumable bool   `json:"isConsumable" binding:"required"`
 	Note         string `json:"note" binding:"required"`
 	Organisation string `json:"organisation"`
