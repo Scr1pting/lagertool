@@ -267,7 +267,7 @@ func (h *Handler) DeleteAllCartItems(c *gin.Context) {
 }
 
 func (h *Handler) DeleteCartItem(c *gin.Context) {
-	itemId, err := strconv.Atoi(c.Param("id"))
+	itemId, err := strconv.Atoi(c.Param("itemId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
 		return

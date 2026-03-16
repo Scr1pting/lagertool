@@ -2225,3 +2225,286 @@ func TestDeleteAllCartItems(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }
+
+func TestDeleteCartItem(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.DELETE("/users/:userId/cart/items/:itemId", h.DeleteCartItem)
+
+	// Create a test user
+	user := &db_models.User{Email: "deletecartitem@example.com", Name: "DeleteCartItem User"}
+	_, err := dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+	}()
+
+	// Create inventory items
+	inventory1 := &db_models.Inventory{Name: "DeleteSingle Item 1", IsConsumable: true, Amount: 10}
+	inventory2 := &db_models.Inventory{Name: "DeleteSingle Item 2", IsConsumable: true, Amount: 5}
+	_, err = dbCon.Model(inventory1).Insert()
+	assert.NoError(t, err)
+	_, err = dbCon.Model(inventory2).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(inventory1).Where("id = ?", inventory1.ID).Delete()
+		_, _ = dbCon.Model(inventory2).Where("id = ?", inventory2.ID).Delete()
+	}()
+
+	// Create a shopping cart for the user
+	cart := &db_models.ShoppingCart{UserID: user.ID}
+	_, err = dbCon.Model(cart).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(cart).Where("id = ?", cart.ID).Delete()
+	}()
+
+	// Create two cart items
+	cartItem1 := &db_models.ShoppingCartItem{ShoppingCartID: cart.ID, InventoryID: inventory1.ID, Amount: 2}
+	cartItem2 := &db_models.ShoppingCartItem{ShoppingCartID: cart.ID, InventoryID: inventory2.ID, Amount: 3}
+	_, err = dbCon.Model(cartItem1).Insert()
+	assert.NoError(t, err)
+	_, err = dbCon.Model(cartItem2).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(cartItem1).Where("id = ?", cartItem1.ID).Delete()
+		_, _ = dbCon.Model(cartItem2).Where("id = ?", cartItem2.ID).Delete()
+	}()
+
+	t.Run("Successfully deletes a single cart item", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", "/users/"+strconv.Itoa(user.ID)+"/cart/items/"+strconv.Itoa(inventory1.ID), nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// Verify the item was deleted
+		var remaining []db_models.ShoppingCartItem
+		err := dbCon.Model(&remaining).Where("shopping_cart_id = ?", cart.ID).Select()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(remaining))
+		assert.Equal(t, inventory2.ID, remaining[0].InventoryID)
+
+		// Re-insert cartItem1 for subsequent tests
+		cartItem1.ID = 0
+		_, err = dbCon.Model(cartItem1).Insert()
+		assert.NoError(t, err)
+	})
+
+	t.Run("Does not affect other users carts", func(t *testing.T) {
+		// Create a second user with their own cart
+		otherUser := &db_models.User{Email: "other-delete@example.com", Name: "Other Delete User"}
+		_, err := dbCon.Model(otherUser).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherUser).Where("id = ?", otherUser.ID).Delete()
+		}()
+
+		otherCart := &db_models.ShoppingCart{UserID: otherUser.ID}
+		_, err = dbCon.Model(otherCart).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherCart).Where("id = ?", otherCart.ID).Delete()
+		}()
+
+		otherCartItem := &db_models.ShoppingCartItem{ShoppingCartID: otherCart.ID, InventoryID: inventory1.ID, Amount: 7}
+		_, err = dbCon.Model(otherCartItem).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherCartItem).Where("id = ?", otherCartItem.ID).Delete()
+		}()
+
+		// Delete item from first user's cart
+		req, _ := http.NewRequest("DELETE", "/users/"+strconv.Itoa(user.ID)+"/cart/items/"+strconv.Itoa(inventory1.ID), nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// Verify other user's cart item is untouched
+		var otherItems []db_models.ShoppingCartItem
+		err = dbCon.Model(&otherItems).Where("shopping_cart_id = ?", otherCart.ID).Select()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(otherItems))
+		assert.Equal(t, 7, otherItems[0].Amount)
+	})
+
+	t.Run("Invalid item ID returns bad request", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", "/users/"+strconv.Itoa(user.ID)+"/cart/items/abc", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Invalid user ID returns bad request", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", "/users/abc/cart/items/"+strconv.Itoa(inventory1.ID), nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Non-existent user returns error", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", "/users/999999/cart/items/"+strconv.Itoa(inventory1.ID), nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+}
+
+func TestUpdateCartItem(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.PUT("/users/:userId/cart/items/:itemId", h.UpdateCartItem)
+
+	// Create a test user
+	user := &db_models.User{Email: "updatecartitem@example.com", Name: "UpdateCartItem User"}
+	_, err := dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(user).Where("id = ?", user.ID).Delete()
+	}()
+
+	// Create inventory item
+	inventory := &db_models.Inventory{Name: "UpdateCart Item", IsConsumable: true, Amount: 10}
+	_, err = dbCon.Model(inventory).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(inventory).Where("id = ?", inventory.ID).Delete()
+	}()
+
+	// Create a shopping cart for the user
+	cart := &db_models.ShoppingCart{UserID: user.ID}
+	_, err = dbCon.Model(cart).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(cart).Where("id = ?", cart.ID).Delete()
+	}()
+
+	// Create a cart item
+	cartItem := &db_models.ShoppingCartItem{ShoppingCartID: cart.ID, InventoryID: inventory.ID, Amount: 2}
+	_, err = dbCon.Model(cartItem).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		_, _ = dbCon.Model(cartItem).Where("id = ?", cartItem.ID).Delete()
+	}()
+
+	t.Run("Successfully updates cart item amount", func(t *testing.T) {
+		payload := `{"amount": 8}`
+		req, _ := http.NewRequest("PUT", "/users/"+strconv.Itoa(user.ID)+"/cart/items/"+strconv.Itoa(inventory.ID), strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// Verify the amount was updated in the database
+		var updated db_models.ShoppingCartItem
+		err := dbCon.Model(&updated).Where("id = ?", cartItem.ID).First()
+		assert.NoError(t, err)
+		assert.Equal(t, 8, updated.Amount)
+	})
+
+	t.Run("Update to zero amount", func(t *testing.T) {
+		payload := `{"amount": 0}`
+		req, _ := http.NewRequest("PUT", "/users/"+strconv.Itoa(user.ID)+"/cart/items/"+strconv.Itoa(inventory.ID), strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// Verify it was set to 0
+		var updated db_models.ShoppingCartItem
+		err := dbCon.Model(&updated).Where("id = ?", cartItem.ID).First()
+		assert.NoError(t, err)
+		assert.Equal(t, 0, updated.Amount)
+
+		// Restore amount for other tests
+		_, err = dbCon.Model(&db_models.ShoppingCartItem{}).Set("amount = ?", 2).Where("id = ?", cartItem.ID).Update()
+		assert.NoError(t, err)
+	})
+
+	t.Run("Does not affect other users cart items", func(t *testing.T) {
+		// Create a second user with the same inventory item in their cart
+		otherUser := &db_models.User{Email: "other-update@example.com", Name: "Other Update User"}
+		_, err := dbCon.Model(otherUser).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherUser).Where("id = ?", otherUser.ID).Delete()
+		}()
+
+		otherCart := &db_models.ShoppingCart{UserID: otherUser.ID}
+		_, err = dbCon.Model(otherCart).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherCart).Where("id = ?", otherCart.ID).Delete()
+		}()
+
+		otherCartItem := &db_models.ShoppingCartItem{ShoppingCartID: otherCart.ID, InventoryID: inventory.ID, Amount: 5}
+		_, err = dbCon.Model(otherCartItem).Insert()
+		assert.NoError(t, err)
+		defer func() {
+			_, _ = dbCon.Model(otherCartItem).Where("id = ?", otherCartItem.ID).Delete()
+		}()
+
+		// Update first user's cart item
+		payload := `{"amount": 10}`
+		req, _ := http.NewRequest("PUT", "/users/"+strconv.Itoa(user.ID)+"/cart/items/"+strconv.Itoa(inventory.ID), strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// Verify other user's cart item is untouched
+		var otherItem db_models.ShoppingCartItem
+		err = dbCon.Model(&otherItem).Where("id = ?", otherCartItem.ID).First()
+		assert.NoError(t, err)
+		assert.Equal(t, 5, otherItem.Amount)
+	})
+
+	t.Run("Invalid JSON returns bad request", func(t *testing.T) {
+		payload := `{not valid json}`
+		req, _ := http.NewRequest("PUT", "/users/"+strconv.Itoa(user.ID)+"/cart/items/"+strconv.Itoa(inventory.ID), strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Invalid item ID returns bad request", func(t *testing.T) {
+		payload := `{"amount": 5}`
+		req, _ := http.NewRequest("PUT", "/users/"+strconv.Itoa(user.ID)+"/cart/items/abc", strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Invalid user ID returns bad request", func(t *testing.T) {
+		payload := `{"amount": 5}`
+		req, _ := http.NewRequest("PUT", "/users/abc/cart/items/"+strconv.Itoa(inventory.ID), strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Non-existent user returns error", func(t *testing.T) {
+		payload := `{"amount": 5}`
+		req, _ := http.NewRequest("PUT", "/users/999999/cart/items/"+strconv.Itoa(inventory.ID), strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+}
