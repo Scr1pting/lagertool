@@ -265,3 +265,30 @@ func (h *Handler) DeleteAllCartItems(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dbCI)
 }
+
+func (h *Handler) DeleteCartItem(c *gin.Context) {
+	itemId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
+		return
+	}
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	var cart db_models.ShoppingCart
+	err = h.DB.Model(&cart).Where("user_id = ?", userId).First()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"no matching cart": err.Error()})
+		return
+	}
+
+	var item db_models.ShoppingCartItem
+	res, err := h.DB.Model(&item).Where("inventory_id = ?", itemId).Where("shopping_cart_id = ?", cart.ID).Delete()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"could not delete item": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, res)
+}

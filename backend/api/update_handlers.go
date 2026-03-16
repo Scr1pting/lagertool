@@ -111,7 +111,7 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 		return
 	}
 	var req api_objects.UpdateItemRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -139,4 +139,36 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, inv)
+}
+
+func (h *Handler) UpdateCartItem(c *gin.Context) {
+	itemId, err := strconv.Atoi(c.Param("itemId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
+		return
+	}
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	var req api_objects.UpdateCartItem
+	if err = c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var i db_models.ShoppingCart
+	err = h.DB.Model(&i).Where("user_id = ?", userId).First()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"no matching cart found": err.Error()})
+		return
+	}
+
+	var it db_models.ShoppingCartItem
+	res, err := h.DB.Model(&it).Set("amount = ?", req.Amount).Where("inventory_id = ?", itemId).Where("shopping_cart_id = ?", i.ID).Update()
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "item not found"})
+		return
+	}
+	c.JSON(http.StatusOK, res)
 }

@@ -72,3 +72,7 @@ type UserMessage struct {
 	UserID  int    `json:"userId"`
 	Message string `json:"message"`
 }
+
+type UpdateCartItem struct {
+	Amount int `json:"amount"`
+}
