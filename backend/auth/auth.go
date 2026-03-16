@@ -212,22 +212,27 @@ func (h *AuthHandler) LogoutHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
-func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {
+func (h *AuthHandler) AuthMiddleware(using_auth bool) gin.HandlerFunc {
+	if !using_auth {
+		return func(c *gin.Context) {
+			c.Next()
+		}
+	}
 	return func(c *gin.Context) {
 		sessionID, err := c.Cookie("user_session")
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "No session cookie", "details": err.Error()})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No session cookie", "details": err.Error()})
 			return
 		}
 
 		var session db_models.Session
 		err = h.DB.Model(&session).Relation("User").Where("session.session_id = ?", sessionID).First()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "invalid session", "details": err.Error()})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid session", "details": err.Error()})
 			return
 		}
 		if time.Now().After(session.ExpiresAt) {
-			c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"error": "session expired", "details": sessionID})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "session expired", "details": sessionID})
 			return
 		}
 		c.Set("user", session.User)

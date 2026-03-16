@@ -33,6 +33,7 @@ import (
 func main() {
 	testdata := flag.Bool("testdata", false, "insert testdata into db")
 	noserver := flag.Bool("noserver", false, "dont start sever")
+	using_auth := flag.Bool("using_auth", false, "use auth")
 	flag.Parse()
 
 	// Load configuration from .env file
@@ -68,7 +69,7 @@ func main() {
 	//	log.Printf("⚠️  Failed to insert test data: %v", err)
 	//}
 	if !*noserver {
-		api.SetupRoutes(router, dbConnection, cfg)
+		api.SetupRoutes(router, dbConnection, cfg, *using_auth)
 
 		// Swagger endpoint
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
