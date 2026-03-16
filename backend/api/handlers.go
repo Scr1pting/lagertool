@@ -75,7 +75,7 @@ func (h *Handler) GetShelves(c *gin.Context) {
 // @Param start query string false "Start date in format 2006-01-02"
 // @Param end query string false "End date in format 2006-01-02"
 // @Success 200 {object} api_objects.InventoryItemWithShelf
-// @Router /items/{id} [get]
+// @Router /organisations/{orgId}/items/{id} [get]
 func (h *Handler) GetItem(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -152,6 +152,13 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 	c.JSON(http.StatusOK, m)
 }
 
+// @Summary Get messages for a request
+// @Description Get all messages (user and admin) for a request, sorted by timestamp
+// @Tags requests
+// @Produce  json
+// @Param id path int true "Request ID"
+// @Success 200 {array} api_objects.Message
+// @Router /requests/{id}/messages [get]
 func (h *Handler) GetMessages(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -189,6 +196,13 @@ func (h *Handler) GetMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Get borrow history for an item
+// @Description Get all borrow/loan history for an inventory item
+// @Tags items
+// @Produce  json
+// @Param id path int true "Inventory Item ID"
+// @Success 200 {array} api_objects.BorrowHistory
+// @Router /organisations/{orgId}/items/{id}/borrows [get]
 func (h *Handler) GetBorrowHistory(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -226,6 +240,13 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Fuzzy search for inventory items
+// @Description Search for inventory items by name using fuzzy matching
+// @Tags search
+// @Produce  json
+// @Param searchTerm path string true "Search term"
+// @Success 200 {array} db_models.Inventory
+// @Router /search/{searchTerm} [get]
 func (h *Handler) FuzzyFindItems(c *gin.Context) {
 	searchTerm := c.Query("searchTerm")
 	var dbRes []db_models.Inventory
@@ -238,6 +259,13 @@ func (h *Handler) FuzzyFindItems(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary Delete all cart items
+// @Description Delete all items from a user's shopping cart
+// @Tags cart
+// @Produce  json
+// @Param userId path int true "User ID"
+// @Success 200 {array} db_models.ShoppingCartItem
+// @Router /users/{userId}/cart/items [delete]
 func (h *Handler) DeleteAllCartItems(c *gin.Context) {
 	var dbCI []db_models.ShoppingCartItem
 	userId, err := strconv.Atoi(c.Param("userId"))
@@ -266,6 +294,14 @@ func (h *Handler) DeleteAllCartItems(c *gin.Context) {
 	c.JSON(http.StatusOK, dbCI)
 }
 
+// @Summary Delete a single cart item
+// @Description Delete a specific item from a user's shopping cart by inventory item ID
+// @Tags cart
+// @Produce  json
+// @Param userId path int true "User ID"
+// @Param itemId path int true "Inventory Item ID"
+// @Success 200
+// @Router /users/{userId}/cart/items/{itemId} [delete]
 func (h *Handler) DeleteCartItem(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("itemId"))
 	if err != nil {

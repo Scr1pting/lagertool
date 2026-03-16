@@ -23,9 +23,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/add_item_to_cart": {
-            "post": {
-                "description": "Add an item to the shopping cart",
+        "/loans/{id}": {
+            "put": {
+                "description": "Mark a loan as returned",
                 "consumes": [
                     "application/json"
                 ],
@@ -33,31 +33,58 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "shopping_cart"
+                    "loans"
                 ],
-                "summary": "Add an item to the shopping cart",
+                "summary": "Update a loan",
                 "parameters": [
                     {
-                        "description": "Cart item object",
-                        "name": "cart_item",
+                        "type": "integer",
+                        "description": "Loan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update details",
+                        "name": "loan",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api_objects.CartRequest"
+                            "$ref": "#/definitions/api_objects.UpdateLoan"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "202": {
+                        "description": "Accepted"
+                    }
+                }
+            }
+        },
+        "/organisations": {
+            "get": {
+                "description": "Get all organisations",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organisations"
+                ],
+                "summary": "Get all organisations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/db.ShoppingCartItem"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/db_models.Organisation"
+                            }
                         }
                     }
                 }
             }
         },
-        "/buildings_sorted": {
+        "/organisations/{orgId}/buildings": {
             "get": {
                 "description": "Get all buildings sorted by update date",
                 "produces": [
@@ -66,7 +93,16 @@ const docTemplate = `{
                 "tags": [
                     "buildings"
                 ],
-                "summary": "Get all buildings sorted by update date",
+                "summary": "Get all buildings for an organisation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -78,11 +114,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/create_building": {
+            },
             "post": {
-                "description": "Create a new building",
+                "description": "Create a new building for an organisation",
                 "consumes": [
                     "application/json"
                 ],
@@ -94,6 +128,13 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new building",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Building object",
                         "name": "building",
@@ -108,49 +149,15 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.Building"
+                            "$ref": "#/definitions/db_models.Building"
                         }
                     }
                 }
             }
         },
-        "/create_item": {
+        "/organisations/{orgId}/buildings/{buildingId}/rooms": {
             "post": {
-                "description": "Create a new inventory item",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "items"
-                ],
-                "summary": "Create a new inventory item",
-                "parameters": [
-                    {
-                        "description": "Inventory item object",
-                        "name": "item",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/api_objects.InventoryItemRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/db.Inventory"
-                        }
-                    }
-                }
-            }
-        },
-        "/create_room": {
-            "post": {
-                "description": "Create a new room",
+                "description": "Create a new room in a building",
                 "consumes": [
                     "application/json"
                 ],
@@ -162,6 +169,20 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new room",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Building ID",
+                        "name": "buildingId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Room object",
                         "name": "room",
@@ -176,15 +197,15 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.Room"
+                            "$ref": "#/definitions/db_models.Room"
                         }
                     }
                 }
             }
         },
-        "/create_shelf": {
+        "/organisations/{orgId}/buildings/{buildingId}/rooms/{roomId}/shelves": {
             "post": {
-                "description": "Create a new shelf",
+                "description": "Create a new shelf in a room",
                 "consumes": [
                     "application/json"
                 ],
@@ -196,6 +217,27 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new shelf",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Building ID",
+                        "name": "buildingId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Shelf object",
                         "name": "shelf",
@@ -210,23 +252,30 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db.Shelf"
+                            "$ref": "#/definitions/db_models.Shelf"
                         }
                     }
                 }
             }
         },
-        "/inventory_sorted": {
+        "/organisations/{orgId}/inventory": {
             "get": {
                 "description": "Get all inventory items sorted by update date",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "items"
+                    "inventory"
                 ],
-                "summary": "Get all inventory items sorted by update date",
+                "summary": "Get all inventory items for an organisation",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Start date in format 2006-01-02",
@@ -255,7 +304,41 @@ const docTemplate = `{
                 }
             }
         },
-        "/item": {
+        "/organisations/{orgId}/items": {
+            "post": {
+                "description": "Create a new inventory item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "Create a new inventory item",
+                "parameters": [
+                    {
+                        "description": "Inventory item object",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.InventoryItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/db_models.Inventory"
+                        }
+                    }
+                }
+            }
+        },
+        "/organisations/{orgId}/items/{id}": {
             "get": {
                 "description": "Get a specific item",
                 "produces": [
@@ -267,32 +350,23 @@ const docTemplate = `{
                 "summary": "Get a specific item",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Organisation name",
-                        "name": "organisation",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "type": "integer",
                         "description": "Inventory Item ID",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Start date in format 2006-01-02",
                         "name": "start",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "End date in format 2006-01-02",
                         "name": "end",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -303,32 +377,80 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/organisations": {
-            "get": {
-                "description": "Get all organisations",
+            },
+            "put": {
+                "description": "Update an inventory item's details",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "organisations"
+                    "items"
                 ],
-                "summary": "Get all organisations",
+                "summary": "Update an inventory item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Inventory Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update details",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.UpdateItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/db_models.Inventory"
+                        }
+                    }
+                }
+            }
+        },
+        "/organisations/{orgId}/items/{id}/borrows": {
+            "get": {
+                "description": "Get all borrow/loan history for an inventory item",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "items"
+                ],
+                "summary": "Get borrow history for an item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Inventory Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.Organisation"
+                                "$ref": "#/definitions/api_objects.BorrowHistory"
                             }
                         }
                     }
                 }
             }
         },
-        "/rooms_sorted": {
+        "/organisations/{orgId}/rooms": {
             "get": {
                 "description": "Get all rooms sorted by update date",
                 "produces": [
@@ -337,7 +459,16 @@ const docTemplate = `{
                 "tags": [
                     "rooms"
                 ],
-                "summary": "Get all rooms sorted by update date",
+                "summary": "Get all rooms for an organisation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organisation name",
+                        "name": "orgId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -351,22 +482,22 @@ const docTemplate = `{
                 }
             }
         },
-        "/shelves": {
+        "/organisations/{orgId}/shelves": {
             "get": {
-                "description": "Get all shelves",
+                "description": "Get all shelves for an organisation",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "shelves"
                 ],
-                "summary": "Get all shelves",
+                "summary": "Get all shelves for an organisation",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Organisation name",
-                        "name": "organisation",
-                        "in": "query",
+                        "name": "orgId",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -383,45 +514,242 @@ const docTemplate = `{
                 }
             }
         },
-        "/shelves_sorted": {
-            "get": {
-                "description": "Get all shelves sorted by update date",
+        "/requests/{id}": {
+            "put": {
+                "description": "Update the status of a request",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "shelves"
+                    "requests"
                 ],
-                "summary": "Get all shelves sorted by update date",
+                "summary": "Update a request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    }
+                }
+            }
+        },
+        "/requests/{id}/loans": {
+            "put": {
+                "description": "Mark all loans for a given request as returned",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "loans"
+                ],
+                "summary": "Bulk update loans for a request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update details",
+                        "name": "loan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.UpdateLoan"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    }
+                }
+            }
+        },
+        "/requests/{id}/messages": {
+            "get": {
+                "description": "Get all messages (user and admin) for a request, sorted by timestamp",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requests"
+                ],
+                "summary": "Get messages for a request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/api_objects.ShelfSorted"
+                                "$ref": "#/definitions/api_objects.Message"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Post a user message on a borrow request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requests"
+                ],
+                "summary": "Post a message to a request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Message object",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.UserMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.UserMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/requests/{id}/review": {
+            "post": {
+                "description": "Review/approve/deny a borrow request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requests"
+                ],
+                "summary": "Review a request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Review details",
+                        "name": "review",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.RequestReview"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/db_models.RequestReview"
+                        }
+                    }
+                }
+            }
+        },
+        "/search/{searchTerm}": {
+            "get": {
+                "description": "Search for inventory items by name using fuzzy matching",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "search"
+                ],
+                "summary": "Fuzzy search for inventory items",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search term",
+                        "name": "searchTerm",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/db_models.Inventory"
                             }
                         }
                     }
                 }
             }
         },
-        "/shopping_cart": {
+        "/users/{userId}/cart": {
             "get": {
                 "description": "Get a user's shopping cart",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "shopping_cart"
+                    "cart"
                 ],
                 "summary": "Get a user's shopping cart",
                 "parameters": [
                     {
                         "type": "integer",
                         "description": "User ID",
-                        "name": "userID",
-                        "in": "query",
+                        "name": "userId",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -454,9 +782,223 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{userId}/cart/checkout": {
+            "post": {
+                "description": "Checkout the user's shopping cart and create requests",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Checkout shopping cart",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Checkout details",
+                        "name": "checkout",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.CheckoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/users/{userId}/cart/items": {
+            "post": {
+                "description": "Add an item to the shopping cart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Add an item to the shopping cart",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Cart item object",
+                        "name": "cart_item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.CartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/db_models.ShoppingCartItem"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete all items from a user's shopping cart",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Delete all cart items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/db_models.ShoppingCartItem"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{userId}/cart/items/{itemId}": {
+            "put": {
+                "description": "Update the amount of an item in a user's shopping cart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Update a cart item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Inventory Item ID",
+                        "name": "itemId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update details",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.UpdateCartItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a specific item from a user's shopping cart by inventory item ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Delete a single cart item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Inventory Item ID",
+                        "name": "itemId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "api_objects.BorrowHistory": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "approvalState": {
+                    "type": "string"
+                },
+                "approvalStateTime": {
+                    "type": "string"
+                },
+                "authorName": {
+                    "type": "string"
+                },
+                "dueAt": {
+                    "type": "string"
+                },
+                "returnedAt": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "api_objects.Building": {
             "type": "object",
             "properties": {
@@ -501,8 +1043,8 @@ const docTemplate = `{
                 "available": {
                     "type": "integer"
                 },
-                "buildingName": {
-                    "type": "string"
+                "building": {
+                    "$ref": "#/definitions/db_models.Building"
                 },
                 "id": {
                     "type": "integer"
@@ -510,8 +1052,8 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "roomName": {
-                    "type": "string"
+                "room": {
+                    "$ref": "#/definitions/db_models.Room"
                 },
                 "shelfId": {
                     "type": "string"
@@ -530,6 +1072,21 @@ const docTemplate = `{
                 },
                 "numSelected": {
                     "type": "integer"
+                }
+            }
+        },
+        "api_objects.CheckoutRequest": {
+            "type": "object",
+            "required": [
+                "endDate",
+                "startDate"
+            ],
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
                 }
             }
         },
@@ -583,6 +1140,7 @@ const docTemplate = `{
                 "isConsumable",
                 "name",
                 "note",
+                "shelfId",
                 "shelfUnitId"
             ],
             "properties": {
@@ -601,6 +1159,9 @@ const docTemplate = `{
                 "organisation": {
                     "type": "string"
                 },
+                "shelfId": {
+                    "type": "string"
+                },
                 "shelfUnitId": {
                     "type": "string"
                 }
@@ -615,8 +1176,8 @@ const docTemplate = `{
                 "available": {
                     "type": "integer"
                 },
-                "buildingName": {
-                    "type": "string"
+                "building": {
+                    "$ref": "#/definitions/db_models.Building"
                 },
                 "id": {
                     "type": "integer"
@@ -624,8 +1185,8 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "roomName": {
-                    "type": "string"
+                "room": {
+                    "$ref": "#/definitions/db_models.Room"
                 },
                 "shelf": {
                     "$ref": "#/definitions/api_objects.Shelves"
@@ -644,8 +1205,8 @@ const docTemplate = `{
                 "available": {
                     "type": "integer"
                 },
-                "buildingName": {
-                    "type": "string"
+                "building": {
+                    "$ref": "#/definitions/db_models.Building"
                 },
                 "id": {
                     "type": "integer"
@@ -653,16 +1214,53 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "roomName": {
+                "room": {
+                    "$ref": "#/definitions/db_models.Room"
+                }
+            }
+        },
+        "api_objects.Message": {
+            "type": "object",
+            "properties": {
+                "authorName": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isAdmin": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "timeStamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.RequestReview": {
+            "type": "object",
+            "properties": {
+                "note": {
+                    "type": "string"
+                },
+                "outcome": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
         "api_objects.Room": {
             "type": "object",
             "properties": {
-                "buildingName": {
-                    "type": "string"
+                "building": {
+                    "$ref": "#/definitions/db_models.Building"
                 },
                 "floor": {
                     "type": "string"
@@ -684,14 +1282,10 @@ const docTemplate = `{
         "api_objects.RoomRequest": {
             "type": "object",
             "required": [
-                "building",
                 "floor",
                 "number"
             ],
             "properties": {
-                "building": {
-                    "type": "integer"
-                },
                 "floor": {
                     "type": "string"
                 },
@@ -721,17 +1315,11 @@ const docTemplate = `{
         "api_objects.ShelfRequest": {
             "type": "object",
             "required": [
-                "buildingId",
                 "columns",
                 "id",
-                "name",
-                "ownedBy",
-                "roomId"
+                "name"
             ],
             "properties": {
-                "buildingId": {
-                    "type": "integer"
-                },
                 "columns": {
                     "type": "array",
                     "items": {
@@ -743,37 +1331,14 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "ownedBy": {
-                    "type": "string"
-                },
-                "roomId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "api_objects.ShelfSorted": {
-            "type": "object",
-            "properties": {
-                "buildingName": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "roomName": {
-                    "type": "string"
                 }
             }
         },
         "api_objects.Shelves": {
             "type": "object",
             "properties": {
-                "buildingName": {
-                    "type": "string"
+                "building": {
+                    "$ref": "#/definitions/db_models.Building"
                 },
                 "columns": {
                     "type": "array",
@@ -787,12 +1352,61 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "roomName": {
+                "room": {
+                    "$ref": "#/definitions/db_models.Room"
+                }
+            }
+        },
+        "api_objects.UpdateCartItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api_objects.UpdateItemRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "shelfUnitId": {
                     "type": "string"
                 }
             }
         },
-        "db.Building": {
+        "api_objects.UpdateLoan": {
+            "type": "object",
+            "properties": {
+                "returnedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "outcome": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.UserMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "db_models.Building": {
             "type": "object",
             "properties": {
                 "campus": {
@@ -812,14 +1426,14 @@ const docTemplate = `{
                 }
             }
         },
-        "db.Column": {
+        "db_models.Column": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
                 },
                 "shelf": {
-                    "$ref": "#/definitions/db.Shelf"
+                    "$ref": "#/definitions/db_models.Shelf"
                 },
                 "shelf_id": {
                     "type": "string"
@@ -827,12 +1441,12 @@ const docTemplate = `{
                 "shelf_units": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/db.ShelfUnit"
+                        "$ref": "#/definitions/db_models.ShelfUnit"
                     }
                 }
             }
         },
-        "db.Inventory": {
+        "db_models.Inventory": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -841,11 +1455,14 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "item": {
-                    "$ref": "#/definitions/db.Item"
+                "is_consumable": {
+                    "type": "boolean"
                 },
                 "item_id": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "note": {
                     "type": "string"
@@ -853,11 +1470,17 @@ const docTemplate = `{
                 "request_item": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/db.RequestItems"
+                        "$ref": "#/definitions/db_models.RequestItems"
                     }
                 },
+                "shelf": {
+                    "$ref": "#/definitions/db_models.Shelf"
+                },
+                "shelf_id": {
+                    "type": "string"
+                },
                 "shelf_unit": {
-                    "$ref": "#/definitions/db.ShelfUnit"
+                    "$ref": "#/definitions/db_models.ShelfUnit"
                 },
                 "shelf_unit_id": {
                     "type": "string"
@@ -867,22 +1490,7 @@ const docTemplate = `{
                 }
             }
         },
-        "db.Item": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "is_consumable": {
-                    "description": "Description  string   ` + "`" + `json:\"description\" pg:\"description\"` + "`" + `\nCategory     string   ` + "`" + `json:\"category\" pg:\"category\"` + "`" + `",
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "db.Organisation": {
+        "db_models.Organisation": {
             "type": "object",
             "properties": {
                 "name": {
@@ -890,11 +1498,17 @@ const docTemplate = `{
                 }
             }
         },
-        "db.Request": {
+        "db_models.Request": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "end_date": {
                     "type": "string"
+                },
+                "group_id": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -902,21 +1516,36 @@ const docTemplate = `{
                 "note": {
                     "type": "string"
                 },
+                "organisation": {
+                    "$ref": "#/definitions/db_models.Organisation"
+                },
+                "organisationName": {
+                    "type": "string"
+                },
+                "request_item": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db_models.RequestItems"
+                    }
+                },
                 "start_date": {
                     "type": "string"
                 },
-                "status": {
+                "state": {
+                    "type": "string"
+                },
+                "time_state": {
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/db.User"
+                    "$ref": "#/definitions/db_models.User"
                 },
                 "user_id": {
                     "type": "integer"
                 }
             }
         },
-        "db.RequestItems": {
+        "db_models.RequestItems": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -926,24 +1555,53 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "inventory": {
-                    "$ref": "#/definitions/db.Inventory"
+                    "$ref": "#/definitions/db_models.Inventory"
                 },
                 "inventory_id": {
                     "type": "integer"
                 },
                 "request": {
-                    "$ref": "#/definitions/db.Request"
+                    "$ref": "#/definitions/db_models.Request"
                 },
                 "request_id": {
                     "type": "integer"
                 }
             }
         },
-        "db.Room": {
+        "db_models.RequestReview": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "outcome": {
+                    "type": "string"
+                },
+                "request": {
+                    "$ref": "#/definitions/db_models.Request"
+                },
+                "request_id": {
+                    "type": "integer"
+                },
+                "time_stamp": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/db_models.User"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "db_models.Room": {
             "type": "object",
             "properties": {
                 "building": {
-                    "$ref": "#/definitions/db.Building"
+                    "$ref": "#/definitions/db_models.Building"
                 },
                 "building_id": {
                     "type": "integer"
@@ -965,13 +1623,13 @@ const docTemplate = `{
                 }
             }
         },
-        "db.Shelf": {
+        "db_models.Shelf": {
             "type": "object",
             "properties": {
                 "columns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/db.Column"
+                        "$ref": "#/definitions/db_models.Column"
                     }
                 },
                 "id": {
@@ -981,13 +1639,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "organisation": {
-                    "$ref": "#/definitions/db.Organisation"
+                    "$ref": "#/definitions/db_models.Organisation"
                 },
                 "owned_by": {
                     "type": "string"
                 },
                 "room": {
-                    "$ref": "#/definitions/db.Room"
+                    "$ref": "#/definitions/db_models.Room"
                 },
                 "room_id": {
                     "type": "integer"
@@ -997,11 +1655,11 @@ const docTemplate = `{
                 }
             }
         },
-        "db.ShelfUnit": {
+        "db_models.ShelfUnit": {
             "type": "object",
             "properties": {
                 "column": {
-                    "$ref": "#/definitions/db.Column"
+                    "$ref": "#/definitions/db_models.Column"
                 },
                 "column_id": {
                     "type": "string"
@@ -1022,7 +1680,7 @@ const docTemplate = `{
                 }
             }
         },
-        "db.ShoppingCart": {
+        "db_models.ShoppingCart": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1031,7 +1689,7 @@ const docTemplate = `{
                 "shopping_cart_items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/db.ShoppingCartItem"
+                        "$ref": "#/definitions/db_models.ShoppingCartItem"
                     }
                 },
                 "user_id": {
@@ -1039,7 +1697,7 @@ const docTemplate = `{
                 }
             }
         },
-        "db.ShoppingCartItem": {
+        "db_models.ShoppingCartItem": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1049,20 +1707,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "inventory": {
-                    "$ref": "#/definitions/db.Inventory"
+                    "$ref": "#/definitions/db_models.Inventory"
                 },
                 "inventory_id": {
                     "type": "integer"
                 },
                 "shopping_cart": {
-                    "$ref": "#/definitions/db.ShoppingCart"
+                    "$ref": "#/definitions/db_models.ShoppingCart"
                 },
                 "shopping_cart_id": {
                     "type": "integer"
                 }
             }
         },
-        "db.User": {
+        "db_models.User": {
             "type": "object",
             "properties": {
                 "access_token": {

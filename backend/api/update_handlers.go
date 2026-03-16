@@ -66,6 +66,15 @@ func (h *Handler) UpdateLoan(c *gin.Context) {
 	c.JSON(http.StatusAccepted, req)
 }
 
+// @Summary Bulk update loans for a request
+// @Description Mark all loans for a given request as returned
+// @Tags loans
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Request ID"
+// @Param loan body api_objects.UpdateLoan true "Update details"
+// @Success 202
+// @Router /requests/{id}/loans [put]
 func (h *Handler) UpdateLoanBulk(c *gin.Context) {
 	requestId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -103,7 +112,7 @@ func (h *Handler) UpdateLoanBulk(c *gin.Context) {
 // @Param id path int true "Inventory Item ID"
 // @Param item body api_objects.UpdateItemRequest true "Update details"
 // @Success 200 {object} db_models.Inventory
-// @Router /items/{id} [put]
+// @Router /organisations/{orgId}/items/{id} [put]
 func (h *Handler) UpdateItem(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -141,6 +150,16 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 	c.JSON(http.StatusOK, inv)
 }
 
+// @Summary Update a cart item
+// @Description Update the amount of an item in a user's shopping cart
+// @Tags cart
+// @Accept  json
+// @Produce  json
+// @Param userId path int true "User ID"
+// @Param itemId path int true "Inventory Item ID"
+// @Param item body api_objects.UpdateCartItem true "Update details"
+// @Success 200
+// @Router /users/{userId}/cart/items/{itemId} [put]
 func (h *Handler) UpdateCartItem(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("itemId"))
 	if err != nil {

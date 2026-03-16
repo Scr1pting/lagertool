@@ -72,7 +72,7 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 // @Produce  json
 // @Param item body api_objects.InventoryItemRequest true "Inventory item object"
 // @Success 201 {object} db_models.Inventory
-// @Router /items [post]
+// @Router /organisations/{orgId}/items [post]
 func (h *Handler) CreateItem(c *gin.Context) {
 	var req api_objects.InventoryItemRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -248,6 +248,15 @@ func (h *Handler) RequestReview(c *gin.Context) {
 	c.JSON(http.StatusOK, rev)
 }
 
+// @Summary Post a message to a request
+// @Description Post a user message on a borrow request
+// @Tags requests
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Request ID"
+// @Param message body api_objects.UserMessage true "Message object"
+// @Success 200 {object} api_objects.UserMessage
+// @Router /requests/{id}/messages [post]
 func (h *Handler) PostMessage(c *gin.Context) {
 	requestId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

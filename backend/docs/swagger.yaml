@@ -1,5 +1,24 @@
 basePath: /
 definitions:
+  api_objects.BorrowHistory:
+    properties:
+      amount:
+        type: integer
+      approvalState:
+        type: string
+      approvalStateTime:
+        type: string
+      authorName:
+        type: string
+      dueAt:
+        type: string
+      returnedAt:
+        type: string
+      startDate:
+        type: string
+      title:
+        type: string
+    type: object
   api_objects.Building:
     properties:
       campus:
@@ -29,14 +48,14 @@ definitions:
         type: integer
       available:
         type: integer
-      buildingName:
-        type: string
+      building:
+        $ref: '#/definitions/db_models.Building'
       id:
         type: integer
       name:
         type: string
-      roomName:
-        type: string
+      room:
+        $ref: '#/definitions/db_models.Room'
       shelfId:
         type: string
     type: object
@@ -49,6 +68,16 @@ definitions:
     required:
     - id
     - numSelected
+    type: object
+  api_objects.CheckoutRequest:
+    properties:
+      endDate:
+        type: string
+      startDate:
+        type: string
+    required:
+    - endDate
+    - startDate
     type: object
   api_objects.ColumnElementRequest:
     properties:
@@ -90,6 +119,8 @@ definitions:
         type: string
       organisation:
         type: string
+      shelfId:
+        type: string
       shelfUnitId:
         type: string
     required:
@@ -97,6 +128,7 @@ definitions:
     - isConsumable
     - name
     - note
+    - shelfId
     - shelfUnitId
     type: object
   api_objects.InventoryItemWithShelf:
@@ -105,14 +137,14 @@ definitions:
         type: integer
       available:
         type: integer
-      buildingName:
-        type: string
+      building:
+        $ref: '#/definitions/db_models.Building'
       id:
         type: integer
       name:
         type: string
-      roomName:
-        type: string
+      room:
+        $ref: '#/definitions/db_models.Room'
       shelf:
         $ref: '#/definitions/api_objects.Shelves'
       shelfId:
@@ -124,19 +156,43 @@ definitions:
         type: integer
       available:
         type: integer
-      buildingName:
-        type: string
+      building:
+        $ref: '#/definitions/db_models.Building'
       id:
         type: integer
       name:
         type: string
-      roomName:
+      room:
+        $ref: '#/definitions/db_models.Room'
+    type: object
+  api_objects.Message:
+    properties:
+      authorName:
         type: string
+      id:
+        type: integer
+      isAdmin:
+        type: boolean
+      message:
+        type: string
+      state:
+        type: string
+      timeStamp:
+        type: string
+    type: object
+  api_objects.RequestReview:
+    properties:
+      note:
+        type: string
+      outcome:
+        type: string
+      user_id:
+        type: integer
     type: object
   api_objects.Room:
     properties:
-      buildingName:
-        type: string
+      building:
+        $ref: '#/definitions/db_models.Building'
       floor:
         type: string
       id:
@@ -150,8 +206,6 @@ definitions:
     type: object
   api_objects.RoomRequest:
     properties:
-      building:
-        type: integer
       floor:
         type: string
       name:
@@ -159,7 +213,6 @@ definitions:
       number:
         type: string
     required:
-    - building
     - floor
     - number
     type: object
@@ -175,8 +228,6 @@ definitions:
     type: object
   api_objects.ShelfRequest:
     properties:
-      buildingId:
-        type: integer
       columns:
         items:
           $ref: '#/definitions/api_objects.ColumnElementRequest'
@@ -185,33 +236,15 @@ definitions:
         type: string
       name:
         type: string
-      ownedBy:
-        type: string
-      roomId:
-        type: integer
     required:
-    - buildingId
     - columns
     - id
     - name
-    - ownedBy
-    - roomId
-    type: object
-  api_objects.ShelfSorted:
-    properties:
-      buildingName:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      roomName:
-        type: string
     type: object
   api_objects.Shelves:
     properties:
-      buildingName:
-        type: string
+      building:
+        $ref: '#/definitions/db_models.Building'
       columns:
         items:
           $ref: '#/definitions/api_objects.Columns'
@@ -220,10 +253,41 @@ definitions:
         type: string
       name:
         type: string
-      roomName:
+      room:
+        $ref: '#/definitions/db_models.Room'
+    type: object
+  api_objects.UpdateCartItem:
+    properties:
+      amount:
+        type: integer
+    type: object
+  api_objects.UpdateItemRequest:
+    properties:
+      amount:
+        type: integer
+      note:
+        type: string
+      shelfUnitId:
         type: string
     type: object
-  db.Building:
+  api_objects.UpdateLoan:
+    properties:
+      returnedAt:
+        type: string
+    type: object
+  api_objects.UpdateRequest:
+    properties:
+      outcome:
+        type: string
+    type: object
+  api_objects.UserMessage:
+    properties:
+      message:
+        type: string
+      userId:
+        type: integer
+    type: object
+  db_models.Building:
     properties:
       campus:
         type: string
@@ -236,95 +300,122 @@ definitions:
       update_date:
         type: string
     type: object
-  db.Column:
+  db_models.Column:
     properties:
       id:
         type: string
       shelf:
-        $ref: '#/definitions/db.Shelf'
+        $ref: '#/definitions/db_models.Shelf'
       shelf_id:
         type: string
       shelf_units:
         items:
-          $ref: '#/definitions/db.ShelfUnit'
+          $ref: '#/definitions/db_models.ShelfUnit'
         type: array
     type: object
-  db.Inventory:
+  db_models.Inventory:
     properties:
       amount:
         type: integer
       id:
         type: integer
-      item:
-        $ref: '#/definitions/db.Item'
+      is_consumable:
+        type: boolean
       item_id:
         type: integer
+      name:
+        type: string
       note:
         type: string
       request_item:
         items:
-          $ref: '#/definitions/db.RequestItems'
+          $ref: '#/definitions/db_models.RequestItems'
         type: array
+      shelf:
+        $ref: '#/definitions/db_models.Shelf'
+      shelf_id:
+        type: string
       shelf_unit:
-        $ref: '#/definitions/db.ShelfUnit'
+        $ref: '#/definitions/db_models.ShelfUnit'
       shelf_unit_id:
         type: string
       update_date:
         type: string
     type: object
-  db.Item:
-    properties:
-      id:
-        type: integer
-      is_consumable:
-        description: |-
-          Description  string   `json:"description" pg:"description"`
-          Category     string   `json:"category" pg:"category"`
-        type: boolean
-      name:
-        type: string
-    type: object
-  db.Organisation:
+  db_models.Organisation:
     properties:
       name:
         type: string
     type: object
-  db.Request:
+  db_models.Request:
     properties:
+      created_at:
+        type: string
       end_date:
         type: string
+      group_id:
+        type: integer
       id:
         type: integer
       note:
         type: string
+      organisation:
+        $ref: '#/definitions/db_models.Organisation'
+      organisationName:
+        type: string
+      request_item:
+        items:
+          $ref: '#/definitions/db_models.RequestItems'
+        type: array
       start_date:
         type: string
-      status:
+      state:
+        type: string
+      time_state:
         type: string
       user:
-        $ref: '#/definitions/db.User'
+        $ref: '#/definitions/db_models.User'
       user_id:
         type: integer
     type: object
-  db.RequestItems:
+  db_models.RequestItems:
     properties:
       amount:
         type: integer
       id:
         type: integer
       inventory:
-        $ref: '#/definitions/db.Inventory'
+        $ref: '#/definitions/db_models.Inventory'
       inventory_id:
         type: integer
       request:
-        $ref: '#/definitions/db.Request'
+        $ref: '#/definitions/db_models.Request'
       request_id:
         type: integer
     type: object
-  db.Room:
+  db_models.RequestReview:
+    properties:
+      id:
+        type: integer
+      note:
+        type: string
+      outcome:
+        type: string
+      request:
+        $ref: '#/definitions/db_models.Request'
+      request_id:
+        type: integer
+      time_stamp:
+        type: string
+      user:
+        $ref: '#/definitions/db_models.User'
+      user_id:
+        type: integer
+    type: object
+  db_models.Room:
     properties:
       building:
-        $ref: '#/definitions/db.Building'
+        $ref: '#/definitions/db_models.Building'
       building_id:
         type: integer
       floor:
@@ -338,31 +429,31 @@ definitions:
       update_date:
         type: string
     type: object
-  db.Shelf:
+  db_models.Shelf:
     properties:
       columns:
         items:
-          $ref: '#/definitions/db.Column'
+          $ref: '#/definitions/db_models.Column'
         type: array
       id:
         type: string
       name:
         type: string
       organisation:
-        $ref: '#/definitions/db.Organisation'
+        $ref: '#/definitions/db_models.Organisation'
       owned_by:
         type: string
       room:
-        $ref: '#/definitions/db.Room'
+        $ref: '#/definitions/db_models.Room'
       room_id:
         type: integer
       update_date:
         type: string
     type: object
-  db.ShelfUnit:
+  db_models.ShelfUnit:
     properties:
       column:
-        $ref: '#/definitions/db.Column'
+        $ref: '#/definitions/db_models.Column'
       column_id:
         type: string
       description:
@@ -376,33 +467,33 @@ definitions:
         description: 0 is small, 1 is big
         type: integer
     type: object
-  db.ShoppingCart:
+  db_models.ShoppingCart:
     properties:
       id:
         type: integer
       shopping_cart_items:
         items:
-          $ref: '#/definitions/db.ShoppingCartItem'
+          $ref: '#/definitions/db_models.ShoppingCartItem'
         type: array
       user_id:
         type: integer
     type: object
-  db.ShoppingCartItem:
+  db_models.ShoppingCartItem:
     properties:
       amount:
         type: integer
       id:
         type: integer
       inventory:
-        $ref: '#/definitions/db.Inventory'
+        $ref: '#/definitions/db_models.Inventory'
       inventory_id:
         type: integer
       shopping_cart:
-        $ref: '#/definitions/db.ShoppingCart'
+        $ref: '#/definitions/db_models.ShoppingCart'
       shopping_cart_id:
         type: integer
     type: object
-  db.User:
+  db_models.User:
     properties:
       access_token:
         type: string
@@ -437,31 +528,55 @@ info:
   title: Lagertool Inventory API
   version: "1.0"
 paths:
-  /add_item_to_cart:
-    post:
+  /loans/{id}:
+    put:
       consumes:
       - application/json
-      description: Add an item to the shopping cart
+      description: Mark a loan as returned
       parameters:
-      - description: Cart item object
+      - description: Loan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update details
         in: body
-        name: cart_item
+        name: loan
         required: true
         schema:
-          $ref: '#/definitions/api_objects.CartRequest'
+          $ref: '#/definitions/api_objects.UpdateLoan'
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/db.ShoppingCartItem'
-      summary: Add an item to the shopping cart
+        "202":
+          description: Accepted
+      summary: Update a loan
       tags:
-      - shopping_cart
-  /buildings_sorted:
+      - loans
+  /organisations:
+    get:
+      description: Get all organisations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db_models.Organisation'
+            type: array
+      summary: Get all organisations
+      tags:
+      - organisations
+  /organisations/{orgId}/buildings:
     get:
       description: Get all buildings sorted by update date
+      parameters:
+      - description: Organisation name
+        in: path
+        name: orgId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -471,15 +586,19 @@ paths:
             items:
               $ref: '#/definitions/api_objects.Building'
             type: array
-      summary: Get all buildings sorted by update date
+      summary: Get all buildings for an organisation
       tags:
       - buildings
-  /create_building:
     post:
       consumes:
       - application/json
-      description: Create a new building
+      description: Create a new building for an organisation
       parameters:
+      - description: Organisation name
+        in: path
+        name: orgId
+        required: true
+        type: string
       - description: Building object
         in: body
         name: building
@@ -492,38 +611,26 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.Building'
+            $ref: '#/definitions/db_models.Building'
       summary: Create a new building
       tags:
       - buildings
-  /create_item:
+  /organisations/{orgId}/buildings/{buildingId}/rooms:
     post:
       consumes:
       - application/json
-      description: Create a new inventory item
+      description: Create a new room in a building
       parameters:
-      - description: Inventory item object
-        in: body
-        name: item
+      - description: Organisation name
+        in: path
+        name: orgId
         required: true
-        schema:
-          $ref: '#/definitions/api_objects.InventoryItemRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/db.Inventory'
-      summary: Create a new inventory item
-      tags:
-      - items
-  /create_room:
-    post:
-      consumes:
-      - application/json
-      description: Create a new room
-      parameters:
+        type: string
+      - description: Building ID
+        in: path
+        name: buildingId
+        required: true
+        type: integer
       - description: Room object
         in: body
         name: room
@@ -536,16 +643,31 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.Room'
+            $ref: '#/definitions/db_models.Room'
       summary: Create a new room
       tags:
       - rooms
-  /create_shelf:
+  /organisations/{orgId}/buildings/{buildingId}/rooms/{roomId}/shelves:
     post:
       consumes:
       - application/json
-      description: Create a new shelf
+      description: Create a new shelf in a room
       parameters:
+      - description: Organisation name
+        in: path
+        name: orgId
+        required: true
+        type: string
+      - description: Building ID
+        in: path
+        name: buildingId
+        required: true
+        type: integer
+      - description: Room ID
+        in: path
+        name: roomId
+        required: true
+        type: integer
       - description: Shelf object
         in: body
         name: shelf
@@ -558,14 +680,19 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db.Shelf'
+            $ref: '#/definitions/db_models.Shelf'
       summary: Create a new shelf
       tags:
       - shelves
-  /inventory_sorted:
+  /organisations/{orgId}/inventory:
     get:
       description: Get all inventory items sorted by update date
       parameters:
+      - description: Organisation name
+        in: path
+        name: orgId
+        required: true
+        type: string
       - description: Start date in format 2006-01-02
         in: query
         name: start
@@ -585,32 +712,47 @@ paths:
             items:
               $ref: '#/definitions/api_objects.InventorySorted'
             type: array
-      summary: Get all inventory items sorted by update date
+      summary: Get all inventory items for an organisation
+      tags:
+      - inventory
+  /organisations/{orgId}/items:
+    post:
+      consumes:
+      - application/json
+      description: Create a new inventory item
+      parameters:
+      - description: Inventory item object
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.InventoryItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db_models.Inventory'
+      summary: Create a new inventory item
       tags:
       - items
-  /item:
+  /organisations/{orgId}/items/{id}:
     get:
       description: Get a specific item
       parameters:
-      - description: Organisation name
-        in: query
-        name: organisation
-        required: true
-        type: string
       - description: Inventory Item ID
-        in: query
+        in: path
         name: id
         required: true
         type: integer
       - description: Start date in format 2006-01-02
         in: query
         name: start
-        required: true
         type: string
       - description: End date in format 2006-01-02
         in: query
         name: end
-        required: true
         type: string
       produces:
       - application/json
@@ -622,9 +764,41 @@ paths:
       summary: Get a specific item
       tags:
       - items
-  /organisations:
+    put:
+      consumes:
+      - application/json
+      description: Update an inventory item's details
+      parameters:
+      - description: Inventory Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update details
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.UpdateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db_models.Inventory'
+      summary: Update an inventory item
+      tags:
+      - items
+  /organisations/{orgId}/items/{id}/borrows:
     get:
-      description: Get all organisations
+      description: Get all borrow/loan history for an inventory item
+      parameters:
+      - description: Inventory Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -632,14 +806,20 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/db.Organisation'
+              $ref: '#/definitions/api_objects.BorrowHistory'
             type: array
-      summary: Get all organisations
+      summary: Get borrow history for an item
       tags:
-      - organisations
-  /rooms_sorted:
+      - items
+  /organisations/{orgId}/rooms:
     get:
       description: Get all rooms sorted by update date
+      parameters:
+      - description: Organisation name
+        in: path
+        name: orgId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -649,16 +829,16 @@ paths:
             items:
               $ref: '#/definitions/api_objects.Room'
             type: array
-      summary: Get all rooms sorted by update date
+      summary: Get all rooms for an organisation
       tags:
       - rooms
-  /shelves:
+  /organisations/{orgId}/shelves:
     get:
-      description: Get all shelves
+      description: Get all shelves for an organisation
       parameters:
       - description: Organisation name
-        in: query
-        name: organisation
+        in: path
+        name: orgId
         required: true
         type: string
       produces:
@@ -670,12 +850,68 @@ paths:
             items:
               $ref: '#/definitions/api_objects.Shelves'
             type: array
-      summary: Get all shelves
+      summary: Get all shelves for an organisation
       tags:
       - shelves
-  /shelves_sorted:
+  /requests/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update the status of a request
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+      summary: Update a request
+      tags:
+      - requests
+  /requests/{id}/loans:
+    put:
+      consumes:
+      - application/json
+      description: Mark all loans for a given request as returned
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update details
+        in: body
+        name: loan
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.UpdateLoan'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+      summary: Bulk update loans for a request
+      tags:
+      - loans
+  /requests/{id}/messages:
     get:
-      description: Get all shelves sorted by update date
+      description: Get all messages (user and admin) for a request, sorted by timestamp
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -683,18 +919,92 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/api_objects.ShelfSorted'
+              $ref: '#/definitions/api_objects.Message'
             type: array
-      summary: Get all shelves sorted by update date
+      summary: Get messages for a request
       tags:
-      - shelves
-  /shopping_cart:
+      - requests
+    post:
+      consumes:
+      - application/json
+      description: Post a user message on a borrow request
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Message object
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.UserMessage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_objects.UserMessage'
+      summary: Post a message to a request
+      tags:
+      - requests
+  /requests/{id}/review:
+    post:
+      consumes:
+      - application/json
+      description: Review/approve/deny a borrow request
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Review details
+        in: body
+        name: review
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.RequestReview'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db_models.RequestReview'
+      summary: Review a request
+      tags:
+      - requests
+  /search/{searchTerm}:
+    get:
+      description: Search for inventory items by name using fuzzy matching
+      parameters:
+      - description: Search term
+        in: path
+        name: searchTerm
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db_models.Inventory'
+            type: array
+      summary: Fuzzy search for inventory items
+      tags:
+      - search
+  /users/{userId}/cart:
     get:
       description: Get a user's shopping cart
       parameters:
       - description: User ID
-        in: query
-        name: userID
+        in: path
+        name: userId
         required: true
         type: integer
       - description: Start date in format 2006-01-02
@@ -720,7 +1030,131 @@ paths:
             type: object
       summary: Get a user's shopping cart
       tags:
-      - shopping_cart
+      - cart
+  /users/{userId}/cart/checkout:
+    post:
+      consumes:
+      - application/json
+      description: Checkout the user's shopping cart and create requests
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Checkout details
+        in: body
+        name: checkout
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.CheckoutRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Checkout shopping cart
+      tags:
+      - cart
+  /users/{userId}/cart/items:
+    delete:
+      description: Delete all items from a user's shopping cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db_models.ShoppingCartItem'
+            type: array
+      summary: Delete all cart items
+      tags:
+      - cart
+    post:
+      consumes:
+      - application/json
+      description: Add an item to the shopping cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Cart item object
+        in: body
+        name: cart_item
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.CartRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db_models.ShoppingCartItem'
+      summary: Add an item to the shopping cart
+      tags:
+      - cart
+  /users/{userId}/cart/items/{itemId}:
+    delete:
+      description: Delete a specific item from a user's shopping cart by inventory
+        item ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Inventory Item ID
+        in: path
+        name: itemId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delete a single cart item
+      tags:
+      - cart
+    put:
+      consumes:
+      - application/json
+      description: Update the amount of an item in a user's shopping cart
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Inventory Item ID
+        in: path
+        name: itemId
+        required: true
+        type: integer
+      - description: Update details
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.UpdateCartItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update a cart item
+      tags:
+      - cart
 schemes:
 - http
 swagger: "2.0"
