@@ -1,11 +1,24 @@
 package api
 
 import (
+	"strings"
 	"time"
 
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db_models"
 )
+
+// normalizeRequestState maps backend state strings to the lowercase keys the frontend expects.
+func normalizeRequestState(state string) string {
+	switch strings.ToLower(state) {
+	case "approved":
+		return "approved"
+	case "rejected":
+		return "rejected"
+	default:
+		return "pending"
+	}
+}
 
 func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, error) {
 	var shelf db_models.Shelf

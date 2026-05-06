@@ -216,12 +216,13 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 		Select()
 	var res []api_objects.BorrowHistory
 	for _, item := range dbRes {
+		state := normalizeRequestState(item.Request.State)
 		out := api_objects.BorrowHistory{
 			User:      item.Request.User.Name,
 			Event:     item.Request.Note,
 			StartedAt: item.Request.StartDate,
 			DueAt:     item.Request.EndDate,
-			State:     "",
+			State:     state,
 			Amount:    item.Amount,
 		}
 		if item.Request.State == "Approved" {
