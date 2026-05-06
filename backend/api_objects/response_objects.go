@@ -25,13 +25,14 @@ type Element struct {
 }
 
 type InventoryItem struct {
-	ID        int                `json:"id"`
-	Name      string             `json:"name"`
-	Amount    int                `json:"amount"`
-	Available int                `json:"available"`
-	Building  db_models.Building `json:"building"`
-	Room      db_models.Room     `json:"room"`
-	ShelfID   string             `json:"shelfId"`
+	ID             int                `json:"id"`
+	Name           string             `json:"name"`
+	Amount         int                `json:"amount"`
+	Available      int                `json:"available"`
+	Building       db_models.Building `json:"building"`
+	Room           db_models.Room     `json:"room"`
+	ShelfID        string             `json:"shelfId"`
+	ShelfElementID string             `json:"shelfElementId"`
 }
 
 type InventoryItemWithShelf struct {

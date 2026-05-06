@@ -89,6 +89,7 @@ func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time)
 	res.Room = *dbInv.ShelfUnit.Column.Shelf.Room
 	res.Building = *dbInv.ShelfUnit.Column.Shelf.Room.Building
 	res.ShelfID = dbInv.ShelfUnit.Column.Shelf.ID
+	res.ShelfElementID = dbInv.ShelfUnitID
 	return res, nil
 }
 
