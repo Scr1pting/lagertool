@@ -75,12 +75,13 @@ type ShelfSorted struct {
 }
 
 type InventorySorted struct {
-	ID           int                `json:"id"`
-	Name         string             `json:"name"`
-	Amount       int                `json:"amount"`
-	Available    int                `json:"available"`
-	RoomName     db_models.Room     `json:"room"`
-	BuildingName db_models.Building `json:"building"`
+	ID             int                `json:"id"`
+	Name           string             `json:"name"`
+	Amount         int                `json:"amount"`
+	Available      int                `json:"available"`
+	RoomName       db_models.Room     `json:"room"`
+	BuildingName   db_models.Building `json:"building"`
+	ShelfElementID string             `json:"shelfElementId"`
 }
 
 type Message struct {

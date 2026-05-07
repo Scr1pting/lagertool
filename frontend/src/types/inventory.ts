@@ -12,6 +12,7 @@ export interface InventoryItem {
   available: number
   building: Building
   room: Room
+  shelfElementId: string
 }
 
 export interface InventoryItemFull extends InventoryItem {

@@ -18,7 +18,6 @@ function ShelfElementDialog({
   onOpenChange,
   shelfElement
 }: ShelfElementDialogProps) {
-  // TODO: pass shelf
   const { data: inventory } = useFetchInventory()
 
   return (
@@ -37,7 +36,7 @@ function ShelfElementDialog({
 
           <section className="">
             <DataTable
-              data={inventory ?? []}
+              data={(inventory ?? []).filter(item => item.shelfElementId === shelfElement.id)}
               columns={inventoryShelfColumns}
               rowLink={row => `/item?id=${row.original.id}`}
               className="h-[60vh] max-h-[850px] overflow-y-auto"

@@ -130,7 +130,7 @@ func (h *Handler) GetInventory(c *gin.Context) {
 			return
 		}
 		res = append(res, api_objects.InventorySorted{
-			ID: item.ID, Name: item.Name, Amount: item.Amount, Available: available, RoomName: *item.ShelfUnit.Column.Shelf.Room, BuildingName: *item.ShelfUnit.Column.Shelf.Room.Building,
+			ID: item.ID, Name: item.Name, Amount: item.Amount, Available: available, RoomName: *item.ShelfUnit.Column.Shelf.Room, BuildingName: *item.ShelfUnit.Column.Shelf.Room.Building, ShelfElementID: item.ShelfUnitID,
 		})
 	}
 	c.JSON(http.StatusOK, res)
