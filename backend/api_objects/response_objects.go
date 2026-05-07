@@ -62,13 +62,6 @@ type Building struct {
 	UpdateDate string `json:"updateDate"`
 }
 
-type ShelfSorted struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	Room     Room     `json:"room"`
-	Building Building `json:"building"`
-}
-
 type InventorySorted struct {
 	ID             int      `json:"id"`
 	Name           string   `json:"name"`
