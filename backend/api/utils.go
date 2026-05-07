@@ -64,9 +64,13 @@ func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, 
 	}
 	count := 0
 	for _, reqItem := range dbInv.RequestItems {
-		if !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate)) {
+		if reqItem.Request.State == "Rejected" {
+			continue
 		}
-		count += reqItem.Amount
+		overlaps := !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate))
+		if overlaps {
+			count += reqItem.Amount
+		}
 	}
 	return dbInv.Amount - count, nil
 }
