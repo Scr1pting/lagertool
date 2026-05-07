@@ -34,9 +34,7 @@ func (h *Handler) GetRooms(c *gin.Context) {
 	}
 	var res []api_objects.Room
 	for _, item := range dbRes {
-		res = append(res, api_objects.Room{
-			ID: item.ID, Number: item.Number, Floor: item.Floor, Name: item.Name, Building: *item.Building, UpdateDate: item.UpdateDate.Format(time.RFC3339),
-		})
+		res = append(res, toRoom(item))
 	}
 	c.JSON(http.StatusOK, res)
 }
@@ -64,9 +62,7 @@ func (h *Handler) GetBuildings(c *gin.Context) {
 	}
 	var res []api_objects.Building
 	for _, item := range dbRes {
-		res = append(res, api_objects.Building{
-			ID: item.ID, Name: item.Name, Campus: item.Campus, UpdateDate: item.UpdateDate.Format(time.RFC3339),
-		})
+		res = append(res, toBuilding(item))
 	}
 	c.JSON(http.StatusOK, res)
 }
@@ -130,7 +126,9 @@ func (h *Handler) GetInventory(c *gin.Context) {
 			return
 		}
 		res = append(res, api_objects.InventorySorted{
-			ID: item.ID, Name: item.Name, Amount: item.Amount, Available: available, RoomName: *item.ShelfUnit.Column.Shelf.Room, BuildingName: *item.ShelfUnit.Column.Shelf.Room.Building, ShelfElementID: item.ShelfUnitID,
+			ID: item.ID, Name: item.Name, Amount: item.Amount, Available: available,
+			Room: toRoom(*item.ShelfUnit.Column.Shelf.Room), Building: toBuilding(*item.ShelfUnit.Column.Shelf.Room.Building),
+			ShelfElementID: item.ShelfUnitID,
 		})
 	}
 	c.JSON(http.StatusOK, res)

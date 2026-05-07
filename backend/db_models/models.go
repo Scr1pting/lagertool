@@ -116,7 +116,6 @@ type ShoppingCartItem struct {
 type Inventory struct {
 	tableName    struct{}  `pg:"Inventory"`
 	ID           int       `json:"id" pg:"id,pk"`
-	ItemID       int       `json:"item_id" pg:"item_id"`
 	ShelfUnitID  string    `json:"shelf_unit_id" pg:"shelf_unit_id"`
 	ShelfID      string    `json:"shelf_id" pg:"shelf_id"`
 	Amount       int       `json:"amount" pg:"amount"`
@@ -141,7 +140,6 @@ type Request struct {
 	TimeState        string    `json:"time_state" pg:"time_state"`
 	CreatedAt        time.Time `json:"created_at" pg:"created_at"`
 	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
-	GroupID          int       `json:"group_id" pg:"group_id"`
 
 	Organisation *Organisation  `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
 	User         *User          `json:"user" pg:"rel:has-one,fk:user_id"`

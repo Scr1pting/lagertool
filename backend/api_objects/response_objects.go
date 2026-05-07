@@ -1,17 +1,13 @@
 package api_objects
 
-import (
-	"time"
-
-	"lagertool.com/main/db_models"
-)
+import "time"
 
 type Shelves struct {
-	ID       string             `json:"id"`
-	Name     string             `json:"name"`
-	Building db_models.Building `json:"building"`
-	Room     db_models.Room     `json:"room"`
-	Columns  []Columns          `json:"columns"`
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Building Building  `json:"building"`
+	Room     Room      `json:"room"`
+	Columns  []Columns `json:"columns"`
 }
 
 type Columns struct {
@@ -25,14 +21,14 @@ type Element struct {
 }
 
 type InventoryItem struct {
-	ID             int                `json:"id"`
-	Name           string             `json:"name"`
-	Amount         int                `json:"amount"`
-	Available      int                `json:"available"`
-	Building       db_models.Building `json:"building"`
-	Room           db_models.Room     `json:"room"`
-	ShelfID        string             `json:"shelfId"`
-	ShelfElementID string             `json:"shelfElementId"`
+	ID             int      `json:"id"`
+	Name           string   `json:"name"`
+	Amount         int      `json:"amount"`
+	Available      int      `json:"available"`
+	Building       Building `json:"building"`
+	Room           Room     `json:"room"`
+	ShelfID        string   `json:"shelfId"`
+	ShelfElementID string   `json:"shelfElementId"`
 }
 
 type InventoryItemWithShelf struct {
@@ -51,37 +47,36 @@ type CartItem struct {
 }
 
 type Room struct {
-	ID         int                `json:"id"`
-	Number     string             `json:"number"`
-	Floor      string             `json:"floor"`
-	Name       string             `json:"name"`
-	Building   db_models.Building `json:"building"`
-	UpdateDate string             `json:"updateDate"`
+	ID         int      `json:"id"`
+	Number     string   `json:"number"`
+	Floor      string   `json:"floor"`
+	Name       string   `json:"name"`
+	Building   Building `json:"building"`
+	UpdateDate string   `json:"updateDate"`
 }
 
 type Building struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-	//GPS        string   `json:"gps"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
 	Campus     string `json:"campus"`
 	UpdateDate string `json:"updateDate"`
 }
 
 type ShelfSorted struct {
-	ID       string             `json:"id"`
-	Name     string             `json:"name"`
-	Room     db_models.Room     `json:"room"`
-	Building db_models.Building `json:"building"`
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	Room     Room     `json:"room"`
+	Building Building `json:"building"`
 }
 
 type InventorySorted struct {
-	ID             int                `json:"id"`
-	Name           string             `json:"name"`
-	Amount         int                `json:"amount"`
-	Available      int                `json:"available"`
-	RoomName       db_models.Room     `json:"room"`
-	BuildingName   db_models.Building `json:"building"`
-	ShelfElementID string             `json:"shelfElementId"`
+	ID             int      `json:"id"`
+	Name           string   `json:"name"`
+	Amount         int      `json:"amount"`
+	Available      int      `json:"available"`
+	Room           Room     `json:"room"`
+	Building       Building `json:"building"`
+	ShelfElementID string   `json:"shelfElementId"`
 }
 
 type Message struct {
@@ -97,9 +92,9 @@ type BorrowHistory struct {
 	User       string    `json:"authorName"`
 	Event      string    `json:"title"`
 	StartedAt  time.Time `json:"startDate"`
-	DueAt      time.Time `json:"dueAt"`
-	ReturnedAt time.Time `json:"returnedAt"`
+	DueAt      time.Time `json:"endDate"`
+	ReturnedAt time.Time `json:"returnedDate"`
 	State      string    `json:"approvalState"`
-	TimeState  string    `json:"approvalStateTime"`
+	TimeState  string    `json:"timeState"`
 	Amount     int       `json:"amount"`
 }
