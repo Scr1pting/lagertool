@@ -39,7 +39,7 @@ function ShelfElementDialog({
             <DataTable
               data={inventory ?? []}
               columns={inventoryShelfColumns}
-              rowLink={row => `/item?id=${row.id}`}
+              rowLink={row => `/item?id=${row.original.id}`}
               className="h-[60vh] max-h-[850px] overflow-y-auto"
               sticky
             />
