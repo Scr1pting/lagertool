@@ -204,7 +204,7 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		return
 	}
 
-	if rev.Outcome == "Approved" {
+	if rev.Outcome == "approved" {
 		var request db_models.Request
 		err := h.DB.Model(&request).
 			Relation("RequestItems.Inventory").

@@ -216,16 +216,15 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 		Select()
 	var res []api_objects.BorrowHistory
 	for _, item := range dbRes {
-		state := normalizeRequestState(item.Request.State)
 		out := api_objects.BorrowHistory{
 			User:      item.Request.User.Name,
 			Event:     item.Request.Note,
 			StartedAt: item.Request.StartDate,
 			DueAt:     item.Request.EndDate,
-			State:     state,
+			State:     item.Request.State,
 			Amount:    item.Amount,
 		}
-		if item.Request.State == "Approved" {
+		if item.Request.State == "approved" {
 			var db2res db_models.Loans
 			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.ID).First()
 			if err != nil {

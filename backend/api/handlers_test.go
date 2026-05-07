@@ -876,8 +876,8 @@ func TestRequestReviewSuccess(t *testing.T) {
 	t.Run("Successful Review - Creates Loans and Consumed", func(t *testing.T) {
 		payload := `{
 			"user_id": ` + strconv.Itoa(reviewer.ID) + `,
-			"outcome": "Approved",
-			"note": "Approved"
+			"outcome": "approved",
+			"note": "approved"
 		}`
 
 		req, _ := http.NewRequest("POST", "/requests/"+strconv.Itoa(request.ID)+"/review", strings.NewReader(payload))
@@ -895,7 +895,7 @@ func TestRequestReviewSuccess(t *testing.T) {
 		err := dbCon.Model(&reviews).Where("request_id = ?", request.ID).Select()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, reviews)
-		assert.Equal(t, "Approved", reviews[0].Outcome)
+		assert.Equal(t, "approved", reviews[0].Outcome)
 
 		// Verify consumed record was created for consumable item
 		var consumed []db_models.Consumed
@@ -960,10 +960,10 @@ func TestUpdateRequest(t *testing.T) {
 			name: "Successful Update",
 			url:  "/requests/" + strconv.Itoa(request.ID),
 			payload: `{
-				"outcome": "Approved"
+				"outcome": "approved"
 			}`,
 			expectedStatus:  http.StatusAccepted,
-			expectedOutcome: "Approved",
+			expectedOutcome: "approved",
 		},
 		{
 			name:           "Invalid JSON - Malformed",
@@ -1688,7 +1688,7 @@ func TestGetBorrowHistory(t *testing.T) {
 		StartDate:        time.Now().Add(-72 * time.Hour),
 		EndDate:          time.Now().Add(-24 * time.Hour),
 		Note:             "Past borrowing",
-		State:            "Approved",
+		State:            "approved",
 		OrganisationName: org.Name,
 	}
 	_, err = dbCon.Model(successRequest).Insert()

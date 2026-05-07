@@ -1,7 +1,6 @@
 package api
 
 import (
-	"strings"
 	"time"
 
 	"lagertool.com/main/api_objects"
@@ -29,18 +28,6 @@ func toRoom(r db_models.Room) api_objects.Room {
 		Name:       r.Name,
 		Building:   building,
 		UpdateDate: r.UpdateDate.Format(time.RFC3339),
-	}
-}
-
-// normalizeRequestState maps backend state strings to the lowercase keys the frontend expects.
-func normalizeRequestState(state string) string {
-	switch strings.ToLower(state) {
-	case "approved":
-		return "approved"
-	case "rejected":
-		return "rejected"
-	default:
-		return "pending"
 	}
 }
 
@@ -89,7 +76,7 @@ func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, 
 	}
 	count := 0
 	for _, reqItem := range dbInv.RequestItems {
-		if reqItem.Request.State == "Rejected" {
+		if reqItem.Request.State == "rejected" {
 			continue
 		}
 		overlaps := !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate))
