@@ -270,7 +270,7 @@ func TestGetShelves(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var shelves []api_objects.Shelves
+	var shelves []api_objects.Shelf
 	err = json.Unmarshal(w.Body.Bytes(), &shelves)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, shelves)

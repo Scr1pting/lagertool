@@ -44,25 +44,25 @@ func normalizeRequestState(state string) string {
 	}
 }
 
-func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, error) {
+func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelf, error) {
 	var shelf db_models.Shelf
 	err := h.DB.Model(&shelf).
 		Relation("Room.Building").
 		Relation("Columns.ShelfUnits").Where("shelf.id = ?", id).Where("shelf.owned_by = ?", orga).Select()
 	if err != nil {
-		return api_objects.Shelves{}, err
+		return api_objects.Shelf{}, err
 	}
 
-	var shelfObj api_objects.Shelves
+	var shelfObj api_objects.Shelf
 	shelfObj.ID = shelf.ID
 	shelfObj.Name = shelf.Name
 	shelfObj.Room = toRoom(*shelf.Room)
 	shelfObj.Building = toBuilding(*shelf.Room.Building)
-	shelfObj.Columns = []api_objects.Columns{}
+	shelfObj.Columns = []api_objects.ShelfColumn{}
 	for _, c := range shelf.Columns {
-		var col api_objects.Columns
+		var col api_objects.ShelfColumn
 		col.ID = c.ID
-		var el api_objects.Element
+		var el api_objects.ShelfElement
 		for _, e := range c.ShelfUnits {
 			el.ID = e.ID
 			if e.Type == 0 {

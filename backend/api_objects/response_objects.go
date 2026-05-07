@@ -2,20 +2,20 @@ package api_objects
 
 import "time"
 
-type Shelves struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Building Building  `json:"building"`
-	Room     Room      `json:"room"`
-	Columns  []Columns `json:"columns"`
+type Shelf struct {
+	ID       string        `json:"id"`
+	Name     string        `json:"name"`
+	Building Building      `json:"building"`
+	Room     Room          `json:"room"`
+	Columns  []ShelfColumn `json:"columns"`
 }
 
-type Columns struct {
-	ID       string    `json:"id"`
-	Elements []Element `json:"elements"`
+type ShelfColumn struct {
+	ID       string         `json:"id"`
+	Elements []ShelfElement `json:"elements"`
 }
 
-type Element struct {
+type ShelfElement struct {
 	ID   string `json:"id"`
 	Type string `json:"type"`
 }
@@ -33,7 +33,7 @@ type InventoryItem struct {
 
 type InventoryItemWithShelf struct {
 	InventoryItem
-	Shelf Shelves `json:"shelf"`
+	Shelf Shelf `json:"shelf"`
 }
 
 type ShoppingCart struct {

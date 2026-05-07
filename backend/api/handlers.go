@@ -44,11 +44,11 @@ func (h *Handler) GetOrganisations(c *gin.Context) {
 // @Tags shelves
 // @Produce  json
 // @Param orgId path string true "Organisation name"
-// @Success 200 {array} api_objects.Shelves
+// @Success 200 {array} api_objects.Shelf
 // @Router /organisations/{orgId}/shelves [get]
 func (h *Handler) GetShelves(c *gin.Context) {
 	organisation := c.Param("orgId")
-	var res []api_objects.Shelves
+	var res []api_objects.Shelf
 	var dbRes []db_models.Shelf
 	err := h.DB.Model(&dbRes).Where("owned_by = ?", organisation).Select()
 	if err != nil {
