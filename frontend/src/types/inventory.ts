@@ -32,10 +32,3 @@ export interface ItemBorrowEntry {
   amount: number
 }
 
-export interface InventoryItemPayload {
-  name: string
-  keywords: string
-  amount: number
-  shelf: Shelf | undefined
-  shelfElement: ShelfElement | undefined
-}
