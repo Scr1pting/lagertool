@@ -13,7 +13,7 @@ function StaticShelf({ shelf, onElementSelect, highlightedElement }: StaticShelf
   return (
     <section className={styles.StaticShelf}>
       <div className={styles.leftElement} />
-      {shelf.columns.map(column => (
+      {(shelf.columns ?? []).map(column => (
         <StaticShelfColumn
           key={column.id}
           column={column}
