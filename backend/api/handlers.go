@@ -245,17 +245,51 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 // @Tags search
 // @Produce  json
 // @Param searchTerm path string true "Search term"
-// @Success 200 {array} db_models.Inventory
+// @Param start query string false "Start date in format 2006-01-02 (defaults to today)"
+// @Param end query string false "End date in format 2006-01-02 (defaults to start)"
+// @Success 200 {array} api_objects.InventorySorted
 // @Router /search/{searchTerm} [get]
 func (h *Handler) FuzzyFindItems(c *gin.Context) {
-	searchTerm := c.Query("searchTerm")
-	var dbRes []db_models.Inventory
-	err := h.DB.Model(&dbRes).Select()
+	searchTerm := c.Param("searchTerm")
+
+	start, err := time.Parse("2006-01-02", c.Query("start"))
+	if err != nil {
+		start = time.Now().Truncate(24 * time.Hour)
+	}
+	end, err := time.Parse("2006-01-02", c.Query("end"))
+	if err != nil {
+		end = start
+	}
+
+	var dbAll []db_models.Inventory
+	err = h.DB.Model(&dbAll).
+		Column("inventory.*").
+		Relation("ShelfUnit.Column.Shelf.Room.Building").
+		Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	res := util.FindItemSearchTermsInDB(dbRes, searchTerm)
+
+	matches := util.FindItemSearchTermsInDB(dbAll, searchTerm)
+
+	var res []api_objects.InventorySorted
+	for _, item := range matches {
+		available, err := h.GetAvailable(item.ID, start, end)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		res = append(res, api_objects.InventorySorted{
+			ID:             item.ID,
+			Name:           item.Name,
+			Amount:         item.Amount,
+			Available:      available,
+			Room:           toRoom(*item.ShelfUnit.Column.Shelf.Room),
+			Building:       toBuilding(*item.ShelfUnit.Column.Shelf.Room.Building),
+			ShelfElementID: item.ShelfUnitID,
+		})
+	}
 	c.JSON(http.StatusOK, res)
 }
 
