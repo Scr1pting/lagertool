@@ -1,6 +1,17 @@
 from functools import lru_cache
 
+import nltk
 from nltk.corpus import wordnet as wn
+
+
+def ensure_wordnet() -> None:
+    try:
+        nltk.data.find("corpora/wordnet")
+    except LookupError:
+        nltk.download("wordnet")
+
+
+ensure_wordnet()
 
 
 @lru_cache(maxsize=1)
@@ -13,12 +24,14 @@ def noun_lemmas() -> tuple[str, ...]:
 
 
 @lru_cache(maxsize=1)
-def noun_meanings() -> tuple[str, ...]:
+def _noun_entries() -> tuple[tuple, ...]:
     """
-    Returns cached noun senses paired with their WordNet gloss.
-    The tuple key uses the synset name to keep homonyms separate.
+    Returns cached (synset, text) pairs for noun senses under `object.n.01`,
+    excluding people and animals. A synset may appear twice — once with
+    examples appended and once without — to give the embedding model more
+    surface forms to match against.
     """
-    meanings: list[str] = []
+    entries: list[tuple] = []
 
     object_synset = wn.synset('object.n.01')
     person_synset = wn.synset('person.n.01')
@@ -38,7 +51,19 @@ def noun_meanings() -> tuple[str, ...]:
         definition = syn.definition()
         examples = [ex for ex in syn.examples() if len(ex) <= 120][:2]
         if examples:
-            meanings.append(f"{name}. {definition}. Examples: {' , '.join(examples)}")
-        meanings.append(f"{name}. {definition}")
+            entries.append((syn, f"{name}. {definition}. Examples: {' , '.join(examples)}"))
+        entries.append((syn, f"{name}. {definition}"))
 
-    return tuple(meanings)
+    return tuple(entries)
+
+
+@lru_cache(maxsize=1)
+def noun_meanings() -> tuple[str, ...]:
+    """Just the text column of `_noun_entries()`, parallel to noun_synsets()."""
+    return tuple(text for _, text in _noun_entries())
+
+
+@lru_cache(maxsize=1)
+def noun_synsets() -> tuple:
+    """The synset column of `_noun_entries()`, parallel to noun_meanings()."""
+    return tuple(syn for syn, _ in _noun_entries())
