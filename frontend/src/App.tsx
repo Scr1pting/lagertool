@@ -6,7 +6,6 @@ import AddShelf from './pages/AddShelf'
 import Home from './pages/Home'
 import Search from './pages/Search'
 import WithNavBar from './components/NavBar/WithNavBar'
-import Persons from './pages/Persons'
 import ShoppingCart from './pages/ShoppingCart'
 import { Toaster } from './components/shadcn/sonner'
 import ManageInventory from './pages/ManageInventory'
@@ -34,7 +33,6 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/search" element={<Search />}/>
       <Route path="/manage-inventory" element={<ManageInventory />}/>
-      <Route path="/persons" element={<Persons />}/>
       <Route path="/borrow-requests" element={<BorrowRequests />}/>
       <Route path="/shopping-cart" element={<ShoppingCart />}/>
       <Route path="/item" element={<ItemDetail />}/>
