@@ -32,7 +32,7 @@ func (h *Handler) CreateBuilding(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, newBuilding)
+	c.JSON(http.StatusCreated, toBuilding(*newBuilding))
 }
 
 // @Summary Create a new room
@@ -62,7 +62,7 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, newRoom)
+	c.JSON(http.StatusCreated, toRoom(*newRoom))
 }
 
 // @Summary Create a new inventory item
@@ -150,13 +150,7 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 			State:            "requested",
 			OrganisationName: k,
 		}
-		err := db.Create_request(h.DB, request)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
-			return
-		}
-		request.GroupID = request.ID
-		_, err = h.DB.Model(request).Set("group_id = ?", request.GroupID).Where("id = ?", request.ID).Update()
+		err := db.CreateRequest(h.DB, request)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
 			return
@@ -168,7 +162,7 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 				Amount:      item.AmountSelected,
 				Request:     request,
 			}
-			err := db.Create_request_item(h.DB, reqItem)
+			err := db.CreateRequestItem(h.DB, reqItem)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request item"})
 				return
@@ -204,13 +198,13 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		Outcome:   req.Outcome,
 		Note:      req.Note,
 	}
-	err = db.Create_request_review(h.DB, rev)
+	err = db.CreateRequestReview(h.DB, rev)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if rev.Outcome == "Approved" {
+	if rev.Outcome == "approved" {
 		var request db_models.Request
 		err := h.DB.Model(&request).
 			Relation("RequestItems.Inventory").

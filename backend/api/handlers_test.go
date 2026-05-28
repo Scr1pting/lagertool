@@ -270,7 +270,7 @@ func TestGetShelves(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var shelves []api_objects.Shelves
+	var shelves []api_objects.Shelf
 	err = json.Unmarshal(w.Body.Bytes(), &shelves)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, shelves)
@@ -650,7 +650,6 @@ func TestCheckoutCart(t *testing.T) {
 				assert.Equal(t, user.ID, request.UserID)
 				assert.Equal(t, "requested", request.State)
 				assert.Equal(t, org.Name, request.OrganisationName)
-				assert.NotZero(t, request.GroupID, "Expected group_id to be set")
 
 				// Verify request items were created
 				var requestItems []db_models.RequestItems
@@ -694,7 +693,6 @@ func TestRequestReview(t *testing.T) {
 		Note:             "",
 		State:            "requested",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -831,7 +829,6 @@ func TestRequestReviewSuccess(t *testing.T) {
 		Note:             "",
 		State:            "requested",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -879,8 +876,8 @@ func TestRequestReviewSuccess(t *testing.T) {
 	t.Run("Successful Review - Creates Loans and Consumed", func(t *testing.T) {
 		payload := `{
 			"user_id": ` + strconv.Itoa(reviewer.ID) + `,
-			"outcome": "Approved",
-			"note": "Approved"
+			"outcome": "approved",
+			"note": "approved"
 		}`
 
 		req, _ := http.NewRequest("POST", "/requests/"+strconv.Itoa(request.ID)+"/review", strings.NewReader(payload))
@@ -898,7 +895,7 @@ func TestRequestReviewSuccess(t *testing.T) {
 		err := dbCon.Model(&reviews).Where("request_id = ?", request.ID).Select()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, reviews)
-		assert.Equal(t, "Approved", reviews[0].Outcome)
+		assert.Equal(t, "approved", reviews[0].Outcome)
 
 		// Verify consumed record was created for consumable item
 		var consumed []db_models.Consumed
@@ -940,7 +937,6 @@ func TestUpdateRequest(t *testing.T) {
 		Note:             "",
 		State:            "requested",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -964,10 +960,10 @@ func TestUpdateRequest(t *testing.T) {
 			name: "Successful Update",
 			url:  "/requests/" + strconv.Itoa(request.ID),
 			payload: `{
-				"outcome": "Approved"
+				"outcome": "approved"
 			}`,
 			expectedStatus:  http.StatusAccepted,
-			expectedOutcome: "Approved",
+			expectedOutcome: "approved",
 		},
 		{
 			name:           "Invalid JSON - Malformed",
@@ -1060,7 +1056,6 @@ func TestUpdateLoan(t *testing.T) {
 		Note:             "",
 		State:            "approved",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -1477,7 +1472,6 @@ func TestPostMessage(t *testing.T) {
 		EndDate:          time.Now().Add(48 * time.Hour),
 		State:            "requested",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -1572,7 +1566,6 @@ func TestGetMessages(t *testing.T) {
 		EndDate:          time.Now().Add(48 * time.Hour),
 		State:            "requested",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -1676,7 +1669,6 @@ func TestGetBorrowHistory(t *testing.T) {
 		Note:             "Need for project",
 		State:            "requested",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(pendingRequest).Insert()
 	assert.NoError(t, err)
@@ -1696,9 +1688,8 @@ func TestGetBorrowHistory(t *testing.T) {
 		StartDate:        time.Now().Add(-72 * time.Hour),
 		EndDate:          time.Now().Add(-24 * time.Hour),
 		Note:             "Past borrowing",
-		State:            "Approved",
+		State:            "approved",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(successRequest).Insert()
 	assert.NoError(t, err)
@@ -1836,7 +1827,6 @@ func TestUpdateLoanBulk(t *testing.T) {
 		Note:             "",
 		State:            "approved",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(request).Insert()
 	assert.NoError(t, err)
@@ -1881,7 +1871,6 @@ func TestUpdateLoanBulk(t *testing.T) {
 		Note:             "",
 		State:            "approved",
 		OrganisationName: org.Name,
-		GroupID:          1,
 	}
 	_, err = dbCon.Model(otherRequest).Insert()
 	assert.NoError(t, err)

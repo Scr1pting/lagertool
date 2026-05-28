@@ -44,11 +44,11 @@ func (h *Handler) GetOrganisations(c *gin.Context) {
 // @Tags shelves
 // @Produce  json
 // @Param orgId path string true "Organisation name"
-// @Success 200 {array} api_objects.Shelves
+// @Success 200 {array} api_objects.Shelf
 // @Router /organisations/{orgId}/shelves [get]
 func (h *Handler) GetShelves(c *gin.Context) {
 	organisation := c.Param("orgId")
-	var res []api_objects.Shelves
+	var res []api_objects.Shelf
 	var dbRes []db_models.Shelf
 	err := h.DB.Model(&dbRes).Where("owned_by = ?", organisation).Select()
 	if err != nil {
@@ -221,10 +221,10 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 			Event:     item.Request.Note,
 			StartedAt: item.Request.StartDate,
 			DueAt:     item.Request.EndDate,
-			State:     "",
+			State:     item.Request.State,
 			Amount:    item.Amount,
 		}
-		if item.Request.State == "Approved" {
+		if item.Request.State == "approved" {
 			var db2res db_models.Loans
 			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.ID).First()
 			if err != nil {
@@ -245,17 +245,51 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 // @Tags search
 // @Produce  json
 // @Param searchTerm path string true "Search term"
-// @Success 200 {array} db_models.Inventory
+// @Param start query string false "Start date in format 2006-01-02 (defaults to today)"
+// @Param end query string false "End date in format 2006-01-02 (defaults to start)"
+// @Success 200 {array} api_objects.InventorySorted
 // @Router /search/{searchTerm} [get]
 func (h *Handler) FuzzyFindItems(c *gin.Context) {
-	searchTerm := c.Query("searchTerm")
-	var dbRes []db_models.Inventory
-	err := h.DB.Model(&dbRes).Select()
+	searchTerm := c.Param("searchTerm")
+
+	start, err := time.Parse("2006-01-02", c.Query("start"))
+	if err != nil {
+		start = time.Now().Truncate(24 * time.Hour)
+	}
+	end, err := time.Parse("2006-01-02", c.Query("end"))
+	if err != nil {
+		end = start
+	}
+
+	var dbAll []db_models.Inventory
+	err = h.DB.Model(&dbAll).
+		Column("inventory.*").
+		Relation("ShelfUnit.Column.Shelf.Room.Building").
+		Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	res := util.FindItemSearchTermsInDB(dbRes, searchTerm)
+
+	matches := util.FindItemSearchTermsInDB(dbAll, searchTerm)
+
+	var res []api_objects.InventorySorted
+	for _, item := range matches {
+		available, err := h.GetAvailable(item.ID, start, end)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		res = append(res, api_objects.InventorySorted{
+			ID:             item.ID,
+			Name:           item.Name,
+			Amount:         item.Amount,
+			Available:      available,
+			Room:           toRoom(*item.ShelfUnit.Column.Shelf.Room),
+			Building:       toBuilding(*item.ShelfUnit.Column.Shelf.Room.Building),
+			ShelfElementID: item.ShelfUnitID,
+		})
+	}
 	c.JSON(http.StatusOK, res)
 }
 

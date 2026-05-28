@@ -12,6 +12,7 @@ export interface InventoryItem {
   available: number
   building: Building
   room: Room
+  shelfElementId: string
 }
 
 export interface InventoryItemFull extends InventoryItem {
@@ -31,10 +32,3 @@ export interface ItemBorrowEntry {
   amount: number
 }
 
-export interface InventoryItemPayload {
-  name: string
-  keywords: string
-  amount: number
-  shelf: Shelf | undefined
-  shelfElement: ShelfElement | undefined
-}

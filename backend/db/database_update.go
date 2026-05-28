@@ -7,7 +7,7 @@ import (
 	"lagertool.com/main/db_models"
 )
 
-func Update_Request(con *pg.DB, id int, status string) error {
+func UpdateRequest(con *pg.DB, id int, status string) error {
 	_, err := con.Model((*db_models.Request)(nil)).
 		Set("state = ?", status).
 		Where("id = ?", id).
@@ -16,7 +16,7 @@ func Update_Request(con *pg.DB, id int, status string) error {
 	return err
 }
 
-func Update_Loan(con *pg.DB, id int, returnedAt time.Time, isReturned bool) error {
+func UpdateLoan(con *pg.DB, id int, returnedAt time.Time, isReturned bool) error {
 	_, err := con.Model((*db_models.Loans)(nil)).
 		Set("returned_at = ?", returnedAt).
 		Set("returned = ?", isReturned).

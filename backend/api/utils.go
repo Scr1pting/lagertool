@@ -7,24 +7,49 @@ import (
 	"lagertool.com/main/db_models"
 )
 
-func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, error) {
+func toBuilding(b db_models.Building) api_objects.Building {
+	return api_objects.Building{
+		ID:         b.ID,
+		Name:       b.Name,
+		Campus:     b.Campus,
+		UpdateDate: b.UpdateDate.Format(time.RFC3339),
+	}
+}
+
+func toRoom(r db_models.Room) api_objects.Room {
+	var building api_objects.Building
+	if r.Building != nil {
+		building = toBuilding(*r.Building)
+	}
+	return api_objects.Room{
+		ID:         r.ID,
+		Number:     r.Number,
+		Floor:      r.Floor,
+		Name:       r.Name,
+		Building:   building,
+		UpdateDate: r.UpdateDate.Format(time.RFC3339),
+	}
+}
+
+func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelf, error) {
 	var shelf db_models.Shelf
 	err := h.DB.Model(&shelf).
 		Relation("Room.Building").
 		Relation("Columns.ShelfUnits").Where("shelf.id = ?", id).Where("shelf.owned_by = ?", orga).Select()
 	if err != nil {
-		return api_objects.Shelves{}, err
+		return api_objects.Shelf{}, err
 	}
 
-	var shelfObj api_objects.Shelves
+	var shelfObj api_objects.Shelf
 	shelfObj.ID = shelf.ID
 	shelfObj.Name = shelf.Name
-	shelfObj.Room = *shelf.Room
-	shelfObj.Building = *shelf.Room.Building
+	shelfObj.Room = toRoom(*shelf.Room)
+	shelfObj.Building = toBuilding(*shelf.Room.Building)
+	shelfObj.Columns = []api_objects.ShelfColumn{}
 	for _, c := range shelf.Columns {
-		var col api_objects.Columns
+		var col api_objects.ShelfColumn
 		col.ID = c.ID
-		var el api_objects.Element
+		var el api_objects.ShelfElement
 		for _, e := range c.ShelfUnits {
 			el.ID = e.ID
 			if e.Type == 0 {
@@ -51,9 +76,13 @@ func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, 
 	}
 	count := 0
 	for _, reqItem := range dbInv.RequestItems {
-		if !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate)) {
+		if reqItem.Request.State == "rejected" {
+			continue
 		}
-		count += reqItem.Amount
+		overlaps := !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate))
+		if overlaps {
+			count += reqItem.Amount
+		}
 	}
 	return dbInv.Amount - count, nil
 }
@@ -73,9 +102,10 @@ func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time)
 	if err != nil {
 		return res, err
 	}
-	res.Room = *dbInv.ShelfUnit.Column.Shelf.Room
-	res.Building = *dbInv.ShelfUnit.Column.Shelf.Room.Building
+	res.Room = toRoom(*dbInv.ShelfUnit.Column.Shelf.Room)
+	res.Building = toBuilding(*dbInv.ShelfUnit.Column.Shelf.Room.Building)
 	res.ShelfID = dbInv.ShelfUnit.Column.Shelf.ID
+	res.ShelfElementID = dbInv.ShelfUnitID
 	return res, nil
 }
 
@@ -113,8 +143,8 @@ func (h *Handler) GetCartItemHelper(id int, start time.Time, end time.Time) (map
 		if err != nil {
 			return nil, err
 		}
-		ci.Room = *item.Inventory.ShelfUnit.Column.Shelf.Room
-		ci.Building = *item.Inventory.ShelfUnit.Column.Shelf.Room.Building
+		ci.Room = toRoom(*item.Inventory.ShelfUnit.Column.Shelf.Room)
+		ci.Building = toBuilding(*item.Inventory.ShelfUnit.Column.Shelf.Room.Building)
 		ci.ShelfID = item.Inventory.ShelfUnit.Column.Shelf.ID
 		ci.AmountSelected = item.Amount
 		m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name] = append(m[item.Inventory.ShelfUnit.Column.Shelf.Organisation.Name], ci)
