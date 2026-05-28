@@ -1,0 +1,297 @@
+[
+  {
+    "name": "Beverages",
+    "description": "Drinks of any kind, hot or cold, alcoholic or non-alcoholic.",
+    "examples": ["Coca Cola", "Sprite", "Pepsi", "beer", "wine", "coffee", "tea", "juice", "bottled water", "energy drink", "soda"]
+  },
+  {
+    "name": "Snacks",
+    "description": "Packaged snack foods, sweets, and treats.",
+    "examples": ["chips", "chocolate bar", "cookies", "candy", "pretzels", "popcorn", "granola bar", "gummies"]
+  },
+  {
+    "name": "Fresh Food",
+    "description": "Unprocessed perishable food: fruits, vegetables, meat, dairy.",
+    "examples": ["apple", "banana", "carrot", "tomato", "lettuce", "milk", "eggs", "chicken breast", "yogurt"]
+  },
+  {
+    "name": "Packaged Food",
+    "description": "Shelf-stable groceries: canned, dried, bottled, or boxed food.",
+    "examples": ["pasta", "rice", "canned beans", "cereal", "soup can", "instant noodles", "flour", "sugar"]
+  },
+  {
+    "name": "Condiments",
+    "description": "Sauces, dressings, spreads, and seasonings.",
+    "examples": ["ketchup", "mustard", "mayonnaise", "soy sauce", "olive oil", "vinegar", "salt", "pepper", "honey"]
+  },
+  {
+    "name": "Cleaning Supplies",
+    "description": "Household and commercial cleaning chemicals and tools.",
+    "examples": ["dish soap", "bleach", "all-purpose cleaner", "sponge", "mop", "broom", "trash bags", "disinfectant wipes"]
+  },
+  {
+    "name": "Paper Goods",
+    "description": "Disposable paper products for kitchen, bath, or table use.",
+    "examples": ["toilet paper", "paper towels", "napkins", "tissues", "paper plates", "paper cups"]
+  },
+  {
+    "name": "Personal Care",
+    "description": "Hygiene, grooming, and toiletry products.",
+    "examples": ["shampoo", "soap", "toothpaste", "deodorant", "razor", "lotion", "sunscreen", "shaving cream"]
+  },
+  {
+    "name": "First Aid",
+    "description": "Medical supplies for minor injuries and emergency care.",
+    "examples": ["bandages", "gauze", "antiseptic", "ibuprofen", "thermometer", "ice pack", "burn cream", "first aid kit"]
+  },
+  {
+    "name": "Hand Tools",
+    "description": "Manual tools used by hand for construction, repair, or assembly.",
+    "examples": ["hammer", "screwdriver", "wrench", "pliers", "saw", "chisel", "file", "allen key", "utility knife"]
+  },
+  {
+    "name": "Power Tools",
+    "description": "Electric, battery, or pneumatic powered tools.",
+    "examples": ["drill", "circular saw", "jigsaw", "angle grinder", "impact driver", "sander", "router", "nail gun"]
+  },
+  {
+    "name": "Measuring Instruments",
+    "description": "Tools for measuring distance, level, angle, weight, or volume.",
+    "examples": ["tape measure", "ruler", "spirit level", "caliper", "micrometer", "protractor", "scale", "thermometer"]
+  },
+  {
+    "name": "Fasteners",
+    "description": "Screws, nails, bolts, and other mechanical fasteners.",
+    "examples": ["screws", "nails", "bolts", "nuts", "washers", "rivets", "wood screws", "machine screws"]
+  },
+  {
+    "name": "Adhesives",
+    "description": "Glues, tapes, and bonding agents.",
+    "examples": ["super glue", "wood glue", "epoxy", "duct tape", "masking tape", "double-sided tape", "hot glue sticks"]
+  },
+  {
+    "name": "Lubricants",
+    "description": "Oils, greases, and sprays for reducing friction or rust.",
+    "examples": ["WD-40", "motor oil", "grease", "silicone spray", "chain lube", "penetrating oil"]
+  },
+  {
+    "name": "Safety Gear",
+    "description": "Personal protective equipment for work and lab environments.",
+    "examples": ["safety glasses", "hard hat", "work gloves", "ear plugs", "respirator", "high-vis vest", "steel-toe boots"]
+  },
+  {
+    "name": "Workshop Consumables",
+    "description": "Disposable supplies used during workshop and construction work.",
+    "examples": ["sandpaper", "drill bits", "saw blades", "shop towels", "filler", "wood putty", "masking film"]
+  },
+  {
+    "name": "Stationery",
+    "description": "Writing and drawing implements and small desk accessories.",
+    "examples": ["pen", "pencil", "highlighter", "marker", "eraser", "sharpener", "stapler", "tape dispenser"]
+  },
+  {
+    "name": "Office Supplies",
+    "description": "General office consumables and accessories.",
+    "examples": ["paper clips", "rubber bands", "post-it notes", "staples", "binder clips", "thumbtacks"]
+  },
+  {
+    "name": "Paper & Notebooks",
+    "description": "Paper, notebooks, journals, and bound writing media.",
+    "examples": ["notebook", "printer paper", "legal pad", "journal", "graph paper", "envelopes", "index cards"]
+  },
+  {
+    "name": "Printing & Toner",
+    "description": "Printer ink cartridges, toner, and printing accessories.",
+    "examples": ["ink cartridge", "toner cartridge", "photo paper", "printer drum", "label sheets"]
+  },
+  {
+    "name": "Filing & Storage",
+    "description": "Folders, binders, and document organization supplies.",
+    "examples": ["binder", "folder", "file box", "hanging files", "document sleeves", "ring binder"]
+  },
+  {
+    "name": "Computers",
+    "description": "Desktop computers, laptops, monitors, and core computing hardware.",
+    "examples": ["laptop", "desktop PC", "monitor", "keyboard", "mouse", "external SSD", "graphics card", "RAM stick"]
+  },
+  {
+    "name": "Phones & Tablets",
+    "description": "Mobile phones, tablets, and their dedicated accessories.",
+    "examples": ["iPhone", "smartphone", "tablet", "iPad", "phone case", "screen protector", "tablet stylus"]
+  },
+  {
+    "name": "Cables & Adapters",
+    "description": "Wires, cables, connectors, and signal adapters.",
+    "examples": ["USB cable", "HDMI cable", "ethernet cable", "power adapter", "USB-C hub", "extension cord", "VGA adapter"]
+  },
+  {
+    "name": "Batteries & Chargers",
+    "description": "Batteries of all sizes and their chargers.",
+    "examples": ["AA batteries", "AAA batteries", "9V battery", "lithium-ion pack", "power bank", "battery charger", "coin cell"]
+  },
+  {
+    "name": "Audio Equipment",
+    "description": "Microphones, speakers, headphones, and sound gear.",
+    "examples": ["headphones", "microphone", "speaker", "earbuds", "audio interface", "mixing board", "studio monitor"]
+  },
+  {
+    "name": "Video Equipment",
+    "description": "Cameras, projectors, and video production gear.",
+    "examples": ["camera", "DSLR", "webcam", "projector", "tripod", "video light", "gimbal", "capture card"]
+  },
+  {
+    "name": "Networking Equipment",
+    "description": "Routers, switches, access points, and network infrastructure.",
+    "examples": ["router", "switch", "access point", "modem", "network cable", "patch panel", "network hub"]
+  },
+  {
+    "name": "Lighting",
+    "description": "Lamps, light bulbs, and lighting fixtures.",
+    "examples": ["light bulb", "LED strip", "desk lamp", "floor lamp", "flashlight", "headlamp", "fluorescent tube"]
+  },
+  {
+    "name": "Small Appliances",
+    "description": "Countertop and portable household appliances.",
+    "examples": ["toaster", "kettle", "blender", "microwave", "coffee maker", "vacuum cleaner", "fan", "iron"]
+  },
+  {
+    "name": "Lab Equipment",
+    "description": "Scientific instruments and laboratory hardware.",
+    "examples": ["microscope", "centrifuge", "hot plate", "pipette", "magnetic stirrer", "oscilloscope", "spectrometer"]
+  },
+  {
+    "name": "Lab Glassware",
+    "description": "Beakers, flasks, test tubes, and other lab glass containers.",
+    "examples": ["beaker", "Erlenmeyer flask", "test tube", "graduated cylinder", "petri dish", "pipette tip", "watch glass"]
+  },
+  {
+    "name": "Lab Chemicals",
+    "description": "Reagents, solvents, and chemical compounds for laboratory use.",
+    "examples": ["sodium chloride", "ethanol", "acetone", "hydrochloric acid", "agar", "buffer solution", "indicator dye"]
+  },
+  {
+    "name": "Electronics Components",
+    "description": "Discrete components and parts used in electronics projects.",
+    "examples": ["resistor", "capacitor", "LED", "diode", "transistor", "Arduino", "breadboard", "jumper wires", "Raspberry Pi"]
+  },
+  {
+    "name": "3D Printing Supplies",
+    "description": "3D printer filaments, resins, and printing accessories.",
+    "examples": ["PLA filament", "PETG filament", "ABS filament", "resin", "build plate", "nozzle", "print bed adhesive"]
+  },
+  {
+    "name": "Soldering Supplies",
+    "description": "Soldering irons, solder, and related electronics assembly tools.",
+    "examples": ["soldering iron", "solder wire", "flux", "solder wick", "desoldering pump", "heat shrink tubing", "helping hands"]
+  },
+  {
+    "name": "Furniture",
+    "description": "Tables, chairs, shelves, and other room furniture.",
+    "examples": ["chair", "desk", "table", "shelf", "bookcase", "sofa", "stool", "filing cabinet"]
+  },
+  {
+    "name": "Decorations",
+    "description": "Decorative items, posters, plants, and visual accessories.",
+    "examples": ["poster", "picture frame", "potted plant", "wall clock", "vase", "string lights", "banner"]
+  },
+  {
+    "name": "Kitchenware",
+    "description": "Cookware, utensils, and kitchen accessories.",
+    "examples": ["pot", "pan", "knife", "cutting board", "spatula", "whisk", "mixing bowl", "measuring cup", "plate", "fork"]
+  },
+  {
+    "name": "Bathroom Fixtures",
+    "description": "Bathroom hardware and fittings.",
+    "examples": ["faucet", "shower head", "toilet paper holder", "towel rack", "soap dispenser", "drain stopper"]
+  },
+  {
+    "name": "Storage Containers",
+    "description": "Boxes, bins, crates, and reusable storage vessels.",
+    "examples": ["plastic bin", "cardboard box", "crate", "tote", "drawer organizer", "tackle box", "storage chest"]
+  },
+  {
+    "name": "Apparel",
+    "description": "Clothing for everyday wear.",
+    "examples": ["t-shirt", "jeans", "sweater", "jacket", "shorts", "dress", "socks", "hoodie"]
+  },
+  {
+    "name": "Uniforms",
+    "description": "Branded or role-specific clothing for staff and events.",
+    "examples": ["staff polo", "event t-shirt", "lab coat", "apron", "scrubs", "branded jacket"]
+  },
+  {
+    "name": "Shoes",
+    "description": "Footwear of all kinds.",
+    "examples": ["sneakers", "boots", "sandals", "dress shoes", "running shoes", "flip flops", "loafers"]
+  },
+  {
+    "name": "Bags & Luggage",
+    "description": "Backpacks, suitcases, duffels, and carry bags.",
+    "examples": ["backpack", "suitcase", "duffel bag", "tote bag", "laptop bag", "messenger bag", "fanny pack"]
+  },
+  {
+    "name": "Costumes",
+    "description": "Costume pieces and themed dress-up items.",
+    "examples": ["wig", "mask", "cape", "costume hat", "fake mustache", "themed outfit", "face paint"]
+  },
+  {
+    "name": "Sports Equipment",
+    "description": "Equipment for indoor and outdoor sports.",
+    "examples": ["soccer ball", "basketball", "tennis racket", "yoga mat", "dumbbell", "jump rope", "frisbee", "helmet"]
+  },
+  {
+    "name": "Outdoor Gear",
+    "description": "Camping, hiking, and outdoor recreation equipment.",
+    "examples": ["tent", "sleeping bag", "camping stove", "hiking boots", "backpack", "compass", "carabiner", "tarp"]
+  },
+  {
+    "name": "Games & Toys",
+    "description": "Board games, card games, puzzles, and toys.",
+    "examples": ["board game", "playing cards", "puzzle", "Lego set", "action figure", "plush toy", "dice", "Rubik's cube"]
+  },
+  {
+    "name": "Musical Instruments",
+    "description": "Instruments and accessories for playing music.",
+    "examples": ["guitar", "keyboard", "drum sticks", "ukulele", "violin", "microphone stand", "tuner", "music stand"]
+  },
+  {
+    "name": "Art Supplies",
+    "description": "Materials for drawing, painting, crafting, and visual art.",
+    "examples": ["paintbrush", "acrylic paint", "canvas", "sketchbook", "colored pencils", "watercolors", "easel", "palette"]
+  },
+  {
+    "name": "Books",
+    "description": "Books and bound printed publications.",
+    "examples": ["novel", "textbook", "reference book", "manual", "cookbook", "atlas", "dictionary", "comic book"]
+  },
+  {
+    "name": "Magazines",
+    "description": "Periodicals, magazines, and softcover journals.",
+    "examples": ["magazine", "journal", "newspaper", "trade publication", "zine"]
+  },
+  {
+    "name": "DVDs & Media",
+    "description": "Optical discs and physical media for video, music, or software.",
+    "examples": ["DVD", "Blu-ray", "CD", "vinyl record", "cassette tape", "USB stick", "SD card"]
+  },
+  {
+    "name": "Event Supplies",
+    "description": "Disposable and reusable supplies for parties and events.",
+    "examples": ["balloons", "streamers", "name tags", "lanyards", "table cloth", "disposable cutlery", "party hats"]
+  },
+  {
+    "name": "Signage & Display",
+    "description": "Signs, banners, and display hardware.",
+    "examples": ["whiteboard", "easel", "poster board", "banner", "name tag holder", "display stand", "chalkboard"]
+  },
+  {
+    "name": "Keys & Locks",
+    "description": "Keys, padlocks, and access hardware.",
+    "examples": ["padlock", "key", "combination lock", "bike lock", "key ring", "cable lock"]
+  },
+  {
+    "name": "Other",
+    "description": "Anything that does not fit into a specific inventory category.",
+    "examples": ["miscellaneous item", "uncategorized", "general supplies"]
+  }
+]

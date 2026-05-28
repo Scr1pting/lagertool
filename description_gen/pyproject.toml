@@ -9,9 +9,6 @@ dependencies = [
     "pydantic>=2",
     "uvicorn[standard]",
     "torch",
-    "nltk",
     "numpy",
-    "inflect",
     "sentence-transformers",
-    "requests",
 ]
