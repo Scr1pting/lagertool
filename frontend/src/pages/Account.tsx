@@ -64,7 +64,10 @@ function Account() {
 
       {borrowRequests != null
         && borrowRequests.length != 0
-        && <RequestTypePage borrowRequests={filteredBorrowRequests}  />
+        && <RequestTypePage
+              borrowRequests={filteredBorrowRequests}
+              showApproveReject={false}
+           />
       }
     </RegularPage>
   )

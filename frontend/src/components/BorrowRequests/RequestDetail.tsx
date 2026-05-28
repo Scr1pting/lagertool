@@ -15,9 +15,10 @@ import { formatDate } from "@/lib/formatDate"
 
 interface RequestDetailProps {
   request: BorrowRequest
+  showApproveReject: boolean
 }
 
-function RequestDetail({ request }: RequestDetailProps) {
+function RequestDetail({ request, showApproveReject }: RequestDetailProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const [minHeight, setMinHeight] = useState(0)
 
@@ -48,13 +49,15 @@ function RequestDetail({ request }: RequestDetailProps) {
          </Badge>}
       </div>
 
-      <div className="flex justify-between mt-2">
-        <h2 className="text-2xl font-semibold mb-1.5">{request.title}</h2>
-        <div className="flex gap-2">
-          <RejectRequest request={request} />
-          <ApproveRequest request={request} />
+        <div className="flex justify-between mt-2">
+          <h2 className="text-2xl font-semibold mb-1.5">{request.title}</h2>
+          {showApproveReject &&
+            <div className="flex gap-2">
+              <RejectRequest request={request} />
+              <ApproveRequest request={request} />
+            </div>
+          }
         </div>
-      </div>
 
       <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5 text-sm mt-3">
         <span className="text-xs uppercase tracking-wider text-muted-foreground">Submitted</span>

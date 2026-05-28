@@ -35,7 +35,7 @@ cd - > /dev/null
 # Start description_gen (Python server)
 echo "Starting description_gen..."
 cd "$(dirname "$0")/../description_gen" || exit 1
-uv run app/main.py &
+uv run python -m app.main &
 DESCGEN_PID=$!
 cd - > /dev/null
 
