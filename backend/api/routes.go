@@ -45,6 +45,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.PUT("/users/:userId/cart/items/:itemId", h.UpdateCartItem)
 
 		// Loans & Requests
+		protected.GET("/borrow_requests", h.GetBorrowRequests) // ?userId=N for personal scope
 		protected.PUT("/loans/:id", h.UpdateLoan)
 		protected.PUT("/requests/:id", h.UpdateRequest)
 		protected.PUT("/requests/:id/loans", h.UpdateLoanBulk)

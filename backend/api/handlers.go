@@ -196,6 +196,180 @@ func (h *Handler) GetMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// @Summary List borrow requests
+// @Description List borrow requests. Without query params returns all (admin view); with ?userId=N returns only that user's.
+// @Tags requests
+// @Produce  json
+// @Param userId query int false "Filter to requests owned by this user"
+// @Success 200 {array} api_objects.BorrowRequest
+// @Router /borrow_requests [get]
+func (h *Handler) GetBorrowRequests(c *gin.Context) {
+	var requests []db_models.Request
+	// NB: keep this relation chain shallow. go-pg builds composite column aliases like
+	// `request_items__inventory__shelf_unit__column__shelf__room__building__update_date`
+	// and silently truncates them at ~63 chars, which then fails to round-trip. We
+	// resolve the inventory + shelf hierarchy per item below via GetInventoryItemHelper.
+	q := h.DB.Model(&requests).
+		Relation("User").
+		Relation("RequestItems").
+		Order("created_at DESC")
+
+	if userIdStr := c.Query("userId"); userIdStr != "" {
+		userId, err := strconv.Atoi(userIdStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid userId"})
+			return
+		}
+		q = q.Where("request.user_id = ?", userId)
+	}
+
+	if err := q.Select(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	res := make([]api_objects.BorrowRequest, 0, len(requests))
+	for _, r := range requests {
+		br, err := h.buildBorrowRequest(r)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		res = append(res, br)
+	}
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *Handler) buildBorrowRequest(r db_models.Request) (api_objects.BorrowRequest, error) {
+	items := make([]api_objects.BorrowItem, 0, len(r.RequestItems))
+	for _, ri := range r.RequestItems {
+		invItem, err := h.GetInventoryItemHelper(ri.InventoryID, r.StartDate, r.EndDate)
+		if err != nil {
+			return api_objects.BorrowRequest{}, err
+		}
+		items = append(items, api_objects.BorrowItem{InventoryItem: invItem, Borrowed: ri.Amount})
+	}
+
+	messages, err := h.getBorrowMessages(r.ID)
+	if err != nil {
+		return api_objects.BorrowRequest{}, err
+	}
+
+	timeState, returnedAt := h.deriveTimeState(r)
+
+	author := ""
+	if r.User != nil {
+		author = r.User.Name
+	}
+
+	return api_objects.BorrowRequest{
+		ID:            r.ID,
+		ApprovalState: mapApprovalState(r.State),
+		TimeState:     timeState,
+		Title:         r.Note,
+		Author:        author,
+		CreationDate:  r.CreatedAt,
+		StartDate:     r.StartDate,
+		EndDate:       r.EndDate,
+		ReturnedDate:  returnedAt,
+		Items:         items,
+		Messages:      messages,
+	}, nil
+}
+
+// mapApprovalState normalises DB request.state into the frontend's approvalState
+// vocabulary ("pending" | "approved" | "rejected"). The DB has historically used
+// both "requested" and "pending" for unreviewed requests.
+func mapApprovalState(s string) string {
+	switch s {
+	case "requested", "pending", "":
+		return "pending"
+	default:
+		return s
+	}
+}
+
+func (h *Handler) deriveTimeState(r db_models.Request) (string, *time.Time) {
+	if mapApprovalState(r.State) != "approved" {
+		return "", nil
+	}
+	var loans []db_models.Loans
+	err := h.DB.Model(&loans).
+		Where("request_item_id IN (SELECT id FROM request_items WHERE request_id = ?)", r.ID).
+		Select()
+	now := time.Now()
+	bracket := func() string {
+		switch {
+		case now.Before(r.StartDate):
+			return "future"
+		case now.After(r.EndDate):
+			return "overdue"
+		default:
+			return "onLoan"
+		}
+	}
+	if err != nil || len(loans) == 0 {
+		return bracket(), nil
+	}
+	allReturned := true
+	var latest time.Time
+	for _, l := range loans {
+		if !l.IsReturned {
+			allReturned = false
+			break
+		}
+		if l.ReturnedAt.After(latest) {
+			latest = l.ReturnedAt
+		}
+	}
+	if allReturned {
+		return "returned", &latest
+	}
+	return bracket(), nil
+}
+
+func (h *Handler) getBorrowMessages(requestId int) ([]api_objects.BorrowMessage, error) {
+	var member []db_models.UserRequestMessage
+	if err := h.DB.Model(&member).Relation("User").Where("request_id = ?", requestId).Select(); err != nil {
+		return nil, err
+	}
+	var admin []db_models.RequestReview
+	if err := h.DB.Model(&admin).Relation("User").Where("request_id = ?", requestId).Select(); err != nil {
+		return nil, err
+	}
+	type tsMsg struct {
+		msg api_objects.BorrowMessage
+		ts  time.Time
+	}
+	all := make([]tsMsg, 0, len(member)+len(admin))
+	for _, m := range member {
+		name := ""
+		if m.User != nil {
+			name = m.User.Name
+		}
+		all = append(all, tsMsg{
+			msg: api_objects.BorrowMessage{ID: m.ID, Text: m.Message, Author: name, IsAdmin: false},
+			ts:  m.TimeStamp,
+		})
+	}
+	for _, a := range admin {
+		name := ""
+		if a.User != nil {
+			name = a.User.Name
+		}
+		all = append(all, tsMsg{
+			msg: api_objects.BorrowMessage{ID: a.ID, Text: a.Note, Author: name, IsAdmin: true},
+			ts:  a.TimeStamp,
+		})
+	}
+	sort.Slice(all, func(i, j int) bool { return all[i].ts.Before(all[j].ts) })
+	res := make([]api_objects.BorrowMessage, len(all))
+	for i, x := range all {
+		res[i] = x.msg
+	}
+	return res, nil
+}
+
 // @Summary Get borrow history for an item
 // @Description Get all borrow/loan history for an inventory item
 // @Tags items

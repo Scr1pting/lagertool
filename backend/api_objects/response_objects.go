@@ -91,3 +91,30 @@ type BorrowHistory struct {
 	TimeState  string    `json:"timeState"`
 	Amount     int       `json:"amount"`
 }
+
+type BorrowItem struct {
+	InventoryItem
+	Borrowed int `json:"borrowed"`
+}
+
+type BorrowMessage struct {
+	ID      int    `json:"id"`
+	Text    string `json:"text"`
+	Author  string `json:"author"`
+	IsAdmin bool   `json:"admin"`
+}
+
+type BorrowRequest struct {
+	ID            int             `json:"id"`
+	ApprovalState string          `json:"approvalState"`
+	TimeState     string          `json:"timeState,omitempty"`
+	Title         string          `json:"title"`
+	Author        string          `json:"author"`
+	Description   string          `json:"description,omitempty"`
+	CreationDate  time.Time       `json:"creationDate"`
+	StartDate     time.Time       `json:"startDate"`
+	EndDate       time.Time       `json:"endDate"`
+	ReturnedDate  *time.Time      `json:"returnedDate,omitempty"`
+	Items         []BorrowItem    `json:"items"`
+	Messages      []BorrowMessage `json:"messages"`
+}
