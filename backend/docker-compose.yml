@@ -35,27 +35,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  redis:
-    image: redis:8.2-alpine
-    command: >
-      redis-server 
-      --save 60 1 
-      --loglevel warning 
-      --requirepass example
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    environment:
-      - REDIS_PASSWORD=example
-    healthcheck:
-      test: ["CMD", "redis-cli", "--no-auth-warning", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
 volumes:
   postgres-data:
   test-postgres-data: # Volume for the test database
-  redis-data:
