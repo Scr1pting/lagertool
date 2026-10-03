@@ -10,9 +10,16 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	DB    DatabaseConfig
-	Slack SlackConfig
-	App   AppSettings
+	DB             DatabaseConfig
+	Slack          SlackConfig
+	App            AppSettings
+	DescriptionGen DescriptionGenConfig
+}
+
+// DescriptionGenConfig points the backend at the Python description_gen
+// microservice. URL is the base (no /generate suffix).
+type DescriptionGenConfig struct {
+	URL string
 }
 
 // DatabaseConfig holds database configuration
@@ -72,6 +79,9 @@ func Load() *Config {
 		},
 		App: AppSettings{
 			Port: getEnv("APP_PORT", "8000"),
+		},
+		DescriptionGen: DescriptionGenConfig{
+			URL: getEnv("DESCRIPTION_GEN_URL", "http://localhost:8080"),
 		},
 	}
 

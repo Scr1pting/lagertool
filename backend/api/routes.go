@@ -56,6 +56,10 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.DELETE("/users/:userId/cart/items/:itemId", h.DeleteCartItem)
 		protected.PUT("/users/:userId/cart/items/:itemId", h.UpdateCartItem)
 
+		// Shelf unit description regeneration (manual triggers, admin only)
+		protected.POST("/shelf-units/:id/regenerate-description", adminOnly, h.RegenerateShelfUnitDescription)
+		protected.POST("/shelf-units/regenerate-descriptions", adminOnly, h.RegenerateAllDescriptions)
+
 		// Loans & Requests
 		protected.GET("/borrow_requests", h.GetBorrowRequests) // all: admin only; ?userId=N: that user or admin
 		protected.PUT("/loans/:id", adminOnly, h.UpdateLoan)

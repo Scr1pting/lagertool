@@ -6,4 +6,5 @@ export type DragItemData =
 
 export type DropTargetData =
   | { kind: 'column'; columnId: string }
-  | { kind: 'edge'; position: 'left' | 'right' };
+  | { kind: 'edge'; position: 'left' | 'right' }
+  | { kind: 'remove' };

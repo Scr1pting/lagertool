@@ -72,8 +72,19 @@ func InitDB(con *pg.DB) {
 		}
 	}
 
-	// CreateTable(IfNotExists) doesn't add columns to existing tables.
+	applyColumnMigrations(con)
+
+	log.Println("✅ Database tables initialized and migrations completed successfully.")
+}
+
+// applyColumnMigrations adds columns that don't exist yet on tables that
+// pre-date them. CreateTable(IfNotExists) only creates whole tables, so any
+// field added to an existing struct needs an idempotent ALTER here. List new
+// columns here in the order they were introduced.
+func applyColumnMigrations(con *pg.DB) {
+	// CreateTable(IfNotExists) doesn't add or drop columns on existing tables.
 	migrations := []string{
+		`ALTER TABLE "Inventory" ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE session ADD COLUMN IF NOT EXISTS id_token text`,
 		`ALTER TABLE session ADD COLUMN IF NOT EXISTS user_agent text`,
 		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`,
@@ -82,13 +93,11 @@ func InitDB(con *pg.DB) {
 		`ALTER TABLE "Inventory" DROP COLUMN IF EXISTS item_id`,
 		`ALTER TABLE request DROP COLUMN IF EXISTS group_id`,
 	}
-	for _, m := range migrations {
-		if _, err := con.Exec(m); err != nil {
-			log.Fatalf("❌ Error running migration %q: %v", m, err)
+	for _, stmt := range migrations {
+		if _, err := con.Exec(stmt); err != nil {
+			log.Fatalf("❌ Column migration failed: %q: %v", stmt, err)
 		}
 	}
-
-	log.Println("✅ Database tables initialized and migrations completed successfully.")
 }
 
 func InsertDummyData(con *pg.DB) {

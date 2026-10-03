@@ -6,7 +6,7 @@ import { type ShelfElementDefinition } from '../../../types/shelf'
 import { type DragItemData } from '../types/drag'
 
 import styles from './ShelfElementView.module.css'
-import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT } from '../util/shelfUnits'
+import { ELEMENT_WIDTH, SHORT_HEIGHT, TALL_HEIGHT, shelfPx } from '../util/shelfUnits'
 
 
 export function ShelfElementViewInner(
@@ -17,8 +17,8 @@ export function ShelfElementViewInner(
     <div
       className={styles.element}
       style={{
-        width: ELEMENT_WIDTH,
-        height: itemDef.heightUnits == 1 ? SHORT_HEIGHT : TALL_HEIGHT,
+        width: shelfPx(ELEMENT_WIDTH),
+        height: shelfPx(itemDef.heightUnits == 1 ? SHORT_HEIGHT : TALL_HEIGHT),
         pointerEvents: 'none',
       }}
     >
@@ -32,12 +32,19 @@ interface ShelfPieceProps extends HTMLAttributes<HTMLDivElement> {
   itemDef: ShelfElementDefinition,
   draggableId: string;
   dragData: DragItemData;
+  // Only animate layout changes when this value changes (e.g. not on zoom)
+  layoutDependency?: unknown;
+  selected?: boolean;
+  ghost?: boolean;  // Moves along with another dragged piece
 }
 
 function ShelfElementView({
   itemDef,
   draggableId,
   dragData,
+  layoutDependency,
+  selected,
+  ghost,
   ...divProps
 }: ShelfPieceProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -48,13 +55,19 @@ function ShelfElementView({
   const { style, className: incomingClassName, ...restDivProps } = divProps
   const combinedStyle: CSSProperties = { ...(style ?? {}) }
 
-  const combinedClassName = [incomingClassName, styles.pieceWrapper, isDragging ? styles.elementDragging : ""]
+  const combinedClassName = [
+    incomingClassName,
+    styles.pieceWrapper,
+    isDragging || ghost ? styles.elementDragging : "",
+    selected ? styles.pieceSelected : "",
+  ]
     .filter(Boolean)
     .join(' ')
 
   return (
     <motion.div
       layout
+      layoutDependency={layoutDependency}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       style={combinedStyle}
       className={combinedClassName}

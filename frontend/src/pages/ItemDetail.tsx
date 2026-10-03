@@ -87,7 +87,7 @@ function ItemDetail() {
 
           {(borrowHistory ?? []).length > 0 ? (
             <DataTable
-              className="pt-5"
+              className="mt-3"
               data={borrowHistory!}
               columns={itemBorrowHistoryColumns}
             />
