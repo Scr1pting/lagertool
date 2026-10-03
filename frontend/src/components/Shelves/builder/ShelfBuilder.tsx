@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -11,7 +11,9 @@ import {
 } from '@dnd-kit/core'
 
 import Palette from './Palette'
-import Canvas from './Canvas'
+import Canvas, { HEADROOM_UNITS } from './Canvas'
+import ZoomControls from './ZoomControls'
+import useCanvasZoom from './useCanvasZoom'
 import {
   ELEMENT_CATALOG,
   type ShelfColumn,
@@ -19,13 +21,10 @@ import {
   type ShelfElementType,
 } from '../../../types/shelf'
 import { type DragItemData, type DropTargetData } from '../types/drag'
-import { MAX_STACK_UNITS } from '../util/shelfUnits'
 import { makeId } from '../../../lib/ids'
 import { ShelfElementViewInner } from '../shared/ShelfElementView'
 
 import styles from './ShelfBuilder.module.css'
-
-const totalUnits = (elements: ShelfElement[]) => elements.reduce((sum, element) => sum + ELEMENT_CATALOG[element.type].heightUnits, 0)
 
 const createColumn = (elements: ShelfElement[] = []): ShelfColumn => ({
   id: `column-${makeId()}`,
@@ -51,10 +50,6 @@ const placeElement = (
         continue
       }
 
-      if (MAX_STACK_UNITS - totalUnits(column.elements) < ELEMENT_CATALOG[piece.type].heightUnits) {
-        return null
-      }
-
       nextColumns.push({
         ...column,
         elements: [piece, ...column.elements],
@@ -69,9 +64,11 @@ const placeElement = (
 type ShelfBuilderProps = {
   columns: ShelfColumn[];
   setColumns: React.Dispatch<React.SetStateAction<ShelfColumn[]>>;
+  panelHeaderAction?: ReactNode;
+  panelFooter?: ReactNode;
 };
 
-function ShelfBuilder({ columns, setColumns }: ShelfBuilderProps) {
+function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: ShelfBuilderProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
@@ -79,6 +76,16 @@ function ShelfBuilder({ columns, setColumns }: ShelfBuilderProps) {
   )
 
   const [activeDrag, setActiveDrag] = useState<DragItemData | null>(null)
+
+  const boardRef = useRef<HTMLElement>(null)
+  const columnsRef = useRef<HTMLDivElement>(null)
+  const { zoom, zoomIn, zoomOut, fitToScreen } = useCanvasZoom({
+    columns,
+    headroomUnits: HEADROOM_UNITS,
+    boardRef,
+    columnsRef,
+    disabled: activeDrag !== null,
+  })
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const data = event.active.data.current as DragItemData | undefined
@@ -188,10 +195,13 @@ function ShelfBuilder({ columns, setColumns }: ShelfBuilderProps) {
       return null
     }
     
+    // Board pieces are dragged at the canvas zoom, palette pieces at their palette size
     return (
-      <ShelfElementViewInner itemDef={ELEMENT_CATALOG[pieceType]} />
+      <div style={{ '--shelf-scale': activeDrag.source === 'board' ? zoom : 1 } as CSSProperties}>
+        <ShelfElementViewInner itemDef={ELEMENT_CATALOG[pieceType]} />
+      </div>
     )
-  }, [activeDrag, columns])
+  }, [activeDrag, columns, zoom])
 
   return (
     <DndContext
@@ -201,8 +211,19 @@ function ShelfBuilder({ columns, setColumns }: ShelfBuilderProps) {
       onDragCancel={handleDragCancel}
     >
       <div className={styles.wrapper}>
-        <Palette />
-        <Canvas columns={columns} />
+        <Palette
+          columns={columns}
+          headerAction={panelHeaderAction}
+          footer={panelFooter}
+        />
+        <Canvas columns={columns} zoom={zoom} boardRef={boardRef} columnsRef={columnsRef} />
+        <ZoomControls
+          zoom={zoom}
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onFit={fitToScreen}
+          disabled={activeDrag !== null}
+        />
       </div>
 
       <DragOverlay dropAnimation={null}>{overlayNode}</DragOverlay>

@@ -10,9 +10,10 @@ interface StaticShelfColumnParams {
   shelf : Shelf;
   onElementSelect?: (newElement: ShelfElement) => void;
   highlightedElement?: string;
+  showIds?: boolean;
 }
 
-function StaticShelfColumn({ column, onElementSelect, highlightedElement }: StaticShelfColumnParams) {
+function StaticShelfColumn({ column, onElementSelect, highlightedElement, showIds = true }: StaticShelfColumnParams) {
   return (
     <div className={styles.column}>
       {column.elements.map(element => {
@@ -21,6 +22,7 @@ function StaticShelfColumn({ column, onElementSelect, highlightedElement }: Stat
           <button
             key={element.id}
             type="button"
+            title={element.id}
             className={cn(styles.elementTrigger, highlightedElement === element.id ? styles.highlightedElement : "")}
             onClick={() => onElementSelect?.(element)}
           >
@@ -28,7 +30,7 @@ function StaticShelfColumn({ column, onElementSelect, highlightedElement }: Stat
               itemDef={definition}
               data-type={element.type}
             >
-              <div className={styles.idElement}>{ element.id }</div>
+              {showIds && <div className={styles.idElement}>{ element.id }</div>}
             </ShelfElementViewInner>
           </button>
         )

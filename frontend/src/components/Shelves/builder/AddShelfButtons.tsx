@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router'
 
 import { Button } from "@/components/shadcn/button"
 import { type ShelfColumn } from '../../../types/shelf'
-import { X } from 'lucide-react'
+import { ArrowRight, X } from 'lucide-react'
 import { Dialog } from '@/components/shadcn/dialog'
 import { DialogTrigger } from '@radix-ui/react-dialog'
 import AddShelfForm from './AddShelfForm'
@@ -19,13 +19,13 @@ type LocationState = {
   from?: FromLocation;
 };
 
-function AddShelfButtons({ columns }: { columns: ShelfColumn[] }) {
+// Goes to the last page or the inventory.
+// Enables using the browser back btn to return to ShelfBuilder.
+export function ExitShelfBuilderButton() {
   const navigate = useNavigate()
   const location = useLocation()
   const makePath = (from: FromLocation) => `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`
 
-  // Goes to the last page or home.
-  // Enables using the browser back btn to return to ShelfBuilder.
   const goBack = () => {
     const fromLocation = (location.state as LocationState | null)?.from
     if (fromLocation) {
@@ -39,21 +39,30 @@ function AddShelfButtons({ columns }: { columns: ShelfColumn[] }) {
   }
 
   return (
-    <div className="fixed top-6 right-6 z-20 flex gap-2 items-center">
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>
-            Next
-          </Button>
-        </DialogTrigger>
-
-        <AddShelfForm columns={columns} />
-      </Dialog>
-      <Button variant="outline" onClick={goBack}>
-        <X />
-      </Button>
-    </div>
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      className="-ml-1.5 rounded-full text-[#a3a3a3] hover:text-[#fafafa]"
+      onClick={goBack}
+      aria-label="Exit shelf builder"
+      title="Exit"
+    >
+      <X />
+    </Button>
   )
 }
 
-export default AddShelfButtons
+export function NextShelfBuilderButton({ columns }: { columns: ShelfColumn[] }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button className="h-10 w-full rounded-full">
+          Next
+          <ArrowRight />
+        </Button>
+      </DialogTrigger>
+
+      <AddShelfForm columns={columns} />
+    </Dialog>
+  )
+}
