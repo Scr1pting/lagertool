@@ -23,3 +23,13 @@
 .elementDragging {
   opacity: 0.45;
 }
+
+.pieceSelected {
+  position: relative;
+  z-index: 1;
+}
+
+.pieceSelected .element {
+  border-color: #FDD62F;
+  box-shadow: inset 0 0 0 1px #FDD62F, 0 0 18px rgba(253, 214, 47, 0.25);
+}

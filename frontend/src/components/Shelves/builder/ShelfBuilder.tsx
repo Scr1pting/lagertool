@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -14,6 +14,8 @@ import Palette from './Palette'
 import Canvas, { HEADROOM_UNITS } from './Canvas'
 import ZoomControls from './ZoomControls'
 import useCanvasZoom from './useCanvasZoom'
+import useColumnHistory from './useColumnHistory'
+import HistoryControls from './HistoryControls'
 import {
   ELEMENT_CATALOG,
   type ShelfColumn,
@@ -32,12 +34,32 @@ const createColumn = (elements: ShelfElement[] = []): ShelfColumn => ({
 })
 
 
+// Removes an element, and its column if that ends up empty
+const removeElement = (columns: ShelfColumn[], elementId: string): ShelfColumn[] => {
+  if (!columns.some(column => column.elements.some(element => element.id === elementId))) {
+    return columns
+  }
+
+  return columns
+    .map(column => ({
+      ...column,
+      elements: column.elements.filter(element => element.id !== elementId),
+    }))
+    .filter(column => column.elements.length > 0)
+}
+
+const isEditableTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+
 const placeElement = (
   columns: ShelfColumn[],
   piece: ShelfElement,
   target: DropTargetData
 ): ShelfColumn[] | null => {
-  if (target.kind === 'edge') {
+  if (target.kind === 'remove') {
+    return null
+  } else if (target.kind === 'edge') {
     const freshColumn = createColumn([piece])
     return target.position === 'left' ? [freshColumn, ...columns] : [...columns, freshColumn]
   } else {
@@ -76,6 +98,20 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
   )
 
   const [activeDrag, setActiveDrag] = useState<DragItemData | null>(null)
+  const { update, undo, redo, canUndo, canRedo } = useColumnHistory(columns, setColumns)
+
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // Ignore stale selections (e.g. after undo removed the element)
+  const selectedElementId = selectedId !== null && columns.some(column =>
+    column.elements.some(element => element.id === selectedId)
+  ) ? selectedId : null
+
+  // A click fires on the canvas after a drag ends; don't let it clear the selection
+  const justDragged = useRef(false)
+  const handleSelect = useCallback((elementId: string | null) => {
+    if (justDragged.current) return
+    setSelectedId(elementId)
+  }, [])
 
   const boardRef = useRef<HTMLElement>(null)
   const columnsRef = useRef<HTMLDivElement>(null)
@@ -93,6 +129,8 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
       setActiveDrag(null)
     } else {
       setActiveDrag(data)
+      // Dragging a canvas piece selects it
+      setSelectedId(data.source === 'board' ? data.pieceId : null)
     }
   }, [])
 
@@ -102,22 +140,17 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
       const overData = event.over?.data.current as DropTargetData | undefined
 
       setActiveDrag(null)
+      justDragged.current = true
+      setTimeout(() => { justDragged.current = false }, 0)
 
       if (!activeData) {
         return
       }
 
-      // Remove elements that are moved outside the drag area
-      if (!overData) {
+      // Remove elements that are dropped onto the panel or outside the drag area
+      if (!overData || overData.kind === 'remove') {
         if (activeData.source === 'board') {
-          setColumns(previousColumns => {
-            return previousColumns
-              .map(column => ({
-                ...column,
-                elements: column.elements.filter(element => element.id !== activeData.pieceId),
-              }))
-              .filter(column => column.elements.length > 0) // Also remove empty columns
-          })
+          update(previousColumns => removeElement(previousColumns, activeData.pieceId))
         }
         return
       }
@@ -129,7 +162,7 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
           type: activeData.itemType,
         }
 
-        setColumns(previousColumns => {
+        update(previousColumns => {
           const nextColumns = placeElement(previousColumns, newElement, overData)
           if (!nextColumns) {
             return previousColumns
@@ -140,7 +173,7 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
       
       // Handle moving elements from one position to another
       } else {
-        setColumns(previousColumns => {
+        update(previousColumns => {
           const originColumnIndex = previousColumns.findIndex(
             column => column.id === activeData.columnId
           )
@@ -168,13 +201,59 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
         })
       }
     },
-    []
+    [update]
   )
 
   const handleDragCancel = useCallback((_: DragCancelEvent) => {
     setActiveDrag(null)
   }, [])
   
+  // Keyboard: Delete/Backspace removes the selection, Esc deselects, Cmd/Ctrl+Z undoes, Cmd/Ctrl+Shift+Z or Ctrl+Y redoes.
+  // Handlers are read from a ref so the listener never sees stale state between key repeats.
+  const keyHandlers = useRef({ undo, redo, removeSelected: () => {}, dragging: false })
+  keyHandlers.current = {
+    undo,
+    redo,
+    removeSelected: () => {
+      if (selectedElementId === null) return
+      update(previousColumns => removeElement(previousColumns, selectedElementId))
+      setSelectedId(null)
+    },
+    dragging: activeDrag !== null,
+  }
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Leave typing and the "Next" dialog alone
+      if (isEditableTarget(event.target)) return
+      if (event.target instanceof Element && event.target.closest('[role="dialog"]')) return
+
+      const handlers = keyHandlers.current
+      if (handlers.dragging) return
+
+      const modifier = event.metaKey || event.ctrlKey
+      const key = event.key.toLowerCase()
+
+      if (modifier && key === 'z') {
+        if (event.shiftKey) handlers.redo()
+        else handlers.undo()
+      } else if (modifier && key === 'y') {
+        handlers.redo()
+      } else if (!modifier && (event.key === 'Delete' || event.key === 'Backspace')) {
+        handlers.removeSelected()
+      } else if (event.key === 'Escape') {
+        setSelectedId(null)
+      } else {
+        return
+      }
+
+      event.preventDefault()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
   const overlayNode = useMemo(() => {
     if (!activeDrag) {
       return null
@@ -214,9 +293,20 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
         <Palette
           columns={columns}
           headerAction={panelHeaderAction}
+          headerControls={
+            <HistoryControls onUndo={undo} onRedo={redo} canUndo={canUndo} canRedo={canRedo} />
+          }
+          removing={activeDrag?.source === 'board'}
           footer={panelFooter}
         />
-        <Canvas columns={columns} zoom={zoom} boardRef={boardRef} columnsRef={columnsRef} />
+        <Canvas
+          columns={columns}
+          zoom={zoom}
+          boardRef={boardRef}
+          columnsRef={columnsRef}
+          selectedId={selectedElementId}
+          onSelect={handleSelect}
+        />
         <ZoomControls
           zoom={zoom}
           onZoomIn={zoomIn}

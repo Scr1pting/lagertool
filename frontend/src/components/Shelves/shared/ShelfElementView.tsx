@@ -34,6 +34,7 @@ interface ShelfPieceProps extends HTMLAttributes<HTMLDivElement> {
   dragData: DragItemData;
   // Only animate layout changes when this value changes (e.g. not on zoom)
   layoutDependency?: unknown;
+  selected?: boolean;
 }
 
 function ShelfElementView({
@@ -41,6 +42,7 @@ function ShelfElementView({
   draggableId,
   dragData,
   layoutDependency,
+  selected,
   ...divProps
 }: ShelfPieceProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -51,7 +53,12 @@ function ShelfElementView({
   const { style, className: incomingClassName, ...restDivProps } = divProps
   const combinedStyle: CSSProperties = { ...(style ?? {}) }
 
-  const combinedClassName = [incomingClassName, styles.pieceWrapper, isDragging ? styles.elementDragging : ""]
+  const combinedClassName = [
+    incomingClassName,
+    styles.pieceWrapper,
+    isDragging ? styles.elementDragging : "",
+    selected ? styles.pieceSelected : "",
+  ]
     .filter(Boolean)
     .join(' ')
 

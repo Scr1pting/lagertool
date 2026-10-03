@@ -13,7 +13,13 @@ import styles from './Canvas.module.css'
 export const HEADROOM_UNITS = 4
 
 
-function CanvasColumn ({ column }: { column: ShelfColumn }) {
+type CanvasColumnProps = {
+  column: ShelfColumn;
+  selectedId: string | null;
+  onSelect: (elementId: string | null) => void;
+};
+
+function CanvasColumn ({ column, selectedId, onSelect }: CanvasColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
     data: { kind: 'column', columnId: column.id } satisfies DropTargetData,
@@ -34,6 +40,11 @@ function CanvasColumn ({ column }: { column: ShelfColumn }) {
             draggableId={element.id}
             dragData={{ source: 'board', columnId: column.id, pieceId: element.id }}
             layoutDependency={column.elements}
+            selected={element.id === selectedId}
+            onClick={event => {
+              event.stopPropagation()
+              onSelect(element.id)
+            }}
             data-type={element.type}
           />
         )
@@ -58,9 +69,11 @@ type CanvasProps = {
   zoom: number;
   boardRef: RefObject<HTMLElement | null>;
   columnsRef: RefObject<HTMLDivElement | null>;
+  selectedId: string | null;
+  onSelect: (elementId: string | null) => void;
 };
 
-const Canvas = ({ columns, zoom, boardRef, columnsRef }: CanvasProps) => {
+const Canvas = ({ columns, zoom, boardRef, columnsRef, selectedId, onSelect }: CanvasProps) => {
   const maxUnits = maxColumnUnits(columns)
 
   // Keep the view anchored to the floor when the shelf grows or shrinks vertically
@@ -83,6 +96,7 @@ const Canvas = ({ columns, zoom, boardRef, columnsRef }: CanvasProps) => {
       ref={boardRef}
       className={styles.board}
       style={{ '--shelf-scale': zoom } as CSSProperties}
+      onClick={() => onSelect(null)}
     >
       <div className={styles.workspace} role="grid" aria-label="Shelf builder workspace">
         {columns.length === 0 && (
@@ -99,7 +113,7 @@ const Canvas = ({ columns, zoom, boardRef, columnsRef }: CanvasProps) => {
           style={{ minHeight: shelfPx((maxUnits + HEADROOM_UNITS) * UNIT_HEIGHT) }}
         >
           {columns.map(column => (
-            <CanvasColumn key={column.id} column={column} />
+            <CanvasColumn key={column.id} column={column} selectedId={selectedId} onSelect={onSelect} />
           ))}
         </div>
 
