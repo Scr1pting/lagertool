@@ -40,8 +40,7 @@ type InventoryItemRequest struct {
 	ShelfUnitID  string `json:"shelfUnitId" binding:"required"`
 	ShelfID      string `json:"shelfId" binding:"required"`
 	IsConsumable bool   `json:"isConsumable"`
-	Note         string `json:"note" binding:"required"`
-	Organisation string `json:"organisation"`
+	Note         string `json:"note"`
 }
 
 type CheckoutRequest struct {

@@ -27,29 +27,38 @@ function BorrowRequests() {
         <TabsContent value="pending">
           {borrowRequests != null
            && borrowRequests.length != 0
-           && <RequestTypePage borrowRequests={
-            borrowRequests.filter(
-              request => request.approvalState == "pending"
-            )
-           }/>}
+           && <RequestTypePage
+                borrowRequests={
+                  borrowRequests.filter(
+                    request => request.approvalState == "pending"
+                  )
+                }
+                showApproveReject={true}
+              />}
         </TabsContent>
         <TabsContent value="approved">
           {borrowRequests != null
            && borrowRequests.length != 0
-           && <RequestTypePage borrowRequests={
-            borrowRequests.filter(
-              request => request.approvalState == "approved"
-            )
-           }/>}
+           && <RequestTypePage
+                borrowRequests={
+                  borrowRequests.filter(
+                    request => request.approvalState == "approved"
+                  )
+                }
+                showApproveReject={true}
+              />}
         </TabsContent>
         <TabsContent value="rejected">
           {borrowRequests != null
            && borrowRequests.length != 0
-           && <RequestTypePage borrowRequests={
-            borrowRequests.filter(
-              request => request.approvalState == "rejected"
-            )
-           }/>}
+           && <RequestTypePage
+                borrowRequests={
+                  borrowRequests.filter(
+                    request => request.approvalState == "rejected"
+                  )
+                }
+                showApproveReject={true}
+              />}
         </TabsContent>
       </Tabs>
     </RegularPage>

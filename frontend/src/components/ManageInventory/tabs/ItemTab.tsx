@@ -1,4 +1,6 @@
 import { Input } from "@/components/shadcn/input"
+import { Checkbox } from "@/components/shadcn/checkbox"
+import { Label } from "@/components/shadcn/label"
 import type { Building } from "@/types/building"
 import type { InventoryItem } from "@/types/inventory"
 import type { Room } from "@/types/room"
@@ -13,24 +15,60 @@ import { inventoryColumns } from "@/components/DataTable/ManageInventory/invento
 import Combobox from "@/components/primitives/Combobox"
 import { Button } from "@/components/shadcn/button"
 import ShelfElementSelect from "@/components/ShelfElementSelect"
+import post from "@/api/post"
+import useOrgs from "@/store/useOrgs"
+import { toast } from "sonner"
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 interface ItemTabProps {
   buildings: Building[]
   rooms: Room[]
   shelves: Shelf[]
   inventory: InventoryItem[]
+  refetch: () => void
 }
 
-function ItemTab({ shelves, inventory }: ItemTabProps) {
+function ItemTab({ shelves, inventory, refetch }: ItemTabProps) {
   const [name, setName] = useState("")
   const [amount, setAmount] = useState(1)
-  const [keywords, setKeywords] = useState("")
-
+  const [isConsumable, setIsConsumable] = useState(false)
   const [selectedShelf, setSelectedShelf] = useState<Shelf | undefined>()
   const [selectedElement, setSelectedElement] = useState<ShelfElement | undefined>()
-
   const [showElementSelect, setShowElementSelect] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const selectedOrg = useOrgs(s => s.selectedOrg)
+
+  const handleSubmit = async () => {
+    if (!name.trim()) { toast.error("Name is required"); return }
+    if (!selectedShelf) { toast.error("Please select a shelf"); return }
+    if (!selectedElement) { toast.error("Please select a shelf element"); return }
+    if (!selectedOrg) { toast.error("No organisation selected"); return }
+
+    setIsSubmitting(true)
+    try {
+      await post(`${API_BASE_URL}/organisations/${selectedOrg.name}/items`, {
+        name: name.trim(),
+        amount,
+        shelfUnitId: selectedElement.id,
+        shelfId: selectedShelf.id,
+        isConsumable,
+        note: "",
+      })
+      toast.success("Item added successfully")
+      setName("")
+      setAmount(1)
+      setIsConsumable(false)
+      setSelectedShelf(undefined)
+      setSelectedElement(undefined)
+      refetch()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add item")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const elements: FormElement[] = [
     {
@@ -58,18 +96,6 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
       />
     },
     {
-      size: "full",
-      id: "item-keywords",
-      label: "Keywords (separated by commas)",
-      input: <Input
-        id="item-keywords"
-        min="1"
-        placeholder="e.g. Drink, Cans"
-        value={keywords}
-        onChange={e => setKeywords(e.target.value)}
-      />
-    },
-    {
       size: "half",
       id: "item-shelf-id",
       label: "Shelf",
@@ -92,26 +118,44 @@ function ItemTab({ shelves, inventory }: ItemTabProps) {
         onOpenChange={newOpen => setShowElementSelect(newOpen)}
         shelf={selectedShelf}
         selectedElement={selectedElement}
-        setSelectedElement={setSelectedElement}
+        onElementChange={setSelectedElement}
       >
         <Button
           variant="outline"
           aria-expanded={showElementSelect}
-          // We have to set px-3 because shadcn uses less padding on
-          // inputs and buttons with icons.
           className="justify-between truncate px-3"
         >
           {selectedElement ? selectedElement.id : "Select Shelf Element"}
         </Button>
       </ShelfElementSelect>
+    },
+    {
+      size: "full",
+      id: "item-consumable",
+      label: "Consumable",
+      input: <div className="flex items-center gap-2 h-9">
+        <Checkbox
+          id="item-consumable"
+          checked={isConsumable}
+          onCheckedChange={checked => setIsConsumable(checked === true)}
+        />
+        <Label htmlFor="item-consumable" className="font-normal cursor-pointer">
+          This item is consumable (not returned after use)
+        </Label>
+      </div>
     }
   ]
 
   return (
     <TabsContent value="items">
       <div className="space-y-10">
-        <ManageInventoryCard title="Add Item" elements={elements} />
-        
+        <ManageInventoryCard
+          title="Add Item"
+          elements={elements}
+          onSubmit={handleSubmit}
+          disabled={isSubmitting}
+        />
+
         <section className="space-y-3">
           <header>
             <h2 className="text-xl font-semibold">

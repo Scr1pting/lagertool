@@ -10,19 +10,18 @@ type Organisation struct {
 }
 
 type User struct {
-	tableName    struct{}  `pg:"user"`
-	ID           int       `json:"id" pg:"id,pk"`
-	Subject      string    `json:"subject" pg:"subject"`
-	Issuer       string    `json:"issuer" pg:"issuer"`
-	Email        string    `json:"email" pg:"email"`
-	Name         string    `json:"name" pg:"name"`
-	AccessToken  string    `json:"access_token" pg:"access_token"`
-	RefreshToken string    `json:"refresh_token" pg:"refresh_token"`
-	CreatedAt    time.Time `json:"created_at" pg:"created_at"`
-	LastLogin    time.Time `json:"last_login" pg:"last_login"`
-	IsAdmin      bool      `json:"is_admin" pg:"is_admin,use_zero"` // from Keycloak roles, see auth.adminRoles
-
-	//ShoppingCart *ShoppingCart `json:"shopping_cart" pg:"rel:has-one"`
+	tableName            struct{}  `pg:"user"`
+	ID                   int       `json:"id" pg:"id,pk"`
+	Subject              string    `json:"subject" pg:"subject"`
+	Issuer               string    `json:"issuer" pg:"issuer"`
+	Email                string    `json:"email" pg:"email"`
+	Name                 string    `json:"name" pg:"name"`
+	AccessToken          string    `json:"-" pg:"access_token"`
+	RefreshToken         string    `json:"-" pg:"refresh_token"`
+	AccessTokenExpiresAt time.Time `json:"-" pg:"access_token_expires_at"`
+	CreatedAt            time.Time `json:"created_at" pg:"created_at"`
+	LastLogin            time.Time `json:"last_login" pg:"last_login"`
+	IsAdmin              bool      `json:"is_admin" pg:"is_admin,use_zero"` // from Keycloak roles, see auth.hasAdminRole
 }
 
 type Session struct {
@@ -32,7 +31,8 @@ type Session struct {
 	CreatedAt time.Time `json:"created_at" pg:"created_at"`
 	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`
 	UserIP    net.IP    `json:"user_ip" pg:"user_ip"`
-	IDToken   string    `json:"-" pg:"id_token"` // needed for Keycloak logout (id_token_hint)
+	UserAgent string    `json:"user_agent" pg:"user_agent"`
+	IDToken   string    `json:"-" pg:"id_token"`
 
 	User *User `json:"user" pg:"rel:has-one,fk:user_id"`
 }
@@ -99,31 +99,6 @@ type ShelfUnit struct { //it is also the new LOCATION
 	Column *Column `json:"column" pg:"rel:has-one,fk:column_id"`
 }
 
-//type Item struct {
-//	tableName struct{} `pg:"item"`
-//	ID        int      `json:"id" pg:"id,pk"`
-//	Name      string   `json:"name" pg:"name"`
-//	//Description  string   `json:"description" pg:"description"`
-//	//Category     string   `json:"category" pg:"category"`
-//	IsConsumable bool `json:"is_consumable" pg:"is_consumable"`
-//}
-
-//type NonConsumable struct { //This should be implemented into the logic not in the database
-//	tableName struct{} `pg:"non_consumable"`
-//	ID        int      `json:"id" pg:"id,pk"`
-//	ItemID    int      `json:"item_id" pg:"item_id"`
-//
-//	Item *Item `json:"item" pg:"rel:has-one,fk:item_id"`
-//}
-//
-//type Consumable struct {
-//	tableName struct{} `pg:"consumable"`
-//	ID        int      `json:"id" pg:"id,pk"`
-//	ItemID    int      `json:"item_id" pg:"item_id"`
-//
-//	Item *Item `json:"item" pg:"rel:has-one,fk:item_id"`
-//}
-
 type ShoppingCart struct {
 	tableName struct{} `pg:"shopping_cart"`
 	UserID    int      `json:"user_id" pg:"user_id"`
@@ -145,7 +120,6 @@ type ShoppingCartItem struct {
 type Inventory struct {
 	tableName    struct{}  `pg:"Inventory"`
 	ID           int       `json:"id" pg:"id,pk"`
-	ItemID       int       `json:"item_id" pg:"item_id"`
 	ShelfUnitID  string    `json:"shelf_unit_id" pg:"shelf_unit_id"`
 	ShelfID      string    `json:"shelf_id" pg:"shelf_id"`
 	Amount       int       `json:"amount" pg:"amount"`
@@ -170,7 +144,6 @@ type Request struct {
 	TimeState        string    `json:"time_state" pg:"time_state"`
 	CreatedAt        time.Time `json:"created_at" pg:"created_at"`
 	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
-	GroupID          int       `json:"group_id" pg:"group_id"`
 
 	Organisation *Organisation  `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
 	User         *User          `json:"user" pg:"rel:has-one,fk:user_id"`

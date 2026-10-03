@@ -6,9 +6,10 @@ import { useState } from "react"
 
 interface RequestTypePageProps {
   borrowRequests: BorrowRequest[]
+  showApproveReject: boolean
 }
 
-function RequestTypePage({ borrowRequests }: RequestTypePageProps) {
+function RequestTypePage({ borrowRequests, showApproveReject }: RequestTypePageProps) {
   const [selectedRequest, setSelectedRequest]
     = useState<BorrowRequest>(borrowRequests[0])
 
@@ -33,7 +34,10 @@ function RequestTypePage({ borrowRequests }: RequestTypePageProps) {
         minSize="25rem"
         className="pl-2.5 mt-2.5 mb-5"
       >
-        <RequestDetail request={selectedRequest} />
+        <RequestDetail
+          request={selectedRequest}
+          showApproveReject={showApproveReject}
+        />
       </ResizablePanel>
     </ResizablePanelGroup>
   )

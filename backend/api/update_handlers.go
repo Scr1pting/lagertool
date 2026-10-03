@@ -30,7 +30,7 @@ func (h *Handler) UpdateRequest(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err = db.Update_Request(h.DB, requestId, req.Outcome)
+	err = db.UpdateRequest(h.DB, requestId, req.Outcome)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -58,7 +58,7 @@ func (h *Handler) UpdateLoan(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err = db.Update_Loan(h.DB, loanId, req.ReturnedAt, true)
+	err = db.UpdateLoan(h.DB, loanId, req.ReturnedAt, true)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -95,7 +95,7 @@ func (h *Handler) UpdateLoanBulk(c *gin.Context) {
 		return
 	}
 	for _, loan := range dbRes {
-		err = db.Update_Loan(h.DB, loan.ID, req.ReturnedAt, true)
+		err = db.UpdateLoan(h.DB, loan.ID, req.ReturnedAt, true)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

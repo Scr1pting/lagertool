@@ -33,8 +33,7 @@ An intuitive tool to organize inventory in buildings > rooms > shelves > element
 - Multi-tier results ranked by edit distance for flexible name lookup
 
 **AI-Powered Item Categorization** *(standalone service, not yet integrated)*
-- Python microservice that uses embeddings to find the closest WordNet word, then traverses the WordNet graph to find a common ancestor category
-- Batch-processes inventory items to generate accurate category labels
+- Python microservice that compares the items in a shelf element against 200 categories using cosine similarity over embeddings
 - Runs fully offline with no external API dependencies
 
 **Authentication & Access Control**
@@ -60,7 +59,7 @@ An intuitive tool to organize inventory in buildings > rooms > shelves > element
      |                  | REST / JSON
 +----v-------+   +------v--------------+
 | PostgreSQL |   |  Description Gen    |  Python
-|  (Data)    |   |  (AI categorizer)   |  WordNet + embeddings
+|  (Data)    |   |  (AI categorizer)   |  Embeddings
 +------------+   +---------------------+
 ```
 

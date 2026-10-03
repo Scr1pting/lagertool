@@ -18,7 +18,7 @@ function ManageInventory() {
   const { data: buildings } = useBuilding()
   const { data: rooms } = useFetchRooms()
   const { data: shelves } = useFetchShelves()
-  const { data: inventory } = useInventory()
+  const { data: inventory, refetch: refetchInventory } = useInventory()
 
   return (
     <RegularPage title="Manage Inventory">
@@ -44,6 +44,7 @@ function ManageInventory() {
             rooms={rooms ?? []}
             shelves={shelves ?? []}
             inventory={inventory ?? []}
+            refetch={refetchInventory}
           />
 
           <ShelfTab shelves={shelves ?? []} />

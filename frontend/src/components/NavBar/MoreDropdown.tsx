@@ -25,9 +25,6 @@ export default function MoreDropdown() {
             <Link to="/manage-inventory">Manage Inventory</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link to="/persons">Person Management</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
             <Link to="/borrow-requests">Borrow Requests</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>

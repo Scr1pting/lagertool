@@ -73,11 +73,16 @@ func InitDB(con *pg.DB) {
 	}
 
 	// CreateTable(IfNotExists) doesn't add columns to existing tables.
-	if _, err := con.Exec(`ALTER TABLE session ADD COLUMN IF NOT EXISTS id_token text`); err != nil {
-		log.Fatalf("❌ Error migrating session table: %v", err)
+	migrations := []string{
+		`ALTER TABLE session ADD COLUMN IF NOT EXISTS id_token text`,
+		`ALTER TABLE session ADD COLUMN IF NOT EXISTS user_agent text`,
+		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`,
+		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS access_token_expires_at timestamptz`,
 	}
-	if _, err := con.Exec(`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`); err != nil {
-		log.Fatalf("❌ Error migrating user table: %v", err)
+	for _, m := range migrations {
+		if _, err := con.Exec(m); err != nil {
+			log.Fatalf("❌ Error running migration %q: %v", m, err)
+		}
 	}
 
 	log.Println("✅ Database tables initialized and migrations completed successfully.")

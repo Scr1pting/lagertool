@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 
@@ -62,18 +63,18 @@ func main() {
 	}(dbConnection)
 
 	db.InitDB(dbConnection)
-	// slack1.SetupSlack(cfg)
 	if *testdata {
 		db.InsertDummyData(dbConnection)
 	}
-	//if err := db.InsertBasicData(dbConnection); err != nil {
-	//	log.Printf("⚠️  Failed to insert test data: %v", err)
-	//}
 	if !*noserver {
 		if *using_auth {
 			auth.InitOIDC()
 		}
 		api.SetupRoutes(router, dbConnection, cfg, *using_auth)
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		auth.NewAuthHandler(dbConnection).StartSessionCleanup(ctx)
 
 		// Swagger endpoint
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -84,5 +85,4 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	return
 }

@@ -50,17 +50,22 @@ const itemBorrowHistoryColumns: ColumnDef<ItemBorrowEntry>[] = [
 
       return 0
     },
-    cell: ({ row }) =>
-      <div className="flex flex-col gap-2">
-        <Badge variant={APPROVAL_STATES[row.original.approvalState].color}>
-          {APPROVAL_STATES[row.original.approvalState].title}
-        </Badge>
-        {row.original.timeState
-          && <Badge variant={TIME_STATES[row.original.timeState].color}>
-            {TIME_STATES[row.original.timeState].title}
+    cell: ({ row }) => {
+      const approvalEntry = APPROVAL_STATES[row.original.approvalState] ?? APPROVAL_STATES.pending
+      const timeEntry = row.original.timeState ? TIME_STATES[row.original.timeState] : undefined
+      return (
+        <div className="flex flex-col gap-2">
+          <Badge variant={approvalEntry.color}>
+            {approvalEntry.title}
           </Badge>
-        }
-      </div>
+          {timeEntry && (
+            <Badge variant={timeEntry.color}>
+              {timeEntry.title}
+            </Badge>
+          )}
+        </div>
+      )
+    }
     ,
   },
   {
