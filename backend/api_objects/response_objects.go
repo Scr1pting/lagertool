@@ -29,6 +29,7 @@ type InventoryItem struct {
 	Room           Room     `json:"room"`
 	ShelfID        string   `json:"shelfId"`
 	ShelfElementID string   `json:"shelfElementId"`
+	Keywords       string   `json:"keywords"`
 }
 
 type InventoryItemWithShelf struct {

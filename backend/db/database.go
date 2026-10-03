@@ -72,7 +72,24 @@ func InitDB(con *pg.DB) {
 		}
 	}
 
+	applyColumnMigrations(con)
+
 	log.Println("✅ Database tables initialized and migrations completed successfully.")
+}
+
+// applyColumnMigrations adds columns that don't exist yet on tables that
+// pre-date them. CreateTable(IfNotExists) only creates whole tables, so any
+// field added to an existing struct needs an idempotent ALTER here. List new
+// columns here in the order they were introduced.
+func applyColumnMigrations(con *pg.DB) {
+	migrations := []string{
+		`ALTER TABLE "Inventory" ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT ''`,
+	}
+	for _, stmt := range migrations {
+		if _, err := con.Exec(stmt); err != nil {
+			log.Fatalf("❌ Column migration failed: %q: %v", stmt, err)
+		}
+	}
 }
 
 func InsertDummyData(con *pg.DB) {

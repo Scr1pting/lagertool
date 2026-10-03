@@ -123,6 +123,7 @@ type Inventory struct {
 	Note         string    `json:"note" pg:"note"`
 	Name         string    `json:"name" pg:"name"`
 	IsConsumable bool      `json:"is_consumable" pg:"is_consumable"`
+	Keywords     string    `json:"keywords" pg:"keywords,use_zero"`
 
 	Shelf        *Shelf         `json:"shelf" pg:"rel:has-one,fk:shelf_id"`
 	ShelfUnit    *ShelfUnit     `json:"shelf_unit" pg:"rel:has-one,fk:shelf_unit_id"`
