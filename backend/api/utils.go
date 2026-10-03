@@ -1,7 +1,10 @@
 package api
 
 import (
+	"errors"
 	"time"
+
+	"github.com/go-pg/pg/v10"
 
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db_models"
@@ -118,11 +121,14 @@ func (h *Handler) GetCartItemHelper(id int, start time.Time, end time.Time) (map
 		Where("user_id = ?", id).
 		Select()
 
+	m := make(map[string][]api_objects.CartItem)
+	if errors.Is(err, pg.ErrNoRows) {
+		// No cart row yet (created on first add): an empty cart, not an error.
+		return m, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	m := make(map[string][]api_objects.CartItem)
 	for _, item := range shoppingCart.ShoppingCartItems {
 		if item.Inventory.ShelfUnit.Column.Shelf.Room.Building == nil {
 			var building db_models.Building

@@ -140,6 +140,10 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	if len(itemMap) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cart is empty"})
+		return
+	}
 
 	for k, v := range itemMap {
 		request := &db_models.Request{
