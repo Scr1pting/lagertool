@@ -42,6 +42,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.GET("/me/cart", h.GetShoppingCart) // ?start=X&end=X
 		protected.POST("/me/cart/items", h.CreateCartItem)
 		protected.POST("/me/cart/checkout", h.CheckoutCart)
+		protected.POST("/me/checkout", h.InstantCheckout) // single item, bypasses the cart
 		protected.DELETE("/me/cart/items", h.DeleteAllCartItems)
 		protected.DELETE("/me/cart/items/:itemId", h.DeleteCartItem)
 		protected.PUT("/me/cart/items/:itemId", h.UpdateCartItem)

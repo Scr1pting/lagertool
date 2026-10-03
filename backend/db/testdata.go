@@ -147,6 +147,7 @@ func GetDummyData() (
 		EndDate:   now.Add(48 * time.Hour),
 		Note:      "Need lab glassware for experiment",
 		State:     "pending",
+		CreatedAt: now.Add(-1 * time.Hour),
 		User:      user,
 	}
 

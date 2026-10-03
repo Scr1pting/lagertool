@@ -1,11 +1,15 @@
 import { useDate } from "@/store/useDate"
 import { format } from "date-fns/format"
-import type { FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { DialogFooter, DialogHeader, DialogTitle } from "../../shadcn/dialog"
 import { Separator } from "../../shadcn/separator"
 import { Button } from "../../shadcn/button"
 import { toast } from "sonner"
 import type { InventoryItem } from "@/types/inventory"
+import post from "@/api/post"
+import { useDateParams } from "@/hooks/useDateParams"
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 
 interface InstantCheckoutVerifyProps {
@@ -21,6 +25,8 @@ function InstantCheckoutVerify({
   amountSelected, item, title, description, onBack, resetValues
 }: InstantCheckoutVerifyProps) {
   const selectedRange = useDate(state => state.selectedRange)
+  const { startDate, endDate } = useDateParams()
+  const [submitting, setSubmitting] = useState(false)
 
   const formattedDateRange = () => {
     const today = new Date()
@@ -37,15 +43,31 @@ function InstantCheckoutVerify({
     return `${startLabel} - ${endLabel}`
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  // Borrows just this item; the cart is left as it is.
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setSubmitting(true)
+    try {
+      // Backend expects timestamps; dates mean UTC midnight like the ?start/?end params.
+      await post(`${API_BASE_URL}/me/checkout`, {
+        id: item.id,
+        numSelected: amountSelected,
+        startDate: `${startDate}T00:00:00Z`,
+        endDate: `${endDate}T00:00:00Z`,
+        title,
+        description,
+      })
+    } catch (err) {
+      toast.error("Could not submit borrow request", {
+        description: err instanceof Error ? err.message : undefined,
+      })
+      setSubmitting(false)
+      return
+    }
+    setSubmitting(false)
 
     toast("Submitted Borrow Request", {
       description: `${item.name} - ${amountSelected}`,
-      action: {
-        label: "Undo",
-        onClick: () => console.log("Undo"),
-      },
     })
 
     resetValues()
@@ -106,8 +128,9 @@ function InstantCheckoutVerify({
 
           <Button
             type="submit"
+            disabled={submitting}
           >
-            Submit Borrow Request
+            {submitting ? "Submitting…" : "Submit Borrow Request"}
           </Button>
         </DialogFooter>
       </form>

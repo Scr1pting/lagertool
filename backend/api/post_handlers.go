@@ -1,11 +1,13 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-pg/pg/v10"
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db"
 	"lagertool.com/main/db_models"
@@ -153,6 +155,7 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 			Note:             "",
 			State:            "requested",
 			OrganisationName: k,
+			CreatedAt:        time.Now(),
 		}
 		err := db.CreateRequest(h.DB, request)
 		if err != nil {
@@ -172,6 +175,14 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 				return
 			}
 		}
+	}
+	// The cart's contents are now borrow requests: empty it.
+	_, err = h.DB.Model((*db_models.ShoppingCartItem)(nil)).
+		Where("shopping_cart_id IN (SELECT id FROM shopping_cart WHERE user_id = ?)", userId).
+		Delete()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "requests created, but could not empty cart"})
+		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"status": "checkout complete"})
 }
@@ -325,4 +336,67 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, newShelf)
+}
+
+// @Summary Borrow a single item directly
+// @Description Creates a borrow request for one item without going through (or touching) the cart. The description, if any, becomes the first message on the request.
+// @Tags cart
+// @Accept  json
+// @Produce  json
+// @Param checkout body api_objects.InstantCheckoutRequest true "Item, amount, dates, title and description"
+// @Success 201 {object} db_models.Request
+// @Router /me/checkout [post]
+func (h *Handler) InstantCheckout(c *gin.Context) {
+	userId, ok := targetUserID(c)
+	if !ok {
+		return
+	}
+	var req api_objects.InstantCheckoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// The request belongs to the organisation that owns the item's shelf.
+	var inv db_models.Inventory
+	err := h.DB.Model(&inv).Relation("ShelfUnit.Column.Shelf").Where("inventory.id = ?", req.InvItemID).Select()
+	if errors.Is(err, pg.ErrNoRows) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "item not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if inv.ShelfUnit == nil || inv.ShelfUnit.Column == nil || inv.ShelfUnit.Column.Shelf == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "item has no shelf"})
+		return
+	}
+
+	request := &db_models.Request{
+		UserID:           userId,
+		StartDate:        req.StartDate,
+		EndDate:          req.EndDate,
+		Note:             req.Title,
+		State:            "requested",
+		OrganisationName: inv.ShelfUnit.Column.Shelf.OwnedBy,
+		CreatedAt:        time.Now(),
+	}
+	if err := db.CreateRequest(h.DB, request); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
+		return
+	}
+	reqItem := db_models.RequestItems{RequestID: request.ID, InventoryID: inv.ID, Amount: req.NumSelected}
+	if err := db.CreateRequestItem(h.DB, reqItem); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request item"})
+		return
+	}
+	if req.Description != "" {
+		msg := db_models.UserRequestMessage{UserID: userId, RequestID: request.ID, Message: req.Description, TimeStamp: time.Now()}
+		if err := db.CreateUserMessage(h.DB, &msg); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "request created, but could not save description"})
+			return
+		}
+	}
+	c.JSON(http.StatusCreated, request)
 }
