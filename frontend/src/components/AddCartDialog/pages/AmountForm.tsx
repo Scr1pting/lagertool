@@ -1,4 +1,5 @@
 import { useCart } from "@/store/useCart"
+import post from "@/api/post"
 import type { CartItem } from "@/types/cart"
 import type { InventoryItem } from "@/types/inventory"
 import type { FormEvent } from "react"
@@ -8,6 +9,8 @@ import { Field, FieldError } from "../../shadcn/field"
 import { Label } from "../../shadcn/label"
 import { Input } from "../../shadcn/input"
 import { Button } from "../../shadcn/button"
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 
 interface MainProps {
@@ -24,11 +27,20 @@ function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed 
   const exceedsAvailable = !Number.isNaN(amountSelected) && amountSelected > item.available
   const isInvalidAmount = Number.isNaN(amountSelected) || amountSelected < 1 || exceedsAvailable
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (!isInvalidAmount) {
       const cartItem: CartItem = { ...item, amountSelected: amountSelected }
+      // The backend cart is the source of truth; the local store mirrors it for the sidebar.
+      try {
+        await post(`${API_BASE_URL}/me/cart/items`, { id: item.id, numSelected: amountSelected })
+      } catch (err) {
+        toast.error("Could not add to cart", {
+          description: err instanceof Error ? err.message : undefined,
+        })
+        return
+      }
       add(cartItem)
 
       toast("Added to cart", {

@@ -1,8 +1,7 @@
 import { APPROVAL_STATES, TIME_STATES, type BorrowRequest } from "@/types/borrowRequest"
 import DataTable from "../DataTable/DataTable"
 import { borrowColumns } from "../DataTable/InventoryTable/borrowColumns"
-import RejectRequest from "./dialogs/RejectRequest"
-import ApproveRequest from "./dialogs/ApproveRequest"
+import ReviewRequest from "./dialogs/ReviewRequest"
 import { cn } from "@/lib/cn"
 import { Button } from "../shadcn/button"
 import { ArrowUp } from "lucide-react"
@@ -16,9 +15,10 @@ import { formatDate } from "@/lib/formatDate"
 interface RequestDetailProps {
   request: BorrowRequest
   showApproveReject: boolean
+  onReviewed?: () => void
 }
 
-function RequestDetail({ request, showApproveReject }: RequestDetailProps) {
+function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetailProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const [minHeight, setMinHeight] = useState(0)
 
@@ -37,8 +37,6 @@ function RequestDetail({ request, showApproveReject }: RequestDetailProps) {
     return () => window.removeEventListener("resize", updateHeight)
   }, [])
 
-  console.log(request.timeState)
-
   return (
     <section ref={sectionRef} className="flex flex-col" style={{ minHeight }}>
       <div className="flex gap-2">
@@ -51,10 +49,11 @@ function RequestDetail({ request, showApproveReject }: RequestDetailProps) {
 
         <div className="flex justify-between mt-2">
           <h2 className="text-2xl font-semibold mb-1.5">{request.title}</h2>
-          {showApproveReject &&
+          {/* Only unreviewed requests can be reviewed (the backend refuses others). */}
+          {showApproveReject && request.approvalState === "pending" &&
             <div className="flex gap-2">
-              <RejectRequest request={request} />
-              <ApproveRequest request={request} />
+              <ReviewRequest request={request} outcome="rejected" onReviewed={onReviewed ?? (() => {})} />
+              <ReviewRequest request={request} outcome="approved" onReviewed={onReviewed ?? (() => {})} />
             </div>
           }
         </div>

@@ -166,3 +166,13 @@ func CreateUserMessage(con *pg.DB, message *db_models.UserRequestMessage) error 
 	_, err := con.Model(message).Insert()
 	return err
 }
+
+// GrantAllOrganisations gives a user special rights for every organisation
+// (used for admins). Existing rows are kept.
+func GrantAllOrganisations(con *pg.DB, userID int) error {
+	_, err := con.Exec(`
+INSERT INTO has_special_rights_for (organisation_name, user_id)
+SELECT name, ? FROM organisations
+ON CONFLICT DO NOTHING`, userID)
+	return err
+}

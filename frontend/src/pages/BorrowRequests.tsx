@@ -5,7 +5,7 @@ import useFetchBorrowRequestsAdmin from "@/hooks/fetch/useFetchBorrowRequestsAdm
 import { Check, Clock, X } from "lucide-react"
 
 function BorrowRequests() {
-  const { data: borrowRequests } = useFetchBorrowRequestsAdmin()
+  const { data: borrowRequests, refetch } = useFetchBorrowRequestsAdmin()
   
   return (
     <RegularPage title="Borrow Requests" noBottomPadding>
@@ -34,6 +34,7 @@ function BorrowRequests() {
                   )
                 }
                 showApproveReject={true}
+                onReviewed={refetch}
               />}
         </TabsContent>
         <TabsContent value="approved">
@@ -46,6 +47,7 @@ function BorrowRequests() {
                   )
                 }
                 showApproveReject={true}
+                onReviewed={refetch}
               />}
         </TabsContent>
         <TabsContent value="rejected">
@@ -58,6 +60,7 @@ function BorrowRequests() {
                   )
                 }
                 showApproveReject={true}
+                onReviewed={refetch}
               />}
         </TabsContent>
       </Tabs>

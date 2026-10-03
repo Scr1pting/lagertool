@@ -6,9 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 function useFetchCart() {
     const { startDate, endDate } = useDateParams()
-    const userId = 1
-
-    const url = `${API_BASE_URL}/users/${userId}/cart?start=${startDate}&end=${endDate}`
+    const url = `${API_BASE_URL}/me/cart?start=${startDate}&end=${endDate}`
 
     const parser = (res: unknown): CartItem[] => {
         const data = res as Record<string, CartItem[]>

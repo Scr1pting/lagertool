@@ -157,11 +157,11 @@ func (h *Handler) GetItem(c *gin.Context) {
 // @Success 200 {object} map[string][]api_objects.CartItem
 // @Router /users/{userId}/cart [get]
 func (h *Handler) GetShoppingCart(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("userId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	id, ok := targetUserID(c)
+	if !ok {
 		return
 	}
+	var err error
 	start, err := time.Parse("2006-01-02", c.Query("start"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start date"})
@@ -193,6 +193,9 @@ func (h *Handler) GetMessages(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
 		return
 	}
+	if !h.canAccessRequest(c, id) {
+		return
+	}
 	var res []api_objects.Message
 	var dbResAdmin []db_models.RequestReview
 	var dbResMember []db_models.UserRequestMessage
@@ -201,10 +204,12 @@ func (h *Handler) GetMessages(c *gin.Context) {
 		Where("request_id = ?", id).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	err = h.DB.Model(&dbResAdmin).Relation("User").Where("request_id = ?", id).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	for _, admin := range dbResAdmin {
 		res = append(res, api_objects.Message{ID: admin.ID, AuthorName: admin.User.Name, Message: admin.Note, IsAdmin: true, TimeStamp: admin.TimeStamp})
@@ -225,7 +230,7 @@ func (h *Handler) GetMessages(c *gin.Context) {
 }
 
 // @Summary List borrow requests
-// @Description List borrow requests. Without query params returns all (admin view); with ?userId=N returns only that user's.
+// @Description List borrow requests. Without query params returns all (admin only); with ?userId=N returns only that user's (that user or admin).
 // @Tags requests
 // @Produce  json
 // @Param userId query int false "Filter to requests owned by this user"
@@ -242,13 +247,21 @@ func (h *Handler) GetBorrowRequests(c *gin.Context) {
 		Relation("RequestItems").
 		Order("created_at DESC")
 
+	u := currentUser(c)
 	if userIdStr := c.Query("userId"); userIdStr != "" {
 		userId, err := strconv.Atoi(userIdStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid userId"})
 			return
 		}
+		if u != nil && u.ID != userId && !u.IsAdmin {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not allowed to view another user's requests"})
+			return
+		}
 		q = q.Where("request.user_id = ?", userId)
+	} else if u != nil && !u.IsAdmin {
+		c.JSON(http.StatusForbidden, gin.H{"error": "admin rights required"})
+		return
 	}
 
 	if err := q.Select(); err != nil {
@@ -416,6 +429,10 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 		Where("inventory_id = ?", itemId).
 		Relation("Request.User").
 		Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	var res []api_objects.BorrowHistory
 	for _, item := range dbRes {
 		out := api_objects.BorrowHistory{
@@ -453,6 +470,9 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 // @Router /search/{searchTerm} [get]
 func (h *Handler) FuzzyFindItems(c *gin.Context) {
 	searchTerm := c.Param("searchTerm")
+	if searchTerm == "" {
+		searchTerm = c.Query("searchTerm")
+	}
 
 	start, err := time.Parse("2006-01-02", c.Query("start"))
 	if err != nil {
@@ -504,11 +524,11 @@ func (h *Handler) FuzzyFindItems(c *gin.Context) {
 // @Router /users/{userId}/cart/items [delete]
 func (h *Handler) DeleteAllCartItems(c *gin.Context) {
 	var dbCI []db_models.ShoppingCartItem
-	userId, err := strconv.Atoi(c.Param("userId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userId, ok := targetUserID(c)
+	if !ok {
 		return
 	}
+	var err error
 	err = h.DB.Model(&dbCI).Relation("ShoppingCart").Where("shopping_cart.user_id = ?", userId).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -544,9 +564,8 @@ func (h *Handler) DeleteCartItem(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
 		return
 	}
-	userId, err := strconv.Atoi(c.Param("userId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userId, ok := targetUserID(c)
+	if !ok {
 		return
 	}
 	var cart db_models.ShoppingCart

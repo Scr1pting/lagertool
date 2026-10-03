@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -35,16 +37,22 @@ import (
 func main() {
 	testdata := flag.Bool("testdata", false, "insert testdata into db")
 	noserver := flag.Bool("noserver", false, "dont start sever")
-	using_auth := flag.Bool("using_auth", true, "use auth")
+	usingAuthFlag := flag.Bool("using_auth", true, "use auth (if not given: USING_AUTH env, default true)")
 	flag.Parse()
 
 	// Load configuration from .env file
 	cfg := config.Load()
 
+	using_auth := resolveUsingAuth(*usingAuthFlag)
+	if !using_auth {
+		log.Println("⚠️  AUTH DISABLED — every request acts as the dev user with admin rights. Never run like this in production.")
+	}
+
 	router := gin.Default()
 	// Configure CORS middleware
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Allow all origins, or specify your frontend URL
+		// Explicit origins: browsers don't send cookies to "*" with credentials.
+		AllowOrigins:     frontendOrigins(),
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -67,7 +75,10 @@ func main() {
 		db.InsertDummyData(dbConnection)
 	}
 	if !*noserver {
-		api.SetupRoutes(router, dbConnection, cfg, *using_auth)
+		if using_auth {
+			auth.InitOIDC()
+		}
+		api.SetupRoutes(router, dbConnection, cfg, using_auth)
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -78,9 +89,38 @@ func main() {
 
 		log.Println("🚀 Server running on http://localhost:8000")
 		log.Println("📚 Swagger UI available at http://localhost:8000/swagger/index.html")
-		err = router.Run(":8000")
-		if err != nil {
-			return
+		if err := router.Run(":8000"); err != nil {
+			log.Fatal(err)
 		}
 	}
+}
+
+// resolveUsingAuth: an explicit -using_auth flag wins, otherwise USING_AUTH
+// from the environment/.env. Auth stays on unless explicitly disabled, so a
+// deployment can't accidentally run without it.
+func resolveUsingAuth(flagValue bool) bool {
+	explicit := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "using_auth" {
+			explicit = true
+		}
+	})
+	if explicit {
+		return flagValue
+	}
+	return os.Getenv("USING_AUTH") != "false"
+}
+
+// frontendOrigins returns the allowed CORS origins from FRONTEND_URL
+// (comma-separated), defaulting to the Vite dev server.
+func frontendOrigins() []string {
+	v := os.Getenv("FRONTEND_URL")
+	if v == "" {
+		return []string{"http://localhost:5173"}
+	}
+	origins := strings.Split(v, ",")
+	for i := range origins {
+		origins[i] = strings.TrimSpace(origins[i])
+	}
+	return origins
 }

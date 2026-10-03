@@ -14,8 +14,13 @@ function AddCartDialog({ item, children }: { item: InventoryItem, children?: Rea
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
 
+  // Called after a successful add/submit: close the dialog and start fresh next time.
   const resetValues = () => {
-
+    setOpen(false)
+    setCurrentPage(0)
+    setAmountSelected(1)
+    setTitle("")
+    setDescription("")
   }
 
   const pages = [

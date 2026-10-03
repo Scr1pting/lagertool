@@ -78,3 +78,12 @@ type UserMessage struct {
 type UpdateCartItem struct {
 	Amount int `json:"amount"`
 }
+
+type InstantCheckoutRequest struct {
+	InvItemID   int       `json:"id" binding:"required"`
+	NumSelected int       `json:"numSelected" binding:"required,min=1"`
+	StartDate   time.Time `json:"startDate" binding:"required"`
+	EndDate     time.Time `json:"endDate" binding:"required"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+}

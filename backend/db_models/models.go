@@ -21,11 +21,12 @@ type User struct {
 	AccessTokenExpiresAt time.Time `json:"-" pg:"access_token_expires_at"`
 	CreatedAt            time.Time `json:"created_at" pg:"created_at"`
 	LastLogin            time.Time `json:"last_login" pg:"last_login"`
+	IsAdmin              bool      `json:"is_admin" pg:"is_admin,use_zero"` // from Keycloak roles, see auth.hasAdminRole
 }
 
 type Session struct {
 	tableName struct{}  `pg:"session"`
-	ID        int       `json:"session_id" pg:"session_id"`
+	ID        string    `json:"session_id" pg:"session_id,pk"`
 	UserID    int       `json:"user_id" pg:"user_id"`
 	CreatedAt time.Time `json:"created_at" pg:"created_at"`
 	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`
