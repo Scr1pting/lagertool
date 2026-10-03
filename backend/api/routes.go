@@ -36,7 +36,17 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.PUT("/organisations/:orgId/items/:id", h.UpdateItem)
 		protected.GET("/organisations/:orgId/items/:id/borrows", h.GetBorrowHistory)
 
-		// Cart
+		// Logged-in user ("me" = owner of the session cookie)
+		protected.GET("/me", h.GetMe)
+		protected.GET("/me/cart", h.GetShoppingCart) // ?start=X&end=X
+		protected.POST("/me/cart/items", h.CreateCartItem)
+		protected.POST("/me/cart/checkout", h.CheckoutCart)
+		protected.DELETE("/me/cart/items", h.DeleteAllCartItems)
+		protected.DELETE("/me/cart/items/:itemId", h.DeleteCartItem)
+		protected.PUT("/me/cart/items/:itemId", h.UpdateCartItem)
+		protected.GET("/me/borrow_requests", h.GetMyBorrowRequests)
+
+		// Cart of a specific user (that user or admin only)
 		protected.GET("/users/:userId/cart", h.GetShoppingCart) // ?start=X&end=X
 		protected.POST("/users/:userId/cart/items", h.CreateCartItem)
 		protected.POST("/users/:userId/cart/checkout", h.CheckoutCart)
@@ -45,7 +55,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.PUT("/users/:userId/cart/items/:itemId", h.UpdateCartItem)
 
 		// Loans & Requests
-		protected.GET("/borrow_requests", h.GetBorrowRequests) // ?userId=N for personal scope
+		protected.GET("/borrow_requests", h.GetBorrowRequests) // all: admin only; ?userId=N: that user or admin
 		protected.PUT("/loans/:id", h.UpdateLoan)
 		protected.PUT("/requests/:id", h.UpdateRequest)
 		protected.PUT("/requests/:id/loans", h.UpdateLoanBulk)

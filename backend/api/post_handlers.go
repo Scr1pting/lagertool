@@ -97,11 +97,11 @@ func (h *Handler) CreateItem(c *gin.Context) {
 // @Success 201 {object} db_models.ShoppingCartItem
 // @Router /users/{userId}/cart/items [post]
 func (h *Handler) CreateCartItem(c *gin.Context) {
-	userId, err := strconv.Atoi(c.Param("userId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userId, ok := targetUserID(c)
+	if !ok {
 		return
 	}
+	var err error
 	var req api_objects.CartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -125,11 +125,11 @@ func (h *Handler) CreateCartItem(c *gin.Context) {
 // @Success 201
 // @Router /users/{userId}/cart/checkout [post]
 func (h *Handler) CheckoutCart(c *gin.Context) {
-	userId, err := strconv.Atoi(c.Param("userId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userId, ok := targetUserID(c)
+	if !ok {
 		return
 	}
+	var err error
 	var req api_objects.CheckoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -193,7 +193,7 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		return
 	}
 	rev := &db_models.RequestReview{
-		UserID:    req.UserID,
+		UserID:    actingUserID(c, req.UserID),
 		RequestID: requestId,
 		Outcome:   req.Outcome,
 		Note:      req.Note,
@@ -264,7 +264,7 @@ func (h *Handler) PostMessage(c *gin.Context) {
 		return
 	}
 	dbMsg := db_models.UserRequestMessage{
-		UserID:    msg.UserID,
+		UserID:    actingUserID(c, msg.UserID),
 		RequestID: requestId,
 		Message:   msg.Message,
 		TimeStamp: time.Now(),

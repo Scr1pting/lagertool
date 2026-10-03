@@ -362,7 +362,17 @@ func (h *AuthHandler) LogoutHandler(c *gin.Context) {
 
 func (h *AuthHandler) AuthMiddleware(usingAuth bool) gin.HandlerFunc {
 	if !usingAuth {
-		return func(c *gin.Context) { c.Next() }
+		// Local dev without Keycloak: act as a fixed user (DEV_USER_ID, default 1)
+		// with admin rights, so /me routes work. No user in the DB = no user set.
+		devUserID := envOr("DEV_USER_ID", "1")
+		return func(c *gin.Context) {
+			var user db_models.User
+			if err := h.DB.Model(&user).Where("id = ?", devUserID).Limit(1).Select(); err == nil {
+				user.IsAdmin = true
+				c.Set("user", &user)
+			}
+			c.Next()
+		}
 	}
 	return func(c *gin.Context) {
 		sessionID, err := c.Cookie(sessionCookie)

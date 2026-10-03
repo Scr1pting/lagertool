@@ -78,6 +78,9 @@ func InitDB(con *pg.DB) {
 		`ALTER TABLE session ADD COLUMN IF NOT EXISTS user_agent text`,
 		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`,
 		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS access_token_expires_at timestamptz`,
+		// Fields removed from the models; leftover columns break "SELECT table.*" in go-pg.
+		`ALTER TABLE "Inventory" DROP COLUMN IF EXISTS item_id`,
+		`ALTER TABLE request DROP COLUMN IF EXISTS group_id`,
 	}
 	for _, m := range migrations {
 		if _, err := con.Exec(m); err != nil {

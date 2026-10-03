@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -44,7 +46,8 @@ func main() {
 	router := gin.Default()
 	// Configure CORS middleware
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Allow all origins, or specify your frontend URL
+		// Explicit origins: browsers don't send cookies to "*" with credentials.
+		AllowOrigins:     frontendOrigins(),
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -85,4 +88,18 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+}
+
+// frontendOrigins returns the allowed CORS origins from FRONTEND_URL
+// (comma-separated), defaulting to the Vite dev server.
+func frontendOrigins() []string {
+	v := os.Getenv("FRONTEND_URL")
+	if v == "" {
+		return []string{"http://localhost:5173"}
+	}
+	origins := strings.Split(v, ",")
+	for i := range origins {
+		origins[i] = strings.TrimSpace(origins[i])
+	}
+	return origins
 }

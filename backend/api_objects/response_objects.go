@@ -118,3 +118,10 @@ type BorrowRequest struct {
 	Items         []BorrowItem    `json:"items"`
 	Messages      []BorrowMessage `json:"messages"`
 }
+
+type Me struct {
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	IsAdmin bool   `json:"isAdmin"`
+}
