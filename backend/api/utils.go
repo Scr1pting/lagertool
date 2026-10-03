@@ -24,8 +24,8 @@ func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelves, e
 	for _, c := range shelf.Columns {
 		var col api_objects.Columns
 		col.ID = c.ID
-		var el api_objects.Element
 		for _, e := range c.ShelfUnits {
+			var el api_objects.Element
 			el.ID = e.ID
 			if e.Type == 0 {
 				el.Type = "slim"
@@ -52,8 +52,8 @@ func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, 
 	count := 0
 	for _, reqItem := range dbInv.RequestItems {
 		if !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate)) {
+			count += reqItem.Amount
 		}
-		count += reqItem.Amount
 	}
 	return dbInv.Amount - count, nil
 }

@@ -26,7 +26,7 @@ type User struct {
 
 type Session struct {
 	tableName struct{}  `pg:"session"`
-	ID        int       `json:"session_id" pg:"session_id"`
+	ID        string    `json:"session_id" pg:"session_id,pk"`
 	UserID    int       `json:"user_id" pg:"user_id"`
 	CreatedAt time.Time `json:"created_at" pg:"created_at"`
 	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`

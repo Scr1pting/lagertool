@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -21,16 +20,31 @@ import (
 var (
 	clientID     = os.Getenv("VSETH_CLIENT_ID")
 	clientSecret = os.Getenv("VSETH_CLIENT_SECRET")
-	redirectURL  = "https://lagertool.ch/auth/callback"
-	issuerURL    = "https://keycloak-fake.vis.ethz.ch/realms/VSETH"
+	redirectURL  = getEnv("AUTH_REDIRECT_URL", "https://lagertool.ch/auth/eduid/callback")
+	issuerURL    = getEnv("AUTH_ISSUER_URL", "https://keycloak-fake.vis.ethz.ch/realms/VSETH")
 
 	oauth2Config *oauth2.Config
 	oidcProvider *oidc.Provider
 	verifier     *oidc.IDTokenVerifier
 )
 
-func init() {
-	oidcProvider, err := oidc.NewProvider(context.Background(), issuerURL)
+const (
+	sessionCookie = "user_session"
+	stateCookie   = "oauth_state"
+)
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+// InitOIDC contacts the identity provider. Only called when auth is enabled,
+// so the server and tests can run without network access to Keycloak.
+func InitOIDC() {
+	var err error
+	oidcProvider, err = oidc.NewProvider(context.Background(), issuerURL)
 	if err != nil {
 		log.Fatalf("Failed to initalize OIDC provider %v", err)
 	}
@@ -59,12 +73,20 @@ func NewAuthHandler(db *pg.DB) *AuthHandler {
 // connects to /auth/login
 func (h *AuthHandler) LoginHandler(c *gin.Context) {
 	state := uuid.New().String()
+	c.SetCookie(stateCookie, state, 600, "/", "", true, true)
 	url := oauth2Config.AuthCodeURL(state)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // connects to /auth/callback
 func (h *AuthHandler) CallbackHandler(c *gin.Context) {
+	expectedState, err := c.Cookie(stateCookie)
+	if err != nil || expectedState == "" || c.Query("state") != expectedState {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid OAuth state"})
+		return
+	}
+	c.SetCookie(stateCookie, "", -1, "/", "", true, true)
+
 	code := c.Query("code")
 	if code == "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Authorization code missing"})
@@ -93,15 +115,16 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 		Email string `json:"email"`
 		// expansions and shit if we need it
 	}
-	if err := idToken.Claims(&claims); err != nil {
-		log.Printf("Failed to extract claims: %v", err)
+	if err := idToken.Claims(&claims); err != nil || claims.Sub == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to extract claims"})
+		return
 	}
 
 	secure := true
 	http_only := true
-	path := "/"           // path for which cookie is valid
-	domain := "localhost" // domain for which cookie is valid
-	lifetime := 1         // example
+	path := "/"   // path for which cookie is valid
+	domain := ""  // host-only cookie
+	lifetime := 1 // hours
 
 	var dbUser []db_models.User
 	err = h.DB.Model(&dbUser).Where("subject = ?", claims.Sub).Select()
@@ -150,6 +173,7 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 	}
 
 	session := db_models.Session{
+		ID:        uuid.New().String(),
 		UserID:    user.ID,
 		CreatedAt: time.Now(),
 		ExpiresAt: time.Now().Add(time.Duration(lifetime) * time.Hour),
@@ -164,13 +188,13 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("user_session", fmt.Sprint(session.ID), lifetime*3600, path, domain, secure, http_only)
+	c.SetCookie(sessionCookie, session.ID, lifetime*3600, path, domain, secure, http_only)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Authentication successful!"})
 }
 
 func (h *AuthHandler) LogoutHandler(c *gin.Context) {
-	sessionID, err := c.Cookie("user_session")
+	sessionID, err := c.Cookie(sessionCookie)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No session cookie"})
 		return
@@ -182,48 +206,7 @@ func (h *AuthHandler) LogoutHandler(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("user_session", "", -1, "/", "localhost", true, true)
-	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
-}
-
-func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sessionID, err := c.Cookie("user_session")
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "No session cookie", "details": err.Error()})
-			return
-		}
-
-		var session db_models.Session
-		err = h.DB.Model(&session).Relation("User").Where("session.session_id = ?", sessionID).First()
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "invalid session", "details": err.Error()})
-			return
-		}
-		if time.Now().After(session.ExpiresAt) {
-			c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"error": "session expired", "details": sessionID})
-			return
-		}
-		c.Set("user", session.User)
-		c.Set("session", &session)
-		c.Next()
-	}
-}
-
-func (h *AuthHandler) LogoutHandler(c *gin.Context) {
-	sessionID, err := c.Cookie("user_session")
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No session cookie"})
-		return
-	}
-
-	_, err = h.DB.Model((*db_models.Session)(nil)).Where("session_id = ?", sessionID).Delete()
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session", "details": err.Error()})
-		return
-	}
-
-	c.SetCookie("user_session", "", -1, "/", "localhost", true, true)
+	c.SetCookie(sessionCookie, "", -1, "/", "", true, true)
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
@@ -234,7 +217,7 @@ func (h *AuthHandler) AuthMiddleware(using_auth bool) gin.HandlerFunc {
 		}
 	}
 	return func(c *gin.Context) {
-		sessionID, err := c.Cookie("user_session")
+		sessionID, err := c.Cookie(sessionCookie)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "No session cookie", "details": err.Error()})
 			return

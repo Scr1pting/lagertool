@@ -10,6 +10,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"lagertool.com/main/api"
+	"lagertool.com/main/auth"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 	_ "lagertool.com/main/docs"
@@ -69,6 +70,9 @@ func main() {
 	//	log.Printf("⚠️  Failed to insert test data: %v", err)
 	//}
 	if !*noserver {
+		if *using_auth {
+			auth.InitOIDC()
+		}
 		api.SetupRoutes(router, dbConnection, cfg, *using_auth)
 
 		// Swagger endpoint
@@ -76,9 +80,8 @@ func main() {
 
 		log.Println("🚀 Server running on http://localhost:8000")
 		log.Println("📚 Swagger UI available at http://localhost:8000/swagger/index.html")
-		err = router.Run(":8000")
-		if err != nil {
-			return
+		if err := router.Run(":8000"); err != nil {
+			log.Fatal(err)
 		}
 	}
 	return

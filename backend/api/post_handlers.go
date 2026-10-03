@@ -203,6 +203,7 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		RequestID: requestId,
 		Outcome:   req.Outcome,
 		Note:      req.Note,
+		TimeStamp: time.Now(),
 	}
 	err = db.Create_request_review(h.DB, rev)
 	if err != nil {
@@ -277,6 +278,7 @@ func (h *Handler) PostMessage(c *gin.Context) {
 	err = db.CreateUserMessage(h.DB, &dbMsg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, msg)
 }

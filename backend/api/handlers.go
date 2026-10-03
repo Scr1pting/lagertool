@@ -173,10 +173,12 @@ func (h *Handler) GetMessages(c *gin.Context) {
 		Where("request_id = ?", id).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	err = h.DB.Model(&dbResAdmin).Relation("User").Where("request_id = ?", id).Select()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	for _, admin := range dbResAdmin {
 		res = append(res, api_objects.Message{ID: admin.ID, AuthorName: admin.User.Name, Message: admin.Note, IsAdmin: true, TimeStamp: admin.TimeStamp})
@@ -214,6 +216,10 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 		Where("inventory_id = ?", itemId).
 		Relation("Request.User").
 		Select()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	var res []api_objects.BorrowHistory
 	for _, item := range dbRes {
 		out := api_objects.BorrowHistory{
@@ -248,7 +254,10 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 // @Success 200 {array} db_models.Inventory
 // @Router /search/{searchTerm} [get]
 func (h *Handler) FuzzyFindItems(c *gin.Context) {
-	searchTerm := c.Query("searchTerm")
+	searchTerm := c.Param("searchTerm")
+	if searchTerm == "" {
+		searchTerm = c.Query("searchTerm")
+	}
 	var dbRes []db_models.Inventory
 	err := h.DB.Model(&dbRes).Select()
 	if err != nil {
