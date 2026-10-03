@@ -52,6 +52,7 @@ func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelf, err
 		var el api_objects.ShelfElement
 		for _, e := range c.ShelfUnits {
 			el.ID = e.ID
+			el.Description = e.Description
 			if e.Type == 0 {
 				el.Type = "slim"
 			} else if e.Type == 1 {

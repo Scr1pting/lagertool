@@ -12,6 +12,12 @@ export interface ShelfElementDefinition {
 export interface ShelfElement {
   id: string  // string for simpler element labels
   type: ShelfElementType
+  description?: string | null  // auto-generated category; "" = no items, null = still generating
+}
+
+export function shelfElementLabel(element: ShelfElement): string {
+  if (element.description == null) return "Label loading"
+  return element.description || "Empty"
 }
 
 export interface ShelfColumn {

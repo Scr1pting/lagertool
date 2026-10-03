@@ -85,6 +85,19 @@ func RegenerateAllShelfUnitDescriptions(ctx context.Context, con *pg.DB, baseURL
 	return updated, failed, firstErr
 }
 
+// ClearShelfUnitDescriptions sets description to NULL, marking the units as
+// waiting for a new category until RegenerateShelfUnitDescription finishes.
+func ClearShelfUnitDescriptions(ctx context.Context, con *pg.DB, shelfUnitIDs []string) error {
+	_, err := con.ModelContext(ctx, (*db_models.ShelfUnit)(nil)).
+		Set("description = NULL").
+		Where("id IN (?)", pg.In(shelfUnitIDs)).
+		Update()
+	if err != nil {
+		return fmt.Errorf("clear shelf_unit.description: %w", err)
+	}
+	return nil
+}
+
 func setShelfUnitDescription(ctx context.Context, con *pg.DB, shelfUnitID, description string) error {
 	_, err := con.ModelContext(ctx, (*db_models.ShelfUnit)(nil)).
 		Set("description = ?", description).

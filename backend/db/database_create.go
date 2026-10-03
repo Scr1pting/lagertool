@@ -72,11 +72,13 @@ func CreateShelf(con *pg.DB, id string, name string, ownedBy string, roomID int,
 			if element.Type != "slim" {
 				suType = 1
 			}
+			noItems := ""
 			el := &db_models.ShelfUnit{
 				ID:               element.ID,
 				Type:             suType,
 				PositionInColumn: pos,
 				ColumnID:         col.ID,
+				Description:      &noItems, // new units start without items
 			}
 			_, err := con.Model(el).Insert()
 			if err != nil {
