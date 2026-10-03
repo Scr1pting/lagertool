@@ -72,6 +72,14 @@ func InitDB(con *pg.DB) {
 		}
 	}
 
+	// CreateTable(IfNotExists) doesn't add columns to existing tables.
+	if _, err := con.Exec(`ALTER TABLE session ADD COLUMN IF NOT EXISTS id_token text`); err != nil {
+		log.Fatalf("❌ Error migrating session table: %v", err)
+	}
+	if _, err := con.Exec(`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`); err != nil {
+		log.Fatalf("❌ Error migrating user table: %v", err)
+	}
+
 	log.Println("✅ Database tables initialized and migrations completed successfully.")
 }
 
@@ -143,7 +151,29 @@ func InsertDummyData(con *pg.DB) {
 		log.Fatalf("Insert Consumed failed: %v", err)
 	}
 
+	// Dummy data uses explicit IDs, which don't advance the serial sequences.
+	if err := ResetSequences(con); err != nil {
+		log.Fatalf("Resetting sequences failed: %v", err)
+	}
+
 	log.Println("✅ Dummy data inserted successfully")
+}
+
+// ResetSequences moves every serial "id" sequence past the current max id.
+func ResetSequences(con *pg.DB) error {
+	_, err := con.Exec(`
+DO $$
+DECLARE r record;
+BEGIN
+	FOR r IN
+		SELECT table_name, pg_get_serial_sequence(quote_ident(table_name), 'id') AS seq
+		FROM information_schema.columns
+		WHERE table_schema = 'public' AND column_name = 'id' AND column_default LIKE 'nextval%'
+	LOOP
+		EXECUTE format('SELECT setval(%L, COALESCE((SELECT MAX(id) FROM %I), 0) + 1, false)', r.seq, r.table_name);
+	END LOOP;
+END $$;`)
+	return err
 }
 
 func Close(con *pg.DB) {

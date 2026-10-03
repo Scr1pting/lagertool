@@ -20,6 +20,7 @@ type User struct {
 	RefreshToken string    `json:"refresh_token" pg:"refresh_token"`
 	CreatedAt    time.Time `json:"created_at" pg:"created_at"`
 	LastLogin    time.Time `json:"last_login" pg:"last_login"`
+	IsAdmin      bool      `json:"is_admin" pg:"is_admin,use_zero"` // from Keycloak roles, see auth.adminRoles
 
 	//ShoppingCart *ShoppingCart `json:"shopping_cart" pg:"rel:has-one"`
 }
@@ -31,6 +32,7 @@ type Session struct {
 	CreatedAt time.Time `json:"created_at" pg:"created_at"`
 	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`
 	UserIP    net.IP    `json:"user_ip" pg:"user_ip"`
+	IDToken   string    `json:"-" pg:"id_token"` // needed for Keycloak logout (id_token_hint)
 
 	User *User `json:"user" pg:"rel:has-one,fk:user_id"`
 }
