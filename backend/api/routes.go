@@ -49,6 +49,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.POST("/shelf-units/regenerate-descriptions", h.RegenerateAllDescriptions)
 
 		// Loans & Requests
+		protected.GET("/borrow_requests", h.GetBorrowRequests) // ?userId=N for personal scope
 		protected.PUT("/loans/:id", h.UpdateLoan)
 		protected.PUT("/requests/:id", h.UpdateRequest)
 		protected.PUT("/requests/:id/loans", h.UpdateLoanBulk)

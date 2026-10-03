@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 
@@ -10,6 +11,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"lagertool.com/main/api"
+	"lagertool.com/main/auth"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
 	_ "lagertool.com/main/docs"
@@ -33,7 +35,7 @@ import (
 func main() {
 	testdata := flag.Bool("testdata", false, "insert testdata into db")
 	noserver := flag.Bool("noserver", false, "dont start sever")
-	using_auth := flag.Bool("using_auth", false, "use auth")
+	using_auth := flag.Bool("using_auth", true, "use auth")
 	flag.Parse()
 
 	// Load configuration from .env file
@@ -66,6 +68,10 @@ func main() {
 	}
 	if !*noserver {
 		api.SetupRoutes(router, dbConnection, cfg, *using_auth)
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		auth.NewAuthHandler(dbConnection).StartSessionCleanup(ctx)
 
 		// Swagger endpoint
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

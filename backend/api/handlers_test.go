@@ -2500,3 +2500,241 @@ func TestUpdateCartItem(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 }
+
+func TestGetBorrowRequests(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.GET("/borrow_requests", h.GetBorrowRequests)
+
+	// Pre-cleanup in case a prior run failed mid-test and leaked rows.
+	_, _ = dbCon.Model((*db_models.Loans)(nil)).Where("request_item_id IN (SELECT id FROM request_items WHERE request_id IN (SELECT id FROM request WHERE organisation_name = 'BR List Test Org'))").Delete()
+	_, _ = dbCon.Model((*db_models.UserRequestMessage)(nil)).Where("request_id IN (SELECT id FROM request WHERE organisation_name = 'BR List Test Org')").Delete()
+	_, _ = dbCon.Model((*db_models.RequestItems)(nil)).Where("request_id IN (SELECT id FROM request WHERE organisation_name = 'BR List Test Org')").Delete()
+	_, _ = dbCon.Model((*db_models.Request)(nil)).Where("organisation_name = 'BR List Test Org'").Delete()
+	_, _ = dbCon.Model((*db_models.Inventory)(nil)).Where("shelf_id = 'BR-S-1'").Delete()
+	_, _ = dbCon.Model((*db_models.ShelfUnit)(nil)).Where("id = 'BR-SU-1'").Delete()
+	_, _ = dbCon.Model((*db_models.Column)(nil)).Where("id = 'BR-C-1'").Delete()
+	_, _ = dbCon.Model((*db_models.Shelf)(nil)).Where("id = 'BR-S-1'").Delete()
+	_, _ = dbCon.Model((*db_models.Room)(nil)).Where("name = 'BR Room'").Delete()
+	_, _ = dbCon.Model((*db_models.Building)(nil)).Where("name = 'BR Building'").Delete()
+	_, _ = dbCon.Model((*db_models.User)(nil)).Where("email IN ('alice-br@example.com', 'bob-br@example.com')").Delete()
+	_, _ = dbCon.Model((*db_models.Organisation)(nil)).Where("name = 'BR List Test Org'").Delete()
+
+	// Org + storage hierarchy
+	org := &db_models.Organisation{Name: "BR List Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	building := &db_models.Building{Name: "BR Building", UpdateDate: time.Now()}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+
+	room := &db_models.Room{Name: "BR Room", BuildingID: building.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+
+	shelf := &db_models.Shelf{ID: "BR-S-1", Name: "BR Shelf", RoomID: room.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(shelf).Insert()
+	assert.NoError(t, err)
+
+	column := &db_models.Column{ID: "BR-C-1", ShelfID: shelf.ID}
+	_, err = dbCon.Model(column).Insert()
+	assert.NoError(t, err)
+
+	shelfUnit := &db_models.ShelfUnit{ID: "BR-SU-1", ColumnID: column.ID}
+	_, err = dbCon.Model(shelfUnit).Insert()
+	assert.NoError(t, err)
+
+	inventory := &db_models.Inventory{Name: "BR Item", IsConsumable: false, ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 10, UpdateDate: time.Now()}
+	_, err = dbCon.Model(inventory).Insert()
+	assert.NoError(t, err)
+
+	// Two users: alice has 2 requests, bob has 1
+	alice := &db_models.User{Email: "alice-br@example.com", Name: "Alice"}
+	_, err = dbCon.Model(alice).Insert()
+	assert.NoError(t, err)
+
+	bob := &db_models.User{Email: "bob-br@example.com", Name: "Bob"}
+	_, err = dbCon.Model(bob).Insert()
+	assert.NoError(t, err)
+
+	now := time.Now()
+
+	// Alice: "requested" (-> pending) with one item and one user message
+	aliceReq1 := &db_models.Request{
+		UserID:           alice.ID,
+		StartDate:        now.Add(24 * time.Hour),
+		EndDate:          now.Add(48 * time.Hour),
+		Note:             "Alice pending request",
+		State:            "requested",
+		CreatedAt:        now.Add(-3 * time.Hour),
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(aliceReq1).Insert()
+	assert.NoError(t, err)
+
+	aliceReq1Item := &db_models.RequestItems{RequestID: aliceReq1.ID, InventoryID: inventory.ID, Amount: 2}
+	_, err = dbCon.Model(aliceReq1Item).Insert()
+	assert.NoError(t, err)
+
+	aliceMsg := &db_models.UserRequestMessage{
+		UserID: alice.ID, RequestID: aliceReq1.ID,
+		Message: "Can I please borrow this?", TimeStamp: now.Add(-2 * time.Hour),
+	}
+	_, err = dbCon.Model(aliceMsg).Insert()
+	assert.NoError(t, err)
+
+	// Alice: approved, on-loan (now is between start and end, loan not returned)
+	aliceReq2 := &db_models.Request{
+		UserID:           alice.ID,
+		StartDate:        now.Add(-24 * time.Hour),
+		EndDate:          now.Add(24 * time.Hour),
+		Note:             "Alice approved request",
+		State:            "approved",
+		CreatedAt:        now.Add(-5 * time.Hour),
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(aliceReq2).Insert()
+	assert.NoError(t, err)
+
+	aliceReq2Item := &db_models.RequestItems{RequestID: aliceReq2.ID, InventoryID: inventory.ID, Amount: 1}
+	_, err = dbCon.Model(aliceReq2Item).Insert()
+	assert.NoError(t, err)
+
+	aliceReq2Loan := &db_models.Loans{RequestItemID: aliceReq2Item.ID, IsReturned: false}
+	_, err = dbCon.Model(aliceReq2Loan).Insert()
+	assert.NoError(t, err)
+
+	// Bob: rejected request
+	bobReq := &db_models.Request{
+		UserID:           bob.ID,
+		StartDate:        now.Add(72 * time.Hour),
+		EndDate:          now.Add(96 * time.Hour),
+		Note:             "Bob rejected request",
+		State:            "rejected",
+		CreatedAt:        now.Add(-1 * time.Hour),
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(bobReq).Insert()
+	assert.NoError(t, err)
+
+	bobReqItem := &db_models.RequestItems{RequestID: bobReq.ID, InventoryID: inventory.ID, Amount: 3}
+	_, err = dbCon.Model(bobReqItem).Insert()
+	assert.NoError(t, err)
+
+	cleanup := func() {
+		_, _ = dbCon.Model(&db_models.Loans{}).Where("request_item_id IN (?, ?, ?)", aliceReq1Item.ID, aliceReq2Item.ID, bobReqItem.ID).Delete()
+		_, _ = dbCon.Model(&db_models.UserRequestMessage{}).Where("request_id IN (?, ?, ?)", aliceReq1.ID, aliceReq2.ID, bobReq.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("request_id IN (?, ?, ?)", aliceReq1.ID, aliceReq2.ID, bobReq.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id IN (?, ?, ?)", aliceReq1.ID, aliceReq2.ID, bobReq.ID).Delete()
+		_, _ = dbCon.Model(inventory).Where("id = ?", inventory.ID).Delete()
+		_, _ = dbCon.Model(shelfUnit).Where("id = ?", shelfUnit.ID).Delete()
+		_, _ = dbCon.Model(column).Where("id = ?", column.ID).Delete()
+		_, _ = dbCon.Model(shelf).Where("id = ?", shelf.ID).Delete()
+		_, _ = dbCon.Model(room).Where("id = ?", room.ID).Delete()
+		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
+		_, _ = dbCon.Model(alice).Where("id = ?", alice.ID).Delete()
+		_, _ = dbCon.Model(bob).Where("id = ?", bob.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}
+	defer cleanup()
+
+	// Helper: pull our seeded requests out of a (potentially noisy) admin response.
+	mine := func(all []api_objects.BorrowRequest) map[int]api_objects.BorrowRequest {
+		ids := map[int]bool{aliceReq1.ID: true, aliceReq2.ID: true, bobReq.ID: true}
+		out := map[int]api_objects.BorrowRequest{}
+		for _, br := range all {
+			if ids[br.ID] {
+				out[br.ID] = br
+			}
+		}
+		return out
+	}
+
+	t.Run("Admin scope returns all seeded requests with inlined items and messages", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/borrow_requests", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if !assert.Equal(t, http.StatusOK, w.Code) {
+			t.Log("Response body:", w.Body.String())
+			t.FailNow()
+		}
+
+		var all []api_objects.BorrowRequest
+		err := json.Unmarshal(w.Body.Bytes(), &all)
+		assert.NoError(t, err)
+
+		got := mine(all)
+		assert.Len(t, got, 3, "expected our 3 seeded requests to be in the admin response")
+
+		// Pending alice request: state mapped, item inlined with borrowed amount, message inlined
+		p := got[aliceReq1.ID]
+		assert.Equal(t, "pending", p.ApprovalState)
+		assert.Empty(t, p.TimeState, "non-approved requests should not have a timeState")
+		assert.Equal(t, "Alice", p.Author)
+		assert.Equal(t, "Alice pending request", p.Title)
+		assert.Len(t, p.Items, 1)
+		assert.Equal(t, inventory.ID, p.Items[0].ID)
+		assert.Equal(t, "BR Item", p.Items[0].Name)
+		assert.Equal(t, 2, p.Items[0].Borrowed)
+		assert.Equal(t, shelf.ID, p.Items[0].ShelfID)
+		assert.Equal(t, building.ID, p.Items[0].Building.ID)
+		assert.Len(t, p.Messages, 1)
+		assert.Equal(t, "Can I please borrow this?", p.Messages[0].Text)
+		assert.Equal(t, "Alice", p.Messages[0].Author)
+		assert.False(t, p.Messages[0].IsAdmin)
+
+		// Approved alice request: derived onLoan, no returnedDate
+		a := got[aliceReq2.ID]
+		assert.Equal(t, "approved", a.ApprovalState)
+		assert.Equal(t, "onLoan", a.TimeState)
+		assert.Nil(t, a.ReturnedDate)
+
+		// Bob rejected request
+		b := got[bobReq.ID]
+		assert.Equal(t, "rejected", b.ApprovalState)
+		assert.Equal(t, "Bob", b.Author)
+		assert.Len(t, b.Items, 1)
+		assert.Equal(t, 3, b.Items[0].Borrowed)
+	})
+
+	t.Run("Personal scope filters to a single user", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/borrow_requests?userId="+strconv.Itoa(alice.ID), nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var all []api_objects.BorrowRequest
+		err := json.Unmarshal(w.Body.Bytes(), &all)
+		assert.NoError(t, err)
+		assert.Len(t, all, 2, "alice should only see her 2 requests")
+		for _, br := range all {
+			assert.Equal(t, "Alice", br.Author)
+		}
+	})
+
+	t.Run("Personal scope returns empty for user with no requests", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/borrow_requests?userId=999999", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var all []api_objects.BorrowRequest
+		err := json.Unmarshal(w.Body.Bytes(), &all)
+		assert.NoError(t, err)
+		assert.Empty(t, all)
+	})
+
+	t.Run("Invalid userId returns 400", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/borrow_requests?userId=notanumber", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}

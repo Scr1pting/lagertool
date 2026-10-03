@@ -10,16 +10,17 @@ type Organisation struct {
 }
 
 type User struct {
-	tableName    struct{}  `pg:"user"`
-	ID           int       `json:"id" pg:"id,pk"`
-	Subject      string    `json:"subject" pg:"subject"`
-	Issuer       string    `json:"issuer" pg:"issuer"`
-	Email        string    `json:"email" pg:"email"`
-	Name         string    `json:"name" pg:"name"`
-	AccessToken  string    `json:"access_token" pg:"access_token"`
-	RefreshToken string    `json:"refresh_token" pg:"refresh_token"`
-	CreatedAt    time.Time `json:"created_at" pg:"created_at"`
-	LastLogin    time.Time `json:"last_login" pg:"last_login"`
+	tableName            struct{}  `pg:"user"`
+	ID                   int       `json:"id" pg:"id,pk"`
+	Subject              string    `json:"subject" pg:"subject"`
+	Issuer               string    `json:"issuer" pg:"issuer"`
+	Email                string    `json:"email" pg:"email"`
+	Name                 string    `json:"name" pg:"name"`
+	AccessToken          string    `json:"-" pg:"access_token"`
+	RefreshToken         string    `json:"-" pg:"refresh_token"`
+	AccessTokenExpiresAt time.Time `json:"-" pg:"access_token_expires_at"`
+	CreatedAt            time.Time `json:"created_at" pg:"created_at"`
+	LastLogin            time.Time `json:"last_login" pg:"last_login"`
 }
 
 type Session struct {
@@ -29,6 +30,8 @@ type Session struct {
 	CreatedAt time.Time `json:"created_at" pg:"created_at"`
 	ExpiresAt time.Time `json:"expires_at" pg:"expires_at"`
 	UserIP    net.IP    `json:"user_ip" pg:"user_ip"`
+	UserAgent string    `json:"user_agent" pg:"user_agent"`
+	IDToken   string    `json:"-" pg:"id_token"`
 
 	User *User `json:"user" pg:"rel:has-one,fk:user_id"`
 }
