@@ -132,6 +132,8 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 		return
 	}
 
+	previousShelfUnitID := inv.ShelfUnitID
+
 	if req.Amount != nil {
 		inv.Amount = *req.Amount
 	}
@@ -141,11 +143,21 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 	if req.ShelfUnitID != nil {
 		inv.ShelfUnitID = *req.ShelfUnitID
 	}
+	if req.Keywords != nil {
+		inv.Keywords = *req.Keywords
+	}
 
 	_, err = h.DB.Model(&inv).WherePK().Update()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+	// Regenerate the new unit's description; if the item moved, also the
+	// old one so it reflects the items left behind.
+	if previousShelfUnitID != inv.ShelfUnitID {
+		h.triggerRegenAsync(previousShelfUnitID, inv.ShelfUnitID)
+	} else {
+		h.triggerRegenAsync(inv.ShelfUnitID)
 	}
 	c.JSON(http.StatusOK, inv)
 }

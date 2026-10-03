@@ -2,7 +2,5 @@ fastapi
 pydantic>=2
 uvicorn[standard]
 torch
-nltk
 numpy
-inflect
-requests
+sentence-transformers

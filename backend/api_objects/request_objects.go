@@ -41,6 +41,7 @@ type InventoryItemRequest struct {
 	ShelfID      string `json:"shelfId" binding:"required"`
 	IsConsumable bool   `json:"isConsumable"`
 	Note         string `json:"note"`
+	Keywords     string `json:"keywords"`
 }
 
 type CheckoutRequest struct {
@@ -66,6 +67,7 @@ type UpdateItemRequest struct {
 	Amount      *int    `json:"amount"`
 	Note        *string `json:"note"`
 	ShelfUnitID *string `json:"shelfUnitId"`
+	Keywords    *string `json:"keywords"`
 }
 
 type UserMessage struct {

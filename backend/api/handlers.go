@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -10,6 +12,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/config"
+	"lagertool.com/main/db"
 	"lagertool.com/main/db_models"
 	"lagertool.com/main/util"
 )
@@ -21,6 +24,31 @@ type Handler struct {
 
 func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 	return &Handler{DB: db, Cfg: cfg}
+}
+
+// triggerRegenAsync spawns one goroutine per non-empty shelf unit ID and
+// asks description_gen for a new category in the background. Failures are
+// logged but never surfaced to the caller — the item CRUD already
+// succeeded and the description just stays stale until the next change.
+// No-op when the service URL isn't configured (e.g. tests pass nil Cfg).
+func (h *Handler) triggerRegenAsync(shelfUnitIDs ...string) {
+	if h.Cfg == nil || h.Cfg.DescriptionGen.URL == "" {
+		return
+	}
+	baseURL := h.Cfg.DescriptionGen.URL
+	for _, id := range shelfUnitIDs {
+		if id == "" {
+			continue
+		}
+		id := id
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if _, err := db.RegenerateShelfUnitDescription(ctx, h.DB, baseURL, id); err != nil {
+				log.Printf("regen description for shelf unit %s: %v", id, err)
+			}
+		}()
+	}
 }
 
 // @Summary Get all organisations

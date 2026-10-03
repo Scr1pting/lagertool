@@ -1,43 +1,55 @@
 .board {
+  position: relative;
   flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: stretch;
-  justify-content: center;
+  align-items: flex-start;
   box-sizing: border-box;
-  overflow-x: scroll;
+  overflow: auto;
+  overflow-anchor: none; /* scroll position is anchored to the floor manually */
 
-  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
-  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, black 6%, black 94%, transparent),
+    linear-gradient(to bottom, transparent, black 8%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, black 6%, black 94%, transparent),
+    linear-gradient(to bottom, transparent, black 8%);
+  mask-composite: intersect;
 }
 
+/* Grows with its content but always fills the board, so nothing is clipped on the left/top */
 .workspace {
   position: relative;
-  margin-bottom: 65px;
-  border-bottom: 2px solid #cccccc;
-  flex: 1;
+  flex: 1 0 auto;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding-bottom: 65px;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  align-items: stretch;
   gap: 0;
 }
 
 .columnsArea {
   display: flex;
-  justify-content: center;
   align-items: stretch;
   flex-shrink: 0;
-  min-height: 200px;
-  align-self: stretch;
+  border-bottom: 2px solid #cccccc;
 }
 
 .edgeDropZone {
   flex: 1;
   min-width: 90px;
-  align-self: stretch;
+  border-bottom: 2px solid #cccccc;
 }
 
 .boardEmpty {
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -54,6 +66,14 @@
   border: none;
 }
 
+.boardEmptyHint {
+  font-size: 13px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #6b6b6b;
+  white-space: nowrap;
+}
+
 .column {
   display: flex;
   flex-direction: column;
@@ -63,9 +83,17 @@
   padding: 0;
   box-sizing: border-box;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  min-height: 360px;
 }
 
 .columnActive {
   background-color: linear-gradient(to bottom, white, transparent);
+}
+
+.marquee {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  border: 1px solid rgba(253, 214, 47, 0.8);
+  background: rgba(253, 214, 47, 0.08);
+  border-radius: 2px;
 }

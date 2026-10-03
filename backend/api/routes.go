@@ -44,6 +44,10 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.DELETE("/users/:userId/cart/items/:itemId", h.DeleteCartItem)
 		protected.PUT("/users/:userId/cart/items/:itemId", h.UpdateCartItem)
 
+		// Shelf unit description regeneration (manual triggers)
+		protected.POST("/shelf-units/:id/regenerate-description", h.RegenerateShelfUnitDescription)
+		protected.POST("/shelf-units/regenerate-descriptions", h.RegenerateAllDescriptions)
+
 		// Loans & Requests
 		protected.GET("/borrow_requests", h.GetBorrowRequests) // ?userId=N for personal scope
 		protected.PUT("/loans/:id", h.UpdateLoan)
