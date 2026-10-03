@@ -1,10 +1,12 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-pg/pg/v10"
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db_models"
 )
@@ -89,4 +91,30 @@ func (h *Handler) GetMyBorrowRequests(c *gin.Context) {
 	q.Set("userId", strconv.Itoa(u.ID))
 	c.Request.URL.RawQuery = q.Encode()
 	h.GetBorrowRequests(c)
+}
+
+// canAccessRequest reports whether the logged-in user may see or act on a
+// borrow request: its owner or an admin. Writes an error response when false.
+// Without a user in the context (handlers mounted without AuthMiddleware) it
+// allows access.
+func (h *Handler) canAccessRequest(c *gin.Context, requestID int) bool {
+	u := currentUser(c)
+	if u == nil || u.IsAdmin {
+		return true
+	}
+	var req db_models.Request
+	err := h.DB.Model(&req).Column("user_id").Where("id = ?", requestID).Select()
+	if errors.Is(err, pg.ErrNoRows) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "request not found"})
+		return false
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return false
+	}
+	if req.UserID != u.ID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "not allowed to access this request"})
+		return false
+	}
+	return true
 }

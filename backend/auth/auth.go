@@ -404,6 +404,13 @@ func (h *AuthHandler) AuthMiddleware(usingAuth bool) gin.HandlerFunc {
 		if session.User != nil {
 			if err := h.refreshIfNeeded(c.Request.Context(), session.User); err != nil {
 				log.Printf("token refresh failed for user %d: %v", session.User.ID, err)
+				if errors.Is(err, errSessionRevoked) {
+					_, _ = h.DB.Model((*db_models.Session)(nil)).Where("session_id = ?", session.ID).Delete()
+					c.SetSameSite(http.SameSiteLaxMode)
+					c.SetCookie(sessionCookie, "", -1, "/", cookieDomain, cookieSecure, true)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "session revoked, please log in again"})
+					return
+				}
 			}
 		}
 
@@ -483,22 +490,37 @@ func hasAdminRole(accessToken string) bool {
 	return false
 }
 
+// errSessionRevoked means the user's Keycloak grant is no longer valid
+// (user disabled, logged out elsewhere, token revoked): the session must end.
+// Other refresh errors (network, IdP down) are treated as temporary.
+var errSessionRevoked = errors.New("session revoked by identity provider")
+
+// refreshIfNeeded renews the access token shortly before it expires. Every
+// renewal re-checks the user with Keycloak and re-reads their admin role, so
+// revoked users and role changes take effect within one token lifetime.
 func (h *AuthHandler) refreshIfNeeded(ctx context.Context, user *db_models.User) error {
 	if !user.AccessTokenExpiresAt.IsZero() && time.Now().Before(user.AccessTokenExpiresAt.Add(-1*time.Minute)) {
 		return nil
 	}
 	if user.RefreshToken == "" {
-		return nil
+		return fmt.Errorf("%w: no refresh token stored", errSessionRevoked)
 	}
 	refresh, err := decryptToken(user.RefreshToken)
 	if err != nil {
-		return fmt.Errorf("decrypt refresh token: %w", err)
+		// e.g. TOKEN_ENCRYPTION_KEY changed: we can't re-check the user anymore.
+		return fmt.Errorf("%w: decrypt refresh token: %v", errSessionRevoked, err)
 	}
 	src := oauth2Config.TokenSource(ctx, &oauth2.Token{RefreshToken: refresh})
 	tok, err := src.Token()
 	if err != nil {
+		var re *oauth2.RetrieveError
+		if errors.As(err, &re) && re.ErrorCode == "invalid_grant" {
+			return fmt.Errorf("%w: %v", errSessionRevoked, err)
+		}
 		return fmt.Errorf("refresh: %w", err)
 	}
+	wasAdmin := user.IsAdmin
+	user.IsAdmin = hasAdminRole(tok.AccessToken)
 	encAccess, err := encryptToken(tok.AccessToken)
 	if err != nil {
 		return err
@@ -516,9 +538,16 @@ func (h *AuthHandler) refreshIfNeeded(ctx context.Context, user *db_models.User)
 		Set("access_token = ?", user.AccessToken).
 		Set("refresh_token = ?", user.RefreshToken).
 		Set("access_token_expires_at = ?", user.AccessTokenExpiresAt).
+		Set("is_admin = ?", user.IsAdmin).
 		Where("id = ?", user.ID).
 		Update()
-	return err
+	if err != nil {
+		return err
+	}
+	if user.IsAdmin && !wasAdmin {
+		return db.GrantAllOrganisations(h.DB, user.ID)
+	}
+	return nil
 }
 
 func (h *AuthHandler) enforceSessionCap(userID int) error {

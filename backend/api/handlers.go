@@ -165,6 +165,9 @@ func (h *Handler) GetMessages(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
 		return
 	}
+	if !h.canAccessRequest(c, id) {
+		return
+	}
 	var res []api_objects.Message
 	var dbResAdmin []db_models.RequestReview
 	var dbResMember []db_models.UserRequestMessage

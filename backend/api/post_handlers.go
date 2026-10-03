@@ -258,6 +258,9 @@ func (h *Handler) PostMessage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
 		return
 	}
+	if !h.canAccessRequest(c, requestId) {
+		return
+	}
 	var msg api_objects.UserMessage
 	if err = c.ShouldBindJSON(&msg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error while parsing payload": err.Error()})
