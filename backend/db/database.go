@@ -92,6 +92,11 @@ func applyColumnMigrations(con *pg.DB) {
 		// Fields removed from the models; leftover columns break "SELECT table.*" in go-pg.
 		`ALTER TABLE "Inventory" DROP COLUMN IF EXISTS item_id`,
 		`ALTER TABLE request DROP COLUMN IF EXISTS group_id`,
+		`ALTER TABLE shelf_unit ADD COLUMN IF NOT EXISTS description TEXT`,
+		`ALTER TABLE shelf_unit ALTER COLUMN description DROP NOT NULL`,
+		// "" must mean "no items" and NULL "not generated yet"; fix up rows written before that held.
+		`UPDATE shelf_unit SET description = '' WHERE description IS NULL AND NOT EXISTS (SELECT 1 FROM "Inventory" i WHERE i.shelf_unit_id = shelf_unit.id)`,
+		`UPDATE shelf_unit SET description = NULL WHERE description = '' AND EXISTS (SELECT 1 FROM "Inventory" i WHERE i.shelf_unit_id = shelf_unit.id)`,
 	}
 	for _, stmt := range migrations {
 		if _, err := con.Exec(stmt); err != nil {

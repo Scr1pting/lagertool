@@ -94,7 +94,7 @@ type ShelfUnit struct { //it is also the new LOCATION
 	Type             int      `json:"type" pg:"type"`                             //0 is small, 1 is big
 	PositionInColumn int      `json:"position_in_column" pg:"position_in_column"` //to change the order of the units in the column later
 	ColumnID         string   `json:"column_id" pg:"column_id"`
-	Description      string   `json:"description" pg:"description"`
+	Description      *string  `json:"description" pg:"description"` // nil = not generated yet, "" = no items
 
 	Column *Column `json:"column" pg:"rel:has-one,fk:column_id"`
 }

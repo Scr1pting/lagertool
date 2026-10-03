@@ -2,7 +2,7 @@ import useFetchInventory from "@/hooks/fetch/useFetchInventory"
 import DataTable from "./DataTable/DataTable"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./shadcn/dialog"
 import AvailabilityDescription from "./AvailabilityDescription"
-import type { Shelf, ShelfElement } from "@/types/shelf"
+import { shelfElementLabel, type Shelf, type ShelfElement } from "@/types/shelf"
 import { inventoryShelfColumns } from "./DataTable/inventoryShelfColumns"
 
 
@@ -28,7 +28,7 @@ function ShelfElementDialog({
       {shelfElement &&
         <DialogContent className="!w-[650px] !max-w-[650px]">
           <DialogHeader>
-            <DialogTitle>{shelfElement.id}</DialogTitle>
+            <DialogTitle>{shelfElementLabel(shelfElement)}</DialogTitle>
             <DialogDescription>
               <AvailabilityDescription />
             </DialogDescription>

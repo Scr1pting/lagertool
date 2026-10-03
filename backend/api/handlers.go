@@ -29,17 +29,28 @@ func NewHandler(db *pg.DB, cfg *config.Config) *Handler {
 // triggerRegenAsync spawns one goroutine per non-empty shelf unit ID and
 // asks description_gen for a new category in the background. Failures are
 // logged but never surfaced to the caller — the item CRUD already
-// succeeded and the description just stays stale until the next change.
+// succeeded and the description just stays NULL until the next change.
 // No-op when the service URL isn't configured (e.g. tests pass nil Cfg).
 func (h *Handler) triggerRegenAsync(shelfUnitIDs ...string) {
 	if h.Cfg == nil || h.Cfg.DescriptionGen.URL == "" {
 		return
 	}
 	baseURL := h.Cfg.DescriptionGen.URL
+	var ids []string
 	for _, id := range shelfUnitIDs {
-		if id == "" {
-			continue
+		if id != "" {
+			ids = append(ids, id)
 		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	// Mark the units as pending synchronously so the next shelf fetch shows
+	// them as loading rather than with a stale category.
+	if err := db.ClearShelfUnitDescriptions(context.Background(), h.DB, ids); err != nil {
+		log.Printf("clear descriptions for shelf units %v: %v", ids, err)
+	}
+	for _, id := range ids {
 		id := id
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

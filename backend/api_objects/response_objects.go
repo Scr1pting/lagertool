@@ -16,8 +16,9 @@ type ShelfColumn struct {
 }
 
 type ShelfElement struct {
-	ID   string `json:"id"`
-	Type string `json:"type"`
+	ID          string  `json:"id"`
+	Type        string  `json:"type"`
+	Description *string `json:"description"` // null while the category is being generated
 }
 
 type InventoryItem struct {

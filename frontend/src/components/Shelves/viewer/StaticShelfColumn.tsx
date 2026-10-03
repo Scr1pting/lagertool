@@ -1,4 +1,4 @@
-import { ELEMENT_CATALOG, type Shelf, type ShelfColumn, type ShelfElement } from "@/types/shelf"
+import { ELEMENT_CATALOG, shelfElementLabel, type Shelf, type ShelfColumn, type ShelfElement } from "@/types/shelf"
 import { ShelfElementViewInner } from "../shared/ShelfElementView"
 
 import styles from './StaticShelf.module.css'
@@ -30,7 +30,7 @@ function StaticShelfColumn({ column, onElementSelect, highlightedElement, showId
               itemDef={definition}
               data-type={element.type}
             >
-              {showIds && <div className={styles.idElement}>{ element.id }</div>}
+              {showIds && <div className={styles.idElement}>{ shelfElementLabel(element) }</div>}
             </ShelfElementViewInner>
           </button>
         )

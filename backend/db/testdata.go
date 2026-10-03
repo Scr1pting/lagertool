@@ -92,8 +92,8 @@ func GetDummyData() (
 	}
 
 	shelfUnits := []db_models.ShelfUnit{
-		{ID: "U-001A", Type: 0, PositionInColumn: 1, ColumnID: columns[0].ID, Column: &columns[0], Description: "Small bin for beakers"},
-		{ID: "U-002B", Type: 1, PositionInColumn: 1, ColumnID: columns[1].ID, Column: &columns[1], Description: "Tall slot for equipment cases"},
+		{ID: "U-001A", Type: 0, PositionInColumn: 1, ColumnID: columns[0].ID, Column: &columns[0]},
+		{ID: "U-002B", Type: 1, PositionInColumn: 1, ColumnID: columns[1].ID, Column: &columns[1]},
 	}
 
 	// Link ShelfUnits to Columns
