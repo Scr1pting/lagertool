@@ -1,12 +1,16 @@
 package auth
 
 import (
+	"context"
 	"encoding/base64"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
 	"lagertool.com/main/db_models"
 )
 
@@ -61,5 +65,52 @@ func TestRequireAdmin(t *testing.T) {
 		if w.Code != tc.want {
 			t.Errorf("%s: status = %d, want %d", name, w.Code, tc.want)
 		}
+	}
+}
+
+func TestRefreshIfNeededClassifiesErrors(t *testing.T) {
+	tokenSecret = make([]byte, 32)
+	encRefresh, err := encryptToken("some-refresh-token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expired := time.Now().Add(-time.Hour)
+
+	cases := map[string]struct {
+		status  int
+		body    string
+		revoked bool
+	}{
+		"grant rejected": {http.StatusBadRequest, `{"error":"invalid_grant","error_description":"Session not active"}`, true},
+		"idp down":       {http.StatusServiceUnavailable, `oops`, false},
+	}
+	for name, tc := range cases {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(tc.status)
+			_, _ = w.Write([]byte(tc.body))
+		}))
+		oauth2Config = &oauth2.Config{ClientID: "x", Endpoint: oauth2.Endpoint{TokenURL: srv.URL}}
+
+		h := &AuthHandler{}
+		err := h.refreshIfNeeded(context.Background(), &db_models.User{ID: 1, RefreshToken: encRefresh, AccessTokenExpiresAt: expired})
+		srv.Close()
+		if err == nil {
+			t.Fatalf("%s: expected an error", name)
+		}
+		if got := errors.Is(err, errSessionRevoked); got != tc.revoked {
+			t.Errorf("%s: revoked = %v, want %v (err: %v)", name, got, tc.revoked, err)
+		}
+	}
+
+	h := &AuthHandler{}
+	if err := h.refreshIfNeeded(context.Background(), &db_models.User{ID: 1, AccessTokenExpiresAt: expired}); !errors.Is(err, errSessionRevoked) {
+		t.Errorf("missing refresh token: want errSessionRevoked, got %v", err)
+	}
+	if err := h.refreshIfNeeded(context.Background(), &db_models.User{ID: 1, RefreshToken: "not-encrypted", AccessTokenExpiresAt: expired}); !errors.Is(err, errSessionRevoked) {
+		t.Errorf("undecryptable refresh token: want errSessionRevoked, got %v", err)
+	}
+	if err := h.refreshIfNeeded(context.Background(), &db_models.User{ID: 1, AccessTokenExpiresAt: time.Now().Add(time.Hour)}); err != nil {
+		t.Errorf("valid access token: want no refresh, got %v", err)
 	}
 }
