@@ -11,7 +11,7 @@ cleanup() {
   [[ -n "$DESCGEN_PID" ]] && kill "$DESCGEN_PID" 2>/dev/null
 
   cd "$(dirname "$0")/../backend" || exit 1
-  docker-compose down
+  docker compose down
 }
 
 trap cleanup EXIT
@@ -20,7 +20,7 @@ trap cleanup EXIT
 # Start db
 echo "Starting db..."
 cd "$(dirname "$0")/../backend" || exit 1
-docker-compose up -d
+docker compose up -d
 cd - > /dev/null
 
 
