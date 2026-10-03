@@ -11,3 +11,26 @@
   box-sizing: border-box;
   overflow-x: hidden;
 }
+
+.overlay {
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+/* Number of pieces in a group drag */
+.overlayCount {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #FDD62F;
+  color: #111;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}

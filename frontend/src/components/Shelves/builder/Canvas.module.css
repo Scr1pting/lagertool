@@ -45,6 +45,11 @@
 
 .boardEmpty {
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -61,6 +66,14 @@
   border: none;
 }
 
+.boardEmptyHint {
+  font-size: 13px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #6b6b6b;
+  white-space: nowrap;
+}
+
 .column {
   display: flex;
   flex-direction: column;
@@ -74,4 +87,13 @@
 
 .columnActive {
   background-color: linear-gradient(to bottom, white, transparent);
+}
+
+.marquee {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  border: 1px solid rgba(253, 214, 47, 0.8);
+  background: rgba(253, 214, 47, 0.08);
+  border-radius: 2px;
 }

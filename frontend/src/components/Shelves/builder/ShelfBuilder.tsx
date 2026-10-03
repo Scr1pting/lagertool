@@ -5,8 +5,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  type DragCancelEvent,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
 
@@ -16,6 +16,8 @@ import ZoomControls from './ZoomControls'
 import useCanvasZoom from './useCanvasZoom'
 import useColumnHistory from './useColumnHistory'
 import HistoryControls from './HistoryControls'
+import BuilderHelp from './BuilderHelp'
+import { allElementIds, moveElements, placeElements, removeElements } from './shelfEdits'
 import {
   ELEMENT_CATALOG,
   type ShelfColumn,
@@ -28,60 +30,11 @@ import { ShelfElementViewInner } from '../shared/ShelfElementView'
 
 import styles from './ShelfBuilder.module.css'
 
-const createColumn = (elements: ShelfElement[] = []): ShelfColumn => ({
-  id: `column-${makeId()}`,
-  elements,
-})
-
-
-// Removes an element, and its column if that ends up empty
-const removeElement = (columns: ShelfColumn[], elementId: string): ShelfColumn[] => {
-  if (!columns.some(column => column.elements.some(element => element.id === elementId))) {
-    return columns
-  }
-
-  return columns
-    .map(column => ({
-      ...column,
-      elements: column.elements.filter(element => element.id !== elementId),
-    }))
-    .filter(column => column.elements.length > 0)
-}
-
 const isEditableTarget = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
 
-const placeElement = (
-  columns: ShelfColumn[],
-  piece: ShelfElement,
-  target: DropTargetData
-): ShelfColumn[] | null => {
-  if (target.kind === 'remove') {
-    return null
-  } else if (target.kind === 'edge') {
-    const freshColumn = createColumn([piece])
-    return target.position === 'left' ? [freshColumn, ...columns] : [...columns, freshColumn]
-  } else {
-    const nextColumns: ShelfColumn[] = []
-    let placed = false
-
-    for (const column of columns) {
-      if (column.id !== target.columnId) {
-        nextColumns.push(column)
-        continue
-      }
-
-      nextColumns.push({
-        ...column,
-        elements: [piece, ...column.elements],
-      })
-      placed = true
-    }
-
-    return placed ? nextColumns : null
-  }
-}
+const EMPTY_SELECTION: ReadonlySet<string> = new Set()
 
 type ShelfBuilderProps = {
   columns: ShelfColumn[];
@@ -99,18 +52,33 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
 
   const [activeDrag, setActiveDrag] = useState<DragItemData | null>(null)
   const { update, undo, redo, canUndo, canRedo } = useColumnHistory(columns, setColumns)
+  const [helpOpen, setHelpOpen] = useState(false)
 
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  // Ignore stale selections (e.g. after undo removed the element)
-  const selectedElementId = selectedId !== null && columns.some(column =>
-    column.elements.some(element => element.id === selectedId)
-  ) ? selectedId : null
+  const [selection, setSelection] = useState<ReadonlySet<string>>(EMPTY_SELECTION)
+  // Ignore stale ids (e.g. after undo removed an element)
+  const selectedIds = useMemo(() => {
+    const existing = new Set(allElementIds(columns))
+    const valid = [...selection].filter(id => existing.has(id))
+    return valid.length === selection.size ? selection : new Set(valid)
+  }, [columns, selection])
 
-  // A click fires on the canvas after a drag ends; don't let it clear the selection
+  // The pieces moving with the current drag: the whole selection if the dragged piece is part of it
+  const draggedIds = useMemo((): ReadonlySet<string> => {
+    if (activeDrag?.source !== 'board') return EMPTY_SELECTION
+    return selectedIds.has(activeDrag.pieceId) ? selectedIds : new Set([activeDrag.pieceId])
+  }, [activeDrag, selectedIds])
+
+  // A click fires on the piece after a drag ends; don't let it collapse the selection
   const justDragged = useRef(false)
-  const handleSelect = useCallback((elementId: string | null) => {
+  const handlePieceClick = useCallback((elementId: string, additive: boolean) => {
     if (justDragged.current) return
-    setSelectedId(elementId)
+    setSelection(previous => {
+      if (!additive) return new Set([elementId])
+      const next = new Set(previous)
+      if (next.has(elementId)) next.delete(elementId)
+      else next.add(elementId)
+      return next
+    })
   }, [])
 
   const boardRef = useRef<HTMLElement>(null)
@@ -123,15 +91,26 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
     disabled: activeDrag !== null,
   })
 
+  // Where the piece was grabbed (relative to its top-left), so a resized drag preview stays under the pointer
+  const [grabOffset, setGrabOffset] = useState({ x: 0, y: 0 })
+  const [overCanvas, setOverCanvas] = useState(false)
+
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const data = event.active.data.current as DragItemData | undefined
-    if (!data) {
-      setActiveDrag(null)
-    } else {
-      setActiveDrag(data)
-      // Dragging a canvas piece selects it
-      setSelectedId(data.source === 'board' ? data.pieceId : null)
-    }
+    // Dragging never changes the selection; only clicks do
+    setActiveDrag((event.active.data.current as DragItemData | undefined) ?? null)
+    setOverCanvas(false)
+
+    const pointer = event.activatorEvent as PointerEvent | null
+    const grabbed = pointer?.target instanceof Element ? pointer.target.closest('[data-type]') : null
+    const rect = grabbed?.getBoundingClientRect()
+    setGrabOffset(pointer && rect
+      ? { x: pointer.clientX - rect.left, y: pointer.clientY - rect.top }
+      : { x: 0, y: 0 })
+  }, [])
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const kind = (event.over?.data.current as DropTargetData | undefined)?.kind
+    setOverCanvas(kind === 'column' || kind === 'edge')
   }, [])
 
   const handleDragEnd = useCallback(
@@ -143,88 +122,51 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
       justDragged.current = true
       setTimeout(() => { justDragged.current = false }, 0)
 
-      if (!activeData) {
-        return
-      }
+      if (!activeData) return
 
-      // Remove elements that are dropped onto the panel or outside the drag area
-      if (!overData || overData.kind === 'remove') {
-        if (activeData.source === 'board') {
-          update(previousColumns => removeElement(previousColumns, activeData.pieceId))
-        }
-        return
-      }
-
-      // Handle moving elements from the palette into the canvas
+      // Add a new piece from the palette
       if (activeData.source === 'palette') {
-        const newElement: ShelfElement = {
-          id: makeId(),
-          type: activeData.itemType,
-        }
-
-        update(previousColumns => {
-          const nextColumns = placeElement(previousColumns, newElement, overData)
-          if (!nextColumns) {
-            return previousColumns
-          }
-          return nextColumns
-        })
+        if (!overData) return
+        const newElement: ShelfElement = { id: makeId(), type: activeData.itemType }
+        update(previousColumns => placeElements(previousColumns, [newElement], overData) ?? previousColumns)
         return
-      
-      // Handle moving elements from one position to another
-      } else {
-        update(previousColumns => {
-          const originColumnIndex = previousColumns.findIndex(
-            column => column.id === activeData.columnId
-          )
-          if (originColumnIndex === -1) {
-            return previousColumns
-          }
-
-          const originColumn = previousColumns[originColumnIndex]
-          const elementIndex = originColumn.elements.findIndex(
-            element => element.id === activeData.pieceId
-          )
-          if (elementIndex === -1) {
-            return previousColumns
-          }
-
-          const movingPiece = originColumn.elements[elementIndex]
-          const columnsWithoutPiece = previousColumns.map((column, index) =>
-            index === originColumnIndex
-              ? { ...column, elements: column.elements.filter(element => element.id !== movingPiece.id) }
-              : column
-          )
-
-          const nextColumns = placeElement(columnsWithoutPiece, movingPiece, overData)
-          return nextColumns?.filter(column => column.elements.length > 0) ?? previousColumns
-        })
       }
+
+      // Remove pieces dropped onto the panel or outside the drag area
+      if (!overData || overData.kind === 'remove') {
+        update(previousColumns => removeElements(previousColumns, draggedIds))
+        return
+      }
+
+      // Move pieces
+      update(previousColumns => moveElements(previousColumns, draggedIds, overData))
     },
-    [update]
+    [update, draggedIds]
   )
 
-  const handleDragCancel = useCallback((_: DragCancelEvent) => {
+  const handleDragCancel = useCallback(() => {
     setActiveDrag(null)
   }, [])
-  
-  // Keyboard: Delete/Backspace removes the selection, Esc deselects, Cmd/Ctrl+Z undoes, Cmd/Ctrl+Shift+Z or Ctrl+Y redoes.
+
+  // Keyboard: Delete/Backspace removes the selection, Cmd/Ctrl+A selects all, Esc deselects, ? toggles help,
+  // Cmd/Ctrl+Z undoes, Cmd/Ctrl+Shift+Z or Ctrl+Y redoes.
   // Handlers are read from a ref so the listener never sees stale state between key repeats.
-  const keyHandlers = useRef({ undo, redo, removeSelected: () => {}, dragging: false })
+  const keyHandlers = useRef({ undo, redo, removeSelected: () => {}, selectAll: () => {}, dragging: false })
   keyHandlers.current = {
     undo,
     redo,
     removeSelected: () => {
-      if (selectedElementId === null) return
-      update(previousColumns => removeElement(previousColumns, selectedElementId))
-      setSelectedId(null)
+      if (selectedIds.size === 0) return
+      update(previousColumns => removeElements(previousColumns, selectedIds))
+      setSelection(EMPTY_SELECTION)
     },
+    selectAll: () => setSelection(new Set(allElementIds(columns))),
     dragging: activeDrag !== null,
   }
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      // Leave typing and the "Next" dialog alone
+      // Leave typing and dialogs alone
       if (isEditableTarget(event.target)) return
       if (event.target instanceof Element && event.target.closest('[role="dialog"]')) return
 
@@ -239,10 +181,14 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
         else handlers.undo()
       } else if (modifier && key === 'y') {
         handlers.redo()
+      } else if (modifier && key === 'a') {
+        handlers.selectAll()
       } else if (!modifier && (event.key === 'Delete' || event.key === 'Backspace')) {
         handlers.removeSelected()
+      } else if (!modifier && event.key === '?') {
+        setHelpOpen(open => !open)
       } else if (event.key === 'Escape') {
-        setSelectedId(null)
+        setSelection(EMPTY_SELECTION)
       } else {
         return
       }
@@ -273,19 +219,29 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
     if (!pieceType) {
       return null
     }
-    
-    // Board pieces are dragged at the canvas zoom, palette pieces at their palette size
+
+    // Board pieces are dragged at the canvas zoom. Palette pieces start at their panel size and shrink
+    // to the canvas size once over the canvas (never grow), scaling around the grab point.
+    const style = activeDrag.source === 'board'
+      ? { '--shelf-scale': zoom } as CSSProperties
+      : {
+          transform: `scale(${overCanvas ? Math.min(1, zoom) : 1})`,
+          transformOrigin: `${grabOffset.x}px ${grabOffset.y}px`,
+        }
+
     return (
-      <div style={{ '--shelf-scale': activeDrag.source === 'board' ? zoom : 1 } as CSSProperties}>
+      <div className={styles.overlay} style={style}>
         <ShelfElementViewInner itemDef={ELEMENT_CATALOG[pieceType]} />
+        {draggedIds.size > 1 && <span className={styles.overlayCount}>{draggedIds.size}</span>}
       </div>
     )
-  }, [activeDrag, columns, zoom])
+  }, [activeDrag, columns, zoom, draggedIds, overCanvas, grabOffset])
 
   return (
     <DndContext
       sensors={sensors}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
@@ -297,15 +253,19 @@ function ShelfBuilder({ columns, setColumns, panelHeaderAction, panelFooter }: S
             <HistoryControls onUndo={undo} onRedo={redo} canUndo={canUndo} canRedo={canRedo} />
           }
           removing={activeDrag?.source === 'board'}
+          removeCount={draggedIds.size}
           footer={panelFooter}
+          footerAccessory={<BuilderHelp open={helpOpen} onOpenChange={setHelpOpen} />}
         />
         <Canvas
           columns={columns}
           zoom={zoom}
           boardRef={boardRef}
           columnsRef={columnsRef}
-          selectedId={selectedElementId}
-          onSelect={handleSelect}
+          selectedIds={selectedIds}
+          draggedIds={draggedIds}
+          onPieceClick={handlePieceClick}
+          onSelectionChange={setSelection}
         />
         <ZoomControls
           zoom={zoom}

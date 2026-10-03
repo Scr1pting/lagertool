@@ -1,6 +1,6 @@
 .palette {
   position: relative;
-  width: 264px;
+  width: 248px;
   flex-shrink: 0;
   align-self: stretch;
   display: flex;
@@ -32,30 +32,6 @@
   color: #fafafa;
 }
 
-/* Sections */
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-}
-
-.sectionLabel {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: #737373;
-}
-
-.hint {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #8a8a8a;
-}
-
 .stats {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
   font-size: 11px;
@@ -63,40 +39,44 @@
   color: #737373;
 }
 
-/* Elements */
-.list {
+/* Elements: centered in the panel's free space, so the empty space reads as intentional */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.tray {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 8px 0;
+  gap: 48px;
 }
 
-.spacer {
-  flex: 1;
+.slot {
+  display: flex;
+  justify-content: center;
+}
+
+/* Lift slightly on hover to signal the pieces can be picked up.
+   Applied to the draggable inside the piece, since its motion wrapper controls its own transform. */
+.slot > * > * {
+  transition: transform 0.2s ease;
+}
+
+.slot:hover > * > * {
+  transform: translateY(-1px);
 }
 
 /* Footer */
 .footer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 20px 20px;
+  gap: 16px;
+  padding: 20px;
   border-top: 1px solid #1c1c1c;
-}
-
-.kbd {
-  display: inline-block;
-  min-width: 18px;
-  padding: 0 4px;
-  border: 1px solid #333;
-  border-radius: 4px;
-  background: #161616;
-  font-family: inherit;
-  font-size: 11px;
-  line-height: 16px;
-  text-align: center;
-  color: #d4d4d4;
 }
 
 /* Shown while a canvas piece is dragged; the whole panel is the drop target */
@@ -132,4 +112,11 @@
   width: 28px;
   height: 28px;
   stroke-width: 1.5;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -6px -6px -4px 0; /* Let the icon button sit flush without growing the row */
 }

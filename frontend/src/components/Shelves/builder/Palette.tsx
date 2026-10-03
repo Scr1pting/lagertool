@@ -14,12 +14,14 @@ type PaletteProps = {
   headerAction?: ReactNode;  // Shown left of the title (e.g. exit)
   headerControls?: ReactNode;  // Shown right of the title (e.g. undo/redo)
   removing?: boolean;  // A canvas piece is being dragged, so the panel acts as a remove target
+  removeCount?: number;  // How many pieces that drag would remove
   footer?: ReactNode;  // Pinned to the bottom of the panel
+  footerAccessory?: ReactNode;  // Shown next to the stats (e.g. help)
 };
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
 
-function Palette({ columns, title = 'New shelf', headerAction, headerControls, removing, footer }: PaletteProps) {
+function Palette({ columns, title = 'New shelf', headerAction, headerControls, removing, removeCount = 1, footer, footerAccessory }: PaletteProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: 'panel-remove',
     data: { kind: 'remove' } satisfies DropTargetData,
@@ -40,32 +42,31 @@ function Palette({ columns, title = 'New shelf', headerAction, headerControls, r
         {headerControls && <div className={styles.headerControls}>{headerControls}</div>}
       </header>
 
-      <section className={styles.section}>
-        <h3 className={styles.sectionLabel}>Elements</h3>
-        <p className={styles.hint}>Drag onto the canvas. Drop on a column to stack, or beside the shelf to start a new column.</p>
-        <p className={styles.hint}>To remove a piece, drag it back here or select it and press <kbd className={styles.kbd}>⌫</kbd>.</p>
+      <section className={styles.stage} aria-label="Elements">
 
-        <div className={styles.list}>
+        <div className={styles.tray}>
           {catalogEntries.map(([itemType, itemDef]) => (
-            <ShelfPiece
-              key={itemType}
-              itemDef={itemDef}
-              draggableId={`palette-${itemType}`}
-              dragData={{ source: 'palette', itemType }}
-              data-type={itemType}
-              title={itemDef.label}
-              aria-label={itemDef.label}
-            />
+            <div key={itemType} className={styles.slot}>
+              <ShelfPiece
+                itemDef={itemDef}
+                draggableId={`palette-${itemType}`}
+                dragData={{ source: 'palette', itemType }}
+                data-type={itemType}
+                title={itemDef.label}
+                aria-label={itemDef.label}
+              />
+            </div>
           ))}
         </div>
       </section>
 
-      <div className={styles.spacer} />
-
       <footer className={styles.footer}>
-        <span className={styles.stats}>
-          {plural(columns.length, 'column')} · {plural(elementCount, 'element')}
-        </span>
+        <div className={styles.footerRow}>
+          <span className={styles.stats}>
+            {plural(columns.length, 'column')} · {plural(elementCount, 'element')}
+          </span>
+          {footerAccessory}
+        </div>
         {footer}
       </footer>
 
@@ -74,7 +75,7 @@ function Palette({ columns, title = 'New shelf', headerAction, headerControls, r
         aria-hidden={!removing}
       >
         <Trash2 className={styles.removeIcon} />
-        <span>Release to remove</span>
+        <span>{removeCount > 1 ? `Release to remove ${removeCount} pieces` : 'Release to remove'}</span>
       </div>
     </aside>
   )
