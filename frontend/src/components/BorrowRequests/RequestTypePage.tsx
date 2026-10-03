@@ -7,11 +7,19 @@ import { useState } from "react"
 interface RequestTypePageProps {
   borrowRequests: BorrowRequest[]
   showApproveReject: boolean
+  onReviewed?: () => void
 }
 
-function RequestTypePage({ borrowRequests, showApproveReject }: RequestTypePageProps) {
-  const [selectedRequest, setSelectedRequest]
-    = useState<BorrowRequest>(borrowRequests[0])
+function RequestTypePage({ borrowRequests, showApproveReject, onReviewed }: RequestTypePageProps) {
+  // Track the selection by id so it follows refetched data; fall back to the
+  // first request when the selected one left this list (e.g. after approving).
+  const [selectedId, setSelectedId] = useState<number | undefined>(borrowRequests[0]?.id)
+  const selectedRequest = borrowRequests.find(r => r.id === selectedId) ?? borrowRequests[0]
+  const setSelectedRequest = (r: BorrowRequest) => setSelectedId(r.id)
+
+  if (!selectedRequest) {
+    return <p className="mt-6 text-sm text-muted-foreground">No requests.</p>
+  }
 
   return (
     <ResizablePanelGroup
@@ -37,6 +45,7 @@ function RequestTypePage({ borrowRequests, showApproveReject }: RequestTypePageP
         <RequestDetail
           request={selectedRequest}
           showApproveReject={showApproveReject}
+          onReviewed={onReviewed}
         />
       </ResizablePanel>
     </ResizablePanelGroup>

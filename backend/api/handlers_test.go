@@ -917,6 +917,37 @@ func TestRequestReviewSuccess(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, loans, "Expected loan record to be created for loanable item")
 		assert.False(t, loans[0].IsReturned)
+
+		// The request itself is now approved.
+		var updated db_models.Request
+		assert.NoError(t, dbCon.Model(&updated).Where("id = ?", request.ID).Select())
+		assert.Equal(t, "approved", updated.State)
+
+		// Reviewing again is refused and creates no duplicate loans.
+		req2, _ := http.NewRequest("POST", "/requests/"+strconv.Itoa(request.ID)+"/review", strings.NewReader(payload))
+		req2.Header.Set("Content-Type", "application/json")
+		w2 := httptest.NewRecorder()
+		router.ServeHTTP(w2, req2)
+		assert.Equal(t, http.StatusConflict, w2.Code)
+		n, err := dbCon.Model((*db_models.Loans)(nil)).Where("request_item_id = ?", loanableRequestItem.ID).Count()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, n, "no duplicate loans")
+	})
+
+	t.Run("Invalid outcome", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/requests/"+strconv.Itoa(request.ID)+"/review", strings.NewReader(`{"outcome": "maybe"}`))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Unknown request", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/requests/999999/review", strings.NewReader(`{"outcome": "rejected"}`))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 }
 

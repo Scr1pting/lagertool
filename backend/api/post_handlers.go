@@ -207,6 +207,30 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if req.Outcome != "approved" && req.Outcome != "rejected" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": `outcome must be "approved" or "rejected"`})
+		return
+	}
+
+	var request db_models.Request
+	err = h.DB.Model(&request).
+		Relation("RequestItems.Inventory").
+		Where("id = ?", requestId).
+		Select()
+	if errors.Is(err, pg.ErrNoRows) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "request not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// Only unreviewed requests: approving twice would create duplicate loans.
+	if mapApprovalState(request.State) != "pending" {
+		c.JSON(http.StatusConflict, gin.H{"error": "request was already reviewed (" + request.State + ")"})
+		return
+	}
+
 	rev := &db_models.RequestReview{
 		UserID:    actingUserID(c, req.UserID),
 		RequestID: requestId,
@@ -221,16 +245,6 @@ func (h *Handler) RequestReview(c *gin.Context) {
 	}
 
 	if rev.Outcome == "approved" {
-		var request db_models.Request
-		err := h.DB.Model(&request).
-			Relation("RequestItems.Inventory").
-			Where("id = ?", requestId).
-			Select()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
 		for _, rItem := range request.RequestItems {
 			if rItem.Inventory.IsConsumable {
 				cons := &db_models.Consumed{
@@ -254,6 +268,11 @@ func (h *Handler) RequestReview(c *gin.Context) {
 				}
 			}
 		}
+	}
+
+	if err := db.UpdateRequest(h.DB, requestId, rev.Outcome); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, rev)
 }
