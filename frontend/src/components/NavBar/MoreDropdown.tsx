@@ -10,6 +10,8 @@ import {
 import { Link } from "react-router"
 import clsx from "clsx"
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
 export default function MoreDropdown() {
   return (
     <DropdownMenu >
@@ -26,6 +28,10 @@ export default function MoreDropdown() {
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Link to="/borrow-requests">Borrow Requests</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            {/* Full page navigation: the backend redirects on to Keycloak's logout. */}
+            <a href={`${API_BASE_URL}/auth/eduid/logout`}>Logout</a>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

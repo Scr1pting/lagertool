@@ -1,9 +1,10 @@
 import useFetch from "@/hooks/fetch/useFetch"
 import type { BorrowRequest } from "@/types/borrowRequest"
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
 function useFetchBorrowRequestsPersonal() {
-  const userId = 1
-  return useFetch<BorrowRequest[]>(`/borrow_requests?userId=${userId}`)
+  return useFetch<BorrowRequest[]>(`${API_BASE_URL}/me/borrow_requests`)
 }
 
 export default useFetchBorrowRequestsPersonal
