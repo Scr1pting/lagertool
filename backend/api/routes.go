@@ -19,6 +19,7 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 
 	protected := r.Group("/")
 	protected.Use(authHandler.AuthMiddleware(using_auth))
+	adminOnly := authHandler.RequireAdmin(using_auth)
 	{
 		// Resources
 		protected.GET("/organisations", h.GetOrganisations)
@@ -26,14 +27,14 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.GET("/organisations/:orgId/rooms", h.GetRooms)
 		protected.GET("/organisations/:orgId/shelves", h.GetShelves)
 		protected.GET("/organisations/:orgId/inventory", h.GetInventory) // ?start=X&end=X
-		protected.POST("/organisations/:orgId/buildings", h.CreateBuilding)
-		protected.POST("/organisations/:orgId/buildings/:buildingId/rooms", h.CreateRoom)
-		protected.POST("/organisations/:orgId/buildings/:buildingId/rooms/:roomId/shelves", h.CreateShelf)
+		protected.POST("/organisations/:orgId/buildings", adminOnly, h.CreateBuilding)
+		protected.POST("/organisations/:orgId/buildings/:buildingId/rooms", adminOnly, h.CreateRoom)
+		protected.POST("/organisations/:orgId/buildings/:buildingId/rooms/:roomId/shelves", adminOnly, h.CreateShelf)
 
 		// Items
 		protected.GET("/organisations/:orgId/items/:id", h.GetItem) // ?start=X&end=X
-		protected.POST("/organisations/:orgId/items", h.CreateItem)
-		protected.PUT("/organisations/:orgId/items/:id", h.UpdateItem)
+		protected.POST("/organisations/:orgId/items", adminOnly, h.CreateItem)
+		protected.PUT("/organisations/:orgId/items/:id", adminOnly, h.UpdateItem)
 		protected.GET("/organisations/:orgId/items/:id/borrows", h.GetBorrowHistory)
 
 		// Logged-in user ("me" = owner of the session cookie)
@@ -56,10 +57,10 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 
 		// Loans & Requests
 		protected.GET("/borrow_requests", h.GetBorrowRequests) // all: admin only; ?userId=N: that user or admin
-		protected.PUT("/loans/:id", h.UpdateLoan)
-		protected.PUT("/requests/:id", h.UpdateRequest)
-		protected.PUT("/requests/:id/loans", h.UpdateLoanBulk)
-		protected.POST("/requests/:id/review", h.RequestReview)
+		protected.PUT("/loans/:id", adminOnly, h.UpdateLoan)
+		protected.PUT("/requests/:id", adminOnly, h.UpdateRequest)
+		protected.PUT("/requests/:id/loans", adminOnly, h.UpdateLoanBulk)
+		protected.POST("/requests/:id/review", adminOnly, h.RequestReview)
 		protected.GET("/requests/:id/messages", h.GetMessages)
 		protected.POST("/requests/:id/messages", h.PostMessage)
 	}

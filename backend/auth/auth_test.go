@@ -2,7 +2,12 @@ package auth
 
 import (
 	"encoding/base64"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"lagertool.com/main/db_models"
 )
 
 func fakeToken(payload string) string {
@@ -27,5 +32,34 @@ func TestHasAdminRole(t *testing.T) {
 	}
 	if hasAdminRole("not-a-jwt") {
 		t.Error("malformed token should not be admin")
+	}
+}
+
+func TestRequireAdmin(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := &AuthHandler{}
+	cases := map[string]struct {
+		usingAuth bool
+		user      *db_models.User
+		want      int
+	}{
+		"admin":         {true, &db_models.User{ID: 1, IsAdmin: true}, http.StatusOK},
+		"normal user":   {true, &db_models.User{ID: 2}, http.StatusForbidden},
+		"no user":       {true, nil, http.StatusForbidden},
+		"auth disabled": {false, nil, http.StatusOK},
+	}
+	for name, tc := range cases {
+		r := gin.New()
+		r.GET("/x", func(c *gin.Context) {
+			if tc.user != nil {
+				c.Set("user", tc.user)
+			}
+			c.Next()
+		}, h.RequireAdmin(tc.usingAuth), func(c *gin.Context) { c.Status(http.StatusOK) })
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/x", nil))
+		if w.Code != tc.want {
+			t.Errorf("%s: status = %d, want %d", name, w.Code, tc.want)
+		}
 	}
 }

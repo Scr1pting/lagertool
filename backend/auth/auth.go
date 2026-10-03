@@ -25,6 +25,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
+	"lagertool.com/main/db"
 	"lagertool.com/main/db_models"
 )
 
@@ -291,6 +292,13 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 		user.IsAdmin = isAdmin
 		if _, err = h.DB.Model(&user).WherePK().Update(); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "user update failed", "details": err.Error()})
+			return
+		}
+	}
+
+	if user.IsAdmin {
+		if err := db.GrantAllOrganisations(h.DB, user.ID); err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "granting organisation rights failed", "details": err.Error()})
 			return
 		}
 	}
