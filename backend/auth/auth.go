@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
+	"lagertool.com/main/db"
 	"lagertool.com/main/db_models"
 )
 
@@ -38,17 +40,17 @@ const (
 	oauthFlowCookie = "oauth_flow"
 )
 
+// Set by InitOIDC. Env is read there rather than at package init so that
+// values from .env (loaded in main) are picked up.
 var (
-	clientID           = os.Getenv("VSETH_CLIENT_ID")
-	clientSecret       = os.Getenv("VSETH_CLIENT_SECRET")
-	redirectURL        = envOr("OIDC_REDIRECT_URL", "https://localhost:8080/auth/eduid/callback") //fake domain
-	issuerURL          = envOr("OIDC_ISSUER_URL", "https://keycloak-fake.vis.ethz.ch/realms/VSETH")
-	postLogoutRedirect = envOr("OIDC_POST_LOGOUT_REDIRECT", "localhost:8080") //fake domain !!
-	cookieDomain       = envOr("COOKIE_DOMAIN", "localhost")
-	cookieSecure       = envOr("COOKIE_SECURE", "true") != "false"
+	clientID           string
+	postLogoutRedirect string
+	frontendURL        string
+	cookieDomain       string
+	cookieSecure       bool
 
-	flowSecret  = mustSecret("SESSION_SECRET", 32)
-	tokenSecret = mustSecret("TOKEN_ENCRYPTION_KEY", 32)
+	flowSecret  []byte
+	tokenSecret []byte
 
 	oauth2Config       *oauth2.Config
 	oidcProvider       *oidc.Provider
@@ -79,7 +81,23 @@ func mustSecret(env string, size int) []byte {
 	return h[:size]
 }
 
-func init() {
+// InitOIDC reads the auth config and contacts the identity provider. Only
+// called when auth is enabled, so the server and tests run without Keycloak.
+func InitOIDC() {
+	clientID = os.Getenv("VSETH_CLIENT_ID")
+	clientSecret := os.Getenv("VSETH_CLIENT_SECRET")
+	if clientID == "" || clientSecret == "" {
+		log.Fatal("VSETH_CLIENT_ID and VSETH_CLIENT_SECRET must be set when running with -using_auth")
+	}
+	redirectURL := envOr("OIDC_REDIRECT_URL", "http://localhost:8000/auth/eduid/callback")
+	issuerURL := envOr("OIDC_ISSUER_URL", "https://keycloak-fake.vis.ethz.ch/realms/VSETH")
+	frontendURL = envOr("FRONTEND_URL", "http://localhost:5173")
+	postLogoutRedirect = envOr("OIDC_POST_LOGOUT_REDIRECT", frontendURL)
+	cookieDomain = os.Getenv("COOKIE_DOMAIN") // empty = host-only cookie
+	cookieSecure = envOr("COOKIE_SECURE", "true") != "false"
+	flowSecret = mustSecret("SESSION_SECRET", 32)
+	tokenSecret = mustSecret("TOKEN_ENCRYPTION_KEY", 32)
+
 	var err error
 	oidcProvider, err = oidc.NewProvider(context.Background(), issuerURL)
 	if err != nil {
@@ -218,9 +236,11 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 		Name  string `json:"name"`
 		Email string `json:"email"`
 	}
-	if err := idToken.Claims(&claims); err != nil {
-		log.Printf("failed to extract claims: %v", err)
+	if err := idToken.Claims(&claims); err != nil || claims.Sub == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "failed to extract claims"})
+		return
 	}
+	isAdmin := hasAdminRole(oauth2Token.AccessToken)
 
 	encAccess, err := encryptToken(oauth2Token.AccessToken)
 	if err != nil {
@@ -252,6 +272,7 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 			AccessTokenExpiresAt: oauth2Token.Expiry,
 			CreatedAt:            time.Now(),
 			LastLogin:            time.Now(),
+			IsAdmin:              isAdmin,
 		}
 		if _, err = h.DB.Model(&user).Insert(); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "user insert failed", "details": err.Error()})
@@ -268,14 +289,23 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 		user.RefreshToken = encRefresh
 		user.AccessTokenExpiresAt = oauth2Token.Expiry
 		user.LastLogin = time.Now()
+		user.IsAdmin = isAdmin
 		if _, err = h.DB.Model(&user).WherePK().Update(); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "user update failed", "details": err.Error()})
 			return
 		}
 	}
 
+	if user.IsAdmin {
+		if err := db.GrantAllOrganisations(h.DB, user.ID); err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "granting organisation rights failed", "details": err.Error()})
+			return
+		}
+	}
+
 	now := time.Now()
 	session := db_models.Session{
+		ID:        uuid.New().String(),
 		UserID:    user.ID,
 		CreatedAt: now,
 		ExpiresAt: now.Add(sessionLifetime),
@@ -292,25 +322,23 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 	}
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(sessionCookie, fmt.Sprint(session.ID), int(sessionLifetime.Seconds()), "/", cookieDomain, cookieSecure, true)
-	c.JSON(http.StatusOK, gin.H{"message": "authentication successful"})
+	c.SetCookie(sessionCookie, session.ID, int(sessionLifetime.Seconds()), "/", cookieDomain, cookieSecure, true)
+	c.Redirect(http.StatusFound, frontendURL)
 }
 
 func (h *AuthHandler) LogoutHandler(c *gin.Context) {
-	sessionID, err := c.Cookie(sessionCookie)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "no session cookie"})
-		return
-	}
-
+	// Without a local session we still end the Keycloak SSO session below,
+	// otherwise the next /login would silently log the same user back in.
 	var session db_models.Session
-	err = h.DB.Model(&session).Where("session_id = ?", sessionID).Limit(1).Select()
-	if err != nil && !errors.Is(err, pg.ErrNoRows) {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "session lookup failed", "details": err.Error()})
-		return
+	if sessionID, err := c.Cookie(sessionCookie); err == nil {
+		err = h.DB.Model(&session).Where("session_id = ?", sessionID).Limit(1).Select()
+		if err != nil && !errors.Is(err, pg.ErrNoRows) {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "session lookup failed", "details": err.Error()})
+			return
+		}
 	}
 
-	if session.ID != 0 {
+	if session.ID != "" {
 		if _, err := h.DB.Model((*db_models.Session)(nil)).Where("session_id = ?", session.ID).Delete(); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to delete session", "details": err.Error()})
 			return
@@ -342,7 +370,17 @@ func (h *AuthHandler) LogoutHandler(c *gin.Context) {
 
 func (h *AuthHandler) AuthMiddleware(usingAuth bool) gin.HandlerFunc {
 	if !usingAuth {
-		return func(c *gin.Context) { c.Next() }
+		// Local dev without Keycloak: act as a fixed user (DEV_USER_ID, default 1)
+		// with admin rights, so /me routes work. No user in the DB = no user set.
+		devUserID := envOr("DEV_USER_ID", "1")
+		return func(c *gin.Context) {
+			var user db_models.User
+			if err := h.DB.Model(&user).Where("id = ?", devUserID).Limit(1).Select(); err == nil {
+				user.IsAdmin = true
+				c.Set("user", &user)
+			}
+			c.Next()
+		}
 	}
 	return func(c *gin.Context) {
 		sessionID, err := c.Cookie(sessionCookie)
@@ -366,6 +404,13 @@ func (h *AuthHandler) AuthMiddleware(usingAuth bool) gin.HandlerFunc {
 		if session.User != nil {
 			if err := h.refreshIfNeeded(c.Request.Context(), session.User); err != nil {
 				log.Printf("token refresh failed for user %d: %v", session.User.ID, err)
+				if errors.Is(err, errSessionRevoked) {
+					_, _ = h.DB.Model((*db_models.Session)(nil)).Where("session_id = ?", session.ID).Delete()
+					c.SetSameSite(http.SameSiteLaxMode)
+					c.SetCookie(sessionCookie, "", -1, "/", cookieDomain, cookieSecure, true)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "session revoked, please log in again"})
+					return
+				}
 			}
 		}
 
@@ -377,7 +422,7 @@ func (h *AuthHandler) AuthMiddleware(usingAuth bool) gin.HandlerFunc {
 				Update(); err == nil {
 				session.ExpiresAt = newExpiry
 				c.SetSameSite(http.SameSiteLaxMode)
-				c.SetCookie(sessionCookie, fmt.Sprint(session.ID), int(sessionLifetime.Seconds()), "/", cookieDomain, cookieSecure, true)
+				c.SetCookie(sessionCookie, session.ID, int(sessionLifetime.Seconds()), "/", cookieDomain, cookieSecure, true)
 			}
 		}
 
@@ -387,22 +432,95 @@ func (h *AuthHandler) AuthMiddleware(usingAuth bool) gin.HandlerFunc {
 	}
 }
 
+// RequireAdmin must run after AuthMiddleware. It rejects users without admin rights.
+func (h *AuthHandler) RequireAdmin(usingAuth bool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !usingAuth {
+			c.Next()
+			return
+		}
+		user, ok := c.Get("user")
+		if u, isUser := user.(*db_models.User); !ok || !isUser || u == nil || !u.IsAdmin {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "admin rights required"})
+			return
+		}
+		c.Next()
+	}
+}
+
+// adminRoles returns the "client:role" pairs from AUTH_ADMIN_ROLES that grant
+// lagertool admin rights. Default member-api:admin, which in the VSETH realm is
+// held by admins and Vorstand but not by normal users.
+// Switch to lagertool:admin once VSETH defines roles for the lagertool client.
+func adminRoles() []string {
+	return strings.Split(envOr("AUTH_ADMIN_ROLES", "member-api:admin"), ",")
+}
+
+// hasAdminRole checks the Keycloak client roles (resource_access) in the
+// access token. The token comes straight from the token endpoint over TLS
+// (back channel), so its payload is read without re-verifying the signature.
+func hasAdminRole(accessToken string) bool {
+	parts := strings.Split(accessToken, ".")
+	if len(parts) != 3 {
+		return false
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		log.Printf("Failed to decode access token: %v", err)
+		return false
+	}
+	var claims struct {
+		ResourceAccess map[string]struct {
+			Roles []string `json:"roles"`
+		} `json:"resource_access"`
+	}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		log.Printf("Failed to parse access token claims: %v", err)
+		return false
+	}
+	for _, pair := range adminRoles() {
+		client, role, ok := strings.Cut(strings.TrimSpace(pair), ":")
+		if !ok {
+			continue
+		}
+		if slices.Contains(claims.ResourceAccess[client].Roles, role) {
+			return true
+		}
+	}
+	return false
+}
+
+// errSessionRevoked means the user's Keycloak grant is no longer valid
+// (user disabled, logged out elsewhere, token revoked): the session must end.
+// Other refresh errors (network, IdP down) are treated as temporary.
+var errSessionRevoked = errors.New("session revoked by identity provider")
+
+// refreshIfNeeded renews the access token shortly before it expires. Every
+// renewal re-checks the user with Keycloak and re-reads their admin role, so
+// revoked users and role changes take effect within one token lifetime.
 func (h *AuthHandler) refreshIfNeeded(ctx context.Context, user *db_models.User) error {
 	if !user.AccessTokenExpiresAt.IsZero() && time.Now().Before(user.AccessTokenExpiresAt.Add(-1*time.Minute)) {
 		return nil
 	}
 	if user.RefreshToken == "" {
-		return nil
+		return fmt.Errorf("%w: no refresh token stored", errSessionRevoked)
 	}
 	refresh, err := decryptToken(user.RefreshToken)
 	if err != nil {
-		return fmt.Errorf("decrypt refresh token: %w", err)
+		// e.g. TOKEN_ENCRYPTION_KEY changed: we can't re-check the user anymore.
+		return fmt.Errorf("%w: decrypt refresh token: %v", errSessionRevoked, err)
 	}
 	src := oauth2Config.TokenSource(ctx, &oauth2.Token{RefreshToken: refresh})
 	tok, err := src.Token()
 	if err != nil {
+		var re *oauth2.RetrieveError
+		if errors.As(err, &re) && re.ErrorCode == "invalid_grant" {
+			return fmt.Errorf("%w: %v", errSessionRevoked, err)
+		}
 		return fmt.Errorf("refresh: %w", err)
 	}
+	wasAdmin := user.IsAdmin
+	user.IsAdmin = hasAdminRole(tok.AccessToken)
 	encAccess, err := encryptToken(tok.AccessToken)
 	if err != nil {
 		return err
@@ -420,13 +538,20 @@ func (h *AuthHandler) refreshIfNeeded(ctx context.Context, user *db_models.User)
 		Set("access_token = ?", user.AccessToken).
 		Set("refresh_token = ?", user.RefreshToken).
 		Set("access_token_expires_at = ?", user.AccessTokenExpiresAt).
+		Set("is_admin = ?", user.IsAdmin).
 		Where("id = ?", user.ID).
 		Update()
-	return err
+	if err != nil {
+		return err
+	}
+	if user.IsAdmin && !wasAdmin {
+		return db.GrantAllOrganisations(h.DB, user.ID)
+	}
+	return nil
 }
 
 func (h *AuthHandler) enforceSessionCap(userID int) error {
-	var ids []int
+	var ids []string
 	err := h.DB.Model((*db_models.Session)(nil)).
 		Column("session_id").
 		Where("user_id = ?", userID).

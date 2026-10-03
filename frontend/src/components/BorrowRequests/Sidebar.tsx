@@ -2,13 +2,12 @@ import type { BorrowRequest } from "@/types/borrowRequest"
 import SidebarItem from "./SidebarRequest"
 import { Separator } from "../shadcn/separator"
 import { Fragment } from "react/jsx-runtime"
-import type { Dispatch, SetStateAction } from "react"
 
 
 interface SidebarProps {
   borrowRequests: BorrowRequest[]
   selectedRequest: BorrowRequest
-  setSelectedRequest: Dispatch<SetStateAction<BorrowRequest>>
+  setSelectedRequest: (request: BorrowRequest) => void
 }
 
 function Sidebar(

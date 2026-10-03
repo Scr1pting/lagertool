@@ -1,11 +1,10 @@
 import { cn } from "@/lib/cn"
 import type { BorrowRequest } from "@/types/borrowRequest"
-import type { Dispatch, SetStateAction } from "react"
 
 interface SidebarRequestProps {
   request: BorrowRequest
   selectedRequest: BorrowRequest
-  setSelectedRequest: Dispatch<SetStateAction<BorrowRequest>>
+  setSelectedRequest: (request: BorrowRequest) => void
 }
 
 function SidebarRequest(

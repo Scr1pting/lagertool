@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -645,6 +646,13 @@ func TestCheckoutCart(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotEmpty(t, requests, "Expected at least one request to be created")
 
+				// The cart's contents became requests, so the cart must be empty now
+				// (otherwise the next checkout would request everything again).
+				n, err := dbCon.Model((*db_models.ShoppingCartItem)(nil)).Where("shopping_cart_id = ?", cart.ID).Count()
+				assert.NoError(t, err)
+				assert.Equal(t, 0, n, "cart should be emptied after checkout")
+				assert.False(t, requests[0].CreatedAt.IsZero(), "created_at should be set")
+
 				// Verify request has correct data
 				request := requests[0]
 				assert.Equal(t, user.ID, request.UserID)
@@ -909,6 +917,37 @@ func TestRequestReviewSuccess(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, loans, "Expected loan record to be created for loanable item")
 		assert.False(t, loans[0].IsReturned)
+
+		// The request itself is now approved.
+		var updated db_models.Request
+		assert.NoError(t, dbCon.Model(&updated).Where("id = ?", request.ID).Select())
+		assert.Equal(t, "approved", updated.State)
+
+		// Reviewing again is refused and creates no duplicate loans.
+		req2, _ := http.NewRequest("POST", "/requests/"+strconv.Itoa(request.ID)+"/review", strings.NewReader(payload))
+		req2.Header.Set("Content-Type", "application/json")
+		w2 := httptest.NewRecorder()
+		router.ServeHTTP(w2, req2)
+		assert.Equal(t, http.StatusConflict, w2.Code)
+		n, err := dbCon.Model((*db_models.Loans)(nil)).Where("request_item_id = ?", loanableRequestItem.ID).Count()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, n, "no duplicate loans")
+	})
+
+	t.Run("Invalid outcome", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/requests/"+strconv.Itoa(request.ID)+"/review", strings.NewReader(`{"outcome": "maybe"}`))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Unknown request", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/requests/999999/review", strings.NewReader(`{"outcome": "rejected"}`))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 }
 
@@ -2735,6 +2774,117 @@ func TestGetBorrowRequests(t *testing.T) {
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}
+
+func TestInstantCheckout(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+
+	org := &db_models.Organisation{Name: "Instant Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	user := &db_models.User{Email: "instant@example.com", Name: "Instant User"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+	building := &db_models.Building{Name: "Instant Building", UpdateDate: time.Now()}
+	_, err = dbCon.Model(building).Insert()
+	assert.NoError(t, err)
+	room := &db_models.Room{Name: "Instant Room", BuildingID: building.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(room).Insert()
+	assert.NoError(t, err)
+	shelf := &db_models.Shelf{ID: "INSTANT-S-1", Name: "Instant Shelf", RoomID: room.ID, OwnedBy: org.Name, UpdateDate: time.Now()}
+	_, err = dbCon.Model(shelf).Insert()
+	assert.NoError(t, err)
+	column := &db_models.Column{ID: "INSTANT-C-1", ShelfID: shelf.ID}
+	_, err = dbCon.Model(column).Insert()
+	assert.NoError(t, err)
+	shelfUnit := &db_models.ShelfUnit{ID: "INSTANT-SU-1", ColumnID: column.ID}
+	_, err = dbCon.Model(shelfUnit).Insert()
+	assert.NoError(t, err)
+	inventory := &db_models.Inventory{Name: "Instant Item", ShelfUnitID: shelfUnit.ID, ShelfID: shelf.ID, Amount: 5, UpdateDate: time.Now()}
+	_, err = dbCon.Model(inventory).Insert()
+	assert.NoError(t, err)
+
+	// An unrelated cart item that instant checkout must not touch.
+	cart := &db_models.ShoppingCart{UserID: user.ID}
+	_, err = dbCon.Model(cart).Insert()
+	assert.NoError(t, err)
+	cartItem := &db_models.ShoppingCartItem{ShoppingCartID: cart.ID, InventoryID: inventory.ID, Amount: 1}
+	_, err = dbCon.Model(cartItem).Insert()
+	assert.NoError(t, err)
+
+	defer func() {
+		_, _ = dbCon.Model(&db_models.UserRequestMessage{}).Where("user_id = ?", user.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("inventory_id = ?", inventory.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("user_id = ?", user.ID).Delete()
+		_, _ = dbCon.Model(&db_models.ShoppingCartItem{}).Where("shopping_cart_id = ?", cart.ID).Delete()
+		_, _ = dbCon.Model(cart).WherePK().Delete()
+		_, _ = dbCon.Model(inventory).WherePK().Delete()
+		_, _ = dbCon.Model(shelfUnit).WherePK().Delete()
+		_, _ = dbCon.Model(column).WherePK().Delete()
+		_, _ = dbCon.Model(shelf).WherePK().Delete()
+		_, _ = dbCon.Model(room).WherePK().Delete()
+		_, _ = dbCon.Model(building).WherePK().Delete()
+		_, _ = dbCon.Model(user).WherePK().Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	// Simulate AuthMiddleware: the session user is in the context.
+	router.POST("/me/checkout", func(c *gin.Context) { c.Set("user", user); c.Next() }, h.InstantCheckout)
+
+	send := func(payload string) *httptest.ResponseRecorder {
+		req, _ := http.NewRequest("POST", "/me/checkout", bytes.NewBufferString(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		return w
+	}
+
+	t.Run("Creates request for the item's organisation", func(t *testing.T) {
+		w := send(`{"id": ` + strconv.Itoa(inventory.ID) + `, "numSelected": 2,
+			"startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z",
+			"title": "Lab session", "description": "Need it for the demo"}`)
+		if !assert.Equal(t, http.StatusCreated, w.Code) {
+			t.Log("Response body:", w.Body.String())
+			return
+		}
+
+		var request db_models.Request
+		assert.NoError(t, dbCon.Model(&request).Where("user_id = ?", user.ID).Select())
+		assert.Equal(t, org.Name, request.OrganisationName)
+		assert.Equal(t, "Lab session", request.Note)
+		assert.Equal(t, "requested", request.State)
+		assert.False(t, request.CreatedAt.IsZero())
+
+		var items []db_models.RequestItems
+		assert.NoError(t, dbCon.Model(&items).Where("request_id = ?", request.ID).Select())
+		if assert.Len(t, items, 1) {
+			assert.Equal(t, inventory.ID, items[0].InventoryID)
+			assert.Equal(t, 2, items[0].Amount)
+		}
+
+		var msgs []db_models.UserRequestMessage
+		assert.NoError(t, dbCon.Model(&msgs).Where("request_id = ?", request.ID).Select())
+		if assert.Len(t, msgs, 1) {
+			assert.Equal(t, "Need it for the demo", msgs[0].Message)
+		}
+
+		n, err := dbCon.Model((*db_models.ShoppingCartItem)(nil)).Where("shopping_cart_id = ?", cart.ID).Count()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, n, "cart must be untouched")
+	})
+
+	t.Run("Unknown item", func(t *testing.T) {
+		w := send(`{"id": 999999, "numSelected": 1, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z"}`)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("Zero amount", func(t *testing.T) {
+		w := send(`{"id": ` + strconv.Itoa(inventory.ID) + `, "numSelected": 0, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z"}`)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }

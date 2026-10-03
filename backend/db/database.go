@@ -82,8 +82,16 @@ func InitDB(con *pg.DB) {
 // field added to an existing struct needs an idempotent ALTER here. List new
 // columns here in the order they were introduced.
 func applyColumnMigrations(con *pg.DB) {
+	// CreateTable(IfNotExists) doesn't add or drop columns on existing tables.
 	migrations := []string{
 		`ALTER TABLE "Inventory" ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE session ADD COLUMN IF NOT EXISTS id_token text`,
+		`ALTER TABLE session ADD COLUMN IF NOT EXISTS user_agent text`,
+		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`,
+		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS access_token_expires_at timestamptz`,
+		// Fields removed from the models; leftover columns break "SELECT table.*" in go-pg.
+		`ALTER TABLE "Inventory" DROP COLUMN IF EXISTS item_id`,
+		`ALTER TABLE request DROP COLUMN IF EXISTS group_id`,
 		`ALTER TABLE shelf_unit ADD COLUMN IF NOT EXISTS description TEXT`,
 		`ALTER TABLE shelf_unit ALTER COLUMN description DROP NOT NULL`,
 		// "" must mean "no items" and NULL "not generated yet"; fix up rows written before that held.
@@ -165,7 +173,29 @@ func InsertDummyData(con *pg.DB) {
 		log.Fatalf("Insert Consumed failed: %v", err)
 	}
 
+	// Dummy data uses explicit IDs, which don't advance the serial sequences.
+	if err := ResetSequences(con); err != nil {
+		log.Fatalf("Resetting sequences failed: %v", err)
+	}
+
 	log.Println("✅ Dummy data inserted successfully")
+}
+
+// ResetSequences moves every serial "id" sequence past the current max id.
+func ResetSequences(con *pg.DB) error {
+	_, err := con.Exec(`
+DO $$
+DECLARE r record;
+BEGIN
+	FOR r IN
+		SELECT table_name, pg_get_serial_sequence(quote_ident(table_name), 'id') AS seq
+		FROM information_schema.columns
+		WHERE table_schema = 'public' AND column_name = 'id' AND column_default LIKE 'nextval%'
+	LOOP
+		EXECUTE format('SELECT setval(%L, COALESCE((SELECT MAX(id) FROM %I), 0) + 1, false)', r.seq, r.table_name);
+	END LOOP;
+END $$;`)
+	return err
 }
 
 func Close(con *pg.DB) {

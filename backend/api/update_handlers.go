@@ -178,9 +178,8 @@ func (h *Handler) UpdateCartItem(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
 		return
 	}
-	userId, err := strconv.Atoi(c.Param("userId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	userId, ok := targetUserID(c)
+	if !ok {
 		return
 	}
 	var req api_objects.UpdateCartItem

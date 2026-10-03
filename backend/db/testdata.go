@@ -48,7 +48,7 @@ func GetDummyData() (
 
 	// 3️⃣ Session
 	session := &db_models.Session{
-		ID:        1,
+		ID:        "00000000-0000-0000-0000-000000000001",
 		UserID:    user.ID,
 		CreatedAt: now.Add(-2 * time.Hour),
 		ExpiresAt: now.Add(24 * time.Hour),
@@ -147,6 +147,7 @@ func GetDummyData() (
 		EndDate:   now.Add(48 * time.Hour),
 		Note:      "Need lab glassware for experiment",
 		State:     "pending",
+		CreatedAt: now.Add(-1 * time.Hour),
 		User:      user,
 	}
 

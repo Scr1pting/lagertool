@@ -23,7 +23,7 @@ cleanup() {
   [[ -n "$DESCGEN_PID" ]] && kill_tree "$DESCGEN_PID"
 
   cd "$ROOT/backend" || exit 1
-  docker-compose down
+  docker compose down
 }
 
 trap cleanup EXIT
@@ -32,7 +32,7 @@ trap cleanup EXIT
 # Start db
 echo "Starting db..."
 cd "$ROOT/backend" || exit 1
-docker-compose up -d
+docker compose up -d
 cd - > /dev/null
 
 

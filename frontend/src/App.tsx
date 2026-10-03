@@ -12,6 +12,8 @@ import ManageInventory from './pages/ManageInventory'
 import ItemDetail from './pages/ItemDetail'
 import Login from './pages/Login'
 import BorrowRequests from './pages/BorrowRequests'
+import useFetchMe from './hooks/fetch/useFetchMe'
+import useMe from './store/useMe'
 
 function App() {
   useEffect(() => {
@@ -26,7 +28,15 @@ function App() {
     }
   }, [])
 
-  const isLoggedIn = import.meta.env.VITE_IS_LOGGED_IN === "true"
+  const { status: meStatus, data: me } = useFetchMe()
+  const setMe = useMe(s => s.setMe)
+  useEffect(() => {
+    setMe(meStatus === "success" ? me : null)
+  }, [meStatus, me, setMe])
+
+  // Wait for GET /me before deciding, so logged-in users don't flash the login page.
+  if (meStatus === "idle" || meStatus === "loading") return null
+  const isLoggedIn = meStatus === "success"
 
   const protectedRoutes = <>
     <Route element={<WithNavBar />}>
