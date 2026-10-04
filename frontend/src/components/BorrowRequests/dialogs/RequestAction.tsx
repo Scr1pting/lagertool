@@ -9,9 +9,9 @@ import { toast } from "sonner"
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 interface Action {
-  label: string
+  label: string   // the button
+  title: string   // the dialog's headline
   done: string
-  explanation?: string
   submit: (id: number) => Promise<unknown>
 }
 
@@ -20,30 +20,32 @@ const revert = (from: string) => (id: number) => post(`${API_BASE_URL}/requests/
 const ACTIONS = {
   revertToPending: {
     label: "Revert to pending",
+    title: "Revert to Pending",
     done: "Reverted borrow request to pending",
-    explanation: "The approval is undone and the request becomes pending again.",
     submit: revert("notPickedUp"),
   },
   pickedUp: {
     label: "Picked up",
+    title: "Mark as Picked Up",
     done: "Marked borrow request as picked up",
     submit: (id: number) => post(`${API_BASE_URL}/requests/${id}/pickup`, {}),
   },
   revertToNotBorrowed: {
     label: "Revert to not borrowed",
+    title: "Undo Pickup",
     done: "Reverted borrow request to not borrowed",
-    explanation: "The pickup is undone.",
     submit: revert("borrowed"),
   },
   returned: {
     label: "Returned",
+    title: "Mark as Returned",
     done: "Marked borrow request as returned",
     submit: (id: number) => put(`${API_BASE_URL}/requests/${id}/loans`, { returnedAt: new Date().toISOString() }),
   },
   revertToBorrowed: {
     label: "Revert to borrowed",
+    title: "Undo Return",
     done: "Reverted borrow request to borrowed",
-    explanation: "The return is undone.",
     submit: revert("returned"),
   },
 } satisfies Record<string, Action>
@@ -58,7 +60,7 @@ interface RequestActionProps {
 function RequestAction({ request, action, onDone }: RequestActionProps) {
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const { label, done, explanation, submit }: Action = ACTIONS[action]
+  const { label, title, done, submit }: Action = ACTIONS[action]
 
   const confirm = async () => {
     setSubmitting(true)
@@ -86,11 +88,9 @@ function RequestAction({ request, action, onDone }: RequestActionProps) {
       </DialogTrigger>
       <DialogContent className="w-100">
         <DialogHeader>
-          <DialogTitle>{label} Borrow Request</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{request.title}</DialogDescription>
         </DialogHeader>
-
-        {explanation && <p className="text-sm">{explanation}</p>}
 
         <DialogFooter>
           <Button
