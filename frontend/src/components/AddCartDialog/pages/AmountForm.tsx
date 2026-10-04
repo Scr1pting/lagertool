@@ -1,5 +1,7 @@
 import { useCart } from "@/store/useCart"
 import post from "@/api/post"
+import put from "@/api/put"
+import del from "@/api/del"
 import type { CartItem } from "@/types/cart"
 import type { InventoryItem } from "@/types/inventory"
 import type { FormEvent } from "react"
@@ -23,9 +25,32 @@ interface MainProps {
 
 function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed }: MainProps) {
   const add = useCart(state => state.add)
+  const setAmount = useCart(state => state.setAmount)
 
   const exceedsAvailable = !Number.isNaN(amountSelected) && amountSelected > item.available
   const isInvalidAmount = Number.isNaN(amountSelected) || amountSelected < 1 || exceedsAvailable
+
+  // Puts the item back to what was in the cart before adding: removes it if it
+  // wasn't there, otherwise restores the earlier amount.
+  const undoAdd = async (cartItem: CartItem, previousAmount: number) => {
+    const url = `${API_BASE_URL}/me/cart/items/${cartItem.id}`
+    try {
+      if (previousAmount > 0) {
+        await put(url, { amount: previousAmount })
+      } else {
+        await del(url)
+      }
+    } catch (err) {
+      toast.error("Could not undo", {
+        description: err instanceof Error ? err.message : undefined,
+      })
+      return
+    }
+    setAmount(cartItem.id, previousAmount)
+    toast(previousAmount > 0 ? "Restored cart" : "Removed from cart", {
+      description: previousAmount > 0 ? `${cartItem.name} - ${previousAmount}` : cartItem.name,
+    })
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -33,8 +58,10 @@ function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed 
     if (!isInvalidAmount) {
       const cartItem: CartItem = { ...item, amountSelected: amountSelected }
       // The backend cart is the source of truth; the local store mirrors it for the sidebar.
+      let amountInCart: number
       try {
-        await post(`${API_BASE_URL}/me/cart/items`, { id: item.id, numSelected: amountSelected })
+        const saved = await post<{ amount: number }, unknown>(`${API_BASE_URL}/me/cart/items`, { id: item.id, numSelected: amountSelected })
+        amountInCart = saved.amount
       } catch (err) {
         toast.error("Could not add to cart", {
           description: err instanceof Error ? err.message : undefined,
@@ -47,7 +74,7 @@ function Main({ amountSelected, setAmountSelected, item, resetValues, onProceed 
         description: `${cartItem.name} - ${cartItem.amountSelected}`,
         action: {
           label: "Undo",
-          onClick: () => console.log("Undo"),
+          onClick: () => undoAdd(cartItem, amountInCart - cartItem.amountSelected),
         },
       })
 

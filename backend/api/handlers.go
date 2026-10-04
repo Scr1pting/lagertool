@@ -484,20 +484,11 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 			Event:     item.Request.Note,
 			StartedAt: item.Request.StartDate,
 			DueAt:     item.Request.EndDate,
-			State:     item.Request.State,
+			State:     mapApprovalState(item.Request.State),
 			Amount:    item.Amount,
 		}
-		if item.Request.State == "approved" {
-			var db2res db_models.Loans
-			err = h.DB.Model(&db2res).Where("request_item_id = ?", item.ID).First()
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			if db2res.IsReturned {
-				out.ReturnedAt = db2res.ReturnedAt
-			}
-		}
+		// Same states as on the borrow requests page; the return date only once returned.
+		out.TimeState, out.ReturnedAt = h.deriveTimeState(*item.Request)
 		res = append(res, out)
 	}
 	c.JSON(http.StatusOK, res)

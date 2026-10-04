@@ -21,7 +21,7 @@ function InstantCheckoutForm({
 }: InstantCheckoutFormProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (title !== "") {
+    if (title.trim() !== "") {
       onProceed()
     }
   }
@@ -65,7 +65,7 @@ function InstantCheckoutForm({
         </Button>
 
         <Button
-          disabled={title === ""}
+          disabled={title.trim() === ""}
           type="submit"
         >
           Next

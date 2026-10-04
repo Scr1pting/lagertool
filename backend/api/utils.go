@@ -68,22 +68,13 @@ func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelf, err
 	return shelfObj, nil
 }
 
-// GetAvailable is how much of an item is free between start and end. It is
-// negative when the item is overbooked. Consumables aren't time-bound: every
-// outstanding request counts.
+// GetAvailable is how much of an item is free throughout start–end (see availableFor).
 func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, error) {
 	inv, cs, err := itemCommitments(h.DB, invId)
 	if err != nil {
 		return 0, err
 	}
-	now := time.Now()
-	count := 0
-	for _, c := range cs {
-		if inv.IsConsumable || c.overlaps(start, end, now) {
-			count += c.Amount
-		}
-	}
-	return inv.Amount - count, nil
+	return availableFor(inv, cs, start, end), nil
 }
 
 func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time) (api_objects.InventoryItem, error) {

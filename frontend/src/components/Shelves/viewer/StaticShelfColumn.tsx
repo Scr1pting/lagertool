@@ -23,7 +23,11 @@ function StaticShelfColumn({ column, onElementSelect, highlightedElement, showId
             key={element.id}
             type="button"
             title={element.id}
-            className={cn(styles.elementTrigger, highlightedElement === element.id ? styles.highlightedElement : "")}
+            className={cn(
+              styles.elementTrigger,
+              highlightedElement === element.id && styles.highlightedElement,
+              onElementSelect && styles.selectableElement
+            )}
             onClick={() => onElementSelect?.(element)}
           >
             <ShelfElementViewInner

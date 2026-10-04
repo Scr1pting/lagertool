@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 	"lagertool.com/main/db_models"
 )
 
@@ -103,6 +104,22 @@ func CreateCartItem(con *pg.DB, itemID int, num_selected int, userID int) (*db_m
 		return nil, err
 	}
 
+	// Adding an item that's already in the cart adds to its amount, so the
+	// cart holds one row per item (and undoing an add can restore it).
+	existing := &db_models.ShoppingCartItem{}
+	err = con.Model(existing).Where("shopping_cart_id = ?", cart.ID).Where("inventory_id = ?", itemID).First()
+	if err == nil {
+		existing.Amount += num_selected
+		_, err = con.Model(existing).Set("amount = ?", existing.Amount).WherePK().Update()
+		if err != nil {
+			return nil, err
+		}
+		return existing, nil
+	}
+	if !errors.Is(err, pg.ErrNoRows) {
+		return nil, err
+	}
+
 	shoppingCartItem := &db_models.ShoppingCartItem{
 		Amount:         num_selected,
 		InventoryID:    itemID,
@@ -132,7 +149,7 @@ func CreateInventoryItem(con *pg.DB, name string, amount int, shelfUnitID string
 	return inv, nil
 }
 
-func CreateRequest(con *pg.DB, request *db_models.Request) error {
+func CreateRequest(con orm.DB, request *db_models.Request) error {
 	_, err := con.Model(request).Insert()
 	if err != nil {
 		return err
@@ -140,7 +157,7 @@ func CreateRequest(con *pg.DB, request *db_models.Request) error {
 	return nil
 }
 
-func CreateRequestItem(con *pg.DB, request db_models.RequestItems) error {
+func CreateRequestItem(con orm.DB, request db_models.RequestItems) error {
 	_, err := con.Model(&request).Insert()
 	if err != nil {
 		return err
@@ -163,7 +180,7 @@ func Create_consumed(con *pg.DB, consumed *db_models.Consumed) error {
 	return err
 }
 
-func CreateUserMessage(con *pg.DB, message *db_models.UserRequestMessage) error {
+func CreateUserMessage(con orm.DB, message *db_models.UserRequestMessage) error {
 	_, err := con.Model(message).Insert()
 	return err
 }

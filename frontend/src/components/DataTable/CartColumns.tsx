@@ -40,9 +40,18 @@ const cartColumns: ColumnDef<CartItem>[] = [
   {
     accessorKey: "amountSelected",
     header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => (
-      <div className="text-right">{row.getValue("amountSelected")}</div>
-    ),
+    cell: ({ row }) => {
+      const { amountSelected, available } = row.original
+      if (amountSelected <= available) {
+        return <div className="text-right">{amountSelected}</div>
+      }
+      return (
+        <div className="text-right text-destructive">
+          {amountSelected}
+          <div className="text-xs">{available > 0 ? `Only ${available} available` : "None available"}</div>
+        </div>
+      )
+    },
   }
 ]
 

@@ -24,18 +24,11 @@ const itemBorrowHistoryColumns: ColumnDef<ItemBorrowEntry>[] = [
     cell: ({ row }) => formatDate(row.original.startDate),
   },
   {
-    accessorKey: "returnDate",
-    header: ({ column }) => <SortableHeader column={column} title="Return" />,
-    sortingFn: (a, b) =>
-      new Date(a.original.returnedDate ?? a.original.endDate).getTime() - new Date(b.original.returnedDate ?? b.original.endDate).getTime(),
-    cell: ({ row }) => formatDate(row.original.returnedDate),
-  },
-  {
-    accessorKey: "endDate",
-    header: ({ column }) => <SortableHeader column={column} title="Due" />,
-    sortingFn: (a, b) =>
-      new Date(a.original.endDate).getTime() - new Date(b.original.endDate).getTime(),
-    cell: ({ row }) => formatDate(row.original.endDate),
+    // The return date once returned, the due date until then; the state tags tell which.
+    id: "dueOrReturned",
+    header: ({ column }) => <SortableHeader column={column} title="Due / Returned" />,
+    accessorFn: entry => new Date(entry.returnedDate ?? entry.endDate).getTime(),
+    cell: ({ row }) => formatDate(row.original.returnedDate ?? row.original.endDate),
   },
   {
     accessorKey: "state",

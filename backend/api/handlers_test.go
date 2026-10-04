@@ -426,6 +426,31 @@ func TestCreateCartItem(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("Adding an item twice merges into one row", func(t *testing.T) {
+		add := func(n int) db_models.ShoppingCartItem {
+			payload := `{"id": ` + strconv.Itoa(inventory.ID) + `, "numSelected": ` + strconv.Itoa(n) + `}`
+			req, _ := http.NewRequest("POST", "/users/"+strconv.Itoa(user.ID)+"/cart/items", strings.NewReader(payload))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			assert.Equal(t, http.StatusCreated, w.Code)
+			var item db_models.ShoppingCartItem
+			assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &item))
+			return item
+		}
+		first := add(2)
+		second := add(3)
+		assert.Equal(t, first.ID, second.ID)
+		assert.Equal(t, 5, second.Amount)
+
+		n, err := dbCon.Model(&db_models.ShoppingCartItem{}).Where("shopping_cart_id = ?", first.ShoppingCartID).Count()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, n)
+
+		_, _ = dbCon.Model(&db_models.ShoppingCartItem{}).Where("shopping_cart_id = ?", first.ShoppingCartID).Delete()
+		_, _ = dbCon.Model(&db_models.ShoppingCart{}).Where("user_id = ?", user.ID).Delete()
+	})
 }
 
 func TestCreateItem(t *testing.T) {
@@ -565,8 +590,9 @@ func TestCheckoutCart(t *testing.T) {
 
 	// Cleanup function
 	cleanup := func() {
-		// Delete request items first (foreign key constraint)
+		// Delete request items and messages first (foreign key constraints)
 		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("inventory_id = ?", inventory.ID).Delete()
+		_, _ = dbCon.Model(&db_models.UserRequestMessage{}).Where("user_id = ?", user.ID).Delete()
 		// Delete requests
 		_, _ = dbCon.Model(&db_models.Request{}).Where("user_id = ?", user.ID).Delete()
 		// Delete shopping cart items
@@ -606,9 +632,26 @@ func TestCheckoutCart(t *testing.T) {
 			name: "Successful Checkout",
 			payload: `{
 				"startDate": "` + startDate.Format(time.RFC3339) + `",
-				"endDate": "` + endDate.Format(time.RFC3339) + `"
+				"endDate": "` + endDate.Format(time.RFC3339) + `",
+				"title": "  Workshop  ",
+				"description": "For the soldering workshop"
 			}`,
 			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Missing title",
+			payload:        `{"startDate": "2025-01-01T00:00:00Z", "endDate": "2025-01-02T00:00:00Z"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Blank title",
+			payload:        `{"startDate": "2025-01-01T00:00:00Z", "endDate": "2025-01-02T00:00:00Z", "title": "   "}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "End before start",
+			payload:        `{"startDate": "2025-01-02T00:00:00Z", "endDate": "2025-01-01T00:00:00Z", "title": "Workshop"}`,
+			expectedStatus: http.StatusBadRequest,
 		},
 		{
 			name:           "Invalid JSON - Missing StartDate",
@@ -658,6 +701,13 @@ func TestCheckoutCart(t *testing.T) {
 				assert.Equal(t, user.ID, request.UserID)
 				assert.Equal(t, "requested", request.State)
 				assert.Equal(t, org.Name, request.OrganisationName)
+				assert.Equal(t, "Workshop", request.Note, "the title, trimmed")
+
+				var msgs []db_models.UserRequestMessage
+				assert.NoError(t, dbCon.Model(&msgs).Where("request_id = ?", request.ID).Select())
+				if assert.Len(t, msgs, 1) {
+					assert.Equal(t, "For the soldering workshop", msgs[0].Message)
+				}
 
 				// Verify request items were created
 				var requestItems []db_models.RequestItems
@@ -1766,6 +1816,7 @@ func TestGetBorrowHistory(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a successful request with a returned loan
+	pickedUpAt := time.Now().Add(-72 * time.Hour)
 	successRequest := &db_models.Request{
 		UserID:           user.ID,
 		StartDate:        time.Now().Add(-72 * time.Hour),
@@ -1773,6 +1824,7 @@ func TestGetBorrowHistory(t *testing.T) {
 		Note:             "Past borrowing",
 		State:            "approved",
 		OrganisationName: org.Name,
+		PickedUpAt:       &pickedUpAt,
 	}
 	_, err = dbCon.Model(successRequest).Insert()
 	assert.NoError(t, err)
@@ -1822,6 +1874,20 @@ func TestGetBorrowHistory(t *testing.T) {
 		for _, entry := range history {
 			assert.Equal(t, "Borrower", entry.User)
 			assert.NotZero(t, entry.Amount)
+			switch entry.RequestID {
+			case successRequest.ID:
+				assert.Equal(t, "approved", entry.State)
+				assert.Equal(t, "returned", entry.TimeState)
+				if assert.NotNil(t, entry.ReturnedAt) {
+					assert.WithinDuration(t, returnedAt, *entry.ReturnedAt, time.Second)
+				}
+			case pendingRequest.ID:
+				assert.Equal(t, "pending", entry.State)
+				assert.Empty(t, entry.TimeState)
+				assert.Nil(t, entry.ReturnedAt, "not returned: no return date")
+			default:
+				t.Errorf("unexpected request %d", entry.RequestID)
+			}
 		}
 	})
 
@@ -2925,12 +2991,17 @@ func TestInstantCheckout(t *testing.T) {
 	})
 
 	t.Run("Unknown item", func(t *testing.T) {
-		w := send(`{"id": 999999, "numSelected": 1, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z"}`)
+		w := send(`{"id": 999999, "numSelected": 1, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z", "title": "Lab"}`)
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 
 	t.Run("Zero amount", func(t *testing.T) {
-		w := send(`{"id": ` + strconv.Itoa(inventory.ID) + `, "numSelected": 0, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z"}`)
+		w := send(`{"id": ` + strconv.Itoa(inventory.ID) + `, "numSelected": 0, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z", "title": "Lab"}`)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("Blank title", func(t *testing.T) {
+		w := send(`{"id": ` + strconv.Itoa(inventory.ID) + `, "numSelected": 1, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z", "title": "  "}`)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }
@@ -3139,4 +3210,115 @@ func TestUpdateItemAmountConflict(t *testing.T) {
 	available, err := h.GetAvailable(loanable.ID, time.Now().Add(48*time.Hour), time.Now().Add(48*time.Hour))
 	assert.NoError(t, err)
 	assert.Equal(t, 1-3, available, "overbooked shows as negative")
+}
+
+func TestCheckoutAvailability(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	org := &db_models.Organisation{Name: "Availability Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	user := &db_models.User{Email: "availability@example.com", Name: "Borrower"}
+	_, err = dbCon.Model(user).Insert()
+	assert.NoError(t, err)
+
+	router.POST("/me/checkout", func(c *gin.Context) { c.Set("user", user); c.Next() }, h.InstantCheckout)
+	router.POST("/me/cart/checkout", func(c *gin.Context) { c.Set("user", user); c.Next() }, h.CheckoutCart)
+
+	hier := createTestHierarchy(t, dbCon)
+	shelf := hier.Shelf
+	_, err = dbCon.Model(shelf).Set("owned_by = ?", org.Name).WherePK().Update()
+	assert.NoError(t, err)
+	drill := &db_models.Inventory{Name: "Drill", IsConsumable: false, ShelfUnitID: hier.ShelfUnit.ID, ShelfID: shelf.ID, Amount: 2, UpdateDate: time.Now()}
+	_, err = dbCon.Model(drill).Insert()
+	assert.NoError(t, err)
+
+	day := func(n int) time.Time {
+		return time.Date(2030, 1, n, 0, 0, 0, 0, time.UTC)
+	}
+	// Someone else holds one drill on days 1–2 and one on days 4–5.
+	other := &db_models.User{Email: "availability-other@example.com", Name: "Other"}
+	_, err = dbCon.Model(other).Insert()
+	assert.NoError(t, err)
+	for _, period := range [][2]int{{1, 2}, {4, 5}} {
+		r := &db_models.Request{UserID: other.ID, StartDate: day(period[0]), EndDate: day(period[1]), Note: "Other", State: "pending", OrganisationName: org.Name}
+		_, err = dbCon.Model(r).Insert()
+		assert.NoError(t, err)
+		_, err = dbCon.Model(&db_models.RequestItems{RequestID: r.ID, InventoryID: drill.ID, Amount: 1}).Insert()
+		assert.NoError(t, err)
+	}
+
+	cart := &db_models.ShoppingCart{UserID: user.ID}
+	_, err = dbCon.Model(cart).Insert()
+	assert.NoError(t, err)
+
+	defer func() {
+		users := []int{user.ID, other.ID}
+		_, _ = dbCon.Model(&db_models.UserRequestMessage{}).Where("user_id IN (?)", pg.In(users)).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("inventory_id = ?", drill.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("user_id IN (?)", pg.In(users)).Delete()
+		_, _ = dbCon.Model(&db_models.ShoppingCartItem{}).Where("shopping_cart_id = ?", cart.ID).Delete()
+		_, _ = dbCon.Model(cart).WherePK().Delete()
+		_, _ = dbCon.Model(drill).WherePK().Delete()
+		cleanupTestHierarchy(t, dbCon, hier)
+		_, _ = dbCon.Model(&db_models.User{}).Where("id IN (?)", pg.In(users)).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	post := func(path, payload string) *httptest.ResponseRecorder {
+		req, _ := http.NewRequest("POST", path, strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		return w
+	}
+	period := func(from, to int) string {
+		return `"startDate": "` + day(from).Format(time.RFC3339) + `", "endDate": "` + day(to).Format(time.RFC3339) + `"`
+	}
+	countRequests := func() int {
+		n, err := dbCon.Model(&db_models.Request{}).Where("user_id = ?", user.ID).Count()
+		assert.NoError(t, err)
+		return n
+	}
+
+	// The two other requests never overlap, so one drill is free all of days 1–5.
+	available, err := h.GetAvailable(drill.ID, day(1), day(5))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, available, "the peak per day counts, not the sum over the period")
+
+	t.Run("Direct checkout of more than is free", func(t *testing.T) {
+		w := post("/me/checkout", `{"id": `+strconv.Itoa(drill.ID)+`, "numSelected": 2, `+period(1, 5)+`, "title": "Build"}`)
+		assert.Equal(t, http.StatusConflict, w.Code)
+		var conflict api_objects.AvailabilityConflict
+		assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &conflict))
+		if assert.Len(t, conflict.Items, 1) {
+			assert.Equal(t, api_objects.UnavailableItem{ID: drill.ID, Name: "Drill", Requested: 2, Available: 1}, conflict.Items[0])
+		}
+		assert.Equal(t, 0, countRequests())
+	})
+
+	t.Run("Cart checkout of more than is free creates nothing", func(t *testing.T) {
+		_, err := dbCon.Model(&db_models.ShoppingCartItem{ShoppingCartID: cart.ID, InventoryID: drill.ID, Amount: 2}).Insert()
+		assert.NoError(t, err)
+		w := post("/me/cart/checkout", `{`+period(1, 5)+`, "title": "Build"}`)
+		assert.Equal(t, http.StatusConflict, w.Code)
+		assert.Equal(t, 0, countRequests())
+		n, err := dbCon.Model(&db_models.ShoppingCartItem{}).Where("shopping_cart_id = ?", cart.ID).Count()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, n, "the cart is left as it was")
+	})
+
+	t.Run("Cart checkout when it fits", func(t *testing.T) {
+		w := post("/me/cart/checkout", `{`+period(6, 8)+`, "title": "Build"}`)
+		assert.Equal(t, http.StatusCreated, w.Code)
+		assert.Equal(t, 1, countRequests())
+	})
+
+	t.Run("Direct checkout that fits", func(t *testing.T) {
+		w := post("/me/checkout", `{"id": `+strconv.Itoa(drill.ID)+`, "numSelected": 1, `+period(1, 5)+`, "title": "Build"}`)
+		assert.Equal(t, http.StatusCreated, w.Code)
+		assert.Equal(t, 2, countRequests())
+	})
 }

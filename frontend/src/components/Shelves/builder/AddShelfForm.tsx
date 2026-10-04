@@ -5,7 +5,9 @@ import useFetchBuildings from "@/hooks/fetch/useFetchBuildings"
 import useFetchRooms from "@/hooks/fetch/useFetchRooms"
 import usePostShelf from "@/hooks/post/usePostShelf"
 import type { ShelfColumn } from "@/types/shelf"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router"
+import { toast } from "sonner"
 import type { FormElement } from "@/components/primitives/types/FormElement"
 import FormLayout from "@/components/primitives/FormLayout"
 import { Field } from "@/components/shadcn/field"
@@ -24,11 +26,23 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>()
 
   const { status: statusPost, error: errorPost, send } = usePostShelf()
+  const navigate = useNavigate()
+
+  // Continue on the shelf list. Replace the builder in history, so going back
+  // doesn't return to a shelf that was already saved.
+  useEffect(() => {
+    if (statusPost !== "success") return
+    toast("Added shelf", { description: name })
+    navigate("/manage-inventory?tab=shelves", { replace: true })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusPost])
+
+  const isComplete = name.trim() !== "" && selectedBuilding != null && selectedRoom != null
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!selectedBuilding || !selectedRoom) return
-    send(columns, name, selectedBuilding.id, selectedRoom.id)
+    if (!isComplete) return
+    send(columns, name.trim(), selectedBuilding.id, selectedRoom.id)
   }
 
   const elements: FormElement[] = [
@@ -84,16 +98,12 @@ function AddShelfForm({ columns }: { columns: ShelfColumn[] }) {
 
         <DialogFooter>
           <Field orientation="horizontal" className="justify-end">
-            <Button type="submit" className="bg-primary" disabled={statusPost == "loading"}>
+            <Button type="submit" className="bg-primary" disabled={!isComplete || statusPost === "loading"}>
               {statusPost === "loading" ? "Submitting..." : "Submit"}
             </Button>
 
             {statusPost === "error" && errorPost &&
               <p className="text-sm text-destructive">{errorPost.message}</p>
-            }
-
-            {statusPost === "success" &&
-              <p className="text-sm text-muted-foreground">Shelf saved successfully.</p>
             }
           </Field>
         </DialogFooter>

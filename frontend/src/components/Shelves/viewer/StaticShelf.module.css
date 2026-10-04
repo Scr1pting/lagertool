@@ -41,14 +41,18 @@
   font-variant-numeric: tabular-nums;
 }
 
-.highlightedElement .idElement {
+.highlightedElement .idElement,
+.selectableElement:hover .idElement,
+.selectableElement:focus-visible .idElement {
   color: #ececec;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.7),
                0 1px 24px rgba(0, 0, 0, 0.9);
 }
 
-/* Same as a selected piece in the shelf builder. */
-.highlightedElement > div {
+/* Same as a selected piece in the shelf builder; clickable elements show it on hover. */
+.highlightedElement > div,
+.selectableElement:hover > div,
+.selectableElement:focus-visible > div {
   background-color: #1f1f1f;
   background-image: var(--selection-gradient);
   background-origin: border-box;

@@ -6,7 +6,8 @@ import { Separator } from "../../shadcn/separator"
 import { Button } from "../../shadcn/button"
 import { toast } from "sonner"
 import type { InventoryItem } from "@/types/inventory"
-import post from "@/api/post"
+import axios from "axios"
+import { describeUnavailable, errorMessage, unavailableItemsOf } from "@/lib/availabilityConflict"
 import { useDateParams } from "@/hooks/useDateParams"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
@@ -49,7 +50,7 @@ function InstantCheckoutVerify({
     setSubmitting(true)
     try {
       // Backend expects timestamps; dates mean UTC midnight like the ?start/?end params.
-      await post(`${API_BASE_URL}/me/checkout`, {
+      await axios.post(`${API_BASE_URL}/me/checkout`, {
         id: item.id,
         numSelected: amountSelected,
         startDate: `${startDate}T00:00:00Z`,
@@ -58,8 +59,9 @@ function InstantCheckoutVerify({
         description,
       })
     } catch (err) {
-      toast.error("Could not submit borrow request", {
-        description: err instanceof Error ? err.message : undefined,
+      const unavailable = unavailableItemsOf(err)
+      toast.error(unavailable ? "Not available for these dates" : "Could not submit borrow request", {
+        description: unavailable ? unavailable.map(describeUnavailable).join(", ") : errorMessage(err),
       })
       setSubmitting(false)
       return

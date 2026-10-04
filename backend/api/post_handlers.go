@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -118,6 +119,22 @@ func (h *Handler) CreateCartItem(c *gin.Context) {
 	c.JSON(http.StatusCreated, newCart)
 }
 
+// checkoutDetails validates what every borrow request needs: a title and a
+// period that doesn't end before it starts. It responds 400 and returns false
+// otherwise.
+func checkoutDetails(c *gin.Context, title string, start, end time.Time) (string, bool) {
+	title = strings.TrimSpace(title)
+	if title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title must not be empty"})
+		return "", false
+	}
+	if end.Before(start) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "end date is before start date"})
+		return "", false
+	}
+	return title, true
+}
+
 // @Summary Checkout shopping cart
 // @Description Checkout the user's shopping cart and create requests
 // @Tags cart
@@ -138,6 +155,11 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	title, ok := checkoutDetails(c, req.Title, req.StartDate, req.EndDate)
+	if !ok {
+		return
+	}
+	description := strings.TrimSpace(req.Description)
 	itemMap, err := h.GetCartItemHelper(userId, req.StartDate, req.EndDate)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -148,41 +170,58 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 		return
 	}
 
-	for k, v := range itemMap {
-		request := &db_models.Request{
-			UserID:           userId,
-			StartDate:        req.StartDate,
-			EndDate:          req.EndDate,
-			Note:             "",
-			State:            "requested",
-			OrganisationName: k,
-			CreatedAt:        time.Now(),
-		}
-		err := db.CreateRequest(h.DB, request)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
-			return
-		}
-		for _, item := range v {
-			reqItem := db_models.RequestItems{
-				RequestID:   request.ID,
-				InventoryID: item.ID,
-				Amount:      item.AmountSelected,
-				Request:     request,
-			}
-			err := db.CreateRequestItem(h.DB, reqItem)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request item"})
-				return
-			}
+	requested := map[int]int{}
+	for _, items := range itemMap {
+		for _, item := range items {
+			requested[item.ID] += item.AmountSelected
 		}
 	}
-	// The cart's contents are now borrow requests: empty it.
-	_, err = h.DB.Model((*db_models.ShoppingCartItem)(nil)).
-		Where("shopping_cart_id IN (SELECT id FROM shopping_cart WHERE user_id = ?)", userId).
-		Delete()
+
+	// All or nothing: either every item is free for the period and the cart
+	// becomes requests, or nothing is created.
+	err = h.DB.RunInTransaction(c.Request.Context(), func(tx *pg.Tx) error {
+		unavailable, err := unavailableItems(tx, requested, req.StartDate, req.EndDate)
+		if err != nil {
+			return err
+		}
+		if len(unavailable) > 0 {
+			return availabilityConflict{unavailable}
+		}
+
+		for org, items := range itemMap {
+			request := &db_models.Request{
+				UserID:           userId,
+				StartDate:        req.StartDate,
+				EndDate:          req.EndDate,
+				Note:             title,
+				State:            "requested",
+				OrganisationName: org,
+				CreatedAt:        time.Now(),
+			}
+			if err := db.CreateRequest(tx, request); err != nil {
+				return err
+			}
+			for _, item := range items {
+				reqItem := db_models.RequestItems{RequestID: request.ID, InventoryID: item.ID, Amount: item.AmountSelected}
+				if err := db.CreateRequestItem(tx, reqItem); err != nil {
+					return err
+				}
+			}
+			if description != "" {
+				msg := db_models.UserRequestMessage{UserID: userId, RequestID: request.ID, Message: description, TimeStamp: time.Now()}
+				if err := db.CreateUserMessage(tx, &msg); err != nil {
+					return err
+				}
+			}
+		}
+		// The cart's contents are now borrow requests: empty it.
+		_, err = tx.Model((*db_models.ShoppingCartItem)(nil)).
+			Where("shopping_cart_id IN (SELECT id FROM shopping_cart WHERE user_id = ?)", userId).
+			Delete()
+		return err
+	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "requests created, but could not empty cart"})
+		respondCheckoutError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"status": "checkout complete"})
@@ -531,6 +570,11 @@ func (h *Handler) InstantCheckout(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	title, ok := checkoutDetails(c, req.Title, req.StartDate, req.EndDate)
+	if !ok {
+		return
+	}
+	req.Description = strings.TrimSpace(req.Description)
 
 	// The request belongs to the organisation that owns the item's shelf.
 	var inv db_models.Inventory
@@ -552,26 +596,35 @@ func (h *Handler) InstantCheckout(c *gin.Context) {
 		UserID:           userId,
 		StartDate:        req.StartDate,
 		EndDate:          req.EndDate,
-		Note:             req.Title,
+		Note:             title,
 		State:            "requested",
 		OrganisationName: inv.ShelfUnit.Column.Shelf.OwnedBy,
 		CreatedAt:        time.Now(),
 	}
-	if err := db.CreateRequest(h.DB, request); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request"})
-		return
-	}
-	reqItem := db_models.RequestItems{RequestID: request.ID, InventoryID: inv.ID, Amount: req.NumSelected}
-	if err := db.CreateRequestItem(h.DB, reqItem); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create request item"})
-		return
-	}
-	if req.Description != "" {
-		msg := db_models.UserRequestMessage{UserID: userId, RequestID: request.ID, Message: req.Description, TimeStamp: time.Now()}
-		if err := db.CreateUserMessage(h.DB, &msg); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "request created, but could not save description"})
-			return
+	err = h.DB.RunInTransaction(c.Request.Context(), func(tx *pg.Tx) error {
+		unavailable, err := unavailableItems(tx, map[int]int{inv.ID: req.NumSelected}, req.StartDate, req.EndDate)
+		if err != nil {
+			return err
 		}
+		if len(unavailable) > 0 {
+			return availabilityConflict{unavailable}
+		}
+		if err := db.CreateRequest(tx, request); err != nil {
+			return err
+		}
+		reqItem := db_models.RequestItems{RequestID: request.ID, InventoryID: inv.ID, Amount: req.NumSelected}
+		if err := db.CreateRequestItem(tx, reqItem); err != nil {
+			return err
+		}
+		if req.Description != "" {
+			msg := db_models.UserRequestMessage{UserID: userId, RequestID: request.ID, Message: req.Description, TimeStamp: time.Now()}
+			return db.CreateUserMessage(tx, &msg)
+		}
+		return nil
+	})
+	if err != nil {
+		respondCheckoutError(c, err)
+		return
 	}
 	c.JSON(http.StatusCreated, request)
 }

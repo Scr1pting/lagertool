@@ -1,10 +1,15 @@
 package api
 
 import (
+	"errors"
+	"net/http"
+	"sort"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
+	"lagertool.com/main/api_objects"
 	"lagertool.com/main/db_models"
 )
 
@@ -103,17 +108,25 @@ func peakCommitment(cs []commitment, consumable bool, now time.Time) (int, []com
 		}
 		return total, cs
 	}
+	return peakBetween(cs, now, time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC), now)
+}
+
+// peakBetween is the most stock of a loanable item claimed on any single
+// moment between start and end, and the requests claiming it then. (Summing
+// everything that overlaps the period would count requests on different days
+// against each other.)
+func peakBetween(cs []commitment, start, end, now time.Time) (int, []commitment) {
 	peak := 0
 	var peakSet []commitment
 	// The claimed amount only rises where a commitment starts, so the peak
-	// is at one of those moments (clipped to now).
+	// is at the period's start or where one starts inside it.
 	for _, candidate := range cs {
-		if candidate.until(now).Before(now) {
+		if !candidate.overlaps(start, end, now) {
 			continue
 		}
 		t := candidate.Start
-		if t.Before(now) {
-			t = now
+		if t.Before(start) {
+			t = start
 		}
 		sum := 0
 		var set []commitment
@@ -128,4 +141,61 @@ func peakCommitment(cs []commitment, consumable bool, now time.Time) (int, []com
 		}
 	}
 	return peak, peakSet
+}
+
+// availableFor is how much of inv is free throughout start–end; negative when
+// overbooked. Consumables aren't time-bound: every outstanding request counts.
+func availableFor(inv db_models.Inventory, cs []commitment, start, end time.Time) int {
+	if inv.IsConsumable {
+		total := 0
+		for _, c := range cs {
+			total += c.Amount
+		}
+		return inv.Amount - total
+	}
+	peak, _ := peakBetween(cs, start, end, time.Now())
+	return inv.Amount - peak
+}
+
+// unavailableItems locks the given items until the transaction ends (so
+// concurrent checkouts can't both take the last one) and returns those whose
+// requested amount isn't free throughout start–end.
+func unavailableItems(tx *pg.Tx, requested map[int]int, start, end time.Time) ([]api_objects.UnavailableItem, error) {
+	ids := make([]int, 0, len(requested))
+	for id := range requested {
+		ids = append(ids, id)
+	}
+	sort.Ints(ids) // a fixed lock order avoids deadlocks between checkouts
+	if _, err := tx.Exec(`SELECT id FROM "Inventory" WHERE id IN (?) ORDER BY id FOR UPDATE`, pg.In(ids)); err != nil {
+		return nil, err
+	}
+	var res []api_objects.UnavailableItem
+	for _, id := range ids {
+		inv, cs, err := itemCommitments(tx, id)
+		if err != nil {
+			return nil, err
+		}
+		if available := availableFor(inv, cs, start, end); requested[id] > available {
+			res = append(res, api_objects.UnavailableItem{
+				ID: id, Name: inv.Name, Requested: requested[id], Available: max(available, 0),
+			})
+		}
+	}
+	return res, nil
+}
+
+// availabilityConflict is returned from a checkout transaction when items
+// aren't available; nothing was created.
+type availabilityConflict struct{ items []api_objects.UnavailableItem }
+
+func (e availabilityConflict) Error() string { return "some items aren't available for this period" }
+
+// respondCheckoutError writes the response for a failed checkout transaction.
+func respondCheckoutError(c *gin.Context, err error) {
+	var conflict availabilityConflict
+	if errors.As(err, &conflict) {
+		c.JSON(http.StatusConflict, api_objects.AvailabilityConflict{Error: conflict.Error(), Items: conflict.items})
+		return
+	}
+	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 }

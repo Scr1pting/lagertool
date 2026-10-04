@@ -84,15 +84,15 @@ type Message struct {
 }
 
 type BorrowHistory struct {
-	RequestID  int       `json:"requestId"`
-	User       string    `json:"authorName"`
-	Event      string    `json:"title"`
-	StartedAt  time.Time `json:"startDate"`
-	DueAt      time.Time `json:"endDate"`
-	ReturnedAt time.Time `json:"returnedDate"`
-	State      string    `json:"approvalState"`
-	TimeState  string    `json:"timeState"`
-	Amount     int       `json:"amount"`
+	RequestID  int        `json:"requestId"`
+	User       string     `json:"authorName"`
+	Event      string     `json:"title"`
+	StartedAt  time.Time  `json:"startDate"`
+	DueAt      time.Time  `json:"endDate"`
+	ReturnedAt *time.Time `json:"returnedDate,omitempty"`
+	State      string     `json:"approvalState"`
+	TimeState  string     `json:"timeState,omitempty"`
+	Amount     int        `json:"amount"`
 }
 
 type BorrowItem struct {
@@ -145,4 +145,18 @@ type AffectedRequest struct {
 	StartDate time.Time `json:"startDate"`
 	EndDate   time.Time `json:"endDate"`
 	Amount    int       `json:"amount"`
+}
+
+// AvailabilityConflict is returned (409) when a checkout asks for more than is
+// free in its period; nothing is created.
+type AvailabilityConflict struct {
+	Error string            `json:"error"`
+	Items []UnavailableItem `json:"items"`
+}
+
+type UnavailableItem struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Requested int    `json:"requested"`
+	Available int    `json:"available"`
 }
