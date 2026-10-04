@@ -1,5 +1,40 @@
 basePath: /
 definitions:
+  api_objects.AffectedRequest:
+    properties:
+      amount:
+        type: integer
+      author:
+        type: string
+      endDate:
+        type: string
+      id:
+        type: integer
+      startDate:
+        type: string
+      title:
+        type: string
+    type: object
+  api_objects.AmountConflict:
+    properties:
+      affected:
+        items:
+          $ref: '#/definitions/api_objects.AffectedRequest'
+        type: array
+      committed:
+        type: integer
+      error:
+        type: string
+    type: object
+  api_objects.AvailabilityConflict:
+    properties:
+      error:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/api_objects.UnavailableItem'
+        type: array
+    type: object
   api_objects.BorrowHistory:
     properties:
       amount:
@@ -10,6 +45,8 @@ definitions:
         type: string
       endDate:
         type: string
+      requestId:
+        type: integer
       returnedDate:
         type: string
       startDate:
@@ -31,8 +68,8 @@ definitions:
         $ref: '#/definitions/api_objects.Building'
       id:
         type: integer
-      keywords:
-        type: string
+      isConsumable:
+        type: boolean
       name:
         type: string
       room:
@@ -75,6 +112,8 @@ definitions:
         items:
           $ref: '#/definitions/api_objects.BorrowMessage'
         type: array
+      pickedUpDate:
+        type: string
       returnedDate:
         type: string
       startDate:
@@ -116,8 +155,8 @@ definitions:
         $ref: '#/definitions/api_objects.Building'
       id:
         type: integer
-      keywords:
-        type: string
+      isConsumable:
+        type: boolean
       name:
         type: string
       room:
@@ -139,13 +178,18 @@ definitions:
     type: object
   api_objects.CheckoutRequest:
     properties:
+      description:
+        type: string
       endDate:
         type: string
       startDate:
         type: string
+      title:
+        type: string
     required:
     - endDate
     - startDate
+    - title
     type: object
   api_objects.ColumnElementRequest:
     properties:
@@ -179,6 +223,7 @@ definitions:
     - id
     - numSelected
     - startDate
+    - title
     type: object
   api_objects.InventoryItemRequest:
     properties:
@@ -186,8 +231,6 @@ definitions:
         type: integer
       isConsumable:
         type: boolean
-      keywords:
-        type: string
       name:
         type: string
       note:
@@ -212,8 +255,8 @@ definitions:
         $ref: '#/definitions/api_objects.Building'
       id:
         type: integer
-      keywords:
-        type: string
+      isConsumable:
+        type: boolean
       name:
         type: string
       room:
@@ -277,6 +320,15 @@ definitions:
       user_id:
         description: 'Ignored when logged in: the reviewer is the session user.'
         type: integer
+    type: object
+  api_objects.RevertRequest:
+    properties:
+      from:
+        description: 'The stage the request is expected to be in: "notPickedUp", "borrowed",
+          "returned" or "rejected".'
+        type: string
+    required:
+    - from
     type: object
   api_objects.Room:
     properties:
@@ -364,6 +416,17 @@ definitions:
     - id
     - name
     type: object
+  api_objects.UnavailableItem:
+    properties:
+      available:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      requested:
+        type: integer
+    type: object
   api_objects.UpdateCartItem:
     properties:
       amount:
@@ -373,7 +436,12 @@ definitions:
     properties:
       amount:
         type: integer
-      keywords:
+      force:
+        description: Save even if the amount drops below what requests hold.
+        type: boolean
+      isConsumable:
+        type: boolean
+      name:
         type: string
       note:
         type: string
@@ -383,11 +451,6 @@ definitions:
   api_objects.UpdateLoan:
     properties:
       returnedAt:
-        type: string
-    type: object
-  api_objects.UpdateRequest:
-    properties:
-      outcome:
         type: string
     type: object
   api_objects.UserMessage:
@@ -437,8 +500,6 @@ definitions:
         type: integer
       is_consumable:
         type: boolean
-      keywords:
-        type: string
       name:
         type: string
       note:
@@ -476,6 +537,8 @@ definitions:
       organisation:
         $ref: '#/definitions/db_models.Organisation'
       organisationName:
+        type: string
+      picked_up_at:
         type: string
       request_item:
         items:
@@ -839,7 +902,8 @@ paths:
       consumes:
       - application/json
       description: Turns the logged-in user's cart into borrow requests (one per organisation,
-        state "requested") for the given dates, then empties the cart.
+        state "requested") for the given dates and title, then empties the cart. Nothing
+        is created if any item isn't available for the whole period.
       parameters:
       - description: Borrow period
         in: body
@@ -857,7 +921,7 @@ paths:
               type: string
             type: object
         "400":
-          description: Invalid body or empty cart
+          description: Invalid body, missing title or empty cart
           schema:
             additionalProperties:
               type: string
@@ -868,6 +932,10 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "409":
+          description: Some items aren't available for the period
+          schema:
+            $ref: '#/definitions/api_objects.AvailabilityConflict'
       summary: Check out my shopping cart
       tags:
       - cart
@@ -981,7 +1049,7 @@ paths:
       - application/json
       description: Creates a borrow request for one item without going through (or
         touching) the cart. The description, if any, becomes the first message on
-        the request.
+        the request. Refused (409) if the amount isn't available for the whole period.
       parameters:
       - description: Item, amount, dates, title and description
         in: body
@@ -997,7 +1065,7 @@ paths:
           schema:
             $ref: '#/definitions/db_models.Request'
         "400":
-          description: Invalid body
+          description: Invalid body or missing title
           schema:
             additionalProperties:
               type: string
@@ -1014,6 +1082,10 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "409":
+          description: Not available for the period
+          schema:
+            $ref: '#/definitions/api_objects.AvailabilityConflict'
       summary: Borrow a single item directly
       tags:
       - cart
@@ -1255,7 +1327,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an inventory item's details Admin only.
+      description: Update an inventory item's details. Admin only. Lowering the amount
+        below what requests hold at once is refused (409) unless force is set.
       parameters:
       - description: Inventory Item ID
         in: path
@@ -1275,12 +1348,22 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/db_models.Inventory'
+        "400":
+          description: Invalid body, empty name or unknown shelf unit
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "403":
           description: Admin rights required
           schema:
             additionalProperties:
               type: string
             type: object
+        "409":
+          description: Amount below what requests hold; resend with force
+          schema:
+            $ref: '#/definitions/api_objects.AmountConflict'
       summary: Update an inventory item
       tags:
       - items
@@ -1347,37 +1430,6 @@ paths:
       summary: Get all shelves for an organisation
       tags:
       - shelves
-  /requests/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update the status of a request Admin only.
-      parameters:
-      - description: Request ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Update details
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/api_objects.UpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "202":
-          description: Accepted
-        "403":
-          description: Admin rights required
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update a request
-      tags:
-      - requests
   /requests/{id}/loans:
     put:
       consumes:
@@ -1481,6 +1533,52 @@ paths:
               type: string
             type: object
       summary: Post a message to a request
+      tags:
+      - requests
+  /requests/{id}/pickup:
+    post:
+      description: Record that the items of an approved borrow request were picked
+        up
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+      summary: Mark a request as picked up
+      tags:
+      - requests
+  /requests/{id}/revert:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Undo the last step of a borrow request. "from" must be its current stage:
+        notPickedUp → pending (loans and consumptions are deleted), borrowed → not picked up,
+        returned → borrowed, rejected → pending.
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Current stage
+        in: body
+        name: revert
+        required: true
+        schema:
+          $ref: '#/definitions/api_objects.RevertRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+      summary: Revert a request by one stage
       tags:
       - requests
   /requests/{id}/review:
@@ -1619,214 +1717,6 @@ paths:
       summary: Regenerate every shelf unit's description (bulk)
       tags:
       - shelves
-  /users/{userId}/cart:
-    get:
-      description: Same as GET /me/cart for the given user. That user or an admin
-        only.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Start date in format 2006-01-02
-        in: query
-        name: start
-        required: true
-        type: string
-      - description: End date in format 2006-01-02
-        in: query
-        name: end
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              items:
-                $ref: '#/definitions/api_objects.CartItem'
-              type: array
-            type: object
-        "403":
-          description: Not that user and not an admin
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get a user's shopping cart
-      tags:
-      - cart (by user)
-  /users/{userId}/cart/checkout:
-    post:
-      consumes:
-      - application/json
-      description: Same as POST /me/cart/checkout for the given user. That user or
-        an admin only.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Borrow period
-        in: body
-        name: checkout
-        required: true
-        schema:
-          $ref: '#/definitions/api_objects.CheckoutRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Invalid body or empty cart
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "403":
-          description: Not that user and not an admin
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Check out a user's shopping cart
-      tags:
-      - cart (by user)
-  /users/{userId}/cart/items:
-    delete:
-      description: Same as DELETE /me/cart/items for the given user. That user or
-        an admin only.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/db_models.ShoppingCartItem'
-            type: array
-        "403":
-          description: Not that user and not an admin
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Empty a user's shopping cart
-      tags:
-      - cart (by user)
-    post:
-      consumes:
-      - application/json
-      description: Same as POST /me/cart/items for the given user. That user or an
-        admin only.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Inventory item id and amount
-        in: body
-        name: cart_item
-        required: true
-        schema:
-          $ref: '#/definitions/api_objects.CartRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/db_models.ShoppingCartItem'
-        "403":
-          description: Not that user and not an admin
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Add an item to a user's shopping cart
-      tags:
-      - cart (by user)
-  /users/{userId}/cart/items/{itemId}:
-    delete:
-      description: Same as DELETE /me/cart/items/{itemId} for the given user. That
-        user or an admin only.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Inventory Item ID
-        in: path
-        name: itemId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "403":
-          description: Not that user and not an admin
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Remove an item from a user's shopping cart
-      tags:
-      - cart (by user)
-    put:
-      consumes:
-      - application/json
-      description: Same as PUT /me/cart/items/{itemId} for the given user. That user
-        or an admin only.
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Inventory Item ID
-        in: path
-        name: itemId
-        required: true
-        type: integer
-      - description: New amount
-        in: body
-        name: item
-        required: true
-        schema:
-          $ref: '#/definitions/api_objects.UpdateCartItem'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "403":
-          description: Not that user and not an admin
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Change an amount in a user's shopping cart
-      tags:
-      - cart (by user)
 schemes:
 - http
 swagger: "2.0"

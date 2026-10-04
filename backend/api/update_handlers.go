@@ -12,35 +12,6 @@ import (
 	"lagertool.com/main/db_models"
 )
 
-// @Summary Update a request
-// @Description Update the status of a request Admin only.
-// @Tags requests
-// @Accept  json
-// @Produce  json
-// @Param id path int true "Request ID"
-// @Param request body api_objects.UpdateRequest true "Update details"
-// @Success 202
-// @Failure 403 {object} map[string]string "Admin rights required"
-// @Router /requests/{id} [put]
-func (h *Handler) UpdateRequest(c *gin.Context) {
-	requestId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
-		return
-	}
-	var req api_objects.UpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	err = db.UpdateRequest(h.DB, requestId, req.Outcome)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusAccepted, req)
-}
-
 // @Summary Update a loan
 // @Description Mark a loan as returned Admin only.
 // @Tags loans
@@ -110,14 +81,16 @@ func (h *Handler) UpdateLoanBulk(c *gin.Context) {
 }
 
 // @Summary Update an inventory item
-// @Description Update an inventory item's details Admin only.
+// @Description Update an inventory item's details. Admin only. Lowering the amount below what requests hold at once is refused (409) unless force is set.
 // @Tags items
 // @Accept  json
 // @Produce  json
 // @Param id path int true "Inventory Item ID"
 // @Param item body api_objects.UpdateItemRequest true "Update details"
 // @Success 200 {object} db_models.Inventory
+// @Failure 400 {object} map[string]string "Invalid body, empty name or unknown shelf unit"
 // @Failure 403 {object} map[string]string "Admin rights required"
+// @Failure 409 {object} api_objects.AmountConflict "Amount below what requests hold; resend with force"
 // @Router /organisations/{orgId}/items/{id} [put]
 func (h *Handler) UpdateItem(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("id"))

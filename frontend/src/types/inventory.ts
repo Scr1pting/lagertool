@@ -1,7 +1,7 @@
 import type { ApprovalState, TimeState } from "./borrowRequest"
 import type { Building } from "./building"
 import type { Room } from "./room"
-import { type Shelf, type ShelfElement } from "./shelf"
+import { type Shelf } from "./shelf"
 
 
 export interface InventoryItem {

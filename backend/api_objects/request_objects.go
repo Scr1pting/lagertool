@@ -61,10 +61,6 @@ type RevertRequest struct {
 	From string `json:"from" binding:"required"`
 }
 
-type UpdateRequest struct {
-	Outcome string `json:"outcome"`
-}
-
 type UpdateLoan struct {
 	ReturnedAt time.Time `json:"returnedAt"`
 }

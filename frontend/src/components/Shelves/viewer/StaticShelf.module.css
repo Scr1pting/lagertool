@@ -28,6 +28,9 @@
 .elementTrigger {
   all: unset;
   display: block;
+}
+
+.selectableElement {
   cursor: pointer;
 }
 

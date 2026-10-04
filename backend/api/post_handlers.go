@@ -565,15 +565,16 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 }
 
 // @Summary Borrow a single item directly
-// @Description Creates a borrow request for one item without going through (or touching) the cart. The description, if any, becomes the first message on the request.
+// @Description Creates a borrow request for one item without going through (or touching) the cart. The description, if any, becomes the first message on the request. Refused (409) if the amount isn't available for the whole period.
 // @Tags cart
 // @Accept  json
 // @Produce  json
 // @Param checkout body api_objects.InstantCheckoutRequest true "Item, amount, dates, title and description"
 // @Success 201 {object} db_models.Request
-// @Failure 400 {object} map[string]string "Invalid body"
+// @Failure 400 {object} map[string]string "Invalid body or missing title"
 // @Failure 401 {object} map[string]string "Not logged in"
 // @Failure 404 {object} map[string]string "Item not found"
+// @Failure 409 {object} api_objects.AvailabilityConflict "Not available for the period"
 // @Router /me/checkout [post]
 func (h *Handler) InstantCheckout(c *gin.Context) {
 	userId, ok := targetUserID(c)

@@ -70,7 +70,6 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		// Loans & Requests
 		protected.GET("/borrow_requests", h.GetBorrowRequests) // all: admin only; ?userId=N: that user or admin
 		protected.PUT("/loans/:id", adminOnly, h.UpdateLoan)
-		protected.PUT("/requests/:id", adminOnly, h.UpdateRequest)
 		protected.PUT("/requests/:id/loans", adminOnly, h.UpdateLoanBulk)
 		protected.POST("/requests/:id/review", adminOnly, h.RequestReview)
 		protected.POST("/requests/:id/revert", adminOnly, h.RevertReview)

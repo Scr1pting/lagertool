@@ -28,6 +28,8 @@ function StaticShelfColumn({ column, onElementSelect, highlightedElement, showId
               highlightedElement === element.id && styles.highlightedElement,
               onElementSelect && styles.selectableElement
             )}
+            // Without a handler (e.g. on item pages) the shelf is just a picture.
+            disabled={!onElementSelect}
             onClick={() => onElementSelect?.(element)}
           >
             <ShelfElementViewInner
