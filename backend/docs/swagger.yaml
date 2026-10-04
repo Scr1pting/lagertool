@@ -642,8 +642,8 @@ info:
 
     With USING_AUTH=false (local dev only) every request acts as the dev user (DEV_USER_ID) with admin rights.
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
   termsOfService: http://swagger.io/terms/
   title: Lagertool Inventory API
   version: "1.0"

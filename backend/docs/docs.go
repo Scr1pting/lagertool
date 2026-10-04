@@ -15,8 +15,8 @@ const docTemplate = `{
             "email": "support@lagertool.com"
         },
         "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
+            "name": "AGPL-3.0",
+            "url": "https://www.gnu.org/licenses/agpl-3.0.html"
         },
         "version": "{{.Version}}"
     },
