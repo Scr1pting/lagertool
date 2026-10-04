@@ -1199,6 +1199,24 @@ func TestUpdateItem(t *testing.T) {
 	hier := createTestHierarchy(t, dbCon)
 	defer cleanupTestHierarchy(t, dbCon, hier)
 
+	// A second shelf to move the item to.
+	otherShelf := &db_models.Shelf{ID: "H-S-2", Name: "Other Shelf", RoomID: hier.Room.ID, UpdateDate: time.Now()}
+	_, err = dbCon.Model(otherShelf).Insert()
+	assert.NoError(t, err)
+	otherColumn := &db_models.Column{ID: "H-C-2", ShelfID: otherShelf.ID}
+	_, err = dbCon.Model(otherColumn).Insert()
+	assert.NoError(t, err)
+	otherUnit := &db_models.ShelfUnit{ID: "H-SU-2", ColumnID: otherColumn.ID}
+	_, err = dbCon.Model(otherUnit).Insert()
+	assert.NoError(t, err)
+	defer func() {
+		// Move the item back so the hierarchy cleanup can delete it.
+		_, _ = dbCon.Model(hier.Inventory).Set("shelf_unit_id = ?", hier.ShelfUnit.ID).Set("shelf_id = ?", hier.Shelf.ID).Where("id = ?", hier.Inventory.ID).Update()
+		_, _ = dbCon.Model(otherUnit).Where("id = ?", otherUnit.ID).Delete()
+		_, _ = dbCon.Model(otherColumn).Where("id = ?", otherColumn.ID).Delete()
+		_, _ = dbCon.Model(otherShelf).Where("id = ?", otherShelf.ID).Delete()
+	}()
+
 	base := "/organisations/" + org.Name + "/items/"
 
 	testCases := []struct {
@@ -1222,6 +1240,28 @@ func TestUpdateItem(t *testing.T) {
 				"note": "Updated note"
 			}`,
 			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Successful Update - Name, Consumable and Shelf Unit",
+			url:  base + strconv.Itoa(hier.Inventory.ID),
+			payload: `{
+				"name": "  Renamed Item  ",
+				"isConsumable": false,
+				"shelfUnitId": "H-SU-2"
+			}`,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "Empty name",
+			url:            base + strconv.Itoa(hier.Inventory.ID),
+			payload:        `{"name": "   "}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Unknown shelf unit",
+			url:            base + strconv.Itoa(hier.Inventory.ID),
+			payload:        `{"shelfUnitId": "does-not-exist"}`,
+			expectedStatus: http.StatusBadRequest,
 		},
 		{
 			name:           "Invalid ID",
@@ -1257,6 +1297,10 @@ func TestUpdateItem(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 50, updatedInv.Amount)
 	assert.Equal(t, "Updated note", updatedInv.Note)
+	assert.Equal(t, "Renamed Item", updatedInv.Name)
+	assert.False(t, updatedInv.IsConsumable)
+	assert.Equal(t, "H-SU-2", updatedInv.ShelfUnitID)
+	assert.Equal(t, "H-S-2", updatedInv.ShelfID, "the shelf follows the new unit")
 }
 
 func TestCreateBuilding(t *testing.T) {
@@ -2962,18 +3006,34 @@ func TestRequestLifecycle(t *testing.T) {
 		return n
 	}
 	approve := `{"outcome": "approved", "note": ""}`
+	consumableAmount := func() int {
+		var inv db_models.Inventory
+		assert.NoError(t, dbCon.Model(&inv).Where("id = ?", hier.Inventory.ID).Select())
+		return inv.Amount
+	}
+	available := func(id int) int {
+		n, err := h.GetAvailable(id, time.Now(), time.Now())
+		assert.NoError(t, err)
+		return n
+	}
 
 	// Forward through every stage.
 	assert.Equal(t, http.StatusOK, do("POST", "/review", approve))
 	assert.Equal(t, "notPickedUp", stage())
 	assert.Equal(t, 1, countLoans())
 
+	assert.Equal(t, 10-2, available(hier.Inventory.ID), "reserved consumables count until picked up")
+	assert.Equal(t, 5-1, available(loanable.ID))
+
 	assert.Equal(t, http.StatusAccepted, do("POST", "/pickup", ""))
 	assert.Equal(t, "borrowed", stage())
+	assert.Equal(t, 10-2, consumableAmount(), "picked up consumables leave the shelf")
+	assert.Equal(t, 10-2, available(hier.Inventory.ID))
 	assert.Equal(t, http.StatusConflict, do("POST", "/pickup", ""), "picking up twice")
 
 	assert.Equal(t, http.StatusAccepted, do("PUT", "/loans", `{"returnedAt": "`+time.Now().Format(time.RFC3339)+`"}`))
 	assert.Equal(t, "returned", stage())
+	assert.Equal(t, 5, available(loanable.ID), "returned loans don't count")
 
 	// Back one stage at a time; repeating a revert is refused.
 	assert.Equal(t, http.StatusAccepted, do("POST", "/revert", `{"from": "returned"}`))
@@ -2982,6 +3042,7 @@ func TestRequestLifecycle(t *testing.T) {
 
 	assert.Equal(t, http.StatusAccepted, do("POST", "/revert", `{"from": "borrowed"}`))
 	assert.Equal(t, "notPickedUp", stage())
+	assert.Equal(t, 10, consumableAmount(), "reverting the pickup puts consumables back")
 
 	assert.Equal(t, http.StatusAccepted, do("POST", "/revert", `{"from": "notPickedUp"}`))
 	assert.Equal(t, "pending", stage())
@@ -3004,4 +3065,78 @@ func TestRequestLifecycle(t *testing.T) {
 	assert.Equal(t, "notPickedUp", stage())
 	assert.Equal(t, 1, countLoans())
 	assert.Equal(t, http.StatusConflict, do("POST", "/review", approve), "approving twice")
+}
+
+func TestUpdateItemAmountConflict(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.PUT("/organisations/:orgId/items/:id", h.UpdateItem)
+
+	org := &db_models.Organisation{Name: "Amount Conflict Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+	requester := &db_models.User{Email: "requester-amount@example.com", Name: "Requester"}
+	_, err = dbCon.Model(requester).Insert()
+	assert.NoError(t, err)
+
+	hier := createTestHierarchy(t, dbCon)
+	loanable := &db_models.Inventory{Name: "Conflict Loanable Item", IsConsumable: false, ShelfUnitID: hier.ShelfUnit.ID, ShelfID: hier.Shelf.ID, Amount: 5, UpdateDate: time.Now()}
+	_, err = dbCon.Model(loanable).Insert()
+	assert.NoError(t, err)
+
+	// Two overlapping future requests (2 + 1) and a later one (2): the peak is 3.
+	var requestIDs []int
+	for _, r := range []struct{ fromDays, toDays, amount int }{{1, 3, 2}, {2, 4, 1}, {10, 12, 2}} {
+		req := &db_models.Request{
+			UserID:           requester.ID,
+			StartDate:        time.Now().Add(time.Duration(r.fromDays) * 24 * time.Hour),
+			EndDate:          time.Now().Add(time.Duration(r.toDays) * 24 * time.Hour),
+			Note:             "Conflict request",
+			State:            "pending",
+			OrganisationName: org.Name,
+		}
+		_, err = dbCon.Model(req).Insert()
+		assert.NoError(t, err)
+		requestIDs = append(requestIDs, req.ID)
+		_, err = dbCon.Model(&db_models.RequestItems{RequestID: req.ID, InventoryID: loanable.ID, Amount: r.amount}).Insert()
+		assert.NoError(t, err)
+	}
+
+	defer func() {
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("request_id IN (?)", pg.In(requestIDs)).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id IN (?)", pg.In(requestIDs)).Delete()
+		_, _ = dbCon.Model(loanable).Where("id = ?", loanable.ID).Delete()
+		cleanupTestHierarchy(t, dbCon, hier)
+		_, _ = dbCon.Model(requester).Where("id = ?", requester.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	put := func(payload string) *httptest.ResponseRecorder {
+		req, _ := http.NewRequest("PUT", "/organisations/"+org.Name+"/items/"+strconv.Itoa(loanable.ID), strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		return w
+	}
+
+	w := put(`{"amount": 2}`)
+	assert.Equal(t, http.StatusConflict, w.Code)
+	var conflict api_objects.AmountConflict
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &conflict))
+	assert.Equal(t, 3, conflict.Committed)
+	assert.Len(t, conflict.Affected, 2, "only the overlapping requests")
+
+	assert.Equal(t, http.StatusOK, put(`{"amount": 3}`).Code, "exactly enough is fine")
+	assert.Equal(t, http.StatusOK, put(`{"name": "Renamed"}`).Code, "other edits don't check the amount")
+	assert.Equal(t, http.StatusOK, put(`{"amount": 1, "force": true}`).Code)
+
+	var inv db_models.Inventory
+	assert.NoError(t, dbCon.Model(&inv).Where("id = ?", loanable.ID).Select())
+	assert.Equal(t, 1, inv.Amount)
+
+	available, err := h.GetAvailable(loanable.ID, time.Now().Add(48*time.Hour), time.Now().Add(48*time.Hour))
+	assert.NoError(t, err)
+	assert.Equal(t, 1-3, available, "overbooked shows as negative")
 }

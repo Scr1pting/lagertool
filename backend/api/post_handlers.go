@@ -81,7 +81,7 @@ func (h *Handler) CreateItem(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	newItem, err := db.CreateInventoryItem(h.DB, req.Name, req.Amount, req.ShelfUnitID, req.IsConsumable, req.Note, req.ShelfID, req.Keywords)
+	newItem, err := db.CreateInventoryItem(h.DB, req.Name, req.Amount, req.ShelfUnitID, req.IsConsumable, req.Note, req.ShelfID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -301,6 +301,9 @@ func (h *Handler) PickUpRequest(c *gin.Context) {
 		if stage := requestStage(tx, request); stage != "notPickedUp" {
 			return stageConflict{"only approved requests that weren't picked up yet can be picked up (" + stage + ")"}
 		}
+		if err := moveConsumables(tx, requestId, -1); err != nil {
+			return err
+		}
 		_, err = tx.Model((*db_models.Request)(nil)).Set("picked_up_at = ?", time.Now()).Where("id = ?", requestId).Update()
 		return err
 	})
@@ -353,6 +356,9 @@ func (h *Handler) RevertReview(c *gin.Context) {
 			}
 			return setRequestState(tx, requestId, "pending")
 		case "borrowed":
+			if err := moveConsumables(tx, requestId, +1); err != nil {
+				return err
+			}
 			_, err := tx.Model((*db_models.Request)(nil)).Set("picked_up_at = NULL").Where("id = ?", requestId).Update()
 			return err
 		case "returned":
@@ -385,6 +391,17 @@ func lockRequest(tx *pg.Tx, requestId int) (db_models.Request, error) {
 	var request db_models.Request
 	err := tx.Model(&request).Where("id = ?", requestId).For("UPDATE").Select()
 	return request, err
+}
+
+// moveConsumables changes the amount of each consumable in the request by
+// direction × the requested amount: -1 when they're picked up (used up),
+// +1 when that pickup is reverted.
+func moveConsumables(tx *pg.Tx, requestId int, direction int) error {
+	_, err := tx.Exec(`
+UPDATE "Inventory" AS i SET amount = i.amount + ? * ri.amount
+FROM request_items AS ri
+WHERE ri.inventory_id = i.id AND ri.request_id = ? AND i.is_consumable`, direction, requestId)
+	return err
 }
 
 func setRequestState(tx *pg.Tx, requestId int, state string) error {

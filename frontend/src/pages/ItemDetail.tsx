@@ -1,4 +1,5 @@
 import AddCartDialog from "@/components/AddCartDialog/AddCartDialog"
+import EditItemDialog from "@/components/ItemForm/EditItemDialog"
 import RegularPage from "@/components/RegularPage"
 import { Button } from "@/components/shadcn/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/card"
@@ -14,17 +15,19 @@ function ItemDetail() {
   const [searchParams] = useSearchParams()
   const id = parseInt(searchParams.get("id") ?? "-1")
 
-  const { data: item = null, borrowHistory = [] } = useFetchItem(id)
+  const { data: item = null, borrowHistory = [], refetch } = useFetchItem(id)
 
   return (
     <RegularPage title={item?.name ?? "Loading"}>
       {item && (
         <>
           <div className="flex gap-3">
-            <Button variant="outline">
-              Edit
-              <PencilIcon />
-            </Button>
+            <EditItemDialog item={item} onSaved={refetch}>
+              <Button variant="outline">
+                Edit
+                <PencilIcon />
+              </Button>
+            </EditItemDialog>
 
             <AddCartDialog item={item}>
               <Button>
@@ -62,7 +65,9 @@ function ItemDetail() {
                 </p>
                 <p className="flex justify-between">
                   <span className="font-medium">Available</span>
-                  <span>{item?.available ?? ""}</span>
+                  {item.available < 0
+                    ? <span className="text-destructive">Overbooked by {-item.available}</span>
+                    : <span>{item.available}</span>}
                 </p>
               </CardContent>
             </Card>

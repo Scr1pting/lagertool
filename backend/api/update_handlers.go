@@ -3,6 +3,8 @@ package api
 import (
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"lagertool.com/main/api_objects"
@@ -133,18 +135,67 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 	}
 
 	previousShelfUnitID := inv.ShelfUnitID
+	previousAmount, previousConsumable := inv.Amount, inv.IsConsumable
 
+	if req.Name != nil {
+		name := strings.TrimSpace(*req.Name)
+		if name == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "name must not be empty"})
+			return
+		}
+		inv.Name = name
+	}
+	if req.IsConsumable != nil {
+		inv.IsConsumable = *req.IsConsumable
+	}
 	if req.Amount != nil {
 		inv.Amount = *req.Amount
 	}
 	if req.Note != nil {
 		inv.Note = *req.Note
 	}
-	if req.ShelfUnitID != nil {
-		inv.ShelfUnitID = *req.ShelfUnitID
+	if req.ShelfUnitID != nil && *req.ShelfUnitID != inv.ShelfUnitID {
+		// The item's shelf follows from the unit, so moving it can change both.
+		var unit db_models.ShelfUnit
+		err = h.DB.Model(&unit).Relation("Column").Where("shelf_unit.id = ?", *req.ShelfUnitID).Select()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "shelf unit not found"})
+			return
+		}
+		inv.ShelfUnitID = unit.ID
+		inv.ShelfID = unit.Column.ShelfID
 	}
-	if req.Keywords != nil {
-		inv.Keywords = *req.Keywords
+
+	// Lowering the amount below what requests hold needs confirmation (force):
+	// it's allowed, since items do get lost, but the admin should know who's affected.
+	if (inv.Amount != previousAmount || inv.IsConsumable != previousConsumable) && !req.Force {
+		var withRequests db_models.Inventory
+		err = h.DB.Model(&withRequests).Relation("RequestItems.Request.User").Where("inventory.id = ?", itemId).Select()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		withRequests.IsConsumable = inv.IsConsumable
+		cs, err := loadCommitments(h.DB, withRequests)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if peak, affected := peakCommitment(cs, inv.IsConsumable, time.Now()); inv.Amount < peak {
+			conflict := api_objects.AmountConflict{
+				Error:     "requests hold " + strconv.Itoa(peak) + " of this item at once",
+				Committed: peak,
+				Affected:  make([]api_objects.AffectedRequest, len(affected)),
+			}
+			for i, a := range affected {
+				conflict.Affected[i] = api_objects.AffectedRequest{
+					ID: a.RequestID, Title: a.Title, Author: a.Author,
+					StartDate: a.Start, EndDate: a.End, Amount: a.Amount,
+				}
+			}
+			c.JSON(http.StatusConflict, conflict)
+			return
+		}
 	}
 
 	_, err = h.DB.Model(&inv).WherePK().Update()

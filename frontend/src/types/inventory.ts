@@ -7,7 +7,6 @@ import { type Shelf, type ShelfElement } from "./shelf"
 export interface InventoryItem {
   id: number
   name: string
-  keywords: string
   amount: number
   available: number
   building: Building
@@ -16,6 +15,7 @@ export interface InventoryItem {
 }
 
 export interface InventoryItemFull extends InventoryItem {
+  isConsumable: boolean
   shelf: Shelf
   shelfElementId: string
   borrowHistory: ItemBorrowEntry[]

@@ -54,22 +54,3 @@ func GenerateCategory(ctx context.Context, baseURL string, items []ItemPayload) 
 	}
 	return out.Category, nil
 }
-
-// SplitKeywords turns a comma-separated keywords string (as stored on
-// Inventory.Keywords) into the []string the description_gen service wants.
-// Whitespace is trimmed; empty entries are dropped. Never returns nil: the
-// service rejects "tags": null with a 422.
-func SplitKeywords(keywords string) []string {
-	if keywords == "" {
-		return []string{}
-	}
-	parts := strings.Split(keywords, ",")
-	out := parts[:0]
-	for _, p := range parts {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			out = append(out, p)
-		}
-	}
-	return out
-}

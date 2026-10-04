@@ -29,7 +29,7 @@ func RegenerateShelfUnitDescription(ctx context.Context, con *pg.DB, baseURL, sh
 	for i, it := range items {
 		payload[i] = util.ItemPayload{
 			Name: it.Name,
-			Tags: util.SplitKeywords(it.Keywords),
+			Tags: []string{}, // required by the service, which rejects null
 		}
 	}
 

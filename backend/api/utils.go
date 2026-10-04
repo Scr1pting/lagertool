@@ -68,27 +68,22 @@ func (h *Handler) GetShelfHelper(id string, orga string) (api_objects.Shelf, err
 	return shelfObj, nil
 }
 
+// GetAvailable is how much of an item is free between start and end. It is
+// negative when the item is overbooked. Consumables aren't time-bound: every
+// outstanding request counts.
 func (h *Handler) GetAvailable(invId int, start time.Time, end time.Time) (int, error) {
-	var dbInv db_models.Inventory
-	err := h.DB.Model(&dbInv).
-		Relation("RequestItems.Request").Where("inventory.id = ?", invId).Select()
+	inv, cs, err := itemCommitments(h.DB, invId)
 	if err != nil {
 		return 0, err
 	}
-	if dbInv.IsConsumable {
-		return dbInv.Amount, nil
-	}
+	now := time.Now()
 	count := 0
-	for _, reqItem := range dbInv.RequestItems {
-		if reqItem.Request.State == "rejected" {
-			continue
-		}
-		overlaps := !(reqItem.Request.StartDate.After(end) || start.After(reqItem.Request.EndDate))
-		if overlaps {
-			count += reqItem.Amount
+	for _, c := range cs {
+		if inv.IsConsumable || c.overlaps(start, end, now) {
+			count += c.Amount
 		}
 	}
-	return dbInv.Amount - count, nil
+	return inv.Amount - count, nil
 }
 
 func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time) (api_objects.InventoryItem, error) {
@@ -110,6 +105,7 @@ func (h *Handler) GetInventoryItemHelper(id int, start time.Time, end time.Time)
 	res.Building = toBuilding(*dbInv.ShelfUnit.Column.Shelf.Room.Building)
 	res.ShelfID = dbInv.ShelfUnit.Column.Shelf.ID
 	res.ShelfElementID = dbInv.ShelfUnitID
+	res.IsConsumable = dbInv.IsConsumable
 	return res, nil
 }
 

@@ -84,7 +84,6 @@ func InitDB(con *pg.DB) {
 func applyColumnMigrations(con *pg.DB) {
 	// CreateTable(IfNotExists) doesn't add or drop columns on existing tables.
 	migrations := []string{
-		`ALTER TABLE "Inventory" ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE session ADD COLUMN IF NOT EXISTS id_token text`,
 		`ALTER TABLE session ADD COLUMN IF NOT EXISTS user_agent text`,
 		`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`,
@@ -92,6 +91,7 @@ func applyColumnMigrations(con *pg.DB) {
 		// Fields removed from the models; leftover columns break "SELECT table.*" in go-pg.
 		`ALTER TABLE "Inventory" DROP COLUMN IF EXISTS item_id`,
 		`ALTER TABLE request DROP COLUMN IF EXISTS group_id`,
+		`ALTER TABLE "Inventory" DROP COLUMN IF EXISTS keywords`,
 		`ALTER TABLE shelf_unit ADD COLUMN IF NOT EXISTS description TEXT`,
 		`ALTER TABLE user_request_message ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`,
 		`ALTER TABLE shelf_unit ALTER COLUMN description DROP NOT NULL`,

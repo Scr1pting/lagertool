@@ -30,7 +30,7 @@ type InventoryItem struct {
 	Room           Room     `json:"room"`
 	ShelfID        string   `json:"shelfId"`
 	ShelfElementID string   `json:"shelfElementId"`
-	Keywords       string   `json:"keywords"`
+	IsConsumable   bool     `json:"isConsumable"`
 }
 
 type InventoryItemWithShelf struct {
@@ -127,4 +127,21 @@ type Me struct {
 	Name    string `json:"name"`
 	Email   string `json:"email"`
 	IsAdmin bool   `json:"isAdmin"`
+}
+
+// AmountConflict is returned (409) when an item's amount would drop below
+// what requests hold at once; Affected are the requests holding it then.
+type AmountConflict struct {
+	Error     string            `json:"error"`
+	Committed int               `json:"committed"`
+	Affected  []AffectedRequest `json:"affected"`
+}
+
+type AffectedRequest struct {
+	ID        int       `json:"id"`
+	Title     string    `json:"title"`
+	Author    string    `json:"author"`
+	StartDate time.Time `json:"startDate"`
+	EndDate   time.Time `json:"endDate"`
+	Amount    int       `json:"amount"`
 }
