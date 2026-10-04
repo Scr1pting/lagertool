@@ -93,6 +93,7 @@ func applyColumnMigrations(con *pg.DB) {
 		`ALTER TABLE "Inventory" DROP COLUMN IF EXISTS item_id`,
 		`ALTER TABLE request DROP COLUMN IF EXISTS group_id`,
 		`ALTER TABLE shelf_unit ADD COLUMN IF NOT EXISTS description TEXT`,
+		`ALTER TABLE user_request_message ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`,
 		`ALTER TABLE shelf_unit ALTER COLUMN description DROP NOT NULL`,
 		// "" must mean "no items" and NULL "not generated yet"; fix up rows written before that held.
 		`UPDATE shelf_unit SET description = '' WHERE description IS NULL AND NOT EXISTS (SELECT 1 FROM "Inventory" i WHERE i.shelf_unit_id = shelf_unit.id)`,

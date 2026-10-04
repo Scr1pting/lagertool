@@ -301,11 +301,18 @@ func (h *Handler) PostMessage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error while parsing payload": err.Error()})
 		return
 	}
+	if msg.AsAdmin {
+		if u := currentUser(c); u != nil && !u.IsAdmin {
+			c.JSON(http.StatusForbidden, gin.H{"error": "admin rights required"})
+			return
+		}
+	}
 	dbMsg := db_models.UserRequestMessage{
 		UserID:    actingUserID(c, msg.UserID),
 		RequestID: requestId,
 		Message:   msg.Message,
 		TimeStamp: time.Now(),
+		IsAdmin:   msg.AsAdmin,
 	}
 	err = db.CreateUserMessage(h.DB, &dbMsg)
 	if err != nil {

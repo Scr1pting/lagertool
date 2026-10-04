@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -223,6 +224,10 @@ func (h *Handler) GetMessages(c *gin.Context) {
 		return
 	}
 	for _, admin := range dbResAdmin {
+		// A review without a note (plain approve/reject) isn't a chat message.
+		if strings.TrimSpace(admin.Note) == "" {
+			continue
+		}
 		name := ""
 		if admin.User != nil {
 			name = admin.User.Name
@@ -238,7 +243,7 @@ func (h *Handler) GetMessages(c *gin.Context) {
 			ID:         member.ID,
 			AuthorName: name,
 			Message:    member.Message,
-			IsAdmin:    false,
+			IsAdmin:    member.IsAdmin,
 			TimeStamp:  member.TimeStamp,
 		})
 	}
@@ -408,11 +413,15 @@ func (h *Handler) getBorrowMessages(requestId int) ([]api_objects.BorrowMessage,
 			name = m.User.Name
 		}
 		all = append(all, tsMsg{
-			msg: api_objects.BorrowMessage{ID: m.ID, Text: m.Message, Author: name, IsAdmin: false},
+			msg: api_objects.BorrowMessage{ID: m.ID, Text: m.Message, Author: name, IsAdmin: m.IsAdmin},
 			ts:  m.TimeStamp,
 		})
 	}
 	for _, a := range admin {
+		// A review without a note (plain approve/reject) isn't a chat message.
+		if strings.TrimSpace(a.Note) == "" {
+			continue
+		}
 		name := ""
 		if a.User != nil {
 			name = a.User.Name

@@ -7,10 +7,11 @@ import { useState } from "react"
 interface RequestTypePageProps {
   borrowRequests: BorrowRequest[]
   showApproveReject: boolean
+  asAdmin: boolean
   onReviewed?: () => void
 }
 
-function RequestTypePage({ borrowRequests, showApproveReject, onReviewed }: RequestTypePageProps) {
+function RequestTypePage({ borrowRequests, showApproveReject, asAdmin, onReviewed }: RequestTypePageProps) {
   // Track the selection by id so it follows refetched data; fall back to the
   // first request when the selected one left this list (e.g. after approving).
   const [selectedId, setSelectedId] = useState<number | undefined>(borrowRequests[0]?.id)
@@ -46,6 +47,7 @@ function RequestTypePage({ borrowRequests, showApproveReject, onReviewed }: Requ
           key={selectedRequest.id}
           request={selectedRequest}
           showApproveReject={showApproveReject}
+          asAdmin={asAdmin}
           onReviewed={onReviewed}
         />
       </ResizablePanel>

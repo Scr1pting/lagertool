@@ -34,6 +34,7 @@ function BorrowRequests() {
                   )
                 }
                 showApproveReject={true}
+                asAdmin={true}
                 onReviewed={refetch}
               />}
         </TabsContent>
@@ -47,6 +48,7 @@ function BorrowRequests() {
                   )
                 }
                 showApproveReject={true}
+                asAdmin={true}
                 onReviewed={refetch}
               />}
         </TabsContent>
@@ -60,6 +62,7 @@ function BorrowRequests() {
                   )
                 }
                 showApproveReject={true}
+                asAdmin={true}
                 onReviewed={refetch}
               />}
         </TabsContent>

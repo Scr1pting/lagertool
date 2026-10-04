@@ -73,6 +73,9 @@ type UpdateItemRequest struct {
 type UserMessage struct {
 	UserID  int    `json:"userId"`
 	Message string `json:"message"`
+	// AsAdmin marks a message sent from the admin borrow requests page
+	// rather than by the requester. Only admins may set it.
+	AsAdmin bool `json:"asAdmin"`
 }
 
 type UpdateCartItem struct {

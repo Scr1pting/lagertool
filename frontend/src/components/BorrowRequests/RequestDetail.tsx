@@ -11,7 +11,6 @@ import { Badge } from "../shadcn/badge"
 import { capitalize } from "@/lib/capitalize"
 import { formatDate } from "@/lib/formatDate"
 import post from "@/api/post"
-import useFetchMe from "@/hooks/fetch/useFetchMe"
 import useRequestMessages from "@/hooks/fetch/useRequestMessages"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
@@ -27,13 +26,14 @@ interface PendingMessage {
 interface RequestDetailProps {
   request: BorrowRequest
   showApproveReject: boolean
+  // Shown on the admin borrow requests page: messages sent here are admin messages.
+  asAdmin: boolean
   onReviewed?: () => void
 }
 
-function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetailProps) {
+function RequestDetail({ request, showApproveReject, asAdmin, onReviewed }: RequestDetailProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const [minHeight, setMinHeight] = useState(0)
-  const { data: me } = useFetchMe()
   const { messages, reload } = useRequestMessages(request.id, request.messages)
   const [draft, setDraft] = useState("")
   const [pending, setPending] = useState<PendingMessage[]>([])
@@ -53,13 +53,10 @@ function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetail
     return () => window.removeEventListener("resize", updateHeight)
   }, [])
 
-  // Pending bubbles go on the viewer's side.
-  const viewerIsAuthor = me?.name === request.author
-
   async function send(text: string, tempId: string = crypto.randomUUID()) {
     setPending(prev => [...prev.filter(p => p.tempId !== tempId), { tempId, text }])
     try {
-      await post(`${API_BASE_URL}/requests/${request.id}/messages`, { message: text })
+      await post(`${API_BASE_URL}/requests/${request.id}/messages`, { message: text, asAdmin })
     } catch {
       setPending(prev => prev.map(p => p.tempId === tempId ? { ...p, failed: true } : p))
       return
@@ -127,7 +124,8 @@ function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetail
             key={`${message.admin ? "a" : "u"}-${message.id}`}
             className={cn(
               "rounded-full px-3 py-1 inline-block",
-              message.author == request.author ? "self-start bg-muted" : "self-end bg-[rgba(253,214,47,0.75)]"
+              // Your side on the right: admin messages on the borrow requests page, requester messages on the account page.
+              message.admin === asAdmin ? "self-end bg-[rgba(253,214,47,0.8)]" : "self-start bg-muted"
             )}
           >
             {message.text}
@@ -136,7 +134,7 @@ function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetail
         {pending.map(message =>
           <div
             key={message.tempId}
-            className={cn("flex flex-col gap-0.5", viewerIsAuthor ? "self-start items-start" : "self-end items-end")}
+            className="flex flex-col gap-0.5 self-end items-end"
           >
             <span
               className={cn(

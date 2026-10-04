@@ -67,6 +67,7 @@ function Account() {
         && <RequestTypePage
               borrowRequests={filteredBorrowRequests}
               showApproveReject={false}
+              asAdmin={false}
            />
       }
     </RegularPage>

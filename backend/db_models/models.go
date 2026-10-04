@@ -181,6 +181,7 @@ type UserRequestMessage struct {
 	RequestID int       `json:"request_id" pg:"request_id"`
 	Message   string    `json:"message" pg:"message"`
 	TimeStamp time.Time `json:"time_stamp" pg:"time_stamp"`
+	IsAdmin   bool      `json:"is_admin" pg:"is_admin,use_zero"` // sent from the admin borrow requests page
 
 	User    *User    `json:"user" pg:"rel:has-one,fk:user_id"`
 	Request *Request `json:"request" pg:"rel:has-one,fk:request_id"`
