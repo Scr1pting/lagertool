@@ -151,6 +151,12 @@ func (h *AuthHandler) StartSessionCleanup(ctx context.Context) {
 	}()
 }
 
+// DevAuthRedirect replaces login, callback and logout when auth is disabled:
+// every request already acts as the dev user, so just go back to the frontend.
+func (h *AuthHandler) DevAuthRedirect(c *gin.Context) {
+	c.Redirect(http.StatusTemporaryRedirect, envOr("FRONTEND_URL", "http://localhost:5173"))
+}
+
 func (h *AuthHandler) LoginHandler(c *gin.Context) {
 	state := uuid.New().String()
 	nonce := uuid.New().String()

@@ -98,6 +98,7 @@ func applyColumnMigrations(con *pg.DB) {
 		// "" must mean "no items" and NULL "not generated yet"; fix up rows written before that held.
 		`UPDATE shelf_unit SET description = '' WHERE description IS NULL AND NOT EXISTS (SELECT 1 FROM "Inventory" i WHERE i.shelf_unit_id = shelf_unit.id)`,
 		`UPDATE shelf_unit SET description = NULL WHERE description = '' AND EXISTS (SELECT 1 FROM "Inventory" i WHERE i.shelf_unit_id = shelf_unit.id)`,
+		`ALTER TABLE request ADD COLUMN IF NOT EXISTS picked_up_at timestamptz`,
 	}
 	for _, stmt := range migrations {
 		if _, err := con.Exec(stmt); err != nil {

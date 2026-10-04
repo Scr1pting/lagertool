@@ -22,6 +22,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
         error: <OctagonXIcon className="size-4" />,
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
+      // Sonner colours descriptions by its own theme, which follows the OS
+      // (there's no ThemeProvider) and can clash with the app's colours.
+      toastOptions={{ classNames: { description: "text-muted-foreground!" } }}
       style={
         {
           "--normal-bg": "var(--popover)",

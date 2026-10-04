@@ -30,28 +30,17 @@
 }
 
 /*
- * Based on the highlighted element's gradient in StaticShelf, with a lighter end.
+ * The same gradient highlights the element on item pages (StaticShelf).
  * Smoothed: the fade follows an eased curve sampled into many stops (no creases from a few linear
  * segments), and the stops are opaque colors mixed in oklab (no grey cast from alpha blending).
- * The stops are precomputed rather than using `linear-gradient(in oklab …)`, which the build strips.
+ * The stops (--selection-gradient in index.css) are precomputed
+ * rather than using `linear-gradient(in oklab …)`, which the build strips.
  * --selection-size/-position (set by the builder) stretch it across the whole selection so each
  * piece shows its slice of one gradient. No inset glow: it would draw seams between adjacent pieces.
  */
 .pieceSelected .element {
   background-color: #1f1f1f;
-  background-image: linear-gradient(135deg,
-    #FDD62F 0%,
-    #FFC940 25%,
-    #EFBE3E 32.5%,
-    #CBA53B 40%,
-    #A88A37 47.5%,
-    #8F7833 55%,
-    #7A6830 62.5%,
-    #685A2D 70%,
-    #574D29 77.5%,
-    #453F25 85%,
-    #373322 92.5%,
-    #312E20 100%);
+  background-image: var(--selection-gradient);
   background-size: var(--selection-size, 100% 100%);
   background-position: var(--selection-position, 0 0);
   background-repeat: no-repeat;

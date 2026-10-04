@@ -69,7 +69,7 @@ function ItemDetail() {
           </div>
 
           <h2 className="text-xl font-semibold pt-10 pb-5">
-            Position in Shelf
+            Position in {item?.shelf?.name ?? "Shelf"}
           </h2>
 
           <Card>

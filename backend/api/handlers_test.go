@@ -2625,7 +2625,8 @@ func TestGetBorrowRequests(t *testing.T) {
 	_, err = dbCon.Model(aliceMsg).Insert()
 	assert.NoError(t, err)
 
-	// Alice: approved, on-loan (now is between start and end, loan not returned)
+	// Alice: approved, on-loan (picked up, before the end date, loan not returned)
+	pickedUpAt := now.Add(-time.Hour)
 	aliceReq2 := &db_models.Request{
 		UserID:           alice.ID,
 		StartDate:        now.Add(-24 * time.Hour),
@@ -2634,6 +2635,7 @@ func TestGetBorrowRequests(t *testing.T) {
 		State:            "approved",
 		CreatedAt:        now.Add(-5 * time.Hour),
 		OrganisationName: org.Name,
+		PickedUpAt:       &pickedUpAt,
 	}
 	_, err = dbCon.Model(aliceReq2).Insert()
 	assert.NoError(t, err)
@@ -2887,4 +2889,119 @@ func TestInstantCheckout(t *testing.T) {
 		w := send(`{"id": ` + strconv.Itoa(inventory.ID) + `, "numSelected": 0, "startDate": "2026-10-05T00:00:00Z", "endDate": "2026-10-06T00:00:00Z"}`)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
+}
+
+func TestRequestLifecycle(t *testing.T) {
+	router, dbCon := setupTestRouter()
+	defer dbCon.Close()
+
+	h := NewHandler(dbCon, nil)
+	router.POST("/requests/:id/review", h.RequestReview)
+	router.POST("/requests/:id/pickup", h.PickUpRequest)
+	router.POST("/requests/:id/revert", h.RevertReview)
+	router.PUT("/requests/:id/loans", h.UpdateLoanBulk)
+
+	org := &db_models.Organisation{Name: "Lifecycle Test Org"}
+	_, err := dbCon.Model(org).Insert()
+	assert.NoError(t, err)
+
+	requester := &db_models.User{Email: "requester-lifecycle@example.com", Name: "Requester"}
+	_, err = dbCon.Model(requester).Insert()
+	assert.NoError(t, err)
+
+	hier := createTestHierarchy(t, dbCon)
+	loanable := &db_models.Inventory{Name: "Lifecycle Loanable Item", IsConsumable: false, ShelfUnitID: hier.ShelfUnit.ID, ShelfID: hier.Shelf.ID, Amount: 5, UpdateDate: time.Now()}
+	_, err = dbCon.Model(loanable).Insert()
+	assert.NoError(t, err)
+
+	request := &db_models.Request{
+		UserID:           requester.ID,
+		StartDate:        time.Now().Add(-24 * time.Hour),
+		EndDate:          time.Now().Add(24 * time.Hour),
+		State:            "pending",
+		OrganisationName: org.Name,
+	}
+	_, err = dbCon.Model(request).Insert()
+	assert.NoError(t, err)
+
+	consumableItem := &db_models.RequestItems{RequestID: request.ID, InventoryID: hier.Inventory.ID, Amount: 2}
+	_, err = dbCon.Model(consumableItem).Insert()
+	assert.NoError(t, err)
+	loanableItem := &db_models.RequestItems{RequestID: request.ID, InventoryID: loanable.ID, Amount: 1}
+	_, err = dbCon.Model(loanableItem).Insert()
+	assert.NoError(t, err)
+
+	defer func() {
+		itemIDs := []int{consumableItem.ID, loanableItem.ID}
+		_, _ = dbCon.Model(&db_models.Consumed{}).Where("request_item_id IN (?)", pg.In(itemIDs)).Delete()
+		_, _ = dbCon.Model(&db_models.Loans{}).Where("request_item_id IN (?)", pg.In(itemIDs)).Delete()
+		_, _ = dbCon.Model(&db_models.RequestReview{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.RequestItems{}).Where("request_id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(&db_models.Request{}).Where("id = ?", request.ID).Delete()
+		_, _ = dbCon.Model(loanable).Where("id = ?", loanable.ID).Delete()
+		cleanupTestHierarchy(t, dbCon, hier)
+		_, _ = dbCon.Model(requester).Where("id = ?", requester.ID).Delete()
+		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
+	}()
+
+	do := func(method, path, payload string) int {
+		req, _ := http.NewRequest(method, "/requests/"+strconv.Itoa(request.ID)+path, strings.NewReader(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		return w.Code
+	}
+	stage := func() string {
+		var r db_models.Request
+		assert.NoError(t, dbCon.Model(&r).Where("id = ?", request.ID).Select())
+		return requestStage(dbCon, r)
+	}
+	countLoans := func() int {
+		n, err := dbCon.Model(&db_models.Loans{}).Where("request_item_id = ?", loanableItem.ID).Count()
+		assert.NoError(t, err)
+		return n
+	}
+	approve := `{"outcome": "approved", "note": ""}`
+
+	// Forward through every stage.
+	assert.Equal(t, http.StatusOK, do("POST", "/review", approve))
+	assert.Equal(t, "notPickedUp", stage())
+	assert.Equal(t, 1, countLoans())
+
+	assert.Equal(t, http.StatusAccepted, do("POST", "/pickup", ""))
+	assert.Equal(t, "borrowed", stage())
+	assert.Equal(t, http.StatusConflict, do("POST", "/pickup", ""), "picking up twice")
+
+	assert.Equal(t, http.StatusAccepted, do("PUT", "/loans", `{"returnedAt": "`+time.Now().Format(time.RFC3339)+`"}`))
+	assert.Equal(t, "returned", stage())
+
+	// Back one stage at a time; repeating a revert is refused.
+	assert.Equal(t, http.StatusAccepted, do("POST", "/revert", `{"from": "returned"}`))
+	assert.Equal(t, "borrowed", stage())
+	assert.Equal(t, http.StatusConflict, do("POST", "/revert", `{"from": "returned"}`))
+
+	assert.Equal(t, http.StatusAccepted, do("POST", "/revert", `{"from": "borrowed"}`))
+	assert.Equal(t, "notPickedUp", stage())
+
+	assert.Equal(t, http.StatusAccepted, do("POST", "/revert", `{"from": "notPickedUp"}`))
+	assert.Equal(t, "pending", stage())
+	assert.Equal(t, 0, countLoans())
+	n, err := dbCon.Model(&db_models.Consumed{}).Where("request_item_id = ?", consumableItem.ID).Count()
+	assert.NoError(t, err)
+	assert.Equal(t, 0, n)
+
+	assert.Equal(t, http.StatusBadRequest, do("POST", "/revert", `{}`))
+
+	// Rejected requests can go back to pending or be approved directly.
+	assert.Equal(t, http.StatusOK, do("POST", "/review", `{"outcome": "rejected", "note": ""}`))
+	assert.Equal(t, "rejected", stage())
+	assert.Equal(t, http.StatusAccepted, do("POST", "/revert", `{"from": "rejected"}`))
+	assert.Equal(t, "pending", stage())
+
+	assert.Equal(t, http.StatusOK, do("POST", "/review", `{"outcome": "rejected", "note": ""}`))
+	assert.Equal(t, http.StatusConflict, do("POST", "/review", `{"outcome": "rejected", "note": ""}`))
+	assert.Equal(t, http.StatusOK, do("POST", "/review", approve))
+	assert.Equal(t, "notPickedUp", stage())
+	assert.Equal(t, 1, countLoans())
+	assert.Equal(t, http.StatusConflict, do("POST", "/review", approve), "approving twice")
 }

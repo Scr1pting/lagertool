@@ -93,7 +93,7 @@
   position: fixed;
   z-index: 20;
   pointer-events: none;
-  border: 1px solid rgba(253, 214, 47, 0.8);
-  background: rgba(253, 214, 47, 0.08);
+  border: 1px solid color-mix(in srgb, var(--brand) 80%, transparent);
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
   border-radius: 2px;
 }

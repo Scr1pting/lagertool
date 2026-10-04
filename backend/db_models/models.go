@@ -135,16 +135,17 @@ type Inventory struct {
 }
 
 type Request struct {
-	tableName        struct{}  `pg:"request"`
-	ID               int       `json:"id" pg:"id,pk"`
-	UserID           int       `json:"user_id" pg:"user_id"`
-	StartDate        time.Time `json:"start_date" pg:"start_date"`
-	EndDate          time.Time `json:"end_date" pg:"end_date"`
-	Note             string    `json:"note" pg:"note"`
-	State            string    `json:"state" pg:"state"`
-	TimeState        string    `json:"time_state" pg:"time_state"`
-	CreatedAt        time.Time `json:"created_at" pg:"created_at"`
-	OrganisationName string    `json:"organisationName" pg:"organisation_name"`
+	tableName        struct{}   `pg:"request"`
+	ID               int        `json:"id" pg:"id,pk"`
+	UserID           int        `json:"user_id" pg:"user_id"`
+	StartDate        time.Time  `json:"start_date" pg:"start_date"`
+	EndDate          time.Time  `json:"end_date" pg:"end_date"`
+	Note             string     `json:"note" pg:"note"`
+	State            string     `json:"state" pg:"state"`
+	TimeState        string     `json:"time_state" pg:"time_state"`
+	CreatedAt        time.Time  `json:"created_at" pg:"created_at"`
+	OrganisationName string     `json:"organisationName" pg:"organisation_name"`
+	PickedUpAt       *time.Time `json:"picked_up_at" pg:"picked_up_at"`
 
 	Organisation *Organisation  `json:"organisation" pg:"rel:has-one,fk:organisation_name"`
 	User         *User          `json:"user" pg:"rel:has-one,fk:user_id"`

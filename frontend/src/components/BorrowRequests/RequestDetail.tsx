@@ -2,6 +2,8 @@ import { APPROVAL_STATES, TIME_STATES, type BorrowRequest } from "@/types/borrow
 import DataTable from "../DataTable/DataTable"
 import { borrowColumns } from "../DataTable/InventoryTable/borrowColumns"
 import ReviewRequest from "./dialogs/ReviewRequest"
+import RequestAction from "./dialogs/RequestAction"
+import ChangeStatus from "./dialogs/ChangeStatus"
 import { cn } from "@/lib/cn"
 import { Button } from "../shadcn/button"
 import { ArrowUp } from "lucide-react"
@@ -21,6 +23,48 @@ interface PendingMessage {
   text: string
   failed?: boolean
 }
+
+
+// The admin actions for each stage of a request. The backend refuses
+// transitions that don't match the request's current stage.
+function StageActions({ request, onDone }: { request: BorrowRequest, onDone: () => void }) {
+  let actions
+  switch (request.approvalState) {
+    case "pending":
+      actions = <>
+        <ReviewRequest request={request} outcome="rejected" onReviewed={onDone} />
+        <ReviewRequest request={request} outcome="approved" onReviewed={onDone} />
+      </>
+      break
+    case "rejected":
+      actions = <ChangeStatus request={request} onChanged={onDone} />
+      break
+    case "approved":
+      switch (request.timeState) {
+        case "returned":
+          actions = <RequestAction request={request} action="revertToBorrowed" onDone={onDone} />
+          break
+        case "onLoan":
+        case "overdue":
+          actions = <>
+            <RequestAction request={request} action="revertToNotBorrowed" onDone={onDone} />
+            <RequestAction request={request} action="returned" onDone={onDone} />
+          </>
+          break
+        default:
+          actions = <>
+            <RequestAction request={request} action="revertToPending" onDone={onDone} />
+            <RequestAction request={request} action="pickedUp" onDone={onDone} />
+          </>
+      }
+  }
+  return <div className="flex gap-2">{actions}</div>
+}
+
+
+const BUBBLE = "rounded-full px-3 py-1 inline-block text-[15px]"
+// Brand yellow over the dark background: warm but quiet, and the light text stays readable.
+const OWN_BUBBLE = "bg-brand/20"
 
 
 interface RequestDetailProps {
@@ -86,24 +130,31 @@ function RequestDetail({ request, showApproveReject, asAdmin, onReviewed }: Requ
 
         <div className="flex justify-between mt-2">
           <h2 className="text-2xl font-semibold mb-1.5">{request.title}</h2>
-          {/* Only unreviewed requests can be reviewed (the backend refuses others). */}
-          {showApproveReject && request.approvalState === "pending" &&
-            <div className="flex gap-2">
-              <ReviewRequest request={request} outcome="rejected" onReviewed={onReviewed ?? (() => {})} />
-              <ReviewRequest request={request} outcome="approved" onReviewed={onReviewed ?? (() => {})} />
-            </div>
-          }
+          {showApproveReject && <StageActions request={request} onDone={onReviewed ?? (() => {})} />}
         </div>
 
       <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5 text-sm mt-3">
         <span className="text-xs uppercase tracking-wider text-muted-foreground">Submitted</span>
         <span className="font-medium">{formatDate(request.creationDate)}</span>
 
-        <span className="text-xs uppercase tracking-wider text-muted-foreground">Borrow</span>
-
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Requested</span>
         <span className="font-medium">
           {formatDate(request.startDate)} → {formatDate(request.endDate)}
         </span>
+
+        {/* The actual borrow period: just the pickup until the items are back. */}
+        {request.pickedUpDate && (request.timeState === "returned" && request.returnedDate
+          ? <>
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">Borrowed</span>
+            <span className="font-medium">
+              {formatDate(request.pickedUpDate)} → {formatDate(request.returnedDate)}
+            </span>
+          </>
+          : <>
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">Pickup</span>
+            <span className="font-medium">{formatDate(request.pickedUpDate)}</span>
+          </>
+        )}
 
         <span className="text-xs uppercase tracking-wider text-muted-foreground">Author</span>
         <span className="font-medium">{request.author}</span>
@@ -123,9 +174,9 @@ function RequestDetail({ request, showApproveReject, asAdmin, onReviewed }: Requ
             // ids come from two tables (user messages and review notes)
             key={`${message.admin ? "a" : "u"}-${message.id}`}
             className={cn(
-              "rounded-full px-3 py-1 inline-block",
+              BUBBLE,
               // Your side on the right: admin messages on the borrow requests page, requester messages on the account page.
-              message.admin === asAdmin ? "self-end bg-[rgba(253,214,47,0.8)]" : "self-start bg-muted"
+              message.admin === asAdmin ? cn("self-end", OWN_BUBBLE) : "self-start bg-muted"
             )}
           >
             {message.text}
@@ -138,7 +189,9 @@ function RequestDetail({ request, showApproveReject, asAdmin, onReviewed }: Requ
           >
             <span
               className={cn(
-                "rounded-full px-3 py-1 inline-block bg-muted text-muted-foreground opacity-70",
+                BUBBLE,
+                OWN_BUBBLE,
+                "opacity-70",
                 message.failed && "border border-destructive opacity-100"
               )}
             >
@@ -164,7 +217,7 @@ function RequestDetail({ request, showApproveReject, asAdmin, onReviewed }: Requ
 
         <Button
           type="submit"
-          className="bg-[#ffe210] text-black hover:bg-[#ffe210]/90"
+          className="bg-brand text-black hover:bg-brand/90"
           size="icon"
           disabled={!draft.trim()}
         >

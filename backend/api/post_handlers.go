@@ -226,8 +226,10 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// Only unreviewed requests: approving twice would create duplicate loans.
-	if mapApprovalState(request.State) != "pending" {
+	// Only unreviewed requests, or approving a rejected one: approving twice
+	// would create duplicate loans.
+	state := mapApprovalState(request.State)
+	if state != "pending" && !(state == "rejected" && req.Outcome == "approved") {
 		c.JSON(http.StatusConflict, gin.H{"error": "request was already reviewed (" + request.State + ")"})
 		return
 	}
@@ -276,6 +278,135 @@ func (h *Handler) RequestReview(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, rev)
+}
+
+// @Summary Mark a request as picked up
+// @Description Record that the items of an approved borrow request were picked up
+// @Tags requests
+// @Produce  json
+// @Param id path int true "Request ID"
+// @Success 202
+// @Router /requests/{id}/pickup [post]
+func (h *Handler) PickUpRequest(c *gin.Context) {
+	requestId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
+		return
+	}
+	err = h.DB.RunInTransaction(c.Request.Context(), func(tx *pg.Tx) error {
+		request, err := lockRequest(tx, requestId)
+		if err != nil {
+			return err
+		}
+		if stage := requestStage(tx, request); stage != "notPickedUp" {
+			return stageConflict{"only approved requests that weren't picked up yet can be picked up (" + stage + ")"}
+		}
+		_, err = tx.Model((*db_models.Request)(nil)).Set("picked_up_at = ?", time.Now()).Where("id = ?", requestId).Update()
+		return err
+	})
+	if !respondTxError(c, err) {
+		c.Status(http.StatusAccepted)
+	}
+}
+
+// @Summary Revert a request by one stage
+// @Description Undo the last step of a borrow request. "from" must be its current stage:
+// @Description notPickedUp → pending (loans and consumptions are deleted), borrowed → not picked up,
+// @Description returned → borrowed, rejected → pending.
+// @Tags requests
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Request ID"
+// @Param revert body api_objects.RevertRequest true "Current stage"
+// @Success 202
+// @Router /requests/{id}/revert [post]
+func (h *Handler) RevertReview(c *gin.Context) {
+	requestId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request id"})
+		return
+	}
+	var req api_objects.RevertRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.DB.RunInTransaction(c.Request.Context(), func(tx *pg.Tx) error {
+		request, err := lockRequest(tx, requestId)
+		if err != nil {
+			return err
+		}
+		// Checking the expected stage makes a repeated click revert only once.
+		if stage := requestStage(tx, request); stage != req.From {
+			return stageConflict{"request is " + stage + ", not " + req.From}
+		}
+		itemIDs := tx.Model((*db_models.RequestItems)(nil)).Column("id").Where("request_id = ?", requestId)
+		switch req.From {
+		case "notPickedUp":
+			// Remove what approving created, so a later approval doesn't duplicate it.
+			if _, err := tx.Model((*db_models.Loans)(nil)).Where("request_item_id IN (?)", itemIDs).Delete(); err != nil {
+				return err
+			}
+			if _, err := tx.Model((*db_models.Consumed)(nil)).Where("request_item_id IN (?)", itemIDs).Delete(); err != nil {
+				return err
+			}
+			return setRequestState(tx, requestId, "pending")
+		case "borrowed":
+			_, err := tx.Model((*db_models.Request)(nil)).Set("picked_up_at = NULL").Where("id = ?", requestId).Update()
+			return err
+		case "returned":
+			_, err := tx.Model((*db_models.Loans)(nil)).
+				Set("returned = ?", false).
+				Set("returned_at = ?", time.Time{}).
+				Where("request_item_id IN (?)", itemIDs).
+				Update()
+			return err
+		case "rejected":
+			return setRequestState(tx, requestId, "pending")
+		default:
+			return stageConflict{"request can't be reverted from " + req.From}
+		}
+	})
+	if !respondTxError(c, err) {
+		c.Status(http.StatusAccepted)
+	}
+}
+
+// stageConflict is returned from a transaction when the request isn't in a
+// stage that allows the action.
+type stageConflict struct{ msg string }
+
+func (e stageConflict) Error() string { return e.msg }
+
+// lockRequest loads a request and locks its row until the transaction ends,
+// so concurrent stage changes can't interleave.
+func lockRequest(tx *pg.Tx, requestId int) (db_models.Request, error) {
+	var request db_models.Request
+	err := tx.Model(&request).Where("id = ?", requestId).For("UPDATE").Select()
+	return request, err
+}
+
+func setRequestState(tx *pg.Tx, requestId int, state string) error {
+	_, err := tx.Model((*db_models.Request)(nil)).Set("state = ?", state).Where("id = ?", requestId).Update()
+	return err
+}
+
+// respondTxError writes the response for a failed stage transaction and
+// reports whether there was an error.
+func respondTxError(c *gin.Context, err error) bool {
+	var conflict stageConflict
+	switch {
+	case err == nil:
+		return false
+	case errors.Is(err, pg.ErrNoRows):
+		c.JSON(http.StatusNotFound, gin.H{"error": "request not found"})
+	case errors.As(err, &conflict):
+		c.JSON(http.StatusConflict, gin.H{"error": conflict.msg})
+	default:
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	return true
 }
 
 // @Summary Post a message to a request

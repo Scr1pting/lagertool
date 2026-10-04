@@ -116,6 +116,7 @@ type BorrowRequest struct {
 	CreationDate  time.Time       `json:"creationDate"`
 	StartDate     time.Time       `json:"startDate"`
 	EndDate       time.Time       `json:"endDate"`
+	PickedUpDate  *time.Time      `json:"pickedUpDate,omitempty"`
 	ReturnedDate  *time.Time      `json:"returnedDate,omitempty"`
 	Items         []BorrowItem    `json:"items"`
 	Messages      []BorrowMessage `json:"messages"`

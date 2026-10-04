@@ -26,7 +26,7 @@
   height: 22px;
   padding: 0 6px;
   border-radius: 999px;
-  background: #FDD62F;
+  background: var(--brand);
   color: #111;
   font-size: 12px;
   font-weight: 600;

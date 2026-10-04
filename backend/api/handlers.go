@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 	"lagertool.com/main/api_objects"
 	"lagertool.com/main/config"
 	"lagertool.com/main/db"
@@ -336,6 +337,7 @@ func (h *Handler) buildBorrowRequest(r db_models.Request) (api_objects.BorrowReq
 		CreationDate:  r.CreatedAt,
 		StartDate:     r.StartDate,
 		EndDate:       r.EndDate,
+		PickedUpDate:  r.PickedUpAt,
 		ReturnedDate:  returnedAt,
 		Items:         items,
 		Messages:      messages,
@@ -355,42 +357,55 @@ func mapApprovalState(s string) string {
 }
 
 func (h *Handler) deriveTimeState(r db_models.Request) (string, *time.Time) {
+	return deriveTimeState(h.DB, r)
+}
+
+// deriveTimeState returns where an approved request is in its lifecycle:
+// "notPickedUp", "onLoan", "overdue" or "returned" (with the return time).
+// It is "" for requests that aren't approved.
+func deriveTimeState(con orm.DB, r db_models.Request) (string, *time.Time) {
 	if mapApprovalState(r.State) != "approved" {
 		return "", nil
 	}
+	if r.PickedUpAt == nil {
+		return "notPickedUp", nil
+	}
+	borrowed := "onLoan"
+	if time.Now().After(r.EndDate) {
+		borrowed = "overdue"
+	}
 	var loans []db_models.Loans
-	err := h.DB.Model(&loans).
+	err := con.Model(&loans).
 		Where("request_item_id IN (SELECT id FROM request_items WHERE request_id = ?)", r.ID).
 		Select()
-	now := time.Now()
-	bracket := func() string {
-		switch {
-		case now.Before(r.StartDate):
-			return "future"
-		case now.After(r.EndDate):
-			return "overdue"
-		default:
-			return "onLoan"
-		}
-	}
 	if err != nil || len(loans) == 0 {
-		return bracket(), nil
+		return borrowed, nil
 	}
-	allReturned := true
 	var latest time.Time
 	for _, l := range loans {
 		if !l.IsReturned {
-			allReturned = false
-			break
+			return borrowed, nil
 		}
 		if l.ReturnedAt.After(latest) {
 			latest = l.ReturnedAt
 		}
 	}
-	if allReturned {
-		return "returned", &latest
+	return "returned", &latest
+}
+
+// requestStage is the lifecycle stage the admin buttons act on: "pending",
+// "rejected", "notPickedUp", "borrowed" (on loan or overdue) or "returned".
+func requestStage(con orm.DB, r db_models.Request) string {
+	approval := mapApprovalState(r.State)
+	if approval != "approved" {
+		return approval
 	}
-	return bracket(), nil
+	switch timeState, _ := deriveTimeState(con, r); timeState {
+	case "onLoan", "overdue":
+		return "borrowed"
+	default:
+		return timeState
+	}
 }
 
 func (h *Handler) getBorrowMessages(requestId int) ([]api_objects.BorrowMessage, error) {

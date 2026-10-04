@@ -8,7 +8,7 @@ export const APPROVAL_STATES = {
 export type ApprovalState = keyof typeof APPROVAL_STATES
 
 export const TIME_STATES = {
-  future: { title: "Future", color: "purple" },
+  notPickedUp: { title: "Not picked up", color: "zinc" },
   onLoan: { title: "On Loan", color: "blue" },
   overdue: { title: "Overdue", color: "blue" },
   returned: { title: "Returned", color: "green" }
@@ -29,6 +29,7 @@ export interface BorrowRequest {
   creationDate: Date
   startDate: Date
   endDate: Date
+  pickedUpDate?: Date
   returnedDate?: Date
   items: BorrowItem[]
   messages: Message[]

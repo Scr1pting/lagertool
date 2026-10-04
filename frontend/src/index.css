@@ -8,6 +8,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --color-brand: var(--brand);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -43,6 +44,27 @@
 
 :root {
   --radius: 0.625rem;
+  /* Brand yellow; the same in light and dark mode. Use as bg-brand, text-brand, … */
+  --brand: #f1d508;
+  /*
+   * Selected shelf pieces in the builder and the highlighted one on item pages. Starts at the brand
+   * colour, peaks at a warmer accent (25%), then eases down to the brand at 8% over the shelf's
+   * #1f1f1f. The stops are opaque oklab mixes sampled along that eased curve; see
+   * ShelfElementView.module.css for why they're precomputed. Regenerate them if --brand changes.
+   */
+  --selection-gradient: linear-gradient(135deg,
+    #F1D508 0%,
+    #F5C728 25%,
+    #E6BC2A 32.5%,
+    #C5A32D 40%,
+    #A3882D 47.5%,
+    #8C762C 55%,
+    #78662A 62.5%,
+    #665928 70%,
+    #564C25 77.5%,
+    #453E22 85%,
+    #36331F 92.5%,
+    #302E1D 100%);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

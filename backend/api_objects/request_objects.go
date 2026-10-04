@@ -55,6 +55,11 @@ type RequestReview struct {
 	Note    string `json:"note"`
 }
 
+type RevertRequest struct {
+	// The stage the request is expected to be in: "notPickedUp", "borrowed", "returned" or "rejected".
+	From string `json:"from" binding:"required"`
+}
+
 type UpdateRequest struct {
 	Outcome string `json:"outcome"`
 }

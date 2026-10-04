@@ -11,9 +11,16 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 	h := NewHandler(dbCon, cfg)
 	authHandler := auth.NewAuthHandler(dbCon)
 
-	r.GET("/auth/eduid/login", authHandler.LoginHandler)
-	r.GET("/auth/eduid/callback", authHandler.CallbackHandler)
-	r.GET("/auth/eduid/logout", authHandler.LogoutHandler)
+	if using_auth {
+		r.GET("/auth/eduid/login", authHandler.LoginHandler)
+		r.GET("/auth/eduid/callback", authHandler.CallbackHandler)
+		r.GET("/auth/eduid/logout", authHandler.LogoutHandler)
+	} else {
+		// OIDC isn't initialized without auth; the real handlers would panic.
+		r.GET("/auth/eduid/login", authHandler.DevAuthRedirect)
+		r.GET("/auth/eduid/callback", authHandler.DevAuthRedirect)
+		r.GET("/auth/eduid/logout", authHandler.DevAuthRedirect)
+	}
 
 	r.GET("/search/:searchTerm", h.FuzzyFindItems)
 
@@ -66,6 +73,8 @@ func SetupRoutes(r *gin.Engine, dbCon *pg.DB, cfg *config.Config, using_auth boo
 		protected.PUT("/requests/:id", adminOnly, h.UpdateRequest)
 		protected.PUT("/requests/:id/loans", adminOnly, h.UpdateLoanBulk)
 		protected.POST("/requests/:id/review", adminOnly, h.RequestReview)
+		protected.POST("/requests/:id/revert", adminOnly, h.RevertReview)
+		protected.POST("/requests/:id/pickup", adminOnly, h.PickUpRequest)
 		protected.GET("/requests/:id/messages", h.GetMessages)
 		protected.POST("/requests/:id/messages", h.PostMessage)
 	}

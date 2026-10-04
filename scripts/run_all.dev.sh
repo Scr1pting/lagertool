@@ -39,7 +39,7 @@ cd - > /dev/null
 # Start backend (Go server)
 echo "Starting backend..."
 cd "$ROOT/backend" || exit 1
-go run main.go -using_auth=false &
+go run main.go &
 BACKEND_PID=$!
 cd - > /dev/null
 
