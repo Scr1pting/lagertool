@@ -17,7 +17,7 @@ export interface ItemFormValues {
   element?: ShelfElement
 }
 
-export const EMPTY_ITEM_FORM: ItemFormValues = { name: "", amount: 1, isConsumable: false }
+const EMPTY_ITEM_FORM: ItemFormValues = { name: "", amount: 1, isConsumable: false }
 
 export function findShelfElement(shelf: Shelf | undefined, elementId: string): ShelfElement | undefined {
   return shelf?.columns.flatMap(column => column.elements).find(element => element.id === elementId)
