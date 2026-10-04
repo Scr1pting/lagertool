@@ -22,6 +22,7 @@ export interface InventoryItemFull extends InventoryItem {
 }
 
 export interface ItemBorrowEntry {
+  requestId: number
   authorName: string
   approvalState: ApprovalState
   timeState?: TimeState

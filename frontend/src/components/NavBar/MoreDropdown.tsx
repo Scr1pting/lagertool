@@ -1,10 +1,11 @@
 import styles from "./NavBar.module.css"
-import { Ellipsis } from 'lucide-react'
+import { Boxes, ClipboardList, Ellipsis, LogOut } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/shadcn/dropdown-menu"
 import { Link } from "react-router"
@@ -21,19 +22,32 @@ export default function MoreDropdown() {
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-56" align="start">
+      <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Link to="/manage-inventory">Manage Inventory</Link>
+          {/* asChild: the whole row is the link, not just its text. */}
+          <DropdownMenuItem asChild>
+            <Link to="/manage-inventory">
+              <Boxes />
+              Manage Inventory
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link to="/borrow-requests">Borrow Requests</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            {/* Full page navigation: the backend redirects on to Keycloak's logout. */}
-            <a href={`${API_BASE_URL}/auth/eduid/logout`}>Logout</a>
+          <DropdownMenuItem asChild>
+            <Link to="/borrow-requests">
+              <ClipboardList />
+              Borrow Requests
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem variant="destructive" asChild>
+          {/* Full page navigation: the backend redirects on to Keycloak's logout. */}
+          <a href={`${API_BASE_URL}/auth/eduid/logout`}>
+            <LogOut />
+            Logout
+          </a>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

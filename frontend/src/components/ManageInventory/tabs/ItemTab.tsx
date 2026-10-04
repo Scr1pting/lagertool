@@ -8,7 +8,7 @@ import DataTable from "@/components/DataTable/DataTable"
 import { TabsContent } from "@/components/shadcn/tabs"
 import ManageInventoryCard from "../ManageInventoryCard"
 import AvailabilityDescription from "@/components/AvailabilityDescription"
-import { inventoryColumns } from "@/components/DataTable/ManageInventory/inventoryColumns"
+import { inventoryColumnsBase } from "@/components/DataTable/InventoryTable/inventoryColumnsBase"
 import post from "@/api/post"
 import useOrgs from "@/store/useOrgs"
 import { toast } from "sonner"
@@ -71,7 +71,8 @@ function ItemTab({ shelves, inventory, refetch }: ItemTabProps) {
 
           <DataTable
             data={inventory}
-            columns={inventoryColumns}
+            columns={inventoryColumnsBase}
+            rowLink={row => `/item?id=${row.original.id}`}
           />
         </section>
       </div>

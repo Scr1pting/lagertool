@@ -9,12 +9,14 @@ interface RequestTypePageProps {
   showApproveReject: boolean
   asAdmin: boolean
   onReviewed?: () => void
+  // Selected first, e.g. when linked to from an item's borrow history.
+  initialSelectedId?: number
 }
 
-function RequestTypePage({ borrowRequests, showApproveReject, asAdmin, onReviewed }: RequestTypePageProps) {
+function RequestTypePage({ borrowRequests, showApproveReject, asAdmin, onReviewed, initialSelectedId }: RequestTypePageProps) {
   // Track the selection by id so it follows refetched data; fall back to the
   // first request when the selected one left this list (e.g. after approving).
-  const [selectedId, setSelectedId] = useState<number | undefined>(borrowRequests[0]?.id)
+  const [selectedId, setSelectedId] = useState<number | undefined>(initialSelectedId ?? borrowRequests[0]?.id)
   const selectedRequest = borrowRequests.find(r => r.id === selectedId) ?? borrowRequests[0]
   const setSelectedRequest = (r: BorrowRequest) => setSelectedId(r.id)
 

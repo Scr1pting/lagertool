@@ -9,6 +9,7 @@ import { PencilIcon, ShoppingCartIcon } from "lucide-react"
 import { useSearchParams } from "react-router"
 import DataTable from "@/components/DataTable/DataTable"
 import itemBorrowHistoryColumns from "@/components/DataTable/ItemBorrowHistoryColumns"
+import useMe from "@/store/useMe"
 
 
 function ItemDetail() {
@@ -16,6 +17,7 @@ function ItemDetail() {
   const id = parseInt(searchParams.get("id") ?? "-1")
 
   const { data: item = null, borrowHistory = [], refetch } = useFetchItem(id)
+  const isAdmin = useMe(s => s.me?.isAdmin ?? false)
 
   return (
     <RegularPage title={item?.name ?? "Loading"}>
@@ -95,6 +97,7 @@ function ItemDetail() {
               className="mt-3"
               data={borrowHistory!}
               columns={itemBorrowHistoryColumns}
+              rowLink={isAdmin ? row => `/borrow-requests?id=${row.original.requestId}` : undefined}
             />
           ) : (
             <p className="text-muted-foreground text-sm pt-3">No borrow history for this item.</p>

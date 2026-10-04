@@ -2,6 +2,8 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { Shelf } from "@/types/shelf"
 import SortableHeader from "../SortableHeader"
 
+const location = (shelf: Shelf) => `${shelf.building?.name || "unknown"}/${shelf.room?.name || "unknown"}`
+
 const shelfColumns: ColumnDef<Shelf>[] = [
   {
     accessorKey: "name",
@@ -16,16 +18,8 @@ const shelfColumns: ColumnDef<Shelf>[] = [
       <SortableHeader column={column} title="Location" />
     ),
     enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const a = (rowA.original.buildingName || "") + "/" + (rowA.original.roomName || "")
-      const b = (rowB.original.buildingName || "") + "/" + (rowB.original.roomName || "")
-      return a.localeCompare(b)
-    },
-    cell: ({ row }) => {
-      const building = row.original.buildingName || "unknown"
-      const room = row.original.roomName || "unknown"
-      return <div>{building + "/" + room}</div>
-    },
+    sortingFn: (rowA, rowB) => location(rowA.original).localeCompare(location(rowB.original)),
+    cell: ({ row }) => <div>{location(row.original)}</div>,
   },
 ]
 

@@ -84,6 +84,7 @@ type Message struct {
 }
 
 type BorrowHistory struct {
+	RequestID  int       `json:"requestId"`
 	User       string    `json:"authorName"`
 	Event      string    `json:"title"`
 	StartedAt  time.Time `json:"startDate"`

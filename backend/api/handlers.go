@@ -479,6 +479,7 @@ func (h *Handler) GetBorrowHistory(c *gin.Context) {
 	var res []api_objects.BorrowHistory
 	for _, item := range dbRes {
 		out := api_objects.BorrowHistory{
+			RequestID: item.RequestID,
 			User:      item.Request.User.Name,
 			Event:     item.Request.Note,
 			StartedAt: item.Request.StartDate,
