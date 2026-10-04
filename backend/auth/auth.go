@@ -151,6 +151,13 @@ func (h *AuthHandler) StartSessionCleanup(ctx context.Context) {
 	}()
 }
 
+// LoginHandler starts the Keycloak login (authorization code flow with PKCE).
+//
+// @Summary Log in
+// @Description Browser navigation, not an XHR call: redirects to the Keycloak login page. After login Keycloak redirects back to /auth/eduid/callback.
+// @Tags auth
+// @Success 307 "Redirect to Keycloak"
+// @Router /auth/eduid/login [get]
 func (h *AuthHandler) LoginHandler(c *gin.Context) {
 	state := uuid.New().String()
 	nonce := uuid.New().String()
@@ -182,6 +189,18 @@ func (h *AuthHandler) LoginHandler(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, authURL)
 }
 
+// CallbackHandler finishes the login: verifies the Keycloak response, creates or
+// updates the user (incl. admin flag from the token roles) and starts a session.
+//
+// @Summary Login callback
+// @Description Called by Keycloak, not by clients. On success sets the user_session cookie and redirects to the frontend (FRONTEND_URL).
+// @Tags auth
+// @Param code query string true "Authorization code from Keycloak"
+// @Param state query string true "OAuth state, must match the oauth_flow cookie"
+// @Success 302 "Redirect to the frontend, user_session cookie set"
+// @Failure 400 {object} map[string]string "Missing/invalid flow cookie, state or code"
+// @Failure 401 {object} map[string]string "ID token or nonce invalid"
+// @Router /auth/eduid/callback [get]
 func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -326,6 +345,14 @@ func (h *AuthHandler) CallbackHandler(c *gin.Context) {
 	c.Redirect(http.StatusFound, frontendURL)
 }
 
+// LogoutHandler ends the local session and then the Keycloak SSO session;
+// otherwise the next /login would silently log the same user back in.
+//
+// @Summary Log out
+// @Description Browser navigation: deletes the session and its cookie, then redirects to Keycloak's logout, which redirects back to OIDC_POST_LOGOUT_REDIRECT.
+// @Tags auth
+// @Success 307 "Redirect to Keycloak logout"
+// @Router /auth/eduid/logout [get]
 func (h *AuthHandler) LogoutHandler(c *gin.Context) {
 	// Without a local session we still end the Keycloak SSO session below,
 	// otherwise the next /login would silently log the same user back in.

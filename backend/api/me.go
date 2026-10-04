@@ -66,6 +66,7 @@ func actingUserID(c *gin.Context, fromBody int) int {
 // @Tags auth
 // @Produce  json
 // @Success 200 {object} api_objects.Me
+// @Failure 401 {object} map[string]string "Not logged in"
 // @Router /me [get]
 func (h *Handler) GetMe(c *gin.Context) {
 	u := currentUser(c)
@@ -76,10 +77,12 @@ func (h *Handler) GetMe(c *gin.Context) {
 	c.JSON(http.StatusOK, api_objects.Me{ID: u.ID, Name: u.Name, Email: u.Email, IsAdmin: u.IsAdmin})
 }
 
-// @Summary List the logged-in user's borrow requests
+// @Summary List my borrow requests
+// @Description Borrow requests of the logged-in user, newest first.
 // @Tags requests
 // @Produce  json
 // @Success 200 {array} api_objects.BorrowRequest
+// @Failure 401 {object} map[string]string "Not logged in"
 // @Router /me/borrow_requests [get]
 func (h *Handler) GetMyBorrowRequests(c *gin.Context) {
 	u := currentUser(c)
