@@ -223,12 +223,20 @@ func (h *Handler) GetMessages(c *gin.Context) {
 		return
 	}
 	for _, admin := range dbResAdmin {
-		res = append(res, api_objects.Message{ID: admin.ID, AuthorName: admin.User.Name, Message: admin.Note, IsAdmin: true, TimeStamp: admin.TimeStamp})
+		name := ""
+		if admin.User != nil {
+			name = admin.User.Name
+		}
+		res = append(res, api_objects.Message{ID: admin.ID, AuthorName: name, Message: admin.Note, IsAdmin: true, TimeStamp: admin.TimeStamp})
 	}
 	for _, member := range dbResMember {
+		name := ""
+		if member.User != nil {
+			name = member.User.Name
+		}
 		res = append(res, api_objects.Message{
 			ID:         member.ID,
-			AuthorName: member.User.Name,
+			AuthorName: name,
 			Message:    member.Message,
 			IsAdmin:    false,
 			TimeStamp:  member.TimeStamp,

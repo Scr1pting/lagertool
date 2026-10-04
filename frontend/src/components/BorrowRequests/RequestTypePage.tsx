@@ -43,6 +43,7 @@ function RequestTypePage({ borrowRequests, showApproveReject, onReviewed }: Requ
         className="pl-2.5 mt-2.5 mb-5"
       >
         <RequestDetail
+          key={selectedRequest.id}
           request={selectedRequest}
           showApproveReject={showApproveReject}
           onReviewed={onReviewed}

@@ -10,6 +10,18 @@ import { useEffect, useRef, useState } from "react"
 import { Badge } from "../shadcn/badge"
 import { capitalize } from "@/lib/capitalize"
 import { formatDate } from "@/lib/formatDate"
+import post from "@/api/post"
+import useFetchMe from "@/hooks/fetch/useFetchMe"
+import useRequestMessages from "@/hooks/fetch/useRequestMessages"
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
+// A message that was sent but isn't confirmed by a reload yet.
+interface PendingMessage {
+  tempId: string
+  text: string
+  failed?: boolean
+}
 
 
 interface RequestDetailProps {
@@ -21,6 +33,10 @@ interface RequestDetailProps {
 function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetailProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const [minHeight, setMinHeight] = useState(0)
+  const { data: me } = useFetchMe()
+  const { messages, reload } = useRequestMessages(request.id, request.messages)
+  const [draft, setDraft] = useState("")
+  const [pending, setPending] = useState<PendingMessage[]>([])
 
   useEffect(() => {
     function updateHeight() {
@@ -36,6 +52,30 @@ function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetail
     window.addEventListener("resize", updateHeight)
     return () => window.removeEventListener("resize", updateHeight)
   }, [])
+
+  // Pending bubbles go on the viewer's side.
+  const viewerIsAuthor = me?.name === request.author
+
+  async function send(text: string, tempId: string = crypto.randomUUID()) {
+    setPending(prev => [...prev.filter(p => p.tempId !== tempId), { tempId, text }])
+    try {
+      await post(`${API_BASE_URL}/requests/${request.id}/messages`, { message: text })
+    } catch {
+      setPending(prev => prev.map(p => p.tempId === tempId ? { ...p, failed: true } : p))
+      return
+    }
+    // The message is stored; if this reload fails, polling picks it up later.
+    await reload().catch(() => {})
+    setPending(prev => prev.filter(p => p.tempId !== tempId))
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const text = draft.trim()
+    if (!text) return
+    setDraft("")
+    send(text)
+  }
 
   return (
     <section ref={sectionRef} className="flex flex-col" style={{ minHeight }}>
@@ -81,9 +121,10 @@ function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetail
       <h2 className="text-xl font-semibold mt-5">Chat</h2>
 
       <div className="flex flex-col gap-2 mt-2">
-        {request.messages.map(message =>
+        {messages.map(message =>
           <span
-            key={message.id}
+            // ids come from two tables (user messages and review notes)
+            key={`${message.admin ? "a" : "u"}-${message.id}`}
             className={cn(
               "rounded-full px-3 py-1 inline-block",
               message.author == request.author ? "self-start bg-muted" : "self-end bg-[rgba(253,214,47,0.75)]"
@@ -92,19 +133,46 @@ function RequestDetail({ request, showApproveReject, onReviewed }: RequestDetail
             {message.text}
           </span>
         )}
+        {pending.map(message =>
+          <div
+            key={message.tempId}
+            className={cn("flex flex-col gap-0.5", viewerIsAuthor ? "self-start items-start" : "self-end items-end")}
+          >
+            <span
+              className={cn(
+                "rounded-full px-3 py-1 inline-block bg-muted text-muted-foreground opacity-70",
+                message.failed && "border border-destructive opacity-100"
+              )}
+            >
+              {message.text}
+            </span>
+            {message.failed &&
+              <button
+                type="button"
+                className="text-xs text-destructive hover:underline"
+                onClick={() => send(message.text, message.tempId)}
+              >
+                Failed to send – retry
+              </button>
+            }
+          </div>
+        )}
       </div>
 
       <div className="flex-grow" />
 
-      <div className="flex items-center gap-2.5 mt-10">
-        <Input />
+      <form className="flex items-center gap-2.5 mt-10" onSubmit={handleSubmit}>
+        <Input value={draft} onChange={e => setDraft(e.target.value)} />
 
         <Button
+          type="submit"
+          className="bg-[#ffe210] text-black hover:bg-[#ffe210]/90"
           size="icon"
+          disabled={!draft.trim()}
         >
           <ArrowUp className="size-5" />
         </Button>
-      </div>
+      </form>
     </section>
   )
 }
