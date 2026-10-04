@@ -159,15 +159,15 @@ func (h *Handler) GetItem(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-// @Summary Get a user's shopping cart
-// @Description Get a user's shopping cart
+// @Summary Get my shopping cart
+// @Description Items in the logged-in user's cart, grouped by organisation name, with availability for the date range. An empty cart returns {}.
 // @Tags cart
 // @Produce  json
-// @Param userId path int true "User ID"
 // @Param start query string true "Start date in format 2006-01-02"
 // @Param end query string true "End date in format 2006-01-02"
 // @Success 200 {object} map[string][]api_objects.CartItem
-// @Router /users/{userId}/cart [get]
+// @Failure 401 {object} map[string]string "Not logged in"
+// @Router /me/cart [get]
 func (h *Handler) GetShoppingCart(c *gin.Context) {
 	id, ok := targetUserID(c)
 	if !ok {
@@ -193,11 +193,13 @@ func (h *Handler) GetShoppingCart(c *gin.Context) {
 }
 
 // @Summary Get messages for a request
-// @Description Get all messages (user and admin) for a request, sorted by timestamp
+// @Description Get all messages (user and admin) for a request, sorted by timestamp Only the request's author or an admin.
 // @Tags requests
 // @Produce  json
 // @Param id path int true "Request ID"
 // @Success 200 {array} api_objects.Message
+// @Failure 403 {object} map[string]string "Not the author and not an admin"
+// @Failure 404 {object} map[string]string "Request not found"
 // @Router /requests/{id}/messages [get]
 func (h *Handler) GetMessages(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -259,6 +261,7 @@ func (h *Handler) GetMessages(c *gin.Context) {
 // @Produce  json
 // @Param userId query int false "Filter to requests owned by this user"
 // @Success 200 {array} api_objects.BorrowRequest
+// @Failure 403 {object} map[string]string "Not allowed for this scope"
 // @Router /borrow_requests [get]
 func (h *Handler) GetBorrowRequests(c *gin.Context) {
 	var requests []db_models.Request
@@ -543,13 +546,13 @@ func (h *Handler) FuzzyFindItems(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-// @Summary Delete all cart items
-// @Description Delete all items from a user's shopping cart
+// @Summary Empty my shopping cart
+// @Description Deletes all items from the logged-in user's cart and returns the deleted items.
 // @Tags cart
 // @Produce  json
-// @Param userId path int true "User ID"
 // @Success 200 {array} db_models.ShoppingCartItem
-// @Router /users/{userId}/cart/items [delete]
+// @Failure 401 {object} map[string]string "Not logged in"
+// @Router /me/cart/items [delete]
 func (h *Handler) DeleteAllCartItems(c *gin.Context) {
 	var dbCI []db_models.ShoppingCartItem
 	userId, ok := targetUserID(c)
@@ -578,14 +581,14 @@ func (h *Handler) DeleteAllCartItems(c *gin.Context) {
 	c.JSON(http.StatusOK, dbCI)
 }
 
-// @Summary Delete a single cart item
-// @Description Delete a specific item from a user's shopping cart by inventory item ID
+// @Summary Remove an item from my shopping cart
+// @Description Deletes an item from the logged-in user's cart by inventory item ID.
 // @Tags cart
 // @Produce  json
-// @Param userId path int true "User ID"
 // @Param itemId path int true "Inventory Item ID"
 // @Success 200
-// @Router /users/{userId}/cart/items/{itemId} [delete]
+// @Failure 401 {object} map[string]string "Not logged in"
+// @Router /me/cart/items/{itemId} [delete]
 func (h *Handler) DeleteCartItem(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("itemId"))
 	if err != nil {

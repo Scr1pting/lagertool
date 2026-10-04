@@ -23,9 +23,125 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/eduid/callback": {
+            "get": {
+                "description": "Called by Keycloak, not by clients. On success sets the user_session cookie and redirects to the frontend (FRONTEND_URL).",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login callback",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization code from Keycloak",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OAuth state, must match the oauth_flow cookie",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect to the frontend, user_session cookie set"
+                    },
+                    "400": {
+                        "description": "Missing/invalid flow cookie, state or code",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "ID token or nonce invalid",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/eduid/login": {
+            "get": {
+                "description": "Browser navigation, not an XHR call: redirects to the Keycloak login page. After login Keycloak redirects back to /auth/eduid/callback.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log in",
+                "responses": {
+                    "307": {
+                        "description": "Redirect to Keycloak"
+                    }
+                }
+            }
+        },
+        "/auth/eduid/logout": {
+            "get": {
+                "description": "Browser navigation: deletes the session and its cookie, then redirects to Keycloak's logout, which redirects back to OIDC_POST_LOGOUT_REDIRECT.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log out",
+                "responses": {
+                    "307": {
+                        "description": "Redirect to Keycloak logout"
+                    }
+                }
+            }
+        },
+        "/borrow_requests": {
+            "get": {
+                "description": "List borrow requests. Without query params returns all (admin only); with ?userId=N returns only that user's (that user or admin).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requests"
+                ],
+                "summary": "List borrow requests",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter to requests owned by this user",
+                        "name": "userId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api_objects.BorrowRequest"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this scope",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/loans/{id}": {
             "put": {
-                "description": "Mark a loan as returned",
+                "description": "Mark a loan as returned Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -57,6 +173,396 @@ const docTemplate = `{
                 "responses": {
                     "202": {
                         "description": "Accepted"
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "description": "Returns the user of the current session. 401 if not logged in.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get the logged-in user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.Me"
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/borrow_requests": {
+            "get": {
+                "description": "Borrow requests of the logged-in user, newest first.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requests"
+                ],
+                "summary": "List my borrow requests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api_objects.BorrowRequest"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/cart": {
+            "get": {
+                "description": "Items in the logged-in user's cart, grouped by organisation name, with availability for the date range. An empty cart returns {}.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Get my shopping cart",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date in format 2006-01-02",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date in format 2006-01-02",
+                        "name": "end",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/api_objects.CartItem"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/cart/checkout": {
+            "post": {
+                "description": "Turns the logged-in user's cart into borrow requests (one per organisation, state \"requested\") for the given dates, then empties the cart.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Check out my shopping cart",
+                "parameters": [
+                    {
+                        "description": "Borrow period",
+                        "name": "checkout",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.CheckoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body or empty cart",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/cart/items": {
+            "post": {
+                "description": "Adds an inventory item to the logged-in user's cart. The cart is created on first use.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Add an item to my shopping cart",
+                "parameters": [
+                    {
+                        "description": "Inventory item id and amount",
+                        "name": "cart_item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.CartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/db_models.ShoppingCartItem"
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes all items from the logged-in user's cart and returns the deleted items.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Empty my shopping cart",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/db_models.ShoppingCartItem"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/cart/items/{itemId}": {
+            "put": {
+                "description": "Updates the amount of an item in the logged-in user's cart.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Change an amount in my shopping cart",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Inventory Item ID",
+                        "name": "itemId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New amount",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.UpdateCartItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes an item from the logged-in user's cart by inventory item ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Remove an item from my shopping cart",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Inventory Item ID",
+                        "name": "itemId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/checkout": {
+            "post": {
+                "description": "Creates a borrow request for one item without going through (or touching) the cart. The description, if any, becomes the first message on the request.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cart"
+                ],
+                "summary": "Borrow a single item directly",
+                "parameters": [
+                    {
+                        "description": "Item, amount, dates, title and description",
+                        "name": "checkout",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_objects.InstantCheckoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/db_models.Request"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Item not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -116,7 +622,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new building for an organisation",
+                "description": "Create a new building for an organisation Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -151,13 +657,22 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/db_models.Building"
                         }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/organisations/{orgId}/buildings/{buildingId}/rooms": {
             "post": {
-                "description": "Create a new room in a building",
+                "description": "Create a new room in a building Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -199,13 +714,22 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/db_models.Room"
                         }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/organisations/{orgId}/buildings/{buildingId}/rooms/{roomId}/shelves": {
             "post": {
-                "description": "Create a new shelf in a room",
+                "description": "Create a new shelf in a room Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -253,6 +777,15 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/db_models.Shelf"
+                        }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -306,7 +839,7 @@ const docTemplate = `{
         },
         "/organisations/{orgId}/items": {
             "post": {
-                "description": "Create a new inventory item",
+                "description": "Create a new inventory item Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -333,6 +866,15 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/db_models.Inventory"
+                        }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -379,7 +921,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update an inventory item's details",
+                "description": "Update an inventory item's details Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -413,6 +955,15 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/db_models.Inventory"
+                        }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -507,7 +1058,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/api_objects.Shelves"
+                                "$ref": "#/definitions/api_objects.Shelf"
                             }
                         }
                     }
@@ -516,7 +1067,7 @@ const docTemplate = `{
         },
         "/requests/{id}": {
             "put": {
-                "description": "Update the status of a request",
+                "description": "Update the status of a request Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -548,13 +1099,22 @@ const docTemplate = `{
                 "responses": {
                     "202": {
                         "description": "Accepted"
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/requests/{id}/loans": {
             "put": {
-                "description": "Mark all loans for a given request as returned",
+                "description": "Mark all loans for a given request as returned Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -586,13 +1146,22 @@ const docTemplate = `{
                 "responses": {
                     "202": {
                         "description": "Accepted"
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/requests/{id}/messages": {
             "get": {
-                "description": "Get all messages (user and admin) for a request, sorted by timestamp",
+                "description": "Get all messages (user and admin) for a request, sorted by timestamp Only the request's author or an admin.",
                 "produces": [
                     "application/json"
                 ],
@@ -618,11 +1187,29 @@ const docTemplate = `{
                                 "$ref": "#/definitions/api_objects.Message"
                             }
                         }
+                    },
+                    "403": {
+                        "description": "Not the author and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Request not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },
             "post": {
-                "description": "Post a user message on a borrow request",
+                "description": "Post a user message on a borrow request Only the request's author or an admin. The author is the logged-in user (userId in the body is ignored then).",
                 "consumes": [
                     "application/json"
                 ],
@@ -657,13 +1244,31 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/api_objects.UserMessage"
                         }
+                    },
+                    "403": {
+                        "description": "Not the author and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Request not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/requests/{id}/review": {
             "post": {
-                "description": "Review/approve/deny a borrow request",
+                "description": "Approve or reject a pending borrow request (outcome \"approved\" or \"rejected\"). Sets the request state; approving creates loans (or consumed records for consumables). The note is shown to the author in the request chat. The reviewer is the logged-in user. Admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -698,6 +1303,42 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/db_models.RequestReview"
                         }
+                    },
+                    "400": {
+                        "description": "Invalid body or outcome",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Request not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Request was already reviewed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -719,6 +1360,18 @@ const docTemplate = `{
                         "name": "searchTerm",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date in format 2006-01-02 (defaults to today)",
+                        "name": "start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date in format 2006-01-02 (defaults to start)",
+                        "name": "end",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -727,7 +1380,80 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db_models.Inventory"
+                                "$ref": "#/definitions/api_objects.InventorySorted"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-units/regenerate-descriptions": {
+            "post": {
+                "description": "Iterates every shelf unit and refreshes its description.\nIntended for backfilling existing data or re-running after\ndescription_gen's categories list changes. Returns counts. Admin only.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Regenerate every shelf unit's description (bulk)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-units/{id}/regenerate-description": {
+            "post": {
+                "description": "Re-runs description_gen against the items currently on the\nshelf unit and writes the result to shelf_unit.description. Admin only.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shelves"
+                ],
+                "summary": "Regenerate a shelf unit's description",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shelf Unit ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     }
@@ -736,12 +1462,12 @@ const docTemplate = `{
         },
         "/users/{userId}/cart": {
             "get": {
-                "description": "Get a user's shopping cart",
+                "description": "Same as GET /me/cart for the given user. That user or an admin only.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "cart"
+                    "cart (by user)"
                 ],
                 "summary": "Get a user's shopping cart",
                 "parameters": [
@@ -779,13 +1505,22 @@ const docTemplate = `{
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "description": "Not that user and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/users/{userId}/cart/checkout": {
             "post": {
-                "description": "Checkout the user's shopping cart and create requests",
+                "description": "Same as POST /me/cart/checkout for the given user. That user or an admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -793,9 +1528,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cart"
+                    "cart (by user)"
                 ],
-                "summary": "Checkout shopping cart",
+                "summary": "Check out a user's shopping cart",
                 "parameters": [
                     {
                         "type": "integer",
@@ -805,7 +1540,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Checkout details",
+                        "description": "Borrow period",
                         "name": "checkout",
                         "in": "body",
                         "required": true,
@@ -816,14 +1551,38 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body or empty cart",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not that user and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/users/{userId}/cart/items": {
             "post": {
-                "description": "Add an item to the shopping cart",
+                "description": "Same as POST /me/cart/items for the given user. That user or an admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -831,9 +1590,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cart"
+                    "cart (by user)"
                 ],
-                "summary": "Add an item to the shopping cart",
+                "summary": "Add an item to a user's shopping cart",
                 "parameters": [
                     {
                         "type": "integer",
@@ -843,7 +1602,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Cart item object",
+                        "description": "Inventory item id and amount",
                         "name": "cart_item",
                         "in": "body",
                         "required": true,
@@ -858,18 +1617,27 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/db_models.ShoppingCartItem"
                         }
+                    },
+                    "403": {
+                        "description": "Not that user and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },
             "delete": {
-                "description": "Delete all items from a user's shopping cart",
+                "description": "Same as DELETE /me/cart/items for the given user. That user or an admin only.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "cart"
+                    "cart (by user)"
                 ],
-                "summary": "Delete all cart items",
+                "summary": "Empty a user's shopping cart",
                 "parameters": [
                     {
                         "type": "integer",
@@ -888,13 +1656,22 @@ const docTemplate = `{
                                 "$ref": "#/definitions/db_models.ShoppingCartItem"
                             }
                         }
+                    },
+                    "403": {
+                        "description": "Not that user and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
         },
         "/users/{userId}/cart/items/{itemId}": {
             "put": {
-                "description": "Update the amount of an item in a user's shopping cart",
+                "description": "Same as PUT /me/cart/items/{itemId} for the given user. That user or an admin only.",
                 "consumes": [
                     "application/json"
                 ],
@@ -902,9 +1679,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cart"
+                    "cart (by user)"
                 ],
-                "summary": "Update a cart item",
+                "summary": "Change an amount in a user's shopping cart",
                 "parameters": [
                     {
                         "type": "integer",
@@ -921,7 +1698,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Update details",
+                        "description": "New amount",
                         "name": "item",
                         "in": "body",
                         "required": true,
@@ -933,18 +1710,27 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "403": {
+                        "description": "Not that user and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },
             "delete": {
-                "description": "Delete a specific item from a user's shopping cart by inventory item ID",
+                "description": "Same as DELETE /me/cart/items/{itemId} for the given user. That user or an admin only.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "cart"
+                    "cart (by user)"
                 ],
-                "summary": "Delete a single cart item",
+                "summary": "Remove an item from a user's shopping cart",
                 "parameters": [
                     {
                         "type": "integer",
@@ -964,6 +1750,15 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "403": {
+                        "description": "Not that user and not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -979,19 +1774,118 @@ const docTemplate = `{
                 "approvalState": {
                     "type": "string"
                 },
-                "approvalStateTime": {
-                    "type": "string"
-                },
                 "authorName": {
                     "type": "string"
                 },
-                "dueAt": {
+                "endDate": {
                     "type": "string"
                 },
-                "returnedAt": {
+                "returnedDate": {
                     "type": "string"
                 },
                 "startDate": {
+                    "type": "string"
+                },
+                "timeState": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.BorrowItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "available": {
+                    "type": "integer"
+                },
+                "borrowed": {
+                    "type": "integer"
+                },
+                "building": {
+                    "$ref": "#/definitions/api_objects.Building"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "keywords": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "room": {
+                    "$ref": "#/definitions/api_objects.Room"
+                },
+                "shelfElementId": {
+                    "type": "string"
+                },
+                "shelfId": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.BorrowMessage": {
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "type": "boolean"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.BorrowRequest": {
+            "type": "object",
+            "properties": {
+                "approvalState": {
+                    "type": "string"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.BorrowItem"
+                    }
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.BorrowMessage"
+                    }
+                },
+                "returnedDate": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "timeState": {
                     "type": "string"
                 },
                 "title": {
@@ -1003,7 +1897,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "campus": {
-                    "description": "GPS        string   ` + "`" + `json:\"gps\"` + "`" + `",
                     "type": "string"
                 },
                 "id": {
@@ -1044,16 +1937,22 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "building": {
-                    "$ref": "#/definitions/db_models.Building"
+                    "$ref": "#/definitions/api_objects.Building"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "keywords": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
                 "room": {
-                    "$ref": "#/definitions/db_models.Room"
+                    "$ref": "#/definitions/api_objects.Room"
+                },
+                "shelfElementId": {
+                    "type": "string"
                 },
                 "shelfId": {
                     "type": "string"
@@ -1108,27 +2007,32 @@ const docTemplate = `{
                 }
             }
         },
-        "api_objects.Columns": {
+        "api_objects.InstantCheckoutRequest": {
             "type": "object",
+            "required": [
+                "endDate",
+                "id",
+                "numSelected",
+                "startDate"
+            ],
             "properties": {
-                "elements": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/api_objects.Element"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "api_objects.Element": {
-            "type": "object",
-            "properties": {
-                "id": {
+                "description": {
                     "type": "string"
                 },
-                "type": {
+                "endDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "numSelected": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }
@@ -1137,9 +2041,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "amount",
-                "isConsumable",
                 "name",
-                "note",
                 "shelfId",
                 "shelfUnitId"
             ],
@@ -1150,13 +2052,13 @@ const docTemplate = `{
                 "isConsumable": {
                     "type": "boolean"
                 },
+                "keywords": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
                 "note": {
-                    "type": "string"
-                },
-                "organisation": {
                     "type": "string"
                 },
                 "shelfId": {
@@ -1177,19 +2079,25 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "building": {
-                    "$ref": "#/definitions/db_models.Building"
+                    "$ref": "#/definitions/api_objects.Building"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "keywords": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
                 "room": {
-                    "$ref": "#/definitions/db_models.Room"
+                    "$ref": "#/definitions/api_objects.Room"
                 },
                 "shelf": {
-                    "$ref": "#/definitions/api_objects.Shelves"
+                    "$ref": "#/definitions/api_objects.Shelf"
+                },
+                "shelfElementId": {
+                    "type": "string"
                 },
                 "shelfId": {
                     "type": "string"
@@ -1206,7 +2114,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "building": {
-                    "$ref": "#/definitions/db_models.Building"
+                    "$ref": "#/definitions/api_objects.Building"
                 },
                 "id": {
                     "type": "integer"
@@ -1215,7 +2123,27 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "room": {
-                    "$ref": "#/definitions/db_models.Room"
+                    "$ref": "#/definitions/api_objects.Room"
+                },
+                "shelfElementId": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.Me": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isAdmin": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -1252,6 +2180,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "description": "Ignored when logged in: the reviewer is the session user.",
                     "type": "integer"
                 }
             }
@@ -1260,7 +2189,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "building": {
-                    "$ref": "#/definitions/db_models.Building"
+                    "$ref": "#/definitions/api_objects.Building"
                 },
                 "floor": {
                     "type": "string"
@@ -1293,6 +2222,58 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "number": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.Shelf": {
+            "type": "object",
+            "properties": {
+                "building": {
+                    "$ref": "#/definitions/api_objects.Building"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.ShelfColumn"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "room": {
+                    "$ref": "#/definitions/api_objects.Room"
+                }
+            }
+        },
+        "api_objects.ShelfColumn": {
+            "type": "object",
+            "properties": {
+                "elements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_objects.ShelfElement"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_objects.ShelfElement": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "null while the category is being generated",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -1334,29 +2315,6 @@ const docTemplate = `{
                 }
             }
         },
-        "api_objects.Shelves": {
-            "type": "object",
-            "properties": {
-                "building": {
-                    "$ref": "#/definitions/db_models.Building"
-                },
-                "columns": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/api_objects.Columns"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "room": {
-                    "$ref": "#/definitions/db_models.Room"
-                }
-            }
-        },
         "api_objects.UpdateCartItem": {
             "type": "object",
             "properties": {
@@ -1370,6 +2328,9 @@ const docTemplate = `{
             "properties": {
                 "amount": {
                     "type": "integer"
+                },
+                "keywords": {
+                    "type": "string"
                 },
                 "note": {
                     "type": "string"
@@ -1398,10 +2359,15 @@ const docTemplate = `{
         "api_objects.UserMessage": {
             "type": "object",
             "properties": {
+                "asAdmin": {
+                    "description": "AsAdmin marks a message sent from the admin borrow requests page\nrather than by the requester. Only admins may set it.",
+                    "type": "boolean"
+                },
                 "message": {
                     "type": "string"
                 },
                 "userId": {
+                    "description": "Ignored when logged in: the author is the session user.",
                     "type": "integer"
                 }
             }
@@ -1458,8 +2424,8 @@ const docTemplate = `{
                 "is_consumable": {
                     "type": "boolean"
                 },
-                "item_id": {
-                    "type": "integer"
+                "keywords": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -1506,9 +2472,6 @@ const docTemplate = `{
                 },
                 "end_date": {
                     "type": "string"
-                },
-                "group_id": {
-                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -1665,6 +2628,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "description": "nil = not generated yet, \"\" = no items",
                     "type": "string"
                 },
                 "id": {
@@ -1723,9 +2687,6 @@ const docTemplate = `{
         "db_models.User": {
             "type": "object",
             "properties": {
-                "access_token": {
-                    "type": "string"
-                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1735,6 +2696,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_admin": {
+                    "description": "from Keycloak roles, see auth.hasAdminRole",
+                    "type": "boolean"
+                },
                 "issuer": {
                     "type": "string"
                 },
@@ -1742,9 +2707,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "refresh_token": {
                     "type": "string"
                 },
                 "subject": {
@@ -1762,7 +2724,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{"http"},
 	Title:            "Lagertool Inventory API",
-	Description:      "Backend API for inventory management system tracking items, locations, and loans",
+	Description:      "Backend API for inventory management system tracking items, locations, and loans.\n\nAuthentication: log in via GET /auth/eduid/login (VSETH Keycloak) in the browser. The backend then sets an HttpOnly \"user_session\" cookie, which must be sent with every request (fetch: credentials \"include\", axios: withCredentials). Without a valid session, all routes except /auth/* and /search return 401.\n\nAuthorisation: /me/... routes act on the logged-in user. Routes marked \"Admin only\" return 403 for users without admin rights (from the Keycloak roles in AUTH_ADMIN_ROLES).\n\nWith USING_AUTH=false (local dev only) every request acts as the dev user (DEV_USER_ID) with admin rights.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
