@@ -51,7 +51,7 @@ type CheckoutRequest struct {
 }
 
 type RequestReview struct {
-	UserID  int    `json:"user_id"`
+	UserID  int    `json:"user_id"` // Ignored when logged in: the reviewer is the session user.
 	Outcome string `json:"outcome"`
 	Note    string `json:"note"`
 }
@@ -80,7 +80,7 @@ type UpdateItemRequest struct {
 }
 
 type UserMessage struct {
-	UserID  int    `json:"userId"`
+	UserID  int    `json:"userId"` // Ignored when logged in: the author is the session user.
 	Message string `json:"message"`
 	// AsAdmin marks a message sent from the admin borrow requests page
 	// rather than by the requester. Only admins may set it.

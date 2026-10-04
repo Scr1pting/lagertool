@@ -15,13 +15,14 @@ import (
 )
 
 // @Summary Create a new building
-// @Description Create a new building for an organisation
+// @Description Create a new building for an organisation Admin only.
 // @Tags buildings
 // @Accept  json
 // @Produce  json
 // @Param orgId path string true "Organisation name"
 // @Param building body api_objects.BuildingRequest true "Building object"
 // @Success 201 {object} db_models.Building
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /organisations/{orgId}/buildings [post]
 func (h *Handler) CreateBuilding(c *gin.Context) {
 	var req api_objects.BuildingRequest
@@ -39,7 +40,7 @@ func (h *Handler) CreateBuilding(c *gin.Context) {
 }
 
 // @Summary Create a new room
-// @Description Create a new room in a building
+// @Description Create a new room in a building Admin only.
 // @Tags rooms
 // @Accept  json
 // @Produce  json
@@ -47,6 +48,7 @@ func (h *Handler) CreateBuilding(c *gin.Context) {
 // @Param buildingId path int true "Building ID"
 // @Param room body api_objects.RoomRequest true "Room object"
 // @Success 201 {object} db_models.Room
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /organisations/{orgId}/buildings/{buildingId}/rooms [post]
 func (h *Handler) CreateRoom(c *gin.Context) {
 	buildingId, err := strconv.Atoi(c.Param("buildingId"))
@@ -69,12 +71,13 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 }
 
 // @Summary Create a new inventory item
-// @Description Create a new inventory item
+// @Description Create a new inventory item Admin only.
 // @Tags items
 // @Accept  json
 // @Produce  json
 // @Param item body api_objects.InventoryItemRequest true "Inventory item object"
 // @Success 201 {object} db_models.Inventory
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /organisations/{orgId}/items [post]
 func (h *Handler) CreateItem(c *gin.Context) {
 	var req api_objects.InventoryItemRequest
@@ -91,15 +94,15 @@ func (h *Handler) CreateItem(c *gin.Context) {
 	c.JSON(http.StatusCreated, newItem)
 }
 
-// @Summary Add an item to the shopping cart
-// @Description Add an item to the shopping cart
+// @Summary Add an item to my shopping cart
+// @Description Adds an inventory item to the logged-in user's cart. The cart is created on first use.
 // @Tags cart
 // @Accept  json
 // @Produce  json
-// @Param userId path int true "User ID"
-// @Param cart_item body api_objects.CartRequest true "Cart item object"
+// @Param cart_item body api_objects.CartRequest true "Inventory item id and amount"
 // @Success 201 {object} db_models.ShoppingCartItem
-// @Router /users/{userId}/cart/items [post]
+// @Failure 401 {object} map[string]string "Not logged in"
+// @Router /me/cart/items [post]
 func (h *Handler) CreateCartItem(c *gin.Context) {
 	userId, ok := targetUserID(c)
 	if !ok {
@@ -135,15 +138,17 @@ func checkoutDetails(c *gin.Context, title string, start, end time.Time) (string
 	return title, true
 }
 
-// @Summary Checkout shopping cart
-// @Description Checkout the user's shopping cart and create requests
+// @Summary Check out my shopping cart
+// @Description Turns the logged-in user's cart into borrow requests (one per organisation, state "requested") for the given dates and title, then empties the cart. Nothing is created if any item isn't available for the whole period.
 // @Tags cart
 // @Accept  json
 // @Produce  json
-// @Param userId path int true "User ID"
-// @Param checkout body api_objects.CheckoutRequest true "Checkout details"
-// @Success 201
-// @Router /users/{userId}/cart/checkout [post]
+// @Param checkout body api_objects.CheckoutRequest true "Borrow period"
+// @Success 201 {object} map[string]string
+// @Failure 400 {object} map[string]string "Invalid body, missing title or empty cart"
+// @Failure 401 {object} map[string]string "Not logged in"
+// @Failure 409 {object} api_objects.AvailabilityConflict "Some items aren't available for the period"
+// @Router /me/cart/checkout [post]
 func (h *Handler) CheckoutCart(c *gin.Context) {
 	userId, ok := targetUserID(c)
 	if !ok {
@@ -228,13 +233,17 @@ func (h *Handler) CheckoutCart(c *gin.Context) {
 }
 
 // @Summary Review a request
-// @Description Review/approve/deny a borrow request
+// @Description Approve or reject a pending borrow request (outcome "approved" or "rejected"). Sets the request state; approving creates loans (or consumed records for consumables). The note is shown to the author in the request chat. The reviewer is the logged-in user. Admin only.
 // @Tags requests
 // @Accept  json
 // @Produce  json
 // @Param id path int true "Request ID"
 // @Param review body api_objects.RequestReview true "Review details"
 // @Success 200 {object} db_models.RequestReview
+// @Failure 400 {object} map[string]string "Invalid body or outcome"
+// @Failure 403 {object} map[string]string "Admin rights required"
+// @Failure 404 {object} map[string]string "Request not found"
+// @Failure 409 {object} map[string]string "Request was already reviewed"
 // @Router /requests/{id}/review [post]
 func (h *Handler) RequestReview(c *gin.Context) {
 	requestId, err := strconv.Atoi(c.Param("id"))
@@ -466,13 +475,15 @@ func respondTxError(c *gin.Context, err error) bool {
 }
 
 // @Summary Post a message to a request
-// @Description Post a user message on a borrow request
+// @Description Post a user message on a borrow request Only the request's author or an admin. The author is the logged-in user (userId in the body is ignored then).
 // @Tags requests
 // @Accept  json
 // @Produce  json
 // @Param id path int true "Request ID"
 // @Param message body api_objects.UserMessage true "Message object"
 // @Success 200 {object} api_objects.UserMessage
+// @Failure 403 {object} map[string]string "Not the author and not an admin"
+// @Failure 404 {object} map[string]string "Request not found"
 // @Router /requests/{id}/messages [post]
 func (h *Handler) PostMessage(c *gin.Context) {
 	requestId, err := strconv.Atoi(c.Param("id"))
@@ -510,7 +521,7 @@ func (h *Handler) PostMessage(c *gin.Context) {
 }
 
 // @Summary Create a new shelf
-// @Description Create a new shelf in a room
+// @Description Create a new shelf in a room Admin only.
 // @Tags shelves
 // @Accept  json
 // @Produce  json
@@ -519,6 +530,7 @@ func (h *Handler) PostMessage(c *gin.Context) {
 // @Param roomId path int true "Room ID"
 // @Param shelf body api_objects.ShelfRequest true "Shelf object"
 // @Success 201 {object} db_models.Shelf
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /organisations/{orgId}/buildings/{buildingId}/rooms/{roomId}/shelves [post]
 func (h *Handler) CreateShelf(c *gin.Context) {
 	orgId := c.Param("orgId")
@@ -559,6 +571,9 @@ func (h *Handler) CreateShelf(c *gin.Context) {
 // @Produce  json
 // @Param checkout body api_objects.InstantCheckoutRequest true "Item, amount, dates, title and description"
 // @Success 201 {object} db_models.Request
+// @Failure 400 {object} map[string]string "Invalid body"
+// @Failure 401 {object} map[string]string "Not logged in"
+// @Failure 404 {object} map[string]string "Item not found"
 // @Router /me/checkout [post]
 func (h *Handler) InstantCheckout(c *gin.Context) {
 	userId, ok := targetUserID(c)

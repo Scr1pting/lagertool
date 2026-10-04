@@ -21,14 +21,20 @@ import (
 
 // @title Lagertool Inventory API
 // @version 1.0
-// @description Backend API for inventory management system tracking items, locations, and loans
+// @description Backend API for inventory management system tracking items, locations, and loans.
+// @description
+// @description Authentication: log in via GET /auth/eduid/login (VSETH Keycloak) in the browser. The backend then sets an HttpOnly "user_session" cookie, which must be sent with every request (fetch: credentials "include", axios: withCredentials). Without a valid session, all routes except /auth/* and /search return 401.
+// @description
+// @description Authorisation: /me/... routes act on the logged-in user. Routes marked "Admin only" return 403 for users without admin rights (from the Keycloak roles in AUTH_ADMIN_ROLES).
+// @description
+// @description With USING_AUTH=false (local dev only) every request acts as the dev user (DEV_USER_ID) with admin rights.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
 // @contact.email support@lagertool.com
 
-// @license.name MIT
-// @license.url https://opensource.org/licenses/MIT
+// @license.name AGPL-3.0
+// @license.url https://www.gnu.org/licenses/agpl-3.0.html
 
 // @host localhost:8000
 // @BasePath /

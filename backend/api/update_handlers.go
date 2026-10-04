@@ -13,13 +13,14 @@ import (
 )
 
 // @Summary Update a request
-// @Description Update the status of a request
+// @Description Update the status of a request Admin only.
 // @Tags requests
 // @Accept  json
 // @Produce  json
 // @Param id path int true "Request ID"
 // @Param request body api_objects.UpdateRequest true "Update details"
 // @Success 202
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /requests/{id} [put]
 func (h *Handler) UpdateRequest(c *gin.Context) {
 	requestId, err := strconv.Atoi(c.Param("id"))
@@ -41,13 +42,14 @@ func (h *Handler) UpdateRequest(c *gin.Context) {
 }
 
 // @Summary Update a loan
-// @Description Mark a loan as returned
+// @Description Mark a loan as returned Admin only.
 // @Tags loans
 // @Accept  json
 // @Produce  json
 // @Param id path int true "Loan ID"
 // @Param loan body api_objects.UpdateLoan true "Update details"
 // @Success 202
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /loans/{id} [put]
 func (h *Handler) UpdateLoan(c *gin.Context) {
 	loanId, err := strconv.Atoi(c.Param("id"))
@@ -69,13 +71,14 @@ func (h *Handler) UpdateLoan(c *gin.Context) {
 }
 
 // @Summary Bulk update loans for a request
-// @Description Mark all loans for a given request as returned
+// @Description Mark all loans for a given request as returned Admin only.
 // @Tags loans
 // @Accept  json
 // @Produce  json
 // @Param id path int true "Request ID"
 // @Param loan body api_objects.UpdateLoan true "Update details"
 // @Success 202
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /requests/{id}/loans [put]
 func (h *Handler) UpdateLoanBulk(c *gin.Context) {
 	requestId, err := strconv.Atoi(c.Param("id"))
@@ -107,13 +110,14 @@ func (h *Handler) UpdateLoanBulk(c *gin.Context) {
 }
 
 // @Summary Update an inventory item
-// @Description Update an inventory item's details
+// @Description Update an inventory item's details Admin only.
 // @Tags items
 // @Accept  json
 // @Produce  json
 // @Param id path int true "Inventory Item ID"
 // @Param item body api_objects.UpdateItemRequest true "Update details"
 // @Success 200 {object} db_models.Inventory
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /organisations/{orgId}/items/{id} [put]
 func (h *Handler) UpdateItem(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("id"))
@@ -213,16 +217,16 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 	c.JSON(http.StatusOK, inv)
 }
 
-// @Summary Update a cart item
-// @Description Update the amount of an item in a user's shopping cart
+// @Summary Change an amount in my shopping cart
+// @Description Updates the amount of an item in the logged-in user's cart.
 // @Tags cart
 // @Accept  json
 // @Produce  json
-// @Param userId path int true "User ID"
 // @Param itemId path int true "Inventory Item ID"
-// @Param item body api_objects.UpdateCartItem true "Update details"
+// @Param item body api_objects.UpdateCartItem true "New amount"
 // @Success 200
-// @Router /users/{userId}/cart/items/{itemId} [put]
+// @Failure 401 {object} map[string]string "Not logged in"
+// @Router /me/cart/items/{itemId} [put]
 func (h *Handler) UpdateCartItem(c *gin.Context) {
 	itemId, err := strconv.Atoi(c.Param("itemId"))
 	if err != nil {

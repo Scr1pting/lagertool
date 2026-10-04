@@ -10,11 +10,12 @@ import (
 
 // @Summary Regenerate a shelf unit's description
 // @Description Re-runs description_gen against the items currently on the
-// @Description shelf unit and writes the result to shelf_unit.description.
+// @Description shelf unit and writes the result to shelf_unit.description. Admin only.
 // @Tags shelves
 // @Produce json
 // @Param id path string true "Shelf Unit ID"
 // @Success 200 {object} map[string]string
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /shelf-units/{id}/regenerate-description [post]
 func (h *Handler) RegenerateShelfUnitDescription(c *gin.Context) {
 	id := c.Param("id")
@@ -40,10 +41,11 @@ func (h *Handler) RegenerateShelfUnitDescription(c *gin.Context) {
 // @Summary Regenerate every shelf unit's description (bulk)
 // @Description Iterates every shelf unit and refreshes its description.
 // @Description Intended for backfilling existing data or re-running after
-// @Description description_gen's categories list changes. Returns counts.
+// @Description description_gen's categories list changes. Returns counts. Admin only.
 // @Tags shelves
 // @Produce json
 // @Success 200 {object} map[string]int
+// @Failure 403 {object} map[string]string "Admin rights required"
 // @Router /shelf-units/regenerate-descriptions [post]
 func (h *Handler) RegenerateAllDescriptions(c *gin.Context) {
 	updated, failed, firstErr := db.RegenerateAllShelfUnitDescriptions(c.Request.Context(), h.DB, h.Cfg.DescriptionGen.URL, 4)

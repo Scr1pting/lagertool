@@ -66,39 +66,53 @@ This will update the files in the `docs/` directory:
 
 ```
 .
-├── main.go              # Contains main API info annotations
+├── main.go                   # General API info (title, auth explanation)
 ├── api/
-│   └── handlers.go      # Contains endpoint annotations
-├── docs/                # Generated Swagger files (auto-generated)
-│   ├── docs.go
-│   ├── swagger.json
-│   └── swagger.yaml
-└── db/
-    └── models.go        # Data models used in API schemas
+│   ├── *.go                  # Endpoint annotations above each handler
+│   └── swagger_routes.go     # Doc-only entries for /users/{userId}/cart... (see below)
+├── auth/
+│   └── auth.go               # /auth/eduid/* login, callback, logout
+├── api_objects/              # Request/response schemas
+├── db_models/                # Data models used in API schemas
+└── docs/                     # Generated Swagger files (do not edit by hand)
+    ├── docs.go
+    ├── swagger.json
+    └── swagger.yaml
 ```
 
 ## Current API Documentation Status
 
-The following endpoints are currently documented:
+All routes registered in `api/routes.go` are documented. Tags:
 
-### Locations
-- GET /locations - Get all locations
-- GET /locations/{id} - Get location by ID
-- POST /locations - Create a new location
-- PUT /locations/{id} - Update a location
-- DELETE /locations/{id} - Delete a location
+- **auth**: `/auth/eduid/login`, `/auth/eduid/callback`, `/auth/eduid/logout`, `GET /me`
+- **cart**: `/me/cart...` and `POST /me/checkout` (instant checkout of a single item)
+- **cart (by user)**: `/users/{userId}/cart...`, same as `/me/cart...` for another user (that user or admin)
+- **requests / loans**: borrow requests, review, messages, loans
+- **organisations, buildings, rooms, shelves, items, inventory, search, descriptions**
 
-### Items
-- GET /items - Get all items
-- GET /items/{id} - Get item by ID
-- GET /items/search - Search items by name
-- POST /items - Create a new item
+### Authentication in the docs
 
-**Note**: Additional endpoints exist but are not yet fully documented. You can add annotations following the same pattern shown above.
+The API uses a session cookie (`user_session`) set by the Keycloak login, not a
+header token. Swagger 2.0 can't describe cookie auth, so it is explained in the
+general description (`main.go`) and per route:
+
+- routes for the logged-in user document `401`,
+- admin routes say "Admin only." and document `403`.
+
+To try protected routes in Swagger UI, log in via `/auth/eduid/login` in the
+same browser first; the cookie is then sent automatically.
+
+### Why `api/swagger_routes.go` exists
+
+The `/me/...` and `/users/{userId}/...` cart routes share handlers. Annotating a
+handler with both routes would give the `/me` route a `userId` parameter it
+doesn't have, so the handlers document the `/me` routes and
+`swagger_routes.go` holds empty functions that only carry the docs for the
+`/users/{userId}` variants. Keep both in sync when changing a cart handler.
 
 ## Tips
 
-1. Always run `swag init` after modifying annotations
+1. Always run `swag init` after modifying annotations (swag needs `go` on the PATH)
 2. The `docs` package is imported in main.go with a blank identifier to ensure it's included in the build
 3. Use consistent tag names to group related endpoints
 4. Include example values in model structs using `example:"value"` tags
