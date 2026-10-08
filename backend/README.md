@@ -120,8 +120,8 @@ To try protected routes there, log in via `http://localhost:8000/auth/eduid/logi
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/organisations` | List all organisations |
-| `GET` | `/organisations/:orgId/buildings` | List buildings for an organisation |
-| `GET` | `/organisations/:orgId/rooms` | List rooms for an organisation |
+| `GET` | `/organisations/:orgId/buildings` | List all buildings (shared by all organisations) |
+| `GET` | `/organisations/:orgId/rooms` | List all rooms (shared by all organisations) |
 | `GET` | `/organisations/:orgId/shelves` | List shelves for an organisation |
 | `GET` | `/organisations/:orgId/inventory?start=X&end=X` | List inventory for an organisation |
 | `POST` | `/organisations/:orgId/buildings` | Create a new building (admin) |

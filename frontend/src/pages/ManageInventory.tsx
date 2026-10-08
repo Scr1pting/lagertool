@@ -18,8 +18,8 @@ import BuildingTab from "@/components/ManageInventory/tabs/BuildingTab"
 const TABS = ["items", "shelves", "rooms", "buildings"]
 
 function ManageInventory() {
-  const { data: buildings } = useBuilding()
-  const { data: rooms } = useFetchRooms()
+  const { data: buildings, refetch: refetchBuildings } = useBuilding()
+  const { data: rooms, refetch: refetchRooms } = useFetchRooms()
   const { data: shelves } = useFetchShelves()
   const { data: inventory, refetch: refetchInventory } = useInventory()
   // ?tab=shelves etc. opens that tab, e.g. after adding a shelf.
@@ -56,9 +56,9 @@ function ManageInventory() {
 
           <ShelfTab shelves={shelves ?? []} />
 
-          <RoomTab buildings={buildings ?? []} rooms={rooms ?? []} />
+          <RoomTab buildings={buildings ?? []} rooms={rooms ?? []} refetch={refetchRooms} />
 
-          <BuildingTab buildings={buildings ?? []} />
+          <BuildingTab buildings={buildings ?? []} refetch={refetchBuildings} />
         </Tabs>
       </div>
     </RegularPage>

@@ -1106,7 +1106,9 @@ paths:
       - organisations
   /organisations/{orgId}/buildings:
     get:
-      description: Get all buildings sorted by update date
+      description: Get all buildings sorted by update date. Buildings are physical
+        places shared by all organisations, so this includes buildings without shelves
+        (e.g. one that was just created).
       parameters:
       - description: Organisation name
         in: path
@@ -1122,7 +1124,7 @@ paths:
             items:
               $ref: '#/definitions/api_objects.Building'
             type: array
-      summary: Get all buildings for an organisation
+      summary: Get all buildings
       tags:
       - buildings
     post:
@@ -1185,9 +1187,15 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/db_models.Room'
+            $ref: '#/definitions/api_objects.Room'
         "403":
           description: Admin rights required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Building not found
           schema:
             additionalProperties:
               type: string
@@ -1390,7 +1398,9 @@ paths:
       - items
   /organisations/{orgId}/rooms:
     get:
-      description: Get all rooms sorted by update date
+      description: Get all rooms sorted by update date. Rooms are physical places
+        shared by all organisations, so this includes rooms without shelves (e.g.
+        one that was just created).
       parameters:
       - description: Organisation name
         in: path
@@ -1406,7 +1416,7 @@ paths:
             items:
               $ref: '#/definitions/api_objects.Room'
             type: array
-      summary: Get all rooms for an organisation
+      summary: Get all rooms
       tags:
       - rooms
   /organisations/{orgId}/shelves:

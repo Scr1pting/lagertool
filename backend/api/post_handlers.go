@@ -47,8 +47,9 @@ func (h *Handler) CreateBuilding(c *gin.Context) {
 // @Param orgId path string true "Organisation name"
 // @Param buildingId path int true "Building ID"
 // @Param room body api_objects.RoomRequest true "Room object"
-// @Success 201 {object} db_models.Room
+// @Success 201 {object} api_objects.Room
 // @Failure 403 {object} map[string]string "Admin rights required"
+// @Failure 404 {object} map[string]string "Building not found"
 // @Router /organisations/{orgId}/buildings/{buildingId}/rooms [post]
 func (h *Handler) CreateRoom(c *gin.Context) {
 	buildingId, err := strconv.Atoi(c.Param("buildingId"))
@@ -62,11 +63,24 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 		return
 	}
 
+	building := &db_models.Building{ID: buildingId}
+	err = h.DB.Model(building).WherePK().Select()
+	if errors.Is(err, pg.ErrNoRows) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "building not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	newRoom, err := db.CreateRoom(h.DB, req.Name, req.Floor, req.Number, buildingId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// Same shape as GET /rooms, including the building.
+	newRoom.Building = building
 	c.JSON(http.StatusCreated, toRoom(*newRoom))
 }
 

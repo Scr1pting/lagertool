@@ -10,22 +10,17 @@ import (
 	"lagertool.com/main/db_models"
 )
 
-// @Summary Get all rooms for an organisation
-// @Description Get all rooms sorted by update date
+// @Summary Get all rooms
+// @Description Get all rooms sorted by update date. Rooms are physical places shared by all organisations, so this includes rooms without shelves (e.g. one that was just created).
 // @Tags rooms
 // @Produce  json
 // @Param orgId path string true "Organisation name"
 // @Success 200 {array} api_objects.Room
 // @Router /organisations/{orgId}/rooms [get]
 func (h *Handler) GetRooms(c *gin.Context) {
-	orgId := c.Param("orgId")
 	var dbRes []db_models.Room
 	err := h.DB.Model(&dbRes).
-		Column("room.*").
 		Relation("Building").
-		Join("JOIN shelf ON shelf.room_id = room.id").
-		Where("shelf.owned_by = ?", orgId).
-		GroupExpr("room.id, building.id").
 		Order("room.update_date desc").
 		Select()
 	if err != nil {
@@ -39,21 +34,16 @@ func (h *Handler) GetRooms(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-// @Summary Get all buildings for an organisation
-// @Description Get all buildings sorted by update date
+// @Summary Get all buildings
+// @Description Get all buildings sorted by update date. Buildings are physical places shared by all organisations, so this includes buildings without shelves (e.g. one that was just created).
 // @Tags buildings
 // @Produce  json
 // @Param orgId path string true "Organisation name"
 // @Success 200 {array} api_objects.Building
 // @Router /organisations/{orgId}/buildings [get]
 func (h *Handler) GetBuildings(c *gin.Context) {
-	orgId := c.Param("orgId")
 	var dbRes []db_models.Building
 	err := h.DB.Model(&dbRes).
-		Join("JOIN room ON room.building_id = building.id").
-		Join("JOIN shelf ON shelf.room_id = room.id").
-		Where("shelf.owned_by = ?", orgId).
-		GroupExpr("building.id").
 		Order("building.update_date desc").
 		Select()
 	if err != nil {

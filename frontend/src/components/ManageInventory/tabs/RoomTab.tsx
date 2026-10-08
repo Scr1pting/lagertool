@@ -8,18 +8,53 @@ import { TabsContent } from "@/components/shadcn/tabs"
 import DataTable from "@/components/DataTable/DataTable"
 import ManageInventoryCard from "../ManageInventoryCard"
 import roomColumns from "@/components/DataTable/ManageInventory/roomColumns"
+import post from "@/api/post"
+import useOrgs from "@/store/useOrgs"
+import { toast } from "sonner"
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 interface RoomTabProps {
   buildings: Building[]
   rooms: Room[]
+  refetch: () => void
 }
 
-function RoomTab({ buildings, rooms }: RoomTabProps) {
+function RoomTab({ buildings, rooms, refetch }: RoomTabProps) {
   const [name, setName] = useState<string>("")
   const [floor, setFloor] = useState<string>("")
   const [number, setNumber] = useState<string>("")
   const [buildingId, setBuildingId] = useState<string | undefined>()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const selectedOrg = useOrgs(s => s.selectedOrg)
+
+  const isComplete = floor.trim() !== "" && number.trim() !== "" && buildingId != null
+
+  const handleSubmit = async () => {
+    if (!isComplete) return
+    if (!selectedOrg) { toast.error("No organisation selected"); return }
+
+    setIsSubmitting(true)
+    try {
+      await post(`${API_BASE_URL}/organisations/${selectedOrg.name}/buildings/${buildingId}/rooms`, {
+        // Rooms are listed and picked by name (e.g. in the Shelf Builder),
+        // so fall back to floor + number when no name is given.
+        name: name.trim() || `${floor.trim()} ${number.trim()}`,
+        floor: floor.trim(),
+        number: number.trim(),
+      })
+      toast.success("Room added successfully")
+      setName("")
+      setFloor("")
+      setNumber("")
+      refetch()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add room")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const elements: FormElement[] = [
     {
@@ -71,7 +106,12 @@ function RoomTab({ buildings, rooms }: RoomTabProps) {
   return (
     <TabsContent value="rooms">
       <div className="space-y-10">
-        <ManageInventoryCard title="Add Room" elements={elements} />
+        <ManageInventoryCard
+          title="Add Room"
+          elements={elements}
+          onSubmit={handleSubmit}
+          disabled={!isComplete || isSubmitting}
+        />
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">

@@ -153,7 +153,9 @@ func TestGetBuildings(t *testing.T) {
 	// Create buildings with rooms and shelves owned by the org
 	b1 := &db_models.Building{Name: "Old Building", Campus: "Main", UpdateDate: time.Now().Add(-time.Hour)}
 	b2 := &db_models.Building{Name: "New Building", Campus: "Main", UpdateDate: time.Now()}
-	_, err = dbCon.Model(b1, b2).Insert()
+	// No rooms or shelves yet, e.g. just created: must still be listed.
+	b3 := &db_models.Building{Name: "Empty Building", Campus: "Main", UpdateDate: time.Now().Add(-30 * time.Minute)}
+	_, err = dbCon.Model(b1, b2, b3).Insert()
 	assert.NoError(t, err)
 
 	r1 := &db_models.Room{Name: "Room 1", BuildingID: b1.ID, UpdateDate: time.Now()}
@@ -173,6 +175,7 @@ func TestGetBuildings(t *testing.T) {
 		_, _ = dbCon.Model(r2).Where("id = ?", r2.ID).Delete()
 		_, _ = dbCon.Model(b1).Where("id = ?", b1.ID).Delete()
 		_, _ = dbCon.Model(b2).Where("id = ?", b2.ID).Delete()
+		_, _ = dbCon.Model(b3).Where("id = ?", b3.ID).Delete()
 		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
 	}()
 
@@ -186,9 +189,14 @@ func TestGetBuildings(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &buildings)
 	assert.NoError(t, err)
 
-	assert.GreaterOrEqual(t, len(buildings), 2)
-	assert.Equal(t, "New Building", buildings[0].Name)
-	assert.Equal(t, "Old Building", buildings[1].Name)
+	// The list holds every building, so only look at the ones created here.
+	var names []string
+	for _, b := range buildings {
+		if b.ID == b1.ID || b.ID == b2.ID || b.ID == b3.ID {
+			names = append(names, b.Name)
+		}
+	}
+	assert.Equal(t, []string{"New Building", "Empty Building", "Old Building"}, names)
 }
 
 func TestGetRooms(t *testing.T) {
@@ -211,7 +219,9 @@ func TestGetRooms(t *testing.T) {
 	// Insert rooms
 	r1 := &db_models.Room{Name: "Old Room", BuildingID: building.ID, UpdateDate: time.Now().Add(-time.Hour)}
 	r2 := &db_models.Room{Name: "New Room", BuildingID: building.ID, UpdateDate: time.Now()}
-	_, err = dbCon.Model(r1, r2).Insert()
+	// No shelves yet, e.g. just created: must still be listed.
+	r3 := &db_models.Room{Name: "Empty Room", BuildingID: building.ID, UpdateDate: time.Now().Add(-30 * time.Minute)}
+	_, err = dbCon.Model(r1, r2, r3).Insert()
 	assert.NoError(t, err)
 
 	// Create shelves owned by the org in these rooms
@@ -223,7 +233,7 @@ func TestGetRooms(t *testing.T) {
 	defer func() {
 		_, _ = dbCon.Model(s1).Where("id = ?", s1.ID).Delete()
 		_, _ = dbCon.Model(s2).Where("id = ?", s2.ID).Delete()
-		_, _ = dbCon.Model(&db_models.Room{}).Where("name = ? OR name = ?", "Old Room", "New Room").Delete()
+		_, _ = dbCon.Model(&db_models.Room{}).Where("name IN (?)", pg.In([]string{"Old Room", "New Room", "Empty Room"})).Delete()
 		_, _ = dbCon.Model(building).Where("id = ?", building.ID).Delete()
 		_, _ = dbCon.Model(org).Where("name = ?", org.Name).Delete()
 	}()
@@ -238,9 +248,15 @@ func TestGetRooms(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &rooms)
 	assert.NoError(t, err)
 
-	assert.GreaterOrEqual(t, len(rooms), 2)
-	assert.Equal(t, "New Room", rooms[0].Name)
-	assert.Equal(t, "Old Room", rooms[1].Name)
+	// The list holds every room, so only look at the ones created here.
+	var names []string
+	for _, r := range rooms {
+		if r.ID == r1.ID || r.ID == r2.ID || r.ID == r3.ID {
+			names = append(names, r.Name)
+			assert.Equal(t, "Test Building", r.Building.Name)
+		}
+	}
+	assert.Equal(t, []string{"New Room", "Empty Room", "Old Room"}, names)
 }
 
 func TestGetShelves(t *testing.T) {
@@ -1375,6 +1391,12 @@ func TestCreateRoom(t *testing.T) {
 			payload:        `{"name": "Room 101", "floor": "1", "number": "101"}`,
 			expectedStatus: http.StatusBadRequest,
 		},
+		{
+			name:           "Unknown Building",
+			url:            "/organisations/" + org.Name + "/buildings/999999/rooms",
+			payload:        `{"name": "Room 101", "floor": "1", "number": "101"}`,
+			expectedStatus: http.StatusNotFound,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1390,14 +1412,15 @@ func TestCreateRoom(t *testing.T) {
 			}
 
 			if tc.expectedStatus == http.StatusCreated {
-				var createdRoom db_models.Room
+				var createdRoom api_objects.Room
 				err := json.Unmarshal(w.Body.Bytes(), &createdRoom)
 				assert.NoError(t, err)
 				assert.Equal(t, "Room 101", createdRoom.Name)
-				assert.Equal(t, building.ID, createdRoom.BuildingID)
+				assert.Equal(t, building.ID, createdRoom.Building.ID)
+				assert.Equal(t, building.Name, createdRoom.Building.Name)
 				assert.NotZero(t, createdRoom.ID)
 
-				_, err = dbCon.Model(&createdRoom).Where("id = ?", createdRoom.ID).Delete()
+				_, err = dbCon.Model((*db_models.Room)(nil)).Where("id = ?", createdRoom.ID).Delete()
 				assert.NoError(t, err)
 			}
 		})

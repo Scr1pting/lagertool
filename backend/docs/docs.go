@@ -604,14 +604,14 @@ const docTemplate = `{
         },
         "/organisations/{orgId}/buildings": {
             "get": {
-                "description": "Get all buildings sorted by update date",
+                "description": "Get all buildings sorted by update date. Buildings are physical places shared by all organisations, so this includes buildings without shelves (e.g. one that was just created).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "buildings"
                 ],
-                "summary": "Get all buildings for an organisation",
+                "summary": "Get all buildings",
                 "parameters": [
                     {
                         "type": "string",
@@ -724,11 +724,20 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/db_models.Room"
+                            "$ref": "#/definitions/api_objects.Room"
                         }
                     },
                     "403": {
                         "description": "Admin rights required",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Building not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1030,14 +1039,14 @@ const docTemplate = `{
         },
         "/organisations/{orgId}/rooms": {
             "get": {
-                "description": "Get all rooms sorted by update date",
+                "description": "Get all rooms sorted by update date. Rooms are physical places shared by all organisations, so this includes rooms without shelves (e.g. one that was just created).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "rooms"
                 ],
-                "summary": "Get all rooms for an organisation",
+                "summary": "Get all rooms",
                 "parameters": [
                     {
                         "type": "string",
